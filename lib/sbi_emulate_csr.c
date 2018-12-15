@@ -26,21 +26,6 @@ int sbi_emulate_csr_read(int csr_num,
 		cen = csr_read(scounteren);
 
 	switch (csr_num) {
-	case CSR_MISA:
-		*csr_val = csr_read(misa);
-		break;
-	case CSR_MVENDORID:
-		*csr_val = csr_read(mvendorid);
-		break;
-	case CSR_MARCHID:
-		*csr_val = csr_read(marchid);
-		break;
-	case CSR_MIMPID:
-		*csr_val = csr_read(mimpid);
-		break;
-	case CSR_MHARTID:
-		*csr_val = csr_read(mhartid);
-		break;
 	case CSR_CYCLE:
 		if (!((cen >> (CSR_CYCLE - CSR_CYCLE)) & 1))
 			return -1;
