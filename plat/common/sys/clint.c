@@ -22,8 +22,7 @@ void clint_ipi_inject(u32 target_hart, u32 source_hart)
 		return;
 
 	/* Set CLINT IPI */
-	__io_bw();
-	atomic_raw_xchg_uint(&clint_ipi[target_hart], 1);
+	writel(1, &clint_ipi[target_hart]);
 }
 
 void clint_ipi_sync(u32 target_hart, u32 source_hart)
@@ -41,15 +40,12 @@ void clint_ipi_sync(u32 target_hart, u32 source_hart)
 		if (!target_ipi)
 			break;
 
-		__io_bw();
 		incoming_ipi |=
 			atomic_raw_xchg_uint(&clint_ipi[source_hart], 0);
 	}
 
-	if (incoming_ipi) {
-		__io_bw();
-		atomic_raw_xchg_uint(&clint_ipi[source_hart], incoming_ipi);
-	}
+	if (incoming_ipi)
+		writel(incoming_ipi, &clint_ipi[source_hart]);
 }
 
 void clint_ipi_clear(u32 target_hart)
@@ -58,8 +54,7 @@ void clint_ipi_clear(u32 target_hart)
 		return;
 
 	/* Clear CLINT IPI */
-	__io_bw();
-	atomic_raw_xchg_uint(&clint_ipi[target_hart], 0);
+	writel(0, &clint_ipi[target_hart]);
 }
 
 int clint_warm_ipi_init(u32 target_hart)
