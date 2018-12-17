@@ -31,6 +31,8 @@ char sbi_getc(void)
 
 void sbi_putc(char ch)
 {
+	if (ch == '\n')
+		sbi_platform_console_putc(console_plat, '\r');
 	sbi_platform_console_putc(console_plat, ch);
 }
 
