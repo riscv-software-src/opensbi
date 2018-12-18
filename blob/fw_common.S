@@ -122,7 +122,10 @@ _start_warm:
 	csrw	mie, zero
 	csrw	mip, zero
 
-	/* HART ID should be within expected limit */
+	/* set MSIE bit to receive IPI */
+	li	a2, MIP_MSIP
+	csrw	mie, a2
+	/* HART ID should be withing expected limit */
 	csrr	a6, mhartid
 	li	a5, PLAT_HART_COUNT
 	bge	a6, a5, _start_hang

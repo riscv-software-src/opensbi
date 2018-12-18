@@ -96,7 +96,7 @@ static void __attribute__((noreturn)) init_coldboot(struct sbi_scratch *scratch,
 	sbi_hart_mark_available(hartid);
 
 	if (!sbi_platform_has_hart_hotplug(plat))
-		sbi_hart_wake_coldboot_harts(scratch);
+		sbi_hart_wake_coldboot_harts(scratch, hartid);
 
 	sbi_hart_boot_next(hartid, scratch->next_arg1,
 			   scratch->next_addr, scratch->next_mode);
