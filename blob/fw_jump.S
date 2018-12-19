@@ -11,11 +11,18 @@
 
 	.align 3
 	.section .entry, "ax", %progbits
+	.global fw_prev_arg1
+fw_prev_arg1:
+	/* We return previous arg1 in 'a0' */
+	add	a0, zero, zero
+	ret
+
+	.align 3
+	.section .entry, "ax", %progbits
 	.global fw_next_arg1
 fw_next_arg1:
-	/* We return FDT destination address in 'a0' */
+	/* We return next arg1 in 'a0' */
 #ifdef FW_JUMP_FDT_ADDR
-	/* a0 = destination FDT start address */
 	li	a0, FW_JUMP_FDT_ADDR
 #else
 	add	a0, zero, zero

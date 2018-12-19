@@ -27,15 +27,30 @@ _bss_zero:
 	add	a4, a4, __SIZEOF_POINTER__
 	blt	a4, a5, _bss_zero
 
+	/* Override pervious arg1 */
+	add	s0, a0, zero
+	add	s1, a1, zero
+	call	fw_prev_arg1
+	add	t1, a0, zero
+	add	a0, s0, zero
+	add	a1, s1, zero
+	beqz	t1, _prev_arg1_override_done
+	add	a1, t1, zero
+_prev_arg1_override_done:
+
 	/*
 	 * Relocate FDT
+	 * source FDT address = previous arg1
+	 * destination FDT address = next arg1
+	 *
 	 * Note: We will preserve a0 and a1 passed by
 	 * previous booting stage.
 	 */
+	beqz	a1, _fdt_reloc_done
 	/* Mask values in a3 and a4 */
 	li	a3, ~0xf
 	li	a4, 0xff
-	/* t1 = destinetion FDT start address */
+	/* t1 = destination FDT start address */
 	add	s0, a0, zero
 	add	s1, a1, zero
 	call	fw_next_arg1
@@ -70,7 +85,7 @@ _bss_zero:
 	or	t2, t2, t3
 	or	t2, t2, t4
 	or	t2, t2, t5
-	/* t2 = destinetion FDT end address */
+	/* t2 = destination FDT end address */
 	add	t2, t1, t2
 	/* FDT copy loop */
 	ble	t2, t1, _fdt_reloc_done
