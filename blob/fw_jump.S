@@ -13,9 +13,9 @@
 	.section .entry, "ax", %progbits
 	.global fw_next_arg1
 fw_next_arg1:
-	/* We return FDT destinetion address in 'a0' */
+	/* We return FDT destination address in 'a0' */
 #ifdef FW_JUMP_FDT_OFFSET
-	/* a0 = destinetion FDT start address */
+	/* a0 = destination FDT start address */
 	la	a0, _jump_addr
 	REG_L	a0, (a0)
 	li	a1, FW_JUMP_FDT_OFFSET

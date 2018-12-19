@@ -104,7 +104,7 @@ _start_warm:
 	csrw	mie, zero
 	csrw	mip, zero
 
-	/* HART ID should be withing expected limit */
+	/* HART ID should be within expected limit */
 	csrr	a6, mhartid
 	li	a5, PLAT_HART_COUNT
 	bge	a6, a5, _start_hang
