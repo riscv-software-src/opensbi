@@ -24,6 +24,9 @@ blob-bins-$(FW_PAYLOAD) += fw_payload.bin
 ifdef FW_PAYLOAD_PATH
 blob-cppflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_PATH=$(FW_PAYLOAD_PATH)
 endif
+ifdef FW_PAYLOAD_OFFSET
+blob-cppflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_OFFSET=$(FW_PAYLOAD_OFFSET)
+endif
 ifdef FW_PAYLOAD_FDT_OFFSET
 blob-cppflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_FDT_OFFSET=$(FW_PAYLOAD_FDT_OFFSET)
 endif

@@ -14,7 +14,7 @@ SECTIONS
 {
 	#include "fw_common.ldS"
 
-	. = ALIGN(0x200000);
+	. = PLAT_TEXT_START + FW_PAYLOAD_OFFSET;
 
 	.payload :
 	{
