@@ -11,7 +11,6 @@
 plat-cppflags-y = -DPLAT_NAME="QEMU Virt Machine"
 plat-cppflags-y+= -DPLAT_HART_COUNT=8
 plat-cppflags-y+= -DPLAT_HART_STACK_SIZE=8192
-plat-cppflags-y+= -DPLAT_TEXT_START=0x80000000
 
 # Compiler flags
 plat-cflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
@@ -24,6 +23,7 @@ PLAT_SERIAL_UART8250=y
 PLAT_SYS_CLINT=y
 
 # Blobs to build
+FW_TEXT_START=0x80000000
 FW_JUMP=y
 FW_JUMP_ADDR=0x80200000
 FW_JUMP_FDT_OFFSET=0x2000000

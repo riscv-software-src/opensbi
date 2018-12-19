@@ -12,6 +12,10 @@ blob-cflags-y =
 blob-asflags-y =
 blob-ldflags-y =
 
+ifdef FW_TEXT_START
+blob-cppflags-y += -DFW_TEXT_START=$(FW_TEXT_START)
+endif
+
 blob-bins-$(FW_JUMP) += fw_jump.bin
 ifdef FW_JUMP_ADDR
 blob-cppflags-$(FW_JUMP) += -DFW_JUMP_ADDR=$(FW_JUMP_ADDR)

@@ -7,7 +7,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-	. = PLAT_TEXT_START;
+	. = FW_TEXT_START;
 
 	PROVIDE(_fw_start = .);
 

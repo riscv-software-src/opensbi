@@ -14,7 +14,7 @@ SECTIONS
 {
 	#include "fw_common.ldS"
 
-	. = PLAT_TEXT_START + FW_PAYLOAD_OFFSET;
+	. = FW_TEXT_START + FW_PAYLOAD_OFFSET;
 
 	.payload :
 	{
