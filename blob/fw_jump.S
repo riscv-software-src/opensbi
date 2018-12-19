@@ -14,12 +14,9 @@
 	.global fw_next_arg1
 fw_next_arg1:
 	/* We return FDT destination address in 'a0' */
-#ifdef FW_JUMP_FDT_OFFSET
+#ifdef FW_JUMP_FDT_ADDR
 	/* a0 = destination FDT start address */
-	la	a0, _jump_addr
-	REG_L	a0, (a0)
-	li	a1, FW_JUMP_FDT_OFFSET
-	add	a0, a0, a1
+	li	a0, FW_JUMP_FDT_ADDR
 #else
 	add	a0, zero, zero
 #endif

@@ -20,8 +20,8 @@ blob-bins-$(FW_JUMP) += fw_jump.bin
 ifdef FW_JUMP_ADDR
 blob-cppflags-$(FW_JUMP) += -DFW_JUMP_ADDR=$(FW_JUMP_ADDR)
 endif
-ifdef FW_JUMP_FDT_OFFSET
-blob-cppflags-$(FW_JUMP) += -DFW_JUMP_FDT_OFFSET=$(FW_JUMP_FDT_OFFSET)
+ifdef FW_JUMP_FDT_ADDR
+blob-cppflags-$(FW_JUMP) += -DFW_JUMP_FDT_ADDR=$(FW_JUMP_FDT_ADDR)
 endif
 
 blob-bins-$(FW_PAYLOAD) += fw_payload.bin
@@ -31,6 +31,6 @@ endif
 ifdef FW_PAYLOAD_OFFSET
 blob-cppflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_OFFSET=$(FW_PAYLOAD_OFFSET)
 endif
-ifdef FW_PAYLOAD_FDT_OFFSET
-blob-cppflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_FDT_OFFSET=$(FW_PAYLOAD_FDT_OFFSET)
+ifdef FW_PAYLOAD_FDT_ADDR
+blob-cppflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_FDT_ADDR=$(FW_PAYLOAD_FDT_ADDR)
 endif

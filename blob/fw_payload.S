@@ -13,12 +13,10 @@
 	.section .entry, "ax", %progbits
 	.global fw_next_arg1
 fw_next_arg1:
-	/* We return FDT destinetion address in 'a0' */
-#ifdef FW_PAYLOAD_FDT_OFFSET
-	/* a0 = destinetion FDT start address */
-	la	a0, payload_bin
-	li	a1, FW_PAYLOAD_FDT_OFFSET
-	add	a0, a0, a1
+	/* We return FDT destination address in 'a0' */
+#ifdef FW_PAYLOAD_FDT_ADDR
+	/* a0 = destination FDT start address */
+	li	a0, FW_PAYLOAD_FDT_ADDR
 #else
 	add	a0, zero, zero
 #endif
