@@ -15,7 +15,10 @@
 	.globl _start
 	.globl _start_warm
 _start:
-	/* Jump to warm-boot for mhartid != 0 */
+	/*
+	 * Jump to warm-boot if this is not the first core booting,
+	 * that is, for mhartid != 0
+	 */
 	csrr	a6, mhartid
 	blt	zero, a6, _wait_for_boot_hart
 
@@ -39,7 +42,7 @@ _bss_zero:
 _prev_arg1_override_done:
 
 	/*
-	 * Relocate FDT
+	 * Relocate Flatened Device Tree (FDT)
 	 * source FDT address = previous arg1
 	 * destination FDT address = next arg1
 	 *
