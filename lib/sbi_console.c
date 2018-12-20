@@ -293,7 +293,12 @@ static int print(char **out, u32 *out_len, const char *format, va_list args)
 				}
 				continue;
 			} else if (*format == 'l') {
-				if (*(format + 1) == 'x') {
+				if (*(format + 1) == 'u') {
+					format += 1;
+					pc += printi(out, out_len,
+						va_arg(args, unsigned long),
+						10, 0, width, flags, 'a');
+				} else if (*(format + 1) == 'x') {
 					format += 1;
 					pc += printi(out, out_len,
 						va_arg(args, unsigned long),
