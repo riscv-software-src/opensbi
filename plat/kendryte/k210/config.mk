@@ -11,7 +11,6 @@
 plat-cppflags-y = -DPLAT_NAME="Kendryte K210"
 plat-cppflags-y+= -DPLAT_HART_COUNT=2
 plat-cppflags-y+= -DPLAT_HART_STACK_SIZE=8192
-plat-cppflags-y+= -DPLAT_TEXT_START=0x80000000
 
 # Compiler flags
 plat-cflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
@@ -25,9 +24,7 @@ PLAT_SYS_CLINT=y
 # Blobs to build
 FW_TEXT_START=0x80000000
 FW_JUMP=n
-#FW_JUMP_ADDR=0x80200000
-#FW_JUMP_FDT_ADDR=0x82200000
-FW_PAYLOAD=n
-#FW_PAYLOAD_OFFSET=0x200000
-#FW_PAYLOAD_FDT_ADDR=0x82200000
+FW_PAYLOAD=y
+FW_PAYLOAD_OFFSET=0x200000
+FW_PAYLOAD_FDT_ADDR=0x80040000
 
