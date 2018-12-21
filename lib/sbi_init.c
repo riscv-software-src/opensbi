@@ -17,6 +17,16 @@
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_timer.h>
 
+static const char *logo =
+	"   ____                    _____ ____ _____\n"
+	"  / __ \\                  / ____|  _ \\_   _|\n"
+	" | |  | |_ __   ___ _ __ | (___ | |_) || |\n"
+	" | |  | | '_ \\ / _ \\ '_ \\ \\___ \\|  _ < | |\n"
+	" | |__| | |_) |  __/ | | |____) | |_) || |_\n"
+	"  \\____/| .__/ \\___|_| |_|_____/|____/_____|\n"
+	"        | |\n"
+	"        |_|\n";
+
 static void __attribute__((noreturn)) init_coldboot(struct sbi_scratch *scratch,
 						    u32 hartid)
 {
@@ -76,7 +86,10 @@ static void __attribute__((noreturn)) init_coldboot(struct sbi_scratch *scratch,
 	sbi_printf("OpenSBI v%d.%d (%s %s)\n",
 		   OPENSBI_MAJOR, OPENSBI_MINOR,
 		   __DATE__, __TIME__);
-	sbi_printf("\n");
+	sbi_printf("Running on Hart %u\n", hartid);
+
+	sbi_printf("%s\n", logo);
+
 	/* Platform details */
 	sbi_printf("Platform Name          : %s\n", sbi_platform_name(plat));
 	sbi_printf("Platform HART Features : RV%d%s\n", misa_xlen(), str);
