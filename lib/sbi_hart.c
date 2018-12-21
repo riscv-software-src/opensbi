@@ -17,6 +17,14 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
 
+/**
+ * Return HART ID of the caller.
+ */
+unsigned int sbi_current_hartid()
+{
+	return (u32)csr_read(mhartid);
+}
+
 static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
 {
 	struct sbi_platform *plat = sbi_platform_ptr(scratch);
@@ -198,7 +206,7 @@ int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid)
 
 void __attribute__((noreturn)) sbi_hart_hang(void)
 {
-	sbi_printf("\nHang !!\n");
+	sbi_printf("\nHART %u Hang !!\n\n", sbi_current_hartid());
 
 	while (1)
 		wfi();
@@ -249,7 +257,8 @@ void __attribute__((noreturn)) sbi_hart_switch_mode(unsigned long arg0,
 		csr_write(uie, 0);
 	}
 
-	sbi_printf("\nSwitching to %c-mode...\n\n", mode);
+	sbi_printf("HART %u switching to %c-mode...\n\n",
+		   sbi_current_hartid(), mode);
 
 	register unsigned long a0 asm ("a0") = arg0;
 	register unsigned long a1 asm ("a1") = arg1;

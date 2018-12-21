@@ -68,7 +68,7 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 {
 	int rc;
 	const char *msg;
-	u32 hartid = csr_read(mhartid);
+	u32 hartid = sbi_current_hartid();
 	ulong mcause = csr_read(mcause);
 
 	if (mcause & (1UL << (__riscv_xlen - 1))) {

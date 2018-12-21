@@ -163,7 +163,7 @@ static atomic_t coldboot_lottery = ATOMIC_INITIALIZER(0);
 void __attribute__((noreturn)) sbi_init(struct sbi_scratch *scratch)
 {
 	bool coldboot = FALSE;
-	u32 hartid = csr_read(mhartid);
+	u32 hartid = sbi_current_hartid();
 
 	if (atomic_add_return(&coldboot_lottery, 1) == 1)
 		coldboot = TRUE;
