@@ -8,6 +8,7 @@
  */
 
 #include <sbi/riscv_io.h>
+#include <sbi/sbi_console.h>
 #include <plat/serial/sifive-uart.h>
 
 #define UART_REG_TXFIFO		0
@@ -27,6 +28,29 @@
 static volatile void *uart_base;
 static u32 uart_in_freq;
 static u32 uart_baudrate;
+
+/**
+ * Find minimum divisor divides in_freq to max_target_hz;
+ * Based on uart driver n SiFive FSBL.
+ *
+ * f_baud = f_in / (div + 1) => div = (f_in / f_baud) - 1
+ * The nearest integer solution requires rounding up as to not exceed max_target_hz.
+ * div  = ceil(f_in / f_baud) - 1
+ *	= floor((f_in - 1 + f_baud) / f_baud) - 1
+ * This should not overflow as long as (f_in - 1 + f_baud) does not exceed
+ * 2^32 - 1, which is unlikely since we represent frequencies in kHz.
+ */
+static inline unsigned int uart_min_clk_divisor(uint64_t in_freq,
+						uint64_t max_target_hz)
+{
+	uint64_t quotient = (in_freq + max_target_hz - 1) / (max_target_hz);
+	// Avoid underflow
+	if (quotient == 0) {
+		return 0;
+	} else {
+		return quotient - 1;
+	}
+}
 
 static u32 get_reg(u32 num)
 {
@@ -61,7 +85,7 @@ int sifive_uart_init(unsigned long base,
 	uart_baudrate = baudrate;
 
 	/* Configure baudrate */
-	set_reg(UART_REG_DIV, (in_freq / baudrate) - 1);
+	set_reg(UART_REG_DIV, uart_min_clk_divisor(in_freq, baudrate));
 	/* Disable interrupts */
 	set_reg(UART_REG_IE, 0);
 	/* Enable TX */

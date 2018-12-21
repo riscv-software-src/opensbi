@@ -10,12 +10,12 @@
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_const.h>
 #include <sbi/sbi_platform.h>
+#include <sbi/riscv_io.h>
 #include <plat/irqchip/plic.h>
 #include <plat/serial/sifive-uart.h>
 #include <plat/sys/clint.h>
 
 #define SIFIVE_U_SYS_CLK			1000000000
-#define SIFIVE_U_PERIPH_CLK			(SIFIVE_U_SYS_CLK / 2)
 
 #define SIFIVE_U_CLINT_ADDR			0x2000000
 
@@ -23,8 +23,15 @@
 #define SIFIVE_U_PLIC_NUM_SOURCES		0x35
 #define SIFIVE_U_PLIC_NUM_PRIORITIES		7
 
-#define SIFIVE_U_UART0_ADDR			0x10013000
-#define SIFIVE_U_UART1_ADDR			0x10023000
+#define SIFIVE_U_UART0_ADDR			0x10010000
+#define SIFIVE_U_UART1_ADDR			0x10011000
+#define SIFIVE_UART_BAUDRATE			115200
+
+/* PRCI clock related macros */
+//TODO: Do we need a separate driver for this ?
+#define SIFIVE_PRCI_BASE_ADDR			0x10000000
+#define SIFIVE_PRCI_CLKMUXSTATUSREG    		0x002C
+#define SIFIVE_PRCI_CLKMUX_STATUS_TLCLKSEL      (0x1 << 1)
 
 static int sifive_u_cold_final_init(void)
 {
@@ -57,8 +64,18 @@ static int sifive_u_pmp_region_info(u32 target_hart, u32 index,
 
 static int sifive_u_console_init(void)
 {
+	unsigned long peri_in_freq;
+
+	if (readl((volatile void *)SIFIVE_PRCI_BASE_ADDR +
+		  SIFIVE_PRCI_CLKMUXSTATUSREG) &
+		  SIFIVE_PRCI_CLKMUX_STATUS_TLCLKSEL){
+		peri_in_freq = SIFIVE_U_SYS_CLK;
+	} else {
+		peri_in_freq = SIFIVE_U_SYS_CLK / 2;
+	}
+
 	return sifive_uart_init(SIFIVE_U_UART0_ADDR,
-				SIFIVE_U_PERIPH_CLK, 115200);
+				peri_in_freq, SIFIVE_UART_BAUDRATE);
 }
 
 static int sifive_u_cold_irqchip_init(void)

@@ -9,7 +9,7 @@
 
 # Essential defines required by SBI platform
 plat-cppflags-y = -DPLAT_NAME="SiFive HiFive U540"
-plat-cppflags-y+= -DPLAT_HART_COUNT=1
+plat-cppflags-y+= -DPLAT_HART_COUNT=5
 plat-cppflags-y+= -DPLAT_HART_STACK_SIZE=8192
 
 # Compiler flags

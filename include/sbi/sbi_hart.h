@@ -36,6 +36,6 @@ struct sbi_scratch *sbi_hart_id_to_scratch(struct sbi_scratch *scratch,
 
 void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid);
 
-void sbi_hart_wake_coldboot_harts(struct sbi_scratch *scratch);
+void sbi_hart_wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid);
 
 #endif
