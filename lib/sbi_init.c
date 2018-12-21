@@ -91,7 +91,7 @@ static void __attribute__((noreturn)) init_coldboot(struct sbi_scratch *scratch,
 		   sbi_ecall_version_major(), sbi_ecall_version_minor());
 	sbi_printf("\n");
 
-	sbi_hart_pmp_dump();
+	sbi_hart_pmp_dump(scratch);
 
 	sbi_hart_mark_available(hartid);
 

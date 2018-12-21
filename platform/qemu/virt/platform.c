@@ -86,7 +86,7 @@ static int virt_system_down(u32 type)
 
 struct sbi_platform platform = {
 	.name = STRINGIFY(PLAT_NAME),
-	.features = SBI_PLATFORM_HAS_MMIO_TIMER_VALUE,
+	.features = SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count = PLAT_HART_COUNT,
 	.hart_stack_size = PLAT_HART_STACK_SIZE,
 	.pmp_region_count = virt_pmp_region_count,

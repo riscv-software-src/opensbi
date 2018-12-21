@@ -16,7 +16,7 @@ struct sbi_scratch;
 
 int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid);
 
-void sbi_hart_pmp_dump(void);
+void sbi_hart_pmp_dump(struct sbi_scratch *scratch);
 
 void __attribute__((noreturn)) sbi_hart_hang(void);
 

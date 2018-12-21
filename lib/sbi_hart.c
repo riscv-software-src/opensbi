@@ -17,16 +17,20 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
 
-static int mstatus_init(u32 hartid)
+static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
 {
+	struct sbi_platform *plat = sbi_platform_ptr(scratch);
+
 	/* Enable FPU */
 	if (misa_extension('D') || misa_extension('F'))
 		csr_write(mstatus, MSTATUS_FS);
 
 	/* Enable user/supervisor use of perf counters */
-	if (misa_extension('S'))
+	if (misa_extension('S') &&
+	     sbi_platform_has_scounteren(plat))
 		csr_write(scounteren, -1);
-	csr_write(mcounteren, -1);
+	if (sbi_platform_has_mcounteren(plat))
+		csr_write(mcounteren, -1);
 
 	/* Disable all interrupts */
 	csr_write(mie, 0);
@@ -34,8 +38,6 @@ static int mstatus_init(u32 hartid)
 	/* Disable S-mode paging */
 	if (misa_extension('S'))
 		csr_write(sptbr, 0);
-
-	return 0;
 }
 
 #ifdef __riscv_flen
@@ -111,10 +113,14 @@ unsigned long log2roundup(unsigned long x)
 	return ret;
 }
 
-void sbi_hart_pmp_dump(void)
+void sbi_hart_pmp_dump(struct sbi_scratch *scratch)
 {
-	unsigned int i;
+	struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	unsigned long prot, addr, size, l2l;
+	unsigned int i;
+
+	if (!sbi_platform_has_pmp(plat))
+		return;
 
 	for (i = 0; i < PMP_COUNT; i++) {
 		pmp_get(i, &prot, &addr, &l2l);
@@ -149,6 +155,9 @@ static int pmp_init(struct sbi_scratch *scratch, u32 hartid)
 	ulong prot, addr, log2size;
 	struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
+	if (!sbi_platform_has_pmp(plat))
+		return 0;
+
 	fw_size_log2 = log2roundup(scratch->fw_size);
 	fw_start = scratch->fw_start & ~((1UL << fw_size_log2) - 1UL);
 
@@ -172,9 +181,7 @@ int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid)
 {
 	int rc;
 
-	rc = mstatus_init(hartid);
-	if (rc)
-		return rc;
+	mstatus_init(scratch, hartid);
 
 	rc = fp_init(hartid);
 	if (rc)
