@@ -81,6 +81,7 @@ struct sbi_platform platform = {
 
 	.hart_count = PLAT_HART_COUNT,
 	.hart_stack_size = PLAT_HART_STACK_SIZE,
+	.disabled_hart_mask = 0,
 
 	.console_init = k210_console_init,
 	.console_putc = k210_console_putc,

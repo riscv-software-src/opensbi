@@ -27,6 +27,8 @@
 #define SIFIVE_U_UART1_ADDR			0x10011000
 #define SIFIVE_UART_BAUDRATE			115200
 
+#define SIFIVE_U_HARITD_ENABLED			1
+
 /* PRCI clock related macros */
 //TODO: Do we need a separate driver for this ?
 #define SIFIVE_PRCI_BASE_ADDR			0x10000000
@@ -122,6 +124,7 @@ struct sbi_platform platform = {
 	.features = SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count = PLAT_HART_COUNT,
 	.hart_stack_size = PLAT_HART_STACK_SIZE,
+	.disabled_hart_mask = ~(1 << SIFIVE_U_HARITD_ENABLED),
 	.pmp_region_count = sifive_u_pmp_region_count,
 	.pmp_region_info = sifive_u_pmp_region_info,
 	.cold_final_init = sifive_u_cold_final_init,

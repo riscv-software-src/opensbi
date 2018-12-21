@@ -105,6 +105,7 @@ struct sbi_platform platform = {
 	.features = SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count = PLAT_HART_COUNT,
 	.hart_stack_size = PLAT_HART_STACK_SIZE,
+	.disabled_hart_mask = 0,
 	.pmp_region_count = virt_pmp_region_count,
 	.pmp_region_info = virt_pmp_region_info,
 	.cold_final_init = virt_cold_final_init,

@@ -86,7 +86,6 @@ static void __attribute__((noreturn)) init_coldboot(struct sbi_scratch *scratch,
 	sbi_printf("OpenSBI v%d.%d (%s %s)\n",
 		   OPENSBI_MAJOR, OPENSBI_MINOR,
 		   __DATE__, __TIME__);
-	sbi_printf("Running on Hart %u\n", hartid);
 
 	sbi_printf("%s\n", logo);
 
@@ -95,6 +94,7 @@ static void __attribute__((noreturn)) init_coldboot(struct sbi_scratch *scratch,
 	sbi_printf("Platform HART Features : RV%d%s\n", misa_xlen(), str);
 	sbi_printf("Platform Max HARTs     : %d\n",
 		   sbi_platform_hart_count(plat));
+	sbi_printf("Current Hart           : %u\n", hartid);
 	/* Firmware details */
 	sbi_printf("Firmware Base          : 0x%lx\n", scratch->fw_start);
 	sbi_printf("Firmware Size          : %d KB\n",
@@ -106,11 +106,9 @@ static void __attribute__((noreturn)) init_coldboot(struct sbi_scratch *scratch,
 
 	sbi_hart_pmp_dump(scratch);
 
-	sbi_hart_mark_available(hartid);
-
 	if (!sbi_platform_has_hart_hotplug(plat))
 		sbi_hart_wake_coldboot_harts(scratch, hartid);
-
+	sbi_hart_mark_available(hartid);
 	sbi_hart_switch_mode(hartid, scratch->next_arg1,
 			     scratch->next_addr, scratch->next_mode);
 }
@@ -123,6 +121,9 @@ static void __attribute__((noreturn)) init_warmboot(struct sbi_scratch *scratch,
 
 	if (!sbi_platform_has_hart_hotplug(plat))
 		sbi_hart_wait_for_coldboot(scratch, hartid);
+
+	if (sbi_platform_hart_disabled(plat, hartid))
+		sbi_hart_hang();
 
 	rc = sbi_system_warm_early_init(scratch, hartid);
 	if (rc)
@@ -164,7 +165,11 @@ void __attribute__((noreturn)) sbi_init(struct sbi_scratch *scratch)
 {
 	bool coldboot = FALSE;
 	u32 hartid = sbi_current_hartid();
+	struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
+	if (sbi_platform_hart_disabled(plat, hartid))
+		sbi_hart_hang();
+		
 	if (atomic_add_return(&coldboot_lottery, 1) == 1)
 		coldboot = TRUE;
 
