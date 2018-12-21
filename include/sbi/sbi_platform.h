@@ -18,13 +18,15 @@ enum sbi_platform_features {
 	SBI_PLATFORM_HAS_PMP			= (1 << 2),
 	SBI_PLATFORM_HAS_SCOUNTEREN		= (1 << 3),
 	SBI_PLATFORM_HAS_MCOUNTEREN		= (1 << 4),
+	SBI_PLATFORM_HAS_MFAULTS_DELEGATION	= (1 << 5),
 };
 
 #define SBI_PLATFORM_DEFAULT_FEATURES	\
 	(SBI_PLATFORM_HAS_MMIO_TIMER_VALUE | \
 	 SBI_PLATFORM_HAS_PMP | \
 	 SBI_PLATFORM_HAS_SCOUNTEREN | \
-	 SBI_PLATFORM_HAS_MCOUNTEREN)
+	 SBI_PLATFORM_HAS_MCOUNTEREN | \
+	 SBI_PLATFORM_HAS_MFAULTS_DELEGATION)
 
 struct sbi_platform {
 	char name[64];
@@ -71,6 +73,8 @@ struct sbi_platform {
 	((__p)->features & SBI_PLATFORM_HAS_SCOUNTEREN)
 #define sbi_platform_has_mcounteren(__p)	\
 	((__p)->features & SBI_PLATFORM_HAS_MCOUNTEREN)
+#define sbi_platform_has_mfaults_delegation(__p)	\
+	((__p)->features & SBI_PLATFORM_HAS_MFAULTS_DELEGATION)
 
 static inline const char *sbi_platform_name(struct sbi_platform *plat)
 {
