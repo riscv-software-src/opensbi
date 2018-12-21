@@ -209,7 +209,7 @@ int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid)
 
 void __attribute__((noreturn)) sbi_hart_hang(void)
 {
-	sbi_printf("\nHART %u Hang !!\n\n", sbi_current_hartid());
+	sbi_printf("\nHART%u Hang !!\n\n", sbi_current_hartid());
 
 	while (1)
 		wfi();
@@ -222,7 +222,6 @@ void __attribute__((noreturn)) sbi_hart_switch_mode(unsigned long arg0,
 						    unsigned long next_mode)
 {
 	unsigned long val;
-	char mode = 'M';
 
 	switch (next_mode) {
 	case PRV_M:
@@ -236,7 +235,6 @@ void __attribute__((noreturn)) sbi_hart_switch_mode(unsigned long arg0,
 			sbi_hart_hang();
 		break;
 	default:
-		sbi_printf("\nTrying to switch to unsupported mode\n");
 		sbi_hart_hang();
 	}
 
@@ -248,20 +246,15 @@ void __attribute__((noreturn)) sbi_hart_switch_mode(unsigned long arg0,
 	csr_write(mepc, next_addr);
 
 	if (next_mode == PRV_S) {
-		mode = 'S';
 		csr_write(stvec, next_addr);
 		csr_write(sscratch, 0);
 		csr_write(sie, 0);
 		csr_write(satp, 0);
 	} else if (next_mode == PRV_U) {
-		mode = 'U';
 		csr_write(utvec, next_addr);
 		csr_write(uscratch, 0);
 		csr_write(uie, 0);
 	}
-
-	sbi_printf("HART %u switching to %c-mode...\n\n",
-		   sbi_current_hartid(), mode);
 
 	register unsigned long a0 asm ("a0") = arg0;
 	register unsigned long a1 asm ("a1") = arg1;
