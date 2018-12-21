@@ -62,7 +62,7 @@ export plat_dir=$(CURDIR)/$(plat_subdir)
 export plat_common_dir=$(CURDIR)/plat/common
 export include_dir=$(CURDIR)/include
 export lib_dir=$(CURDIR)/lib
-export blob_dir=$(CURDIR)/blob
+export firmware_dir=$(CURDIR)/firmware
 
 # Setup list of objects.mk files
 ifdef PLAT
@@ -70,7 +70,7 @@ plat-object-mks=$(shell if [ -d $(plat_dir) ]; then find $(plat_dir) -iname "obj
 plat-common-object-mks=$(shell if [ -d $(plat_common_dir) ]; then find $(plat_common_dir) -iname "objects.mk" | sort -r; fi)
 endif
 lib-object-mks=$(shell if [ -d $(lib_dir) ]; then find $(lib_dir) -iname "objects.mk" | sort -r; fi)
-blob-object-mks=$(shell if [ -d $(blob_dir) ]; then find $(blob_dir) -iname "objects.mk" | sort -r; fi)
+firmware-object-mks=$(shell if [ -d $(firmware_dir) ]; then find $(firmware_dir) -iname "objects.mk" | sort -r; fi)
 
 # Include platform specifig config.mk
 ifdef PLAT
@@ -83,23 +83,23 @@ include $(plat-object-mks)
 include $(plat-common-object-mks)
 endif
 include $(lib-object-mks)
-include $(blob-object-mks)
+include $(firmware-object-mks)
 
 # Setup list of objects
 lib-objs-path-y=$(foreach obj,$(lib-objs-y),$(build_dir)/lib/$(obj))
 ifdef PLAT
 plat-objs-path-y=$(foreach obj,$(plat-objs-y),$(build_dir)/$(plat_subdir)/$(obj))
 plat-common-objs-path-y=$(foreach obj,$(plat-common-objs-y),$(build_dir)/plat/common/$(obj))
-blob-bins-path-y=$(foreach bin,$(blob-bins-y),$(build_dir)/$(plat_subdir)/blob/$(bin))
+firmware-bins-path-y=$(foreach bin,$(firmware-bins-y),$(build_dir)/$(plat_subdir)/firmware/$(bin))
 endif
-blob-elfs-path-y=$(blob-bins-path-y:.bin=.elf)
-blob-objs-path-y=$(blob-bins-path-y:.bin=.o)
+firmware-elfs-path-y=$(firmware-bins-path-y:.bin=.elf)
+firmware-objs-path-y=$(firmware-bins-path-y:.bin=.o)
 
 # Setup list of deps files for objects
 deps-y=$(plat-objs-path-y:.o=.dep)
 deps-y+=$(plat-common-objs-path-y:.o=.dep)
 deps-y+=$(lib-objs-path-y:.o=.dep)
-deps-y+=$(blob-objs-path-y:.o=.dep)
+deps-y+=$(firmware-objs-path-y:.o=.dep)
 
 # Setup compilation environment
 cpp=$(CROSS_COMPILE)cpp
@@ -109,14 +109,14 @@ cppflags+=-I$(plat_dir)/include
 cppflags+=-I$(plat_common_dir)/include
 cppflags+=-I$(include_dir)
 cppflags+=$(plat-cppflags-y)
-cppflags+=$(blob-cppflags-y)
+cppflags+=$(firmware-cppflags-y)
 cc=$(CROSS_COMPILE)gcc
 cflags=-g -Wall -Werror -nostdlib -fno-strict-aliasing -O2
 cflags+=-fno-omit-frame-pointer -fno-optimize-sibling-calls
 cflags+=-mno-save-restore -mstrict-align
 cflags+=$(cppflags)
 cflags+=$(plat-cflags-y)
-cflags+=$(blob-cflags-y)
+cflags+=$(firmware-cflags-y)
 cflags+=$(EXTRA_CFLAGS)
 as=$(CROSS_COMPILE)gcc
 asflags=-g -Wall -nostdlib -D__ASSEMBLY__
@@ -124,14 +124,14 @@ asflags+=-fno-omit-frame-pointer -fno-optimize-sibling-calls
 asflags+=-mno-save-restore -mstrict-align
 asflags+=$(cppflags)
 asflags+=$(plat-asflags-y)
-asflags+=$(blob-asflags-y)
+asflags+=$(firmware-asflags-y)
 asflags+=$(EXTRA_ASFLAGS)
 ar=$(CROSS_COMPILE)ar
 arflags=rcs
 ld=$(CROSS_COMPILE)gcc
 ldflags=-g -Wall -nostdlib -Wl,--build-id=none
 ldflags+=$(plat-ldflags-y)
-ldflags+=$(blob-ldflags-y)
+ldflags+=$(firmware-ldflags-y)
 merge=$(CROSS_COMPILE)ld
 mergeflags=-r
 objcopy=$(CROSS_COMPILE)objcopy
@@ -195,7 +195,7 @@ targets-y  = $(build_dir)/lib/libsbi.a
 ifdef PLAT
 targets-y += $(build_dir)/$(plat_subdir)/lib/libplatsbi.a
 endif
-targets-y += $(blob-bins-path-y)
+targets-y += $(firmware-bins-path-y)
 
 # Default rule "make" should always be first rule
 .PHONY: all
@@ -252,7 +252,7 @@ all-deps-2 = $(if $(findstring clean,$(MAKECMDGOALS)),,$(all-deps-1))
 install_targets-y  = install_libsbi
 ifdef PLAT
 install_targets-y += install_libplatsbi
-install_targets-y += install_blobs
+install_targets-y += install_firmwares
 endif
 
 # Rule for "make install"
@@ -269,10 +269,10 @@ install_libplatsbi: $(build_dir)/$(plat_subdir)/lib/libplatsbi.a $(build_dir)/li
 	$(call inst_header_dir,$(install_dir)/$(plat_subdir)/include,$(include_dir)/sbi)
 	$(call inst_file,$(install_dir)/$(plat_subdir)/lib/libplatsbi.a,$(build_dir)/$(plat_subdir)/lib/libplatsbi.a)
 
-.PHONY: install_blobs
-install_blobs: $(build_dir)/$(plat_subdir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a $(blob-bins-path-y)
-	$(call inst_file_list,$(install_dir)/$(plat_subdir)/blob,$(plat_subdir)/blob,$(blob-elfs-path-y))
-	$(call inst_file_list,$(install_dir)/$(plat_subdir)/blob,$(plat_subdir)/blob,$(blob-bins-path-y))
+.PHONY: install_firmwares
+install_firmwares: $(build_dir)/$(plat_subdir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a $(firmware-bins-path-y)
+	$(call inst_file_list,$(install_dir)/$(plat_subdir)/firmware,$(plat_subdir)/firmware,$(firmware-elfs-path-y))
+	$(call inst_file_list,$(install_dir)/$(plat_subdir)/firmware,$(plat_subdir)/firmware,$(firmware-bins-path-y))
 
 # Rule for "make clean"
 .PHONY: clean

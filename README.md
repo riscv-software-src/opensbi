@@ -23,7 +23,7 @@ We can create three things using the RISC-V OpenSBI project:
 2. **libplatsbi.a** - Platform specific OpenSBI static library
    (It is libsbi.a plus platform specific hooks represented
     by "platform" symbol)
-3. **blobs** - Platform specific firware blobs
+3. **firmwares** - Platform specific firmware binaries
 
 How to Build?
 -------------
@@ -31,7 +31,7 @@ How to Build?
 For cross-compiling, please ensure that CROSS_COMPILE environment
 variable is set before starting build system.
 
-The libplatsbi.a and blobs are optional and only built when
+The libplatsbi.a and firmwares are optional and only built when
 `PLAT=<platform_subdir>` parameter is specified to top-level make.
 (**NOTE**: `<platform_subdir>` is sub-directory under plat/ directory)
 
@@ -46,14 +46,14 @@ OR
 OR
 `make I=<install_directory> install`
 
-To build and install platform specific OpenSBI library and blobs
+To build and install platform specific OpenSBI library and firmwares
 do the following:
 
-1. Build **libsbi, libplatsbi, and blobs**:
+1. Build **libsbi, libplatsbi, and firmwares**:
 `make PLAT=<platform_subdir>`
 OR
 `make PLAT=<platform_subdir> O=<build_directory>`
-2. Install **libsbi, headers, libplatsbi, and blobs**:
+2. Install **libsbi, headers, libplatsbi, and firmwares**:
 `make PLAT=<platform_subdir> install`
 OR
 `make PLAT=<platform_subdir> I=<install_directory> install`
@@ -61,7 +61,7 @@ OR
 In addition, we can also specify platform specific command-line
 options to top-level make (such as `PLAT_<xyz>` or `FW_<abc>`)
 which are described under `docs/plat/<platform_name>.md` OR
-`docs/blob/<blob_name>.md`.
+`docs/firmware/<firmware_name>.md`.
 
 Documentation
 -------------
@@ -72,7 +72,7 @@ manner:
 * `docs/platform_guide.md` - Guidelines for adding new platform support
 * `docs/library_usage.md` - Guidelines for using static library
 * `docs/plat/<platform_name>.md` - Documentation for `<platform_name>` platform
-* `docs/blob/<blob_name>.md` - Documentation for firmware blob `<blob_name>`
+* `docs/firmware/<firmware_name>.md` - Documentation for firmware `<firmware_name>`
 
 We also prefer source level documentation, so wherever possible we describe
 stuff directly in the source code. This helps us maintain source and its
