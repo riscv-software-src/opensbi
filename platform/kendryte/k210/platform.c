@@ -16,9 +16,11 @@
 #include "platform.h"
 #include "uarths.h"
 
+#define K210_UART_BAUDRATE		115200
+
 int k210_console_init(void)
 {
-	uarths_init(115200, UARTHS_STOP_1);
+	uarths_init(K210_UART_BAUDRATE, UARTHS_STOP_1);
 
 	return 0;
 }

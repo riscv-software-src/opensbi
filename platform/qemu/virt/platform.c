@@ -23,6 +23,8 @@
 #define VIRT_PLIC_NUM_PRIORITIES	7
 
 #define VIRT_UART16550_ADDR		0x10000000
+#define VIRT_UART_BAUDRATE		115200
+#define VIRT_UART_SHIFTREG_ADDR		1843200
 
 static int virt_cold_final_init(void)
 {
@@ -56,7 +58,8 @@ static int virt_pmp_region_info(u32 target_hart, u32 index,
 static int virt_console_init(void)
 {
 	return uart8250_init(VIRT_UART16550_ADDR,
-			     1843200, 115200, 0, 1);
+			     VIRT_UART_SHIFTREG_ADDR,
+			     VIRT_UART_BAUDRATE, 0, 1);
 }
 
 static int virt_cold_irqchip_init(void)
