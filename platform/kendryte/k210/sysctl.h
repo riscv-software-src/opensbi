@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _SYSCTL_H_
-#define _SYSCTL_H_
+#ifndef _K210_SYSCTL_H_
+#define _K210_SYSCTL_H_
 
 #include <sbi/sbi_types.h>
 #include "platform.h"
@@ -942,4 +942,4 @@ u64 sysctl_get_time_us(void);
 
 void sysctl_usleep(u64 usec);
 
-#endif /* _SYSCTL_H_ */
+#endif /* _K210_SYSCTL_H_ */

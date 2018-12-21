@@ -41,11 +41,13 @@
  * | 0x018     | div      | Baud rate divisor               |
  */
 
-#ifndef _UARTHS_H_
-#define _UARTHS_H_
+#ifndef _K210_UARTHS_H_
+#define _K210_UARTHS_H_
 
 #include <sbi/sbi_types.h>
-#include "platform.h"
+
+/* Base register address */
+#define UARTHS_BASE_ADDR	(0x38000000U)
 
 /* Register address offsets */
 #define UARTHS_REG_TXFIFO	0x00
@@ -152,12 +154,6 @@ struct uarths {
 	struct uarths_div div;
 } __attribute__((packed, aligned(4)));
 
-enum uarths_interrupt_mode {
-	UARTHS_SEND = 1,
-	UARTHS_RECEIVE = 2,
-	UARTHS_SEND_RECEIVE = 3,
-};
-
 enum uarths_stopbit {
 	UARTHS_STOP_1,
 	UARTHS_STOP_2
@@ -167,4 +163,4 @@ void uarths_init(u32 baud_rate, enum uarths_stopbit stopbit);
 void uarths_putc(char c);
 char uarths_getc(void);
 
-#endif /* _UARTHS_H_ */
+#endif /* _K210_UARTHS_H_ */

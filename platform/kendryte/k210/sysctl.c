@@ -973,10 +973,12 @@ u32 sysctl_pll_get_freq(sysctl_pll_t pll)
 	/*
 	 * Get final PLL output freq
 	 * FOUT = FIN / NR * NF / OD
+	 *      = (FIN * NF) / (NR * OD)
 	 */
-	return (double)freq_in / (double)nr * (double)nf / (double)od;
+	return ((u64)freq_in * (u64)nf) / ((u64)nr * (u64)od);
 }
 
+#if 0
 static u32 sysctl_pll_source_set_freq(sysctl_pll_t pll,
 				      sysctl_clock_source_t source, u32 freq)
 {
@@ -1229,6 +1231,7 @@ static u32 sysctl_pll_source_set_freq(sysctl_pll_t pll,
 
 	return sysctl_pll_get_freq(pll);
 }
+#endif
 
 u32 sysctl_clock_get_freq(sysctl_clock_t clock)
 {
@@ -1683,6 +1686,7 @@ void sysctl_set_power_mode(sysctl_power_bank_t power_bank, sysctl_io_power_mode_
 		*((u32 *)(&sysctl->power_sel)) &= ~(1 << power_bank);
 }
 
+#if 0
 u32 sysctl_pll_set_freq(sysctl_pll_t pll, u32 pll_freq)
 {
 	u32 result;
@@ -1755,6 +1759,7 @@ u32 sysctl_cpu_set_freq(u32 freq)
 
 	return sysctl_pll_set_freq(SYSCTL_PLL0, (sysctl->clk_sel0.aclk_divider_sel + 1) * 2 * freq);
 }
+#endif
 
 void sysctl_enable_irq(void)
 {

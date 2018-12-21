@@ -10,7 +10,7 @@
 # Essential defines required by SBI platform
 platform-cppflags-y = -DPLAT_NAME="Kendryte K210"
 platform-cppflags-y+= -DPLAT_HART_COUNT=2
-platform-cppflags-y+= -DPLAT_HART_STACK_SIZE=8192
+platform-cppflags-y+= -DPLAT_HART_STACK_SIZE=4096
 
 # Compiler flags
 platform-cflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
@@ -25,6 +25,6 @@ PLATFORM_SYS_CLINT=y
 FW_TEXT_START=0x80000000
 FW_JUMP=n
 FW_PAYLOAD=y
-FW_PAYLOAD_OFFSET=0x200000
-FW_PAYLOAD_FDT_ADDR=0x80040000
+FW_PAYLOAD_OFFSET=0x10000
+#FW_PAYLOAD_FDT_ADDR=0x80040000
 
