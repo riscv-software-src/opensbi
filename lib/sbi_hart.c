@@ -270,7 +270,6 @@ void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	unsigned long mipval;
 	struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	sbi_printf("%s: In hartid = [%d]\n", __func__, hartid);
 	if ((sbi_platform_hart_count(plat) <= hartid) ||
 	    (NO_HOTPLUG_BITMAP_SIZE <= hartid))
 		sbi_hart_hang();
@@ -287,11 +286,10 @@ void sbi_hart_wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 {
 	struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	int max_hart = sbi_platform_hart_count(plat);
-	
+
 	for(int i = 0; i < max_hart ; i++) {
 		/* send an IPI to every other hart */
 		if (i != hartid)
-			sbi_platform_ipi_inject(plat, i, hartid);	
-	}		
-
+			sbi_platform_ipi_inject(plat, i, hartid);
+	}
 }
