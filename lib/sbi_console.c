@@ -9,8 +9,10 @@
 
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_console.h>
+#include <sbi/riscv_locks.h>
 
 static struct sbi_platform *console_plat = NULL;
+static spinlock_t console_out_lock = SPIN_LOCK_INITIALIZER;
 
 bool sbi_isprintable(char c)
 {
@@ -38,28 +40,24 @@ void sbi_putc(char ch)
 
 void sbi_puts(const char *str)
 {
+	spin_lock(&console_out_lock);
 	while (*str) {
 		sbi_putc(*str);
 		str++;
 	}
+	spin_unlock(&console_out_lock);
 }
 
 void sbi_gets(char *s, int maxwidth, char endchar)
 {
-	char *retval;
-	char ch;
-	retval = s;
-	ch = sbi_getc();
-	while (ch != endchar && maxwidth > 0) {
+	char ch, *retval = s;
+
+	while ((ch = sbi_getc()) != endchar && maxwidth > 1) {
 		*retval = ch;
 		retval++;
 		maxwidth--;
-		if (maxwidth == 0)
-			break;
-		ch = sbi_getc();
 	}
 	*retval = '\0';
-	return;
 }
 
 #define PAD_RIGHT	1
@@ -360,9 +358,13 @@ int sbi_printf(const char *format, ...)
 {
 	va_list args;
 	int retval;
+
+	spin_lock(&console_out_lock);
 	va_start(args, format);
 	retval = print(NULL, NULL, format, args);
 	va_end(args);
+	spin_unlock(&console_out_lock);
+
 	return retval;
 }
 
