@@ -43,7 +43,9 @@ static int k210_cold_irqchip_init(void)
 
 static int k210_warm_irqchip_init(u32 core_id)
 {
-	return plic_warm_irqchip_init(core_id);
+	return plic_warm_irqchip_init(core_id,
+				      (2 * core_id),
+				      (2 * core_id + 1));
 }
 
 static int k210_cold_ipi_init(void)
