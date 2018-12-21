@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 #include <sbi/riscv_encoding.h>
-#include <math.h>
 #include "sysctl.h"
 
 #define SYSCTRL_CLOCK_FREQ_IN0 (26000000UL)
