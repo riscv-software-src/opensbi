@@ -39,21 +39,11 @@ $(error Install directory is same as build directory.)
 endif
 
 # Check if verbosity is ON for build process
-VERBOSE_DEFAULT    := 0
 CMD_PREFIX_DEFAULT := @
-ifdef VERBOSE
-	ifeq ("$(origin VERBOSE)", "command line")
-		VB := $(VERBOSE)
-	else
-		VB := $(VERBOSE_DEFAULT)
-	endif
+ifeq ($(V), 1)
+	CMD_PREFIX :=
 else
-	VB := $(VERBOSE_DEFAULT)
-endif
-ifeq ($(VB), 1)
-	override V :=
-else
-	override V := $(CMD_PREFIX_DEFAULT)
+	CMD_PREFIX := $(CMD_PREFIX_DEFAULT)
 endif
 
 # Setup path of directories
@@ -101,20 +91,23 @@ deps-y+=$(platform-common-objs-path-y:.o=.dep)
 deps-y+=$(lib-objs-path-y:.o=.dep)
 deps-y+=$(firmware-objs-path-y:.o=.dep)
 
+GEN_FlAGS	=	-DOPENSBI_MAJOR=$(MAJOR)
+GEN_FlAGS	+=	-DOPENSBI_MINOR=$(MINOR)
+GEN_FlAGS	+=	-I$(platform_dir)/include
+GEN_FlAGS	+=	-I$(platform_common_dir)/include
+GEN_FlAGS	+=	-I$(include_dir)
+GEN_FlAGS	+=	$(platform-genflags-y)
+
 # Setup compilation environment
 cpp=$(CROSS_COMPILE)cpp
-cppflags+=-DOPENSBI_MAJOR=$(MAJOR)
-cppflags+=-DOPENSBI_MINOR=$(MINOR)
-cppflags+=-I$(platform_dir)/include
-cppflags+=-I$(platform_common_dir)/include
-cppflags+=-I$(include_dir)
+cppflags+=$(GEN_FlAGS)
 cppflags+=$(platform-cppflags-y)
 cppflags+=$(firmware-cppflags-y)
 cc=$(CROSS_COMPILE)gcc
 cflags=-g -Wall -Werror -nostdlib -fno-strict-aliasing -O2
 cflags+=-fno-omit-frame-pointer -fno-optimize-sibling-calls
 cflags+=-mno-save-restore -mstrict-align
-cflags+=$(cppflags)
+cppflags+=$(GEN_FlAGS)
 cflags+=$(platform-cflags-y)
 cflags+=$(firmware-cflags-y)
 cflags+=$(EXTRA_CFLAGS)
@@ -122,7 +115,7 @@ as=$(CROSS_COMPILE)gcc
 asflags=-g -Wall -nostdlib -D__ASSEMBLY__
 asflags+=-fno-omit-frame-pointer -fno-optimize-sibling-calls
 asflags+=-mno-save-restore -mstrict-align
-asflags+=$(cppflags)
+cppflags+=$(GEN_FlAGS)
 asflags+=$(platform-asflags-y)
 asflags+=$(firmware-asflags-y)
 asflags+=$(EXTRA_ASFLAGS)
@@ -140,19 +133,19 @@ objcopy=$(CROSS_COMPILE)objcopy
 define dynamic_flags
 -I$(shell dirname $(2)) -D__OBJNAME__=$(subst -,_,$(shell basename $(1) .o))
 endef
-merge_objs = $(V)mkdir -p `dirname $(1)`; \
+merge_objs = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " MERGE     $(subst $(build_dir)/,,$(1))"; \
 	     $(merge) $(mergeflags) $(2) -o $(1)
-merge_deps = $(V)mkdir -p `dirname $(1)`; \
+merge_deps = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " MERGE-DEP $(subst $(build_dir)/,,$(1))"; \
 	     cat $(2) > $(1)
-copy_file =  $(V)mkdir -p `dirname $(1)`; \
+copy_file =  $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " COPY      $(subst $(build_dir)/,,$(1))"; \
 	     cp -f $(2) $(1)
-inst_file =  $(V)mkdir -p `dirname $(1)`; \
+inst_file =  $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " INSTALL   $(subst $(install_dir)/,,$(1))"; \
 	     cp -f $(2) $(1)
-inst_file_list = $(V)if [ ! -z "$(4)" ]; then \
+inst_file_list = $(CMD_PREFIX)if [ ! -z "$(4)" ]; then \
 	     mkdir -p $(1)/$(3); \
 	     for file in $(4) ; do \
 	     rel_file=`echo $$file | sed -e 's@$(2)/$(3)/@@'`; \
@@ -163,35 +156,35 @@ inst_file_list = $(V)if [ ! -z "$(4)" ]; then \
 	     cp -f $$file $$dest_file; \
 	     done \
 	     fi
-inst_header_dir =  $(V)mkdir -p $(1); \
+inst_header_dir =  $(CMD_PREFIX)mkdir -p $(1); \
 	     echo " INSTALL   $(subst $(install_dir)/,,$(1))"; \
 	     cp -rf $(2) $(1)
-compile_cpp = $(V)mkdir -p `dirname $(1)`; \
+compile_cpp = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " CPP       $(subst $(build_dir)/,,$(1))"; \
 	     $(cpp) $(cppflags) $(2) | grep -v "\#" > $(1)
-compile_cc_dep = $(V)mkdir -p `dirname $(1)`; \
+compile_cc_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " CC-DEP    $(subst $(build_dir)/,,$(1))"; \
 	     echo -n `dirname $(1)`/ > $(1) && \
 	     $(cc) $(cflags) $(call dynamic_flags,$(1),$(2))   \
 	       -MM $(2) >> $(1) || rm -f $(1)
-compile_cc = $(V)mkdir -p `dirname $(1)`; \
+compile_cc = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " CC        $(subst $(build_dir)/,,$(1))"; \
 	     $(cc) $(cflags) $(call dynamic_flags,$(1),$(2)) -c $(2) -o $(1)
-compile_as_dep = $(V)mkdir -p `dirname $(1)`; \
+compile_as_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " AS-DEP    $(subst $(build_dir)/,,$(1))"; \
 	     echo -n `dirname $(1)`/ > $(1) && \
 	     $(as) $(asflags) $(call dynamic_flags,$(1),$(2))  \
 	       -MM $(2) >> $(1) || rm -f $(1)
-compile_as = $(V)mkdir -p `dirname $(1)`; \
+compile_as = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " AS        $(subst $(build_dir)/,,$(1))"; \
 	     $(as) $(asflags) $(call dynamic_flags,$(1),$(2)) -c $(2) -o $(1)
-compile_ld = $(V)mkdir -p `dirname $(1)`; \
+compile_ld = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " LD        $(subst $(build_dir)/,,$(1))"; \
 	     $(ld) $(3) $(ldflags) -Wl,-T$(2) -o $(1)
-compile_ar = $(V)mkdir -p `dirname $(1)`; \
+compile_ar = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " AR        $(subst $(build_dir)/,,$(1))"; \
 	     $(ar) $(arflags) $(1) $(2)
-compile_objcopy = $(V)mkdir -p `dirname $(1)`; \
+compile_objcopy = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " OBJCOPY   $(subst $(build_dir)/,,$(1))"; \
 	     $(objcopy) -S -O binary $(2) $(1)
 
@@ -284,27 +277,27 @@ install_firmwares: $(build_dir)/$(platform_subdir)/lib/libplatsbi.a $(build_dir)
 # Rule for "make clean"
 .PHONY: clean
 clean:
-	$(V)mkdir -p $(build_dir)
+	$(CMD_PREFIX)mkdir -p $(build_dir)
 	$(if $(V), @echo " RM        <build_directory>/*.o")
-	$(V)find $(build_dir) -type f -name "*.o" -exec rm -rf {} +
+	$(CMD_PREFIX)find $(build_dir) -type f -name "*.o" -exec rm -rf {} +
 	$(if $(V), @echo " RM        <build_directory>/*.a")
-	$(V)find $(build_dir) -type f -name "*.a" -exec rm -rf {} +
+	$(CMD_PREFIX)find $(build_dir) -type f -name "*.a" -exec rm -rf {} +
 	$(if $(V), @echo " RM        <build_directory>/*.elf")
-	$(V)find $(build_dir) -type f -name "*.elf" -exec rm -rf {} +
+	$(CMD_PREFIX)find $(build_dir) -type f -name "*.elf" -exec rm -rf {} +
 	$(if $(V), @echo " RM        <build_directory>/*.bin")
-	$(V)find $(build_dir) -type f -name "*.bin" -exec rm -rf {} +
+	$(CMD_PREFIX)find $(build_dir) -type f -name "*.bin" -exec rm -rf {} +
 
 # Rule for "make distclean"
 .PHONY: distclean
 distclean: clean
-	$(V)mkdir -p $(build_dir)
+	$(CMD_PREFIX)mkdir -p $(build_dir)
 	$(if $(V), @echo " RM        <build_directory>/*.dep")
-	$(V)find $(build_dir) -type f -name "*.dep" -exec rm -rf {} +
+	$(CMD_PREFIX)find $(build_dir) -type f -name "*.dep" -exec rm -rf {} +
 ifeq ($(build_dir),$(CURDIR)/build)
 	$(if $(V), @echo " RM        <build_directory>")
-	$(V)rm -rf $(build_dir)
+	$(CMD_PREFIX)rm -rf $(build_dir)
 endif
 ifeq ($(install_dir),$(CURDIR)/install)
-	$(if $(V), @echo " RM        <install_directory>")
-	$(V)rm -rf $(install_dir)
+	$(if $(), @echo " RM        <install_directory>")
+	$(CMD_PREFIX)rm -rf $(install_dir)
 endif
