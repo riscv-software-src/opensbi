@@ -205,36 +205,51 @@ void __attribute__((noreturn)) sbi_hart_hang(void)
 	__builtin_unreachable();
 }
 
-void __attribute__((noreturn)) sbi_hart_boot_next(unsigned long arg0,
-					     unsigned long arg1,
-					     unsigned long next_addr,
-					     unsigned long next_mode)
+void __attribute__((noreturn)) sbi_hart_switch_mode(unsigned long arg0,
+						    unsigned long arg1,
+						    unsigned long next_addr,
+						    unsigned long next_mode)
 {
 	unsigned long val;
+	char mode = 'M';
 
-	if (next_mode != PRV_S && next_mode != PRV_M && next_mode != PRV_U)
+	switch (next_mode) {
+	case PRV_M:
+		break;
+	case PRV_S:
+		if (!misa_extension('S'))
+			sbi_hart_hang();
+		break;
+	case PRV_U:
+		if (!misa_extension('U'))
+			sbi_hart_hang();
+		break;
+	default:
+		sbi_printf("\nTrying to switch to unsupported mode\n");
 		sbi_hart_hang();
-	if (next_mode == PRV_S && !misa_extension('S'))
-		sbi_hart_hang();
-	if (next_mode == PRV_U && !misa_extension('U'))
-		sbi_hart_hang();
+	}
 
 	val = csr_read(mstatus);
 	val = INSERT_FIELD(val, MSTATUS_MPP, next_mode);
 	val = INSERT_FIELD(val, MSTATUS_MPIE, 0);
+
 	csr_write(mstatus, val);
 	csr_write(mepc, next_addr);
 
 	if (next_mode == PRV_S) {
+		mode = 'S';
 		csr_write(stvec, next_addr);
 		csr_write(sscratch, 0);
 		csr_write(sie, 0);
 		csr_write(satp, 0);
 	} else if (next_mode == PRV_U) {
+		mode = 'U';
 		csr_write(utvec, next_addr);
 		csr_write(uscratch, 0);
 		csr_write(uie, 0);
 	}
+
+	sbi_printf("\nSwitching to %c-mode...\n\n", mode);
 
 	register unsigned long a0 asm ("a0") = arg0;
 	register unsigned long a1 asm ("a1") = arg1;

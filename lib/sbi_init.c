@@ -111,8 +111,8 @@ static void __attribute__((noreturn)) init_coldboot(struct sbi_scratch *scratch,
 	if (!sbi_platform_has_hart_hotplug(plat))
 		sbi_hart_wake_coldboot_harts(scratch, hartid);
 
-	sbi_hart_boot_next(hartid, scratch->next_arg1,
-			   scratch->next_addr, scratch->next_mode);
+	sbi_hart_switch_mode(hartid, scratch->next_arg1,
+			     scratch->next_addr, scratch->next_mode);
 }
 
 static void __attribute__((noreturn)) init_warmboot(struct sbi_scratch *scratch,
@@ -154,8 +154,8 @@ static void __attribute__((noreturn)) init_warmboot(struct sbi_scratch *scratch,
 		/* TODO: To be implemented in-future. */
 		sbi_hart_hang();
 	else
-		sbi_hart_boot_next(hartid, scratch->next_arg1,
-				   scratch->next_addr, scratch->next_mode);
+		sbi_hart_switch_mode(hartid, scratch->next_arg1,
+				     scratch->next_addr, scratch->next_mode);
 }
 
 static atomic_t coldboot_lottery = ATOMIC_INITIALIZER(0);
