@@ -95,7 +95,10 @@ static int delegate_traps(u32 hartid)
 		/* Send M-mode interrupts and most exceptions to S-mode */
 		interrupts = MIP_SSIP | MIP_STIP | MIP_SEIP;
 		exceptions = (1U << CAUSE_MISALIGNED_FETCH) |
+			     (1U << CAUSE_FETCH_PAGE_FAULT) |
 			     (1U << CAUSE_BREAKPOINT) |
+			     (1U << CAUSE_LOAD_PAGE_FAULT) |
+			     (1U << CAUSE_STORE_PAGE_FAULT) |
 			     (1U << CAUSE_USER_ECALL);
 	}
 
