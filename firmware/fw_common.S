@@ -41,6 +41,7 @@ _bss_zero:
 	add	a1, t1, zero
 _prev_arg1_override_done:
 
+#ifdef FW_PAYLOAD_FDT_ADDR
 	/*
 	 * Relocate Flatened Device Tree (FDT)
 	 * source FDT address = previous arg1
@@ -99,6 +100,7 @@ _fdt_reloc_again:
 	add	t1, t1, __SIZEOF_POINTER__
 	blt	t1, t2, _fdt_reloc_again
 _fdt_reloc_done:
+#endif
 
 	/* Update boot hart flag */
 	la	a4, _boot_hart_done
