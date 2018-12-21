@@ -8,19 +8,19 @@
 #
 
 # Essential defines required by SBI platform
-plat-cppflags-y = -DPLAT_NAME="QEMU SiFive Unleashed"
-plat-cppflags-y+= -DPLAT_HART_COUNT=1
-plat-cppflags-y+= -DPLAT_HART_STACK_SIZE=8192
+platform-cppflags-y = -DPLAT_NAME="SiFive HiFive U540"
+platform-cppflags-y+= -DPLAT_HART_COUNT=5
+platform-cppflags-y+= -DPLAT_HART_STACK_SIZE=8192
 
 # Compiler flags
-plat-cflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
-plat-asflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
-plat-ldflags-y =
+platform-cflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
+platform-asflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
+platform-ldflags-y =
 
 # Common drivers to enable
-PLAT_IRQCHIP_PLIC=y
-PLAT_SERIAL_SIFIVE_UART=y
-PLAT_SYS_CLINT=y
+PLATFORM_IRQCHIP_PLIC=y
+PLATFORM_SERIAL_SIFIVE_UART=y
+PLATFORM_SYS_CLINT=y
 
 # Blobs to build
 FW_TEXT_START=0x80000000

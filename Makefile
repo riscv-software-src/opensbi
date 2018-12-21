@@ -57,47 +57,47 @@ else
 endif
 
 # Setup path of directories
-export plat_subdir=plat/$(PLAT)
-export plat_dir=$(CURDIR)/$(plat_subdir)
-export plat_common_dir=$(CURDIR)/plat/common
+export platform_subdir=platform/$(PLATFORM)
+export platform_dir=$(CURDIR)/$(platform_subdir)
+export platform_common_dir=$(CURDIR)/platform/common
 export include_dir=$(CURDIR)/include
 export lib_dir=$(CURDIR)/lib
 export firmware_dir=$(CURDIR)/firmware
 
 # Setup list of objects.mk files
-ifdef PLAT
-plat-object-mks=$(shell if [ -d $(plat_dir) ]; then find $(plat_dir) -iname "objects.mk" | sort -r; fi)
-plat-common-object-mks=$(shell if [ -d $(plat_common_dir) ]; then find $(plat_common_dir) -iname "objects.mk" | sort -r; fi)
+ifdef PLATFORM
+platform-object-mks=$(shell if [ -d $(platform_dir) ]; then find $(platform_dir) -iname "objects.mk" | sort -r; fi)
+platform-common-object-mks=$(shell if [ -d $(platform_common_dir) ]; then find $(platform_common_dir) -iname "objects.mk" | sort -r; fi)
 endif
 lib-object-mks=$(shell if [ -d $(lib_dir) ]; then find $(lib_dir) -iname "objects.mk" | sort -r; fi)
 firmware-object-mks=$(shell if [ -d $(firmware_dir) ]; then find $(firmware_dir) -iname "objects.mk" | sort -r; fi)
 
 # Include platform specifig config.mk
-ifdef PLAT
-include $(plat_dir)/config.mk
+ifdef PLATFORM
+include $(platform_dir)/config.mk
 endif
 
 # Include all object.mk files
-ifdef PLAT
-include $(plat-object-mks)
-include $(plat-common-object-mks)
+ifdef PLATFORM
+include $(platform-object-mks)
+include $(platform-common-object-mks)
 endif
 include $(lib-object-mks)
 include $(firmware-object-mks)
 
 # Setup list of objects
 lib-objs-path-y=$(foreach obj,$(lib-objs-y),$(build_dir)/lib/$(obj))
-ifdef PLAT
-plat-objs-path-y=$(foreach obj,$(plat-objs-y),$(build_dir)/$(plat_subdir)/$(obj))
-plat-common-objs-path-y=$(foreach obj,$(plat-common-objs-y),$(build_dir)/plat/common/$(obj))
-firmware-bins-path-y=$(foreach bin,$(firmware-bins-y),$(build_dir)/$(plat_subdir)/firmware/$(bin))
+ifdef PLATFORM
+platform-objs-path-y=$(foreach obj,$(platform-objs-y),$(build_dir)/$(platform_subdir)/$(obj))
+platform-common-objs-path-y=$(foreach obj,$(platform-common-objs-y),$(build_dir)/platform/common/$(obj))
+firmware-bins-path-y=$(foreach bin,$(firmware-bins-y),$(build_dir)/$(platform_subdir)/firmware/$(bin))
 endif
 firmware-elfs-path-y=$(firmware-bins-path-y:.bin=.elf)
 firmware-objs-path-y=$(firmware-bins-path-y:.bin=.o)
 
 # Setup list of deps files for objects
-deps-y=$(plat-objs-path-y:.o=.dep)
-deps-y+=$(plat-common-objs-path-y:.o=.dep)
+deps-y=$(platform-objs-path-y:.o=.dep)
+deps-y+=$(platform-common-objs-path-y:.o=.dep)
 deps-y+=$(lib-objs-path-y:.o=.dep)
 deps-y+=$(firmware-objs-path-y:.o=.dep)
 
@@ -105,17 +105,17 @@ deps-y+=$(firmware-objs-path-y:.o=.dep)
 cpp=$(CROSS_COMPILE)cpp
 cppflags+=-DOPENSBI_MAJOR=$(MAJOR)
 cppflags+=-DOPENSBI_MINOR=$(MINOR)
-cppflags+=-I$(plat_dir)/include
-cppflags+=-I$(plat_common_dir)/include
+cppflags+=-I$(platform_dir)/include
+cppflags+=-I$(platform_common_dir)/include
 cppflags+=-I$(include_dir)
-cppflags+=$(plat-cppflags-y)
+cppflags+=$(platform-cppflags-y)
 cppflags+=$(firmware-cppflags-y)
 cc=$(CROSS_COMPILE)gcc
 cflags=-g -Wall -Werror -nostdlib -fno-strict-aliasing -O2
 cflags+=-fno-omit-frame-pointer -fno-optimize-sibling-calls
 cflags+=-mno-save-restore -mstrict-align
 cflags+=$(cppflags)
-cflags+=$(plat-cflags-y)
+cflags+=$(platform-cflags-y)
 cflags+=$(firmware-cflags-y)
 cflags+=$(EXTRA_CFLAGS)
 as=$(CROSS_COMPILE)gcc
@@ -123,14 +123,14 @@ asflags=-g -Wall -nostdlib -D__ASSEMBLY__
 asflags+=-fno-omit-frame-pointer -fno-optimize-sibling-calls
 asflags+=-mno-save-restore -mstrict-align
 asflags+=$(cppflags)
-asflags+=$(plat-asflags-y)
+asflags+=$(platform-asflags-y)
 asflags+=$(firmware-asflags-y)
 asflags+=$(EXTRA_ASFLAGS)
 ar=$(CROSS_COMPILE)ar
 arflags=rcs
 ld=$(CROSS_COMPILE)gcc
 ldflags=-g -Wall -nostdlib -Wl,--build-id=none
-ldflags+=$(plat-ldflags-y)
+ldflags+=$(platform-ldflags-y)
 ldflags+=$(firmware-ldflags-y)
 merge=$(CROSS_COMPILE)ld
 mergeflags=-r
@@ -192,8 +192,8 @@ compile_objcopy = $(V)mkdir -p `dirname $(1)`; \
 	     $(objcopy) -S -O binary $(2) $(1)
 
 targets-y  = $(build_dir)/lib/libsbi.a
-ifdef PLAT
-targets-y += $(build_dir)/$(plat_subdir)/lib/libplatsbi.a
+ifdef PLATFORM
+targets-y += $(build_dir)/$(platform_subdir)/lib/libplatsbi.a
 endif
 targets-y += $(firmware-bins-path-y)
 
@@ -207,16 +207,16 @@ all: $(targets-y)
 $(build_dir)/%.bin: $(build_dir)/%.elf
 	$(call compile_objcopy,$@,$<)
 
-$(build_dir)/%.elf: $(build_dir)/%.o $(build_dir)/%.elf.ld $(build_dir)/$(plat_subdir)/lib/libplatsbi.a
-	$(call compile_ld,$@,$@.ld,$< $(build_dir)/$(plat_subdir)/lib/libplatsbi.a)
+$(build_dir)/%.elf: $(build_dir)/%.o $(build_dir)/%.elf.ld $(build_dir)/$(platform_subdir)/lib/libplatsbi.a
+	$(call compile_ld,$@,$@.ld,$< $(build_dir)/$(platform_subdir)/lib/libplatsbi.a)
 
-$(build_dir)/$(plat_subdir)/%.ld: $(src_dir)/%.ldS
+$(build_dir)/$(platform_subdir)/%.ld: $(src_dir)/%.ldS
 	$(call compile_cpp,$@,$<)
 
 $(build_dir)/lib/libsbi.a: $(lib-objs-path-y)
 	$(call compile_ar,$@,$^)
 
-$(build_dir)/$(plat_subdir)/lib/libplatsbi.a: $(lib-objs-path-y) $(plat-common-objs-path-y) $(plat-objs-path-y)
+$(build_dir)/$(platform_subdir)/lib/libplatsbi.a: $(lib-objs-path-y) $(platform-common-objs-path-y) $(platform-objs-path-y)
 	$(call compile_ar,$@,$^)
 
 $(build_dir)/%.dep: $(src_dir)/%.c
@@ -231,16 +231,16 @@ $(build_dir)/%.dep: $(src_dir)/%.S
 $(build_dir)/%.o: $(src_dir)/%.S
 	$(call compile_as,$@,$<)
 
-$(build_dir)/$(plat_subdir)/%.dep: $(src_dir)/%.c
+$(build_dir)/$(platform_subdir)/%.dep: $(src_dir)/%.c
 	$(call compile_cc_dep,$@,$<)
 
-$(build_dir)/$(plat_subdir)/%.o: $(src_dir)/%.c
+$(build_dir)/$(platform_subdir)/%.o: $(src_dir)/%.c
 	$(call compile_cc,$@,$<)
 
-$(build_dir)/$(plat_subdir)/%.dep: $(src_dir)/%.S
+$(build_dir)/$(platform_subdir)/%.dep: $(src_dir)/%.S
 	$(call compile_as_dep,$@,$<)
 
-$(build_dir)/$(plat_subdir)/%.o: $(src_dir)/%.S
+$(build_dir)/$(platform_subdir)/%.o: $(src_dir)/%.S
 	$(call compile_as,$@,$<)
 
 # Dependency files should only be included after default Makefile rule
@@ -250,7 +250,7 @@ all-deps-2 = $(if $(findstring clean,$(MAKECMDGOALS)),,$(all-deps-1))
 -include $(all-deps-2)
 
 install_targets-y  = install_libsbi
-ifdef PLAT
+ifdef PLATFORM
 install_targets-y += install_libplatsbi
 install_targets-y += install_firmwares
 endif
@@ -265,14 +265,14 @@ install_libsbi: $(build_dir)/lib/libsbi.a
 	$(call inst_file,$(install_dir)/lib/libsbi.a,$(build_dir)/lib/libsbi.a)
 
 .PHONY: install_libplatsbi
-install_libplatsbi: $(build_dir)/$(plat_subdir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a
-	$(call inst_header_dir,$(install_dir)/$(plat_subdir)/include,$(include_dir)/sbi)
-	$(call inst_file,$(install_dir)/$(plat_subdir)/lib/libplatsbi.a,$(build_dir)/$(plat_subdir)/lib/libplatsbi.a)
+install_libplatsbi: $(build_dir)/$(platform_subdir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a
+	$(call inst_header_dir,$(install_dir)/$(platform_subdir)/include,$(include_dir)/sbi)
+	$(call inst_file,$(install_dir)/$(platform_subdir)/lib/libplatsbi.a,$(build_dir)/$(platform_subdir)/lib/libplatsbi.a)
 
 .PHONY: install_firmwares
-install_firmwares: $(build_dir)/$(plat_subdir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a $(firmware-bins-path-y)
-	$(call inst_file_list,$(install_dir)/$(plat_subdir)/firmware,$(plat_subdir)/firmware,$(firmware-elfs-path-y))
-	$(call inst_file_list,$(install_dir)/$(plat_subdir)/firmware,$(plat_subdir)/firmware,$(firmware-bins-path-y))
+install_firmwares: $(build_dir)/$(platform_subdir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a $(firmware-bins-path-y)
+	$(call inst_file_list,$(install_dir)/$(platform_subdir)/firmware,$(platform_subdir)/firmware,$(firmware-elfs-path-y))
+	$(call inst_file_list,$(install_dir)/$(platform_subdir)/firmware,$(platform_subdir)/firmware,$(firmware-bins-path-y))
 
 # Rule for "make clean"
 .PHONY: clean

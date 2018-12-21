@@ -8,19 +8,19 @@
 #
 
 # Essential defines required by SBI platform
-plat-cppflags-y = -DPLAT_NAME="QEMU Virt Machine"
-plat-cppflags-y+= -DPLAT_HART_COUNT=8
-plat-cppflags-y+= -DPLAT_HART_STACK_SIZE=8192
+platform-cppflags-y = -DPLAT_NAME="QEMU Virt Machine"
+platform-cppflags-y+= -DPLAT_HART_COUNT=8
+platform-cppflags-y+= -DPLAT_HART_STACK_SIZE=8192
 
 # Compiler flags
-plat-cflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
-plat-asflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
-plat-ldflags-y =
+platform-cflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
+platform-asflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
+platform-ldflags-y =
 
 # Common drivers to enable
-PLAT_IRQCHIP_PLIC=y
-PLAT_SERIAL_UART8250=y
-PLAT_SYS_CLINT=y
+PLATFORM_IRQCHIP_PLIC=y
+PLATFORM_SERIAL_UART8250=y
+PLATFORM_SYS_CLINT=y
 
 # Blobs to build
 FW_TEXT_START=0x80000000

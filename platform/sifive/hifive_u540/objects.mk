@@ -7,4 +7,4 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-plat-common-objs-$(PLAT_SYS_CLINT) += sys/clint.o
+platform-objs-y += platform.o

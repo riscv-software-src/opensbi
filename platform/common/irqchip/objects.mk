@@ -7,5 +7,4 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-plat-common-objs-$(PLAT_SERIAL_UART8250) += serial/uart8250.o
-plat-common-objs-$(PLAT_SERIAL_SIFIVE_UART) += serial/sifive-uart.o
+platform-common-objs-$(PLATFORM_IRQCHIP_PLIC) += irqchip/plic.o

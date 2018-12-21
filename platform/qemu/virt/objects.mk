@@ -7,4 +7,4 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-plat-common-objs-$(PLAT_IRQCHIP_PLIC) += irqchip/plic.o
+platform-objs-y += platform.o

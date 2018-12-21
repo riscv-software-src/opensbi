@@ -7,4 +7,4 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-plat-objs-y += platform.o
+platform-objs-y += uarths.o sysctl.o platform.o

@@ -7,4 +7,4 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-plat-objs-y += platform.o
+platform-common-objs-y += fdt.o
