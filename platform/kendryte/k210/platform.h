@@ -16,6 +16,8 @@
 #ifndef _PLATFORM_H_
 #define _PLATFORM_H_
 
+#include <sbi/riscv_asm.h>
+
 /* Register base address */
 
 /* Under Coreplex */
@@ -83,40 +85,7 @@
 #define SPI1_BASE_ADDR		(0x53000000U)
 #define SPI3_BASE_ADDR		(0x54000000U)
 
-#define read_csr(reg) ({ unsigned long __tmp; \
-  asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
-  __tmp; })
-
-#define write_csr(reg, val) ({ \
-  if (__builtin_constant_p(val) && (unsigned long)(val) < 32) \
-	  asm volatile ("csrw " #reg ", %0" :: "i"(val));     \
-  else \
-	  asm volatile ("csrw " #reg ", %0" :: "r"(val)); })
-
-#define swap_csr(reg, val) ({ unsigned long __tmp; \
-  if (__builtin_constant_p(val) && (unsigned long)(val) < 32) \
-	  asm volatile ("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "i"(val)); \
-  else \
-	  asm volatile ("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "r"(val)); \
-  __tmp; })
-
-#define set_csr(reg, bit) ({ unsigned long __tmp; \
-  if (__builtin_constant_p(bit) && (unsigned long)(bit) < 32) \
-	  asm volatile ("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "i"(bit)); \
-  else \
-	  asm volatile ("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "r"(bit)); \
-  __tmp; })
-
-#define clear_csr(reg, bit) ({ unsigned long __tmp; \
-  if (__builtin_constant_p(bit) && (unsigned long)(bit) < 32) \
-	  asm volatile ("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "i"(bit)); \
-  else \
-	  asm volatile ("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "r"(bit)); \
-  __tmp; })
-
-#define read_time()		read_csr(mtime)
-#define read_cycle()		read_csr(mcycle)
-#define current_coreid()	read_csr(mhartid)
+#define read_cycle()		csr_read(mcycle)
 
 /*
  * PLIC External Interrupt Numbers

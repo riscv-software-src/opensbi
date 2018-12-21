@@ -1763,14 +1763,14 @@ u32 sysctl_cpu_set_freq(u32 freq)
 
 void sysctl_enable_irq(void)
 {
-	set_csr(mie, MIP_MEIP);
-	set_csr(mstatus, MSTATUS_MIE);
+	csr_read_set(mie, MIP_MEIP);
+	csr_read_set(mstatus, MSTATUS_MIE);
 }
 
 void sysctl_disable_irq(void)
 {
-	clear_csr(mie, MIP_MEIP);
-	clear_csr(mstatus, MSTATUS_MIE);
+	csr_read_clear(mie, MIP_MEIP);
+	csr_read_clear(mstatus, MSTATUS_MIE);
 }
 
 u64 sysctl_get_time_us(void)
@@ -1782,8 +1782,8 @@ u64 sysctl_get_time_us(void)
 
 void sysctl_usleep(u64 usec)
 {
-    u64 nop_all = usec * sysctl_clock_get_freq(SYSCTL_CLOCK_CPU) / 1000000UL;
-    u64 cycle = read_cycle();
+	u64 nop_all = usec * sysctl_clock_get_freq(SYSCTL_CLOCK_CPU) / 1000000UL;
+	u64 cycle = read_cycle();
 
-    while (read_cycle() - cycle < nop_all);
+	while (read_cycle() - cycle < nop_all);
 }
