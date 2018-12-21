@@ -121,6 +121,8 @@ _wait_for_boot_hart:
 
 _start_warm:
 	/* Disable and clear all interrupts */
+	csrw	mideleg, zero
+	csrw	medeleg, zero
 	csrw	mie, zero
 	csrw	mip, zero
 
