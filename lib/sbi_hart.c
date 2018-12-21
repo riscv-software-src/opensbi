@@ -77,17 +77,19 @@ static int fp_init(u32 hartid)
 
 static int delegate_traps(u32 hartid)
 {
-	/* send S-mode interrupts and most exceptions straight to S-mode */
-	unsigned long interrupts = MIP_SSIP | MIP_STIP | MIP_SEIP;
-	unsigned long exceptions = (1U << CAUSE_MISALIGNED_FETCH) |
-				   (1U << CAUSE_FETCH_PAGE_FAULT) |
-				   (1U << CAUSE_BREAKPOINT) |
-				   (1U << CAUSE_LOAD_PAGE_FAULT) |
-				   (1U << CAUSE_STORE_PAGE_FAULT) |
-				   (1U << CAUSE_USER_ECALL);
+	unsigned long interrupts, exceptions;
 
-	if (!misa_extension('S'))
-		return 0;
+	if (!misa_extension('S')) {
+		/* No delegation possible */
+		interrupts = 0;
+		exceptions = 0;
+	} else {
+		/* Send M-mode interrupts and most exceptions to S-mode */
+		interrupts = MIP_SSIP | MIP_STIP | MIP_SEIP;
+		exceptions = (1U << CAUSE_MISALIGNED_FETCH) |
+			     (1U << CAUSE_BREAKPOINT) |
+			     (1U << CAUSE_USER_ECALL);
+	}
 
 	csr_write(mideleg, interrupts);
 	csr_write(medeleg, exceptions);
