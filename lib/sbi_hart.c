@@ -203,6 +203,10 @@ void __attribute__((noreturn)) sbi_hart_boot_next(unsigned long arg0,
 
 	if (next_mode != PRV_S && next_mode != PRV_M && next_mode != PRV_U)
 		sbi_hart_hang();
+	if (next_mode == PRV_S && !misa_extension('S'))
+		sbi_hart_hang();
+	if (next_mode == PRV_U && !misa_extension('U'))
+		sbi_hart_hang();
 
 	val = csr_read(mstatus);
 	val = INSERT_FIELD(val, MSTATUS_MPP, next_mode);
