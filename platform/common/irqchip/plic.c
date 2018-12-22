@@ -80,11 +80,16 @@ int plic_warm_irqchip_init(u32 target_hart,
 
 	if (plic_hart_count <= target_hart)
 		return -1;
+	
+	if (m_cntx_id > -1) {
+		for (i = 0; i < ie_words; i++)
+			plic_set_ie(m_cntx_id, i, 0);
+	}
 
 	/* By default, enable all IRQs for S-mode of target HART */
 	if (s_cntx_id > -1) {
 		for (i = 0; i < ie_words; i++)
-			plic_set_ie(s_cntx_id, i, -1);
+			plic_set_ie(s_cntx_id, i, 0);
 	}
 
 	/* By default, enable M-mode threshold */
