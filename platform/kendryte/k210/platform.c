@@ -76,7 +76,7 @@ static int k210_system_shutdown(u32 type)
 
 struct sbi_platform platform = {
 
-	.name = STRINGIFY(PLAT_NAME),
+	.name = "Kendryte K210",
 	.features = SBI_PLATFORM_HAS_MMIO_TIMER_VALUE,
 
 	.hart_count = PLAT_HART_COUNT,

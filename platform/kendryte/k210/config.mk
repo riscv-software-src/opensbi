@@ -8,7 +8,6 @@
 #
 
 # Essential defines required by SBI platform
-platform-cppflags-y = -DPLAT_NAME="Kendryte K210"
 platform-cppflags-y+= -DPLAT_HART_COUNT=2
 platform-cppflags-y+= -DPLAT_HART_STACK_SIZE=4096
 

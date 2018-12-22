@@ -8,7 +8,6 @@
 #
 
 # Essential defines required by SBI platform
-platform-cppflags-y = -DPLAT_NAME="QEMU Virt Machine"
 platform-cppflags-y+= -DPLAT_HART_COUNT=8
 platform-cppflags-y+= -DPLAT_HART_STACK_SIZE=8192
 

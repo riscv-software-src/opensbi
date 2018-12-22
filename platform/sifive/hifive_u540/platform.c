@@ -120,7 +120,7 @@ static int sifive_u_system_down(u32 type)
 }
 
 struct sbi_platform platform = {
-	.name = STRINGIFY(PLAT_NAME),
+	.name = "SiFive HiFive U540",
 	.features = SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count = PLAT_HART_COUNT,
 	.hart_stack_size = PLAT_HART_STACK_SIZE,
