@@ -15,6 +15,9 @@
 #include <plat/serial/sifive-uart.h>
 #include <plat/sys/clint.h>
 
+#define SIFIVE_U_HART_COUNT			5
+#define SIFIVE_U_HART_STACK_SIZE		8192
+
 #define SIFIVE_U_SYS_CLK			1000000000
 
 #define SIFIVE_U_CLINT_ADDR			0x2000000
@@ -41,7 +44,7 @@ static int sifive_u_cold_final_init(void)
 	void *fdt = sbi_scratch_thishart_arg1_ptr();
 
 	plic_fdt_fixup(fdt, "riscv,plic0", 0);
-	for (i = 1; i < PLAT_HART_COUNT; i++)
+	for (i = 1; i < SIFIVE_U_HART_COUNT; i++)
 		plic_fdt_fixup(fdt, "riscv,plic0", 2 * i - 1);
 
 	return 0;
@@ -91,7 +94,7 @@ static int sifive_u_cold_irqchip_init(void)
 {
 	return plic_cold_irqchip_init(SIFIVE_U_PLIC_ADDR,
 				      SIFIVE_U_PLIC_NUM_SOURCES,
-				      PLAT_HART_COUNT);
+				      SIFIVE_U_HART_COUNT);
 }
 
 static int sifive_u_warm_irqchip_init(u32 target_hart)
@@ -104,13 +107,13 @@ static int sifive_u_warm_irqchip_init(u32 target_hart)
 static int sifive_u_cold_ipi_init(void)
 {
 	return clint_cold_ipi_init(SIFIVE_U_CLINT_ADDR,
-				   PLAT_HART_COUNT);
+				   SIFIVE_U_HART_COUNT);
 }
 
 static int sifive_u_cold_timer_init(void)
 {
 	return clint_cold_timer_init(SIFIVE_U_CLINT_ADDR,
-				     PLAT_HART_COUNT);
+				     SIFIVE_U_HART_COUNT);
 }
 
 static int sifive_u_system_down(u32 type)
@@ -122,8 +125,8 @@ static int sifive_u_system_down(u32 type)
 struct sbi_platform platform = {
 	.name = "SiFive HiFive U540",
 	.features = SBI_PLATFORM_DEFAULT_FEATURES,
-	.hart_count = PLAT_HART_COUNT,
-	.hart_stack_size = PLAT_HART_STACK_SIZE,
+	.hart_count = SIFIVE_U_HART_COUNT,
+	.hart_stack_size = SIFIVE_U_HART_STACK_SIZE,
 	.disabled_hart_mask = ~(1 << SIFIVE_U_HARITD_ENABLED),
 	.pmp_region_count = sifive_u_pmp_region_count,
 	.pmp_region_info = sifive_u_pmp_region_info,

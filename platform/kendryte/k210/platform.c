@@ -38,7 +38,7 @@ static char k210_console_getc(void)
 static int k210_cold_irqchip_init(void)
 {
 	return plic_cold_irqchip_init(PLIC_BASE_ADDR, PLIC_NUM_SOURCES,
-				      PLAT_HART_COUNT);
+				      K210_HART_COUNT);
 }
 
 static int k210_warm_irqchip_init(u32 core_id)
@@ -50,12 +50,12 @@ static int k210_warm_irqchip_init(u32 core_id)
 
 static int k210_cold_ipi_init(void)
 {
-	return clint_cold_ipi_init(CLINT_BASE_ADDR, PLAT_HART_COUNT);
+	return clint_cold_ipi_init(CLINT_BASE_ADDR, K210_HART_COUNT);
 }
 
 static int k210_cold_timer_init(void)
 {
-	return clint_cold_timer_init(CLINT_BASE_ADDR, PLAT_HART_COUNT);
+	return clint_cold_timer_init(CLINT_BASE_ADDR, K210_HART_COUNT);
 }
 
 static int k210_system_reboot(u32 type)
@@ -79,8 +79,8 @@ struct sbi_platform platform = {
 	.name = "Kendryte K210",
 	.features = SBI_PLATFORM_HAS_MMIO_TIMER_VALUE,
 
-	.hart_count = PLAT_HART_COUNT,
-	.hart_stack_size = PLAT_HART_STACK_SIZE,
+	.hart_count = K210_HART_COUNT,
+	.hart_stack_size = K210_HART_STACK_SIZE,
 	.disabled_hart_mask = 0,
 
 	.console_init = k210_console_init,
