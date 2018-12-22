@@ -100,35 +100,38 @@ GENFLAGS	+=	$(platform-genflags-y)
 GENFLAGS	+=	$(firmware-genflags-y)
 
 # Setup compilation environment
-cpp=$(CROSS_COMPILE)cpp
-cppflags+=$(GENFLAGS)
-cppflags+=$(platform-cppflags-y)
-cppflags+=$(firmware-cppflags-y)
-cc=$(CROSS_COMPILE)gcc
-cflags=-g -Wall -Werror -nostdlib -fno-strict-aliasing -O2
-cflags+=-fno-omit-frame-pointer -fno-optimize-sibling-calls
-cflags+=-mno-save-restore -mstrict-align
-cflags+=$(GENFLAGS)
-cflags+=$(platform-cflags-y)
-cflags+=$(firmware-cflags-y)
-cflags+=$(EXTRA_CFLAGS)
-as=$(CROSS_COMPILE)gcc
-asflags=-g -Wall -nostdlib -D__ASSEMBLY__
-asflags+=-fno-omit-frame-pointer -fno-optimize-sibling-calls
-asflags+=-mno-save-restore -mstrict-align
-asflags+=$(GENFLAGS)
-asflags+=$(platform-asflags-y)
-asflags+=$(firmware-asflags-y)
-asflags+=$(EXTRA_ASFLAGS)
-ar=$(CROSS_COMPILE)ar
-arflags=rcs
-ld=$(CROSS_COMPILE)gcc
-ldflags=-g -Wall -nostdlib -Wl,--build-id=none
-ldflags+=$(platform-ldflags-y)
-ldflags+=$(firmware-ldflags-y)
-merge=$(CROSS_COMPILE)ld
-mergeflags=-r
-objcopy=$(CROSS_COMPILE)objcopy
+CC			?=	$(CROSS_COMPILE)gcc
+CFLAGS		=	-g -Wall -Werror -nostdlib -fno-strict-aliasing -O2
+CFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
+CFLAGS		+=	-mno-save-restore -mstrict-align
+CFLAGS		+=	$(GENFLAGS)
+CFLAGS		+=	$(platform-cflags-y)
+CFLAGS		+=	$(firmware-cflags-y)
+
+CPP			?=	$(CROSS_COMPILE)cpp
+CPPFLAGS	+=	$(GENFLAGS)
+CPPFLAGS	+=	$(platform-cppflags-y)
+CPPFLAGS	+=	$(firmware-cppflags-y)
+
+AS			=	$(CC)
+ASFLAGS		=	-g -Wall -nostdlib -D__ASSEMBLY__
+ASFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
+ASFLAGS		+=	-mno-save-restore -mstrict-align
+ASFLAGS		+=	$(GENFLAGS)
+ASFLAGS		+=	$(platform-asflags-y)
+ASFLAGS		+=	$(firmware-asflags-y)
+
+AR			?= $(CROSS_COMPILE)ar
+ARFLAGS		=	rcs
+
+LD			?=	$(CROSS_COMPILE)ld
+LDFLAGS		+=	-g -Wall -nostdlib -Wl,--build-id=none -N
+LDFLAGS		+=	$(platform-ldflags-y)
+LDFLAGS		+=	$(firmware-ldflags-y)
+
+MERGEFLAGS	+=	-r
+
+OBJCOPY	?=	$(CROSS_COMPILE)objcopy
 
 # Setup functions for compilation
 define dynamic_flags
@@ -136,7 +139,7 @@ define dynamic_flags
 endef
 merge_objs = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " MERGE     $(subst $(build_dir)/,,$(1))"; \
-	     $(merge) $(mergeflags) $(2) -o $(1)
+	     $(LD) $(MERGEFLAGS) $(2) -o $(1)
 merge_deps = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " MERGE-DEP $(subst $(build_dir)/,,$(1))"; \
 	     cat $(2) > $(1)
@@ -162,32 +165,32 @@ inst_header_dir =  $(CMD_PREFIX)mkdir -p $(1); \
 	     cp -rf $(2) $(1)
 compile_cpp = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " CPP       $(subst $(build_dir)/,,$(1))"; \
-	     $(cpp) $(cppflags) $(2) | grep -v "\#" > $(1)
+	     $(CPP) $(CPPFLAGS) $(2) | grep -v "\#" > $(1)
 compile_cc_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " CC-DEP    $(subst $(build_dir)/,,$(1))"; \
 	     echo -n `dirname $(1)`/ > $(1) && \
-	     $(cc) $(cflags) $(call dynamic_flags,$(1),$(2))   \
+	     $(CC) $(CFLAGS) $(call dynamic_flags,$(1),$(2))   \
 	       -MM $(2) >> $(1) || rm -f $(1)
 compile_cc = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " CC        $(subst $(build_dir)/,,$(1))"; \
-	     $(cc) $(cflags) $(call dynamic_flags,$(1),$(2)) -c $(2) -o $(1)
+	     $(CC) $(CFLAGS) $(call dynamic_flags,$(1),$(2)) -c $(2) -o $(1)
 compile_as_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " AS-DEP    $(subst $(build_dir)/,,$(1))"; \
 	     echo -n `dirname $(1)`/ > $(1) && \
-	     $(as) $(asflags) $(call dynamic_flags,$(1),$(2))  \
+	     $(AS) $(ASFLAGS) $(call dynamic_flags,$(1),$(2)) \
 	       -MM $(2) >> $(1) || rm -f $(1)
 compile_as = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " AS        $(subst $(build_dir)/,,$(1))"; \
-	     $(as) $(asflags) $(call dynamic_flags,$(1),$(2)) -c $(2) -o $(1)
+	     $(AS) $(ASFLAGS) $(call dynamic_flags,$(1),$(2)) -c $(2) -o $(1)
 compile_ld = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " LD        $(subst $(build_dir)/,,$(1))"; \
-	     $(ld) $(3) $(ldflags) -Wl,-T$(2) -o $(1)
+	     $(CC) $(3) $(LDFLAGS) -Wl,-T$(2) -o $(1)
 compile_ar = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " AR        $(subst $(build_dir)/,,$(1))"; \
-	     $(ar) $(arflags) $(1) $(2)
+	     $(AR) $(ARFLAGS) $(1) $(2)
 compile_objcopy = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " OBJCOPY   $(subst $(build_dir)/,,$(1))"; \
-	     $(objcopy) -S -O binary $(2) $(1)
+	     $(OBJCOPY) -S -O binary $(2) $(1)
 
 targets-y  = $(build_dir)/lib/libsbi.a
 ifdef PLATFORM
