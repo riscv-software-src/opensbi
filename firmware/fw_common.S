@@ -132,8 +132,9 @@ _start_warm:
 	 * s8 -> HART Stack Size
 	 */
 	csrr	s6, mhartid
-	li	s7, PLAT_HART_COUNT
-	li	s8, PLAT_HART_STACK_SIZE
+	la	a4, platform
+	lwu	s7, RISCV_PLATFORM_HART_COUNT_OFFSET(a4)
+	lwu	s8, RISCV_PLATFORM_HART_STACK_SIZE_OFFSET(a4)
 
 	/* HART ID should be within expected limit */
 	csrr	s6, mhartid
@@ -202,8 +203,9 @@ _hartid_to_scratch:
 	 * s1 -> HART Stack End
 	 * s2 -> Temporary
 	 */
-	li	s0, PLAT_HART_STACK_SIZE
-	li	s2, PLAT_HART_COUNT
+	la	s2, platform
+	lwu	s0, RISCV_PLATFORM_HART_STACK_SIZE_OFFSET(s2)
+	lwu	s2, RISCV_PLATFORM_HART_COUNT_OFFSET(s2)
 	mul	s2, s2, s0
 	la	s1, _fw_end
 	add	s1, s1, s2
