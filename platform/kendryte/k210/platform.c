@@ -16,9 +16,11 @@
 #include "platform.h"
 #include "uarths.h"
 
+#define K210_UART_BAUDRATE		115200
+
 int k210_console_init(void)
 {
-	uarths_init(115200, UARTHS_STOP_1);
+	uarths_init(K210_UART_BAUDRATE, UARTHS_STOP_1);
 
 	return 0;
 }
@@ -41,7 +43,9 @@ static int k210_cold_irqchip_init(void)
 
 static int k210_warm_irqchip_init(u32 core_id)
 {
-	return plic_warm_irqchip_init(core_id);
+	return plic_warm_irqchip_init(core_id,
+				      (2 * core_id),
+				      (2 * core_id + 1));
 }
 
 static int k210_cold_ipi_init(void)
@@ -77,6 +81,7 @@ struct sbi_platform platform = {
 
 	.hart_count = PLAT_HART_COUNT,
 	.hart_stack_size = PLAT_HART_STACK_SIZE,
+	.disabled_hart_mask = 0,
 
 	.console_init = k210_console_init,
 	.console_putc = k210_console_putc,

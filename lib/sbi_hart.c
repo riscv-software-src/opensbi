@@ -211,8 +211,6 @@ int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid)
 
 void __attribute__((noreturn)) sbi_hart_hang(void)
 {
-	sbi_printf("\nHART%u Hang !!\n\n", sbi_current_hartid());
-
 	while (1)
 		wfi();
 	__builtin_unreachable();

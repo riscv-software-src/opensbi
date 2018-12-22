@@ -33,6 +33,7 @@ struct sbi_platform {
 	u64 features;
 	u32 hart_count;
 	u32 hart_stack_size;
+	u64 disabled_hart_mask;
 	int (*cold_early_init)(void);
 	int (*cold_final_init)(void);
 	int (*warm_early_init)(u32 target_hart);
@@ -83,6 +84,13 @@ static inline const char *sbi_platform_name(struct sbi_platform *plat)
 	return NULL;
 }
 
+static inline bool sbi_platform_hart_disabled(struct sbi_platform *plat, u32 hartid)
+{
+	if (plat && (plat->disabled_hart_mask & (1 << hartid)))
+		return 1;
+	else
+		return 0;
+}
 static inline u32 sbi_platform_hart_count(struct sbi_platform *plat)
 {
 	if (plat)

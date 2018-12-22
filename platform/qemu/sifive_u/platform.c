@@ -28,7 +28,13 @@
 
 static int sifive_u_cold_final_init(void)
 {
-	return plic_fdt_fixup(sbi_scratch_thishart_arg1_ptr(), "riscv,plic0");
+	u32 i;
+	void *fdt = sbi_scratch_thishart_arg1_ptr();
+
+	for (i = 0; i < PLAT_HART_COUNT; i++)
+		plic_fdt_fixup(fdt, "riscv,plic0", 2 * i);
+
+	return 0;
 }
 
 static u32 sifive_u_pmp_region_count(u32 target_hart)
@@ -68,6 +74,13 @@ static int sifive_u_cold_irqchip_init(void)
 				      PLAT_HART_COUNT);
 }
 
+static int sifive_u_warm_irqchip_init(u32 target_hart)
+{
+	return plic_warm_irqchip_init(target_hart,
+				      (2 * target_hart),
+				      (2 * target_hart + 1));
+}
+
 static int sifive_u_cold_ipi_init(void)
 {
 	return clint_cold_ipi_init(SIFIVE_U_CLINT_ADDR,
@@ -91,6 +104,7 @@ struct sbi_platform platform = {
 	.features = SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count = PLAT_HART_COUNT,
 	.hart_stack_size = PLAT_HART_STACK_SIZE,
+	.disabled_hart_mask = 0,
 	.pmp_region_count = sifive_u_pmp_region_count,
 	.pmp_region_info = sifive_u_pmp_region_info,
 	.cold_final_init = sifive_u_cold_final_init,
@@ -98,7 +112,7 @@ struct sbi_platform platform = {
 	.console_getc = sifive_uart_getc,
 	.console_init = sifive_u_console_init,
 	.cold_irqchip_init = sifive_u_cold_irqchip_init,
-	.warm_irqchip_init = plic_warm_irqchip_init,
+	.warm_irqchip_init = sifive_u_warm_irqchip_init,
 	.ipi_inject = clint_ipi_inject,
 	.ipi_sync = clint_ipi_sync,
 	.ipi_clear = clint_ipi_clear,

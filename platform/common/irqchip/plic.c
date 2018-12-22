@@ -27,28 +27,20 @@ static void plic_set_priority(u32 source, u32 val)
 	writel(val, plic_base);
 }
 
-static void plic_set_m_thresh(u32 hartid, u32 val)
+static void plic_set_thresh(u32 cntxid, u32 val)
 {
-	volatile void *plic_m_thresh = plic_base +
+	volatile void *plic_thresh = plic_base +
 				PLIC_CONTEXT_BASE +
-				PLIC_CONTEXT_STRIDE * (2 * hartid);
-	writel(val, plic_m_thresh);
+				PLIC_CONTEXT_STRIDE * cntxid;
+	writel(val, plic_thresh);
 }
 
-static void plic_set_s_thresh(u32 hartid, u32 val)
+static void plic_set_ie(u32 cntxid, u32 word_index, u32 val)
 {
-	volatile void *plic_s_thresh = plic_base +
-				PLIC_CONTEXT_BASE +
-				PLIC_CONTEXT_STRIDE * (2 * hartid + 1);
-	writel(val, plic_s_thresh);
-}
-
-static void plic_set_s_ie(u32 hartid, u32 word_index, u32 val)
-{
-	volatile void *plic_s_ie = plic_base +
+	volatile void *plic_ie = plic_base +
 				PLIC_ENABLE_BASE +
-				PLIC_ENABLE_STRIDE * (2 * hartid + 1);
-	writel(val, plic_s_ie + word_index * 4);
+				PLIC_ENABLE_STRIDE * cntxid;
+	writel(val, plic_ie + word_index * 4);
 }
 
 static void plic_fdt_fixup_prop(const struct fdt_node *node,
@@ -57,6 +49,7 @@ static void plic_fdt_fixup_prop(const struct fdt_node *node,
 {
 	u32 *cells;
 	u32 i, cells_count;
+	u32 *cntx_id = priv;
 
 	if (!prop)
 		return;
@@ -70,33 +63,42 @@ static void plic_fdt_fixup_prop(const struct fdt_node *node,
 		return;
 
 	for (i = 0; i < cells_count; i++) {
-		if (i % 4 == 1)
+		if (((i % 2) == 1) && ((i / 2) == *cntx_id))
 			cells[i] = fdt_rev32(0xffffffff);
 	}
 }
 
-int plic_fdt_fixup(void *fdt, const char *compat)
+void plic_fdt_fixup(void *fdt, const char *compat, u32 cntx_id)
 {
-	fdt_compat_node_prop(fdt, compat, plic_fdt_fixup_prop, NULL);
-	return 0;
+	fdt_compat_node_prop(fdt, compat, plic_fdt_fixup_prop, &cntx_id);
 }
 
-int plic_warm_irqchip_init(u32 target_hart)
+int plic_warm_irqchip_init(u32 target_hart,
+			   int m_cntx_id, int s_cntx_id)
 {
 	size_t i, ie_words = plic_num_sources / 32 + 1;
 
 	if (plic_hart_count <= target_hart)
 		return -1;
+	
+	if (m_cntx_id > -1) {
+		for (i = 0; i < ie_words; i++)
+			plic_set_ie(m_cntx_id, i, 0);
+	}
 
 	/* By default, enable all IRQs for S-mode of target HART */
-	for (i = 0; i < ie_words; i++)
-		plic_set_s_ie(target_hart, i, -1);
+	if (s_cntx_id > -1) {
+		for (i = 0; i < ie_words; i++)
+			plic_set_ie(s_cntx_id, i, 0);
+	}
 
 	/* By default, enable M-mode threshold */
-	plic_set_m_thresh(target_hart, 1);
+	if (m_cntx_id > -1)
+		plic_set_thresh(m_cntx_id, 1);
 
 	/* By default, disable S-mode threshold */
-	plic_set_s_thresh(target_hart, 0);
+	if (s_cntx_id > -1)
+		plic_set_thresh(s_cntx_id, 0);
 
 	return 0;
 }
