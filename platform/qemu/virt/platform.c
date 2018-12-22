@@ -14,6 +14,9 @@
 #include <plat/serial/uart8250.h>
 #include <plat/sys/clint.h>
 
+#define VIRT_HART_COUNT			8
+#define VIRT_HART_STACK_SIZE		8192
+
 #define VIRT_TEST_ADDR			0x100000
 
 #define VIRT_CLINT_ADDR			0x2000000
@@ -31,7 +34,7 @@ static int virt_cold_final_init(void)
 	u32 i;
 	void *fdt = sbi_scratch_thishart_arg1_ptr();
 
-	for (i = 0; i < PLAT_HART_COUNT; i++)
+	for (i = 0; i < VIRT_HART_COUNT; i++)
 		plic_fdt_fixup(fdt, "riscv,plic0", 2 * i);
 
 	return 0;
@@ -72,7 +75,7 @@ static int virt_cold_irqchip_init(void)
 {
 	return plic_cold_irqchip_init(VIRT_PLIC_ADDR,
 				      VIRT_PLIC_NUM_SOURCES,
-				      PLAT_HART_COUNT);
+				      VIRT_HART_COUNT);
 }
 
 static int virt_warm_irqchip_init(u32 target_hart)
@@ -85,13 +88,13 @@ static int virt_warm_irqchip_init(u32 target_hart)
 static int virt_cold_ipi_init(void)
 {
 	return clint_cold_ipi_init(VIRT_CLINT_ADDR,
-				   PLAT_HART_COUNT);
+				   VIRT_HART_COUNT);
 }
 
 static int virt_cold_timer_init(void)
 {
 	return clint_cold_timer_init(VIRT_CLINT_ADDR,
-				     PLAT_HART_COUNT);
+				     VIRT_HART_COUNT);
 }
 
 static int virt_system_down(u32 type)
@@ -101,10 +104,10 @@ static int virt_system_down(u32 type)
 }
 
 struct sbi_platform platform = {
-	.name = STRINGIFY(PLAT_NAME),
+	.name = "QEMU Virt Machine",
 	.features = SBI_PLATFORM_DEFAULT_FEATURES,
-	.hart_count = PLAT_HART_COUNT,
-	.hart_stack_size = PLAT_HART_STACK_SIZE,
+	.hart_count = VIRT_HART_COUNT,
+	.hart_stack_size = VIRT_HART_STACK_SIZE,
 	.disabled_hart_mask = 0,
 	.pmp_region_count = virt_pmp_region_count,
 	.pmp_region_info = virt_pmp_region_info,

@@ -59,7 +59,7 @@ OR
 `make PLATFORM=<platform_subdir> I=<install_directory> install`
 
 In addition, we can also specify platform specific command-line
-options to top-level make (such as `PLAT_<xyz>` or `FW_<abc>`)
+options to top-level make (such as `PLATFORM_<xyz>` or `FW_<abc>`)
 which are described under `docs/platform/<platform_name>.md` OR
 `docs/firmware/<firmware_name>.md`.
 

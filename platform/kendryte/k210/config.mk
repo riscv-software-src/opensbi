@@ -7,12 +7,8 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-# Essential defines required by SBI platform
-platform-cppflags-y = -DPLAT_NAME="Kendryte K210"
-platform-cppflags-y+= -DPLAT_HART_COUNT=2
-platform-cppflags-y+= -DPLAT_HART_STACK_SIZE=4096
-
 # Compiler flags
+platform-cppflags-y =
 platform-cflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
 platform-asflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
 platform-ldflags-y =

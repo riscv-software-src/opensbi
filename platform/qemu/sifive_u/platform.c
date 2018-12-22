@@ -14,6 +14,9 @@
 #include <plat/serial/sifive-uart.h>
 #include <plat/sys/clint.h>
 
+#define SIFIVE_U_HART_COUNT			1
+#define SIFIVE_U_HART_STACK_SIZE		8192
+
 #define SIFIVE_U_SYS_CLK			1000000000
 #define SIFIVE_U_PERIPH_CLK			(SIFIVE_U_SYS_CLK / 2)
 
@@ -31,7 +34,7 @@ static int sifive_u_cold_final_init(void)
 	u32 i;
 	void *fdt = sbi_scratch_thishart_arg1_ptr();
 
-	for (i = 0; i < PLAT_HART_COUNT; i++)
+	for (i = 0; i < SIFIVE_U_HART_COUNT; i++)
 		plic_fdt_fixup(fdt, "riscv,plic0", 2 * i);
 
 	return 0;
@@ -71,7 +74,7 @@ static int sifive_u_cold_irqchip_init(void)
 {
 	return plic_cold_irqchip_init(SIFIVE_U_PLIC_ADDR,
 				      SIFIVE_U_PLIC_NUM_SOURCES,
-				      PLAT_HART_COUNT);
+				      SIFIVE_U_HART_COUNT);
 }
 
 static int sifive_u_warm_irqchip_init(u32 target_hart)
@@ -84,13 +87,13 @@ static int sifive_u_warm_irqchip_init(u32 target_hart)
 static int sifive_u_cold_ipi_init(void)
 {
 	return clint_cold_ipi_init(SIFIVE_U_CLINT_ADDR,
-				   PLAT_HART_COUNT);
+				   SIFIVE_U_HART_COUNT);
 }
 
 static int sifive_u_cold_timer_init(void)
 {
 	return clint_cold_timer_init(SIFIVE_U_CLINT_ADDR,
-				     PLAT_HART_COUNT);
+				     SIFIVE_U_HART_COUNT);
 }
 
 static int sifive_u_system_down(u32 type)
@@ -100,10 +103,10 @@ static int sifive_u_system_down(u32 type)
 }
 
 struct sbi_platform platform = {
-	.name = STRINGIFY(PLAT_NAME),
+	.name = "QEMU SiFive Unleashed",
 	.features = SBI_PLATFORM_DEFAULT_FEATURES,
-	.hart_count = PLAT_HART_COUNT,
-	.hart_stack_size = PLAT_HART_STACK_SIZE,
+	.hart_count = SIFIVE_U_HART_COUNT,
+	.hart_stack_size = SIFIVE_U_HART_STACK_SIZE,
 	.disabled_hart_mask = 0,
 	.pmp_region_count = sifive_u_pmp_region_count,
 	.pmp_region_info = sifive_u_pmp_region_info,

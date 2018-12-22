@@ -18,12 +18,15 @@
 
 #include <sbi/riscv_asm.h>
 
+#define K210_HART_COUNT		2
+#define K210_HART_STACK_SIZE	4096
+
 /* Register base address */
 
 /* Under Coreplex */
 #define CLINT_BASE_ADDR		(0x02000000U)
 #define PLIC_BASE_ADDR		(0x0C000000U)
-#define PLIC_NUM_CORES		(PLAT_HART_COUNT)
+#define PLIC_NUM_CORES		(K210_HART_COUNT)
 
 /* Under TileLink */
 #define GPIOHS_BASE_ADDR	(0x38001000U)
