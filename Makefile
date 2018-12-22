@@ -97,6 +97,7 @@ GENFLAGS	+=	-I$(platform_dir)/include
 GENFLAGS	+=	-I$(platform_common_dir)/include
 GENFLAGS	+=	-I$(include_dir)
 GENFLAGS	+=	$(platform-genflags-y)
+GENFLAGS	+=	$(firmware-genflags-y)
 
 # Setup compilation environment
 cpp=$(CROSS_COMPILE)cpp
