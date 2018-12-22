@@ -61,18 +61,6 @@
 
 	. = ALIGN(0x1000); /* Ensure next section is page aligned */
 
-	.stack :
-	{
-		PROVIDE(_stack_start = .);
-		*(.stack)
-		*(.stack.*)
-		. = . + (PLAT_HART_STACK_SIZE * PLAT_HART_COUNT);
-		. = ALIGN(8);
-		PROVIDE(_stack_end = .);
-	}
-
-	. = ALIGN(0x1000); /* Ensure next section is page aligned */
-
 	.bss :
 	{
 		PROVIDE(_bss_start = .);

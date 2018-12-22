@@ -122,18 +122,28 @@ _start_warm:
 	csrw	mie, zero
 	csrw	mip, zero
 
-	/* set MSIE bit to receive IPI */
+	/* Set MSIE bit to receive IPI */
 	li	a2, MIP_MSIP
 	csrw	mie, a2
+
+	/* Preload per-HART details
+	 * s6 -> HART ID
+	 * s7 -> HART Count
+	 * s8 -> HART Stack Size
+	 */
+	csrr	s6, mhartid
+	li	s7, PLAT_HART_COUNT
+	li	s8, PLAT_HART_STACK_SIZE
+
 	/* HART ID should be within expected limit */
-	csrr	a6, mhartid
-	li	a5, PLAT_HART_COUNT
-	bge	a6, a5, _start_hang
+	csrr	s6, mhartid
+	bge	s6, s7, _start_hang
 
 	/* Setup scratch space */
-	li	a5, PLAT_HART_STACK_SIZE
-	la	tp, _stack_end
-	mul	a5, a5, a6
+	la	tp, _fw_end
+	mul	a5, s7, s8
+	add	tp, tp, a5
+	mul	a5, s8, s6
 	sub	tp, tp, a5
 	li	a5, RISCV_SCRATCH_SIZE
 	sub	tp, tp, a5
@@ -143,6 +153,8 @@ _start_warm:
 	REG_S	zero, RISCV_SCRATCH_TMP0_OFFSET(tp)
 	la	a4, _fw_start
 	la	a5, _fw_end
+	mul	t0, s7, s8
+	add	a5, a5, t0
 	sub	a5, a5, a4
 	REG_S	a4, RISCV_SCRATCH_FW_START_OFFSET(tp)
 	REG_S	a5, RISCV_SCRATCH_FW_SIZE_OFFSET(tp)
@@ -180,18 +192,29 @@ _start_warm:
 	.section .entry, "ax", %progbits
 	.globl _hartid_to_scratch
 _hartid_to_scratch:
-	add	sp, sp, -(2 * __SIZEOF_POINTER__)
-	REG_S	a1, (sp)
-	REG_S	a2, (__SIZEOF_POINTER__)(sp)
-	li	a1, PLAT_HART_STACK_SIZE
-	la	a2, _stack_end
-	mul	a1, a1, a0
-	sub	a2, a2, a1
-	li	a1, RISCV_SCRATCH_SIZE
-	sub	a0, a2, a1
-	REG_L	a1, (sp)
-	REG_L	a2, (__SIZEOF_POINTER__)(sp)
-	add	sp, sp, (2 * __SIZEOF_POINTER__)
+	add	sp, sp, -(3 * __SIZEOF_POINTER__)
+	REG_S	s0, (sp)
+	REG_S	s1, (__SIZEOF_POINTER__)(sp)
+	REG_S	s2, (__SIZEOF_POINTER__ * 2)(sp)
+	/*
+	 * a0 -> HART ID (passed by caller)
+	 * s0 -> HART Stack Size
+	 * s1 -> HART Stack End
+	 * s2 -> Temporary
+	 */
+	li	s0, PLAT_HART_STACK_SIZE
+	li	s2, PLAT_HART_COUNT
+	mul	s2, s2, s0
+	la	s1, _fw_end
+	add	s1, s1, s2
+	mul	s2, s0, a0
+	sub	s1, s1, s2
+	li	s2, RISCV_SCRATCH_SIZE
+	sub	a0, s1, s2
+	REG_L	s0, (sp)
+	REG_L	s1, (__SIZEOF_POINTER__)(sp)
+	REG_L	s2, (__SIZEOF_POINTER__ * 2)(sp)
+	add	sp, sp, (3 * __SIZEOF_POINTER__)
 	ret
 
 	.align 3
