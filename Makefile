@@ -152,11 +152,15 @@ copy_file =  $(V)mkdir -p `dirname $(1)`; \
 inst_file =  $(V)mkdir -p `dirname $(1)`; \
 	     echo " INSTALL   $(subst $(install_dir)/,,$(1))"; \
 	     cp -f $(2) $(1)
-inst_file_list = $(V)if [ ! -z "$(3)" ]; then \
-	     mkdir -p $(1); \
-	     for f in $(3) ; do \
-	     echo " INSTALL   "$(2)"/"`basename $$f`; \
-	     cp -f $$f $(1); \
+inst_file_list = $(V)if [ ! -z "$(4)" ]; then \
+	     mkdir -p $(1)/$(3); \
+	     for file in $(4) ; do \
+	     rel_file=`echo $$file | sed -e 's@$(2)/$(3)/@@'`; \
+	     dest_file=$(1)"/"$(3)"/"`echo $$rel_file`; \
+	     dest_dir=`dirname $$dest_file`; \
+	     echo " INSTALL   "$(3)"/"`echo $$rel_file`; \
+	     mkdir -p $$dest_dir; \
+	     cp -f $$file $$dest_file; \
 	     done \
 	     fi
 inst_header_dir =  $(V)mkdir -p $(1); \
@@ -274,8 +278,8 @@ install_libplatsbi: $(build_dir)/$(platform_subdir)/lib/libplatsbi.a $(build_dir
 
 .PHONY: install_firmwares
 install_firmwares: $(build_dir)/$(platform_subdir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a $(firmware-bins-path-y)
-	$(call inst_file_list,$(install_dir)/$(platform_subdir)/firmware,$(platform_subdir)/firmware,$(firmware-elfs-path-y))
-	$(call inst_file_list,$(install_dir)/$(platform_subdir)/firmware,$(platform_subdir)/firmware,$(firmware-bins-path-y))
+	$(call inst_file_list,$(install_dir),$(build_dir),$(platform_subdir)/firmware,$(firmware-elfs-path-y))
+	$(call inst_file_list,$(install_dir),$(build_dir),$(platform_subdir)/firmware,$(firmware-bins-path-y))
 
 # Rule for "make clean"
 .PHONY: clean
