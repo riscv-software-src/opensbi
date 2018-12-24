@@ -12,9 +12,10 @@
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_error.h>
-#include <sbi/sbi_illegal_insn.h>
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_illegal_insn.h>
 #include <sbi/sbi_ipi.h>
+#include <sbi/sbi_misaligned_ldst.h>
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_trap.h>
 
@@ -94,6 +95,14 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 	case CAUSE_ILLEGAL_INSTRUCTION:
 		rc = sbi_illegal_insn_handler(hartid, mcause, regs, scratch);
 		msg = "illegal instruction handler failed";
+		break;
+	case CAUSE_MISALIGNED_LOAD:
+		rc = sbi_misaligned_load_handler(hartid, mcause, regs, scratch);
+		msg = "misaligned load handler failed";
+		break;
+	case CAUSE_MISALIGNED_STORE:
+		rc = sbi_misaligned_store_handler(hartid, mcause, regs, scratch);
+		msg = "misaligned store handler failed";
 		break;
 	case CAUSE_SUPERVISOR_ECALL:
 	case CAUSE_HYPERVISOR_ECALL:
