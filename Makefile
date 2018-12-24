@@ -243,11 +243,14 @@ $(build_dir)/$(platform_subdir)/%.dep: $(src_dir)/%.S
 $(build_dir)/$(platform_subdir)/%.o: $(src_dir)/%.S
 	$(call compile_as,$@,$<)
 
-# Dependency files should only be included after default Makefile rule
+# Dependency files should only be included after default Makefile rules
 # They should not be included for any "xxxconfig" or "xxxclean" rule
 all-deps-1 = $(if $(findstring config,$(MAKECMDGOALS)),,$(deps-y))
 all-deps-2 = $(if $(findstring clean,$(MAKECMDGOALS)),,$(all-deps-1))
 -include $(all-deps-2)
+
+# Include external dependency of firmwares after default Makefile rules
+include $(src_dir)/firmware/external_deps.mk
 
 install_targets-y  = install_libsbi
 ifdef PLATFORM

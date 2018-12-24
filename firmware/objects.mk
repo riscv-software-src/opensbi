@@ -7,10 +7,10 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-firmware-cppflags-y =
-firmware-cflags-y =
-firmware-asflags-y =
-firmware-ldflags-y =
+firmware-cppflags-y +=
+firmware-cflags-y +=
+firmware-asflags-y +=
+firmware-ldflags-y +=
 
 ifdef FW_TEXT_START
 firmware-cppflags-y += -DFW_TEXT_START=$(FW_TEXT_START)
@@ -26,8 +26,11 @@ endif
 
 firmware-bins-$(FW_PAYLOAD) += fw_payload.bin
 ifdef FW_PAYLOAD_PATH
-firmware-cppflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_PATH=$(FW_PAYLOAD_PATH)
+FW_PAYLOAD_PATH_FINAL=$(FW_PAYLOAD_PATH)
+else
+FW_PAYLOAD_PATH_FINAL=$(build_dir)/$(platform_subdir)/firmware/payloads/dummy.bin
 endif
+firmware-cppflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_PATH=$(FW_PAYLOAD_PATH_FINAL)
 ifdef FW_PAYLOAD_OFFSET
 firmware-cppflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_OFFSET=$(FW_PAYLOAD_OFFSET)
 endif
