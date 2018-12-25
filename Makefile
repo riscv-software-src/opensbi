@@ -280,7 +280,7 @@ clean:
 ifeq ($(build_dir),$(CURDIR)/build)
 	$(V)mkdir -p $(build_dir)
 	$(if $(V), @echo " CLEAN     $(build_dir)")
-	$(V)find $(build_dir) -maxdepth 1 -type f -exec rm -rf {} +
+	$(V)find $(build_dir) -regex ".*\.\(o\|a\|elf\|bin\)" -type f -exec rm -rf {} +
 endif
 
 # Rule for "make distclean"
