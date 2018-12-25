@@ -4,79 +4,109 @@ RISC-V Open Source Supervisor Binary Interface (OpenSBI)
 The **RISC-V Supervisor Binary Interface (SBI)** is a recommended
 interface between:
 
-1. Platform specific firmware running in M-mode and
-   general-purpose-os/hypervisor/bootloader running in S-mode/HS-mode
-2. Hypervisor runnng in HS-mode and general-purpose-os/bootloader
-   running in VS-mode
+1. A pplatform specific firmware executed in M-mode and a general purpose
+   OS hypervisor or bootloader executed in S-mode or HS-mode.
+2. A hypervisor executed in HS-mode and a general purpose OS or bootloader
+   executed in VS-mode
 
-The **RISC-V SBI specification** is maintained as independent project
-by RISC-V Foundation on [Github](https://github.com/riscv/riscv-sbi-doc)
+The *RISC-V SBI specification* is maintained as an independent project
+by the RISC-V Foundation in [Github](https://github.com/riscv/riscv-sbi-doc)
 
-The **RISC-V OpenSBI project** aims to provides an open-source and
-extensible implementation of the **RISC-V SBI specification** for
-point 1) mentioned above. It can be easily extended by RISC-V platform
-or RISC-V System-on-Chip vendors.
+OpenSBI aims to provides an open-source and extensible implementation of
+the RISC-V SBI specification for case 1 mentioned above. OpenSBI
+implementation can be easily extended by RISC-V platform or System-on-Chip
+vendors to fit a particular hadware configuration.
 
-We can create three things using the RISC-V OpenSBI project:
+OpenSBI provides three components:
 
-1. **libsbi.a** - Generic OpenSBI static library
-2. **libplatsbi.a** - Platform specific OpenSBI static library
-   (It is libsbi.a plus platform specific hooks represented
-    by "platform" symbol)
-3. **firmwares** - Platform specific firmware binaries
+1. *libsbi.a* - A generic OpenSBI static library
+2. *libplatsbi.a* - Platform specific OpenSBI static library, that is,
+                    libsbi.a plus platform specific hooks
+3. *firmwares* - Platform specific bootable firmware binaries
 
-How to Build?
--------------
+Building and Installing generic *libsbi.a*
+------------------------------------------
 
-For cross-compiling, the environment variable CROSS_COMPILE_PREFIX must be
-defined to specify the toolchain executable name prefix, e.g.
-"riscv64-unknown-elf-" for riscv64-unknown-elf-gcc.
+For cross-compiling, the environment variable *CROSS_COMPILE_PREFIX* must
+be defined to specify the toolchain executable name prefix, e.g.
+*riscv64-unknown-elf-* if the gcc executable used is
+*riscv64-unknown-elf-gcc*.
 
-The libplatsbi.a and firmwares are optional and only built when
-`PLATFORM=<platform_subdir>` parameter is specified to top-level make.
-(**NOTE**: `<platform_subdir>` is sub-directory under platform/ directory)
+To build the generic OpenSBI library *libsbi.a*, simply execute:
+```
+make
+```
 
-To build and install Generic OpenSBI library do the following:
+All compiled binaries will be placed in the *build* directory.
+To specify an alternate build directory target, run:
+```
+make O=<build_directory>
+```
 
-1. Build **libsbi.a**:
-`make`
-OR
-`make O=<build_directory>`
-2. Install **libsbi.a and headers**:
-`make install`
-OR
-`make I=<install_directory> install`
+To generate files to be installed for using *libsbi.a* in other projects,
+run:
+```
+make install
+```
+This will create the *install* directory with all necessary include files
+and binary files under it. To specify an alternate installation directory,
+run:
+```
+make I=<install_directory> install
+```
 
-To build and install platform specific OpenSBI library and firmwares
-do the following:
+Building and Installing platform specific *libsbi.a* and firmwares
+------------------------------------------------------------------
 
-1. Build **libsbi, libplatsbi, and firmwares**:
-`make PLATFORM=<platform_subdir>`
-OR
-`make PLATFORM=<platform_subdir> O=<build_directory>`
-2. Install **libsbi, headers, libplatsbi, and firmwares**:
-`make PLATFORM=<platform_subdir> install`
-OR
-`make PLATFORM=<platform_subdir> I=<install_directory> install`
+The libplatsbi.a and firmware files are only built if the
+*PLATFORM=<platform path>* argument is specified on make command lines.
+*<platform path>* must specify the path to one of the leaf directories
+under the *platform* directory. For example, to compile the library and
+firmware for QEMU generic RISC-V *virt* machine, *<platform path>*
+should be *qemu/virt*.
 
-In addition, we can also specify platform specific command-line
-options to top-level make (such as `PLATFORM_<xyz>` or `FW_<abc>`)
-which are described under `docs/platform/<platform_name>.md` OR
-`docs/firmware/<firmware_name>.md`.
+To build *libsbi, libplatsbi, and firmwares* for a specific platform, run:
+```
+make PLATFORM=<platform_subdir>
+```
+
+or
+
+```
+make PLATFORM=<platform_subdir> O=<build_directory>
+```
+
+To install *libsbi, headers, libplatsbi, and firmwares*, run:
+```
+make PLATFORM=<platform_subdir> install
+```
+
+or
+
+```
+make PLATFORM=<platform_subdir> I=<install_directory> install`
+```
+
+In addition, platform specific make command-line options to top-level make
+,such as *PLATFORM_<xyz>* or *FW_<abc>* can also be specified. These
+options are described under *docs/platform/<platform_name>.md* and
+*docs/firmware/<firmware_name>.md*.
 
 Documentation
 -------------
 
-All our documenation is under `docs` directory organized in following
-manner:
+A more detailed documenation is under the *docs* directory and organized
+as follows.
 
-* `docs/platform_guide.md` - Guidelines for adding new platform support
-* `docs/library_usage.md` - Guidelines for using static library
-* `docs/platform/<platform_name>.md` - Documentation for `<platform_name>` platform
-* `docs/firmware/<firmware_name>.md` - Documentation for firmware `<firmware_name>`
+* *docs/platform_guide.md* - Guidelines for adding new platform support
+* *docs/library_usage.md* - Guidelines for using the static library
+* *docs/platform/<platform_name>.md* - Platform specific documentation for
+                                       the platform *<platform_name>*
+* *docs/firmware/<firmware_name>.md* - Platform specific documentation for
+                                       the firmware *<firmware_name>*
 
-We also prefer source level documentation, so wherever possible we describe
-stuff directly in the source code. This helps us maintain source and its
-documentation at the same place. For source level documentation we strictly
-follow Doxygen style. Please refer [Doxygen manual]
-(http://www.stack.nl/~dimitri/doxygen/manual.html) for details.
+The source code is also well documented. For source level documentation,
+doxygen style is used. Please refer to [Doxygen manual]
+(http://www.stack.nl/~dimitri/doxygen/manual.html) for details on this
+format.
+
