@@ -28,8 +28,9 @@ We can create three things using the RISC-V OpenSBI project:
 How to Build?
 -------------
 
-For cross-compiling, please ensure that CROSS_COMPILE environment
-variable is set before starting build system.
+For cross-compiling, the environment variable CROSS_COMPILE_PREFIX must be
+defined to specify the toolchain executable name prefix, e.g.
+"riscv64-unknown-elf-" for riscv64-unknown-elf-gcc.
 
 The libplatsbi.a and firmwares are optional and only built when
 `PLATFORM=<platform_subdir>` parameter is specified to top-level make.
