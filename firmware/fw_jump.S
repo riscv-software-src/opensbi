@@ -7,7 +7,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "fw_common.S"
+#include "fw_base.S"
 
 	.align 3
 	.section .entry, "ax", %progbits

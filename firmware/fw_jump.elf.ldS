@@ -12,5 +12,5 @@ ENTRY(_start)
 
 SECTIONS
 {
-	#include "fw_common.ldS"
+	#include "fw_base.ldS"
 }

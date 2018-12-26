@@ -12,7 +12,7 @@ ENTRY(_start)
 
 SECTIONS
 {
-	#include "fw_common.ldS"
+	#include "fw_base.ldS"
 
 	. = FW_TEXT_START + FW_PAYLOAD_OFFSET;
 
