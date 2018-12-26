@@ -46,11 +46,7 @@ static void __attribute__((noreturn)) init_coldboot(struct sbi_scratch *scratch,
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_platform_cold_irqchip_init(plat);
-	if (rc)
-		sbi_hart_hang();
-
-	rc = sbi_platform_warm_irqchip_init(plat, hartid);
+	rc = sbi_platform_irqchip_init(plat, hartid, TRUE);
 	if (rc)
 		sbi_hart_hang();
 
@@ -125,7 +121,7 @@ static void __attribute__((noreturn)) init_warmboot(struct sbi_scratch *scratch,
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_platform_warm_irqchip_init(plat, hartid);
+	rc = sbi_platform_irqchip_init(plat, hartid, FALSE);
 	if (rc)
 		sbi_hart_hang();
 

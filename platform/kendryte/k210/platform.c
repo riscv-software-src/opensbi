@@ -35,17 +35,21 @@ static char k210_console_getc(void)
 	return uarths_getc();
 }
 
-static int k210_cold_irqchip_init(void)
+static int k210_irqchip_init(u32 hartid, bool cold_boot)
 {
-	return plic_cold_irqchip_init(PLIC_BASE_ADDR, PLIC_NUM_SOURCES,
-				      K210_HART_COUNT);
-}
+	int rc;
 
-static int k210_warm_irqchip_init(u32 core_id)
-{
-	return plic_warm_irqchip_init(core_id,
-				      (2 * core_id),
-				      (2 * core_id + 1));
+	if (cold_boot) {
+		rc = plic_cold_irqchip_init(PLIC_BASE_ADDR,
+					    PLIC_NUM_SOURCES,
+					    K210_HART_COUNT);
+		if (rc)
+			return rc;
+	}
+
+	return plic_warm_irqchip_init(hartid,
+				      (2 * hartid),
+				      (2 * hartid + 1));
 }
 
 static int k210_cold_ipi_init(void)
@@ -87,8 +91,7 @@ struct sbi_platform platform = {
 	.console_putc = k210_console_putc,
 	.console_getc = k210_console_getc,
 
-	.cold_irqchip_init = k210_cold_irqchip_init,
-	.warm_irqchip_init = k210_warm_irqchip_init,
+	.irqchip_init = k210_irqchip_init,
 
 	.cold_ipi_init = k210_cold_ipi_init,
 	.warm_ipi_init = clint_warm_ipi_init,
