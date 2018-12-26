@@ -111,10 +111,19 @@ static int sifive_u_irqchip_init(u32 hartid, bool cold_boot)
 			(hartid) ? (2 * hartid) : -1);
 }
 
-static int sifive_u_cold_ipi_init(void)
+static int sifive_u_ipi_init(u32 hartid, bool cold_boot)
 {
-	return clint_cold_ipi_init(SIFIVE_U_CLINT_ADDR,
-				   SIFIVE_U_HART_COUNT);
+	int rc;
+
+	if (cold_boot) {
+		rc = clint_cold_ipi_init(SIFIVE_U_CLINT_ADDR,
+					 SIFIVE_U_HART_COUNT);
+		if (rc)
+			return rc;
+
+	}
+
+	return clint_warm_ipi_init(hartid);
 }
 
 static int sifive_u_cold_timer_init(void)
@@ -145,8 +154,7 @@ struct sbi_platform platform = {
 	.ipi_inject = clint_ipi_inject,
 	.ipi_sync = clint_ipi_sync,
 	.ipi_clear = clint_ipi_clear,
-	.warm_ipi_init = clint_warm_ipi_init,
-	.cold_ipi_init = sifive_u_cold_ipi_init,
+	.ipi_init = sifive_u_ipi_init,
 	.timer_value = clint_timer_value,
 	.timer_event_stop = clint_timer_event_stop,
 	.timer_event_start = clint_timer_event_start,

@@ -68,15 +68,11 @@ void sbi_ipi_process(struct sbi_scratch *scratch, u32 hartid)
 	scratch->ipi_type = 0;
 }
 
-int sbi_ipi_warm_init(struct sbi_scratch *scratch, u32 hartid)
+int sbi_ipi_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 {
 	/* Enable software interrupts */
 	csr_set(mie, MIP_MSIP);
 
-	return sbi_platform_warm_ipi_init(sbi_platform_ptr(scratch), hartid);
-}
-
-int sbi_ipi_cold_init(struct sbi_scratch *scratch)
-{
-	return sbi_platform_cold_ipi_init(sbi_platform_ptr(scratch));
+	return sbi_platform_ipi_init(sbi_platform_ptr(scratch),
+				     hartid, cold_boot);
 }

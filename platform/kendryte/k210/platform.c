@@ -52,9 +52,18 @@ static int k210_irqchip_init(u32 hartid, bool cold_boot)
 				      (2 * hartid + 1));
 }
 
-static int k210_cold_ipi_init(void)
+static int k210_ipi_init(u32 hartid, bool cold_boot)
 {
-	return clint_cold_ipi_init(CLINT_BASE_ADDR, K210_HART_COUNT);
+	int rc;
+
+	if (cold_boot) {
+		rc = clint_cold_ipi_init(CLINT_BASE_ADDR,
+					 K210_HART_COUNT);
+		if (rc)
+			return rc;
+	}
+
+	return clint_warm_ipi_init(hartid);
 }
 
 static int k210_cold_timer_init(void)
@@ -93,8 +102,7 @@ struct sbi_platform platform = {
 
 	.irqchip_init = k210_irqchip_init,
 
-	.cold_ipi_init = k210_cold_ipi_init,
-	.warm_ipi_init = clint_warm_ipi_init,
+	.ipi_init = k210_ipi_init,
 	.ipi_inject = clint_ipi_inject,
 	.ipi_sync = clint_ipi_sync,
 	.ipi_clear = clint_ipi_clear,

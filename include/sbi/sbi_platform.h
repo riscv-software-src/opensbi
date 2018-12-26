@@ -46,8 +46,7 @@ struct sbi_platform {
 	void (*ipi_inject)(u32 target_hart, u32 source_hart);
 	void (*ipi_sync)(u32 target_hart, u32 source_hart);
 	void (*ipi_clear)(u32 target_hart);
-	int (*cold_ipi_init)(void);
-	int (*warm_ipi_init)(u32 target_hart);
+	int (*ipi_init)(u32 hartid, bool cold_boot);
 	u64 (*timer_value)(void);
 	void (*timer_event_stop)(u32 target_hart);
 	void (*timer_event_start)(u32 target_hart, u64 next_event);
@@ -187,18 +186,11 @@ static inline void sbi_platform_ipi_clear(struct sbi_platform *plat,
 		plat->ipi_clear(target_hart);
 }
 
-static inline int sbi_platform_warm_ipi_init(struct sbi_platform *plat,
-					     u32 target_hart)
+static inline int sbi_platform_ipi_init(struct sbi_platform *plat,
+					u32 hartid, bool cold_boot)
 {
-	if (plat && plat->warm_ipi_init)
-		return plat->warm_ipi_init(target_hart);
-	return 0;
-}
-
-static inline int sbi_platform_cold_ipi_init(struct sbi_platform *plat)
-{
-	if (plat && plat->cold_ipi_init)
-		return plat->cold_ipi_init();
+	if (plat && plat->ipi_init)
+		return plat->ipi_init(hartid, cold_boot);
 	return 0;
 }
 

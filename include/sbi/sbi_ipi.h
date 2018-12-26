@@ -26,8 +26,6 @@ void sbi_ipi_clear_smode(struct sbi_scratch *scratch, u32 hartid);
 
 void sbi_ipi_process(struct sbi_scratch *scratch, u32 hartid);
 
-int sbi_ipi_warm_init(struct sbi_scratch *scratch, u32 hartid);
-
-int sbi_ipi_cold_init(struct sbi_scratch *scratch);
+int sbi_ipi_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot);
 
 #endif
