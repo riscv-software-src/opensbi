@@ -50,8 +50,7 @@ struct sbi_platform {
 	u64 (*timer_value)(void);
 	void (*timer_event_stop)(u32 target_hart);
 	void (*timer_event_start)(u32 target_hart, u64 next_event);
-	int (*cold_timer_init)(void);
-	int (*warm_timer_init)(u32 target_hart);
+	int (*timer_init)(u32 hartid, bool cold_boot);
 	int (*system_reboot)(u32 type);
 	int (*system_shutdown)(u32 type);
 } __attribute__((packed));
@@ -216,18 +215,11 @@ static inline void sbi_platform_timer_event_start(struct sbi_platform *plat,
 		plat->timer_event_start(target_hart, next_event);
 }
 
-static inline int sbi_platform_warm_timer_init(struct sbi_platform *plat,
-					       u32 target_hart)
+static inline int sbi_platform_timer_init(struct sbi_platform *plat,
+					  u32 hartid, bool cold_boot)
 {
-	if (plat && plat->warm_timer_init)
-		return plat->warm_timer_init(target_hart);
-	return 0;
-}
-
-static inline int sbi_platform_cold_timer_init(struct sbi_platform *plat)
-{
-	if (plat && plat->cold_timer_init)
-		return plat->cold_timer_init();
+	if (plat && plat->timer_init)
+		return plat->timer_init(hartid, cold_boot);
 	return 0;
 }
 
