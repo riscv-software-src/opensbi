@@ -42,8 +42,7 @@ struct sbi_platform {
 	void (*console_putc)(char ch);
 	char (*console_getc)(void);
 	int (*console_init)(void);
-	int (*cold_irqchip_init)(void);
-	int (*warm_irqchip_init)(u32 target_hart);
+	int (*irqchip_init)(u32 hartid, bool cold_boot);
 	void (*ipi_inject)(u32 target_hart, u32 source_hart);
 	void (*ipi_sync)(u32 target_hart, u32 source_hart);
 	void (*ipi_clear)(u32 target_hart);
@@ -159,18 +158,11 @@ static inline int sbi_platform_console_init(struct sbi_platform *plat)
 	return 0;
 }
 
-static inline int sbi_platform_warm_irqchip_init(struct sbi_platform *plat,
-						 u32 target_hart)
+static inline int sbi_platform_irqchip_init(struct sbi_platform *plat,
+					    u32 hartid, bool cold_boot)
 {
-	if (plat && plat->warm_irqchip_init)
-		return plat->warm_irqchip_init(target_hart);
-	return 0;
-}
-
-static inline int sbi_platform_cold_irqchip_init(struct sbi_platform *plat)
-{
-	if (plat && plat->cold_irqchip_init)
-		return plat->cold_irqchip_init();
+	if (plat && plat->irqchip_init)
+		return plat->irqchip_init(hartid, cold_boot);
 	return 0;
 }
 

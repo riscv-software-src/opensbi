@@ -75,18 +75,21 @@ static int virt_console_init(void)
 			     VIRT_UART_BAUDRATE, 0, 1);
 }
 
-static int virt_cold_irqchip_init(void)
+static int virt_irqchip_init(u32 hartid, bool cold_boot)
 {
-	return plic_cold_irqchip_init(VIRT_PLIC_ADDR,
-				      VIRT_PLIC_NUM_SOURCES,
-				      VIRT_HART_COUNT);
-}
+	int rc;
 
-static int virt_warm_irqchip_init(u32 target_hart)
-{
-	return plic_warm_irqchip_init(target_hart,
-				      (2 * target_hart),
-				      (2 * target_hart + 1));
+	if (cold_boot) {
+		rc = plic_cold_irqchip_init(VIRT_PLIC_ADDR,
+					    VIRT_PLIC_NUM_SOURCES,
+					    VIRT_HART_COUNT);
+		if (rc)
+			return rc;
+	}
+
+	return plic_warm_irqchip_init(hartid,
+				      (2 * hartid),
+				      (2 * hartid + 1));
 }
 
 static int virt_cold_ipi_init(void)
@@ -119,8 +122,7 @@ struct sbi_platform platform = {
 	.console_putc = uart8250_putc,
 	.console_getc = uart8250_getc,
 	.console_init = virt_console_init,
-	.cold_irqchip_init = virt_cold_irqchip_init,
-	.warm_irqchip_init = virt_warm_irqchip_init,
+	.irqchip_init = virt_irqchip_init,
 	.ipi_inject = clint_ipi_inject,
 	.ipi_sync = clint_ipi_sync,
 	.ipi_clear = clint_ipi_clear,

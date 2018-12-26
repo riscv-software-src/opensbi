@@ -74,18 +74,21 @@ static int sifive_u_console_init(void)
 				SIFIVE_U_PERIPH_CLK, 115200);
 }
 
-static int sifive_u_cold_irqchip_init(void)
+static int sifive_u_irqchip_init(u32 hartid, bool cold_boot)
 {
-	return plic_cold_irqchip_init(SIFIVE_U_PLIC_ADDR,
-				      SIFIVE_U_PLIC_NUM_SOURCES,
-				      SIFIVE_U_HART_COUNT);
-}
+	int rc;
 
-static int sifive_u_warm_irqchip_init(u32 target_hart)
-{
-	return plic_warm_irqchip_init(target_hart,
-				      (2 * target_hart),
-				      (2 * target_hart + 1));
+	if (cold_boot) {
+		rc = plic_cold_irqchip_init(SIFIVE_U_PLIC_ADDR,
+					    SIFIVE_U_PLIC_NUM_SOURCES,
+					    SIFIVE_U_HART_COUNT);
+		if (rc)
+			return rc;
+	}
+
+	return plic_warm_irqchip_init(hartid,
+				      (2 * hartid),
+				      (2 * hartid + 1));
 }
 
 static int sifive_u_cold_ipi_init(void)
@@ -118,8 +121,7 @@ struct sbi_platform platform = {
 	.console_putc = sifive_uart_putc,
 	.console_getc = sifive_uart_getc,
 	.console_init = sifive_u_console_init,
-	.cold_irqchip_init = sifive_u_cold_irqchip_init,
-	.warm_irqchip_init = sifive_u_warm_irqchip_init,
+	.irqchip_init = sifive_u_irqchip_init,
 	.ipi_inject = clint_ipi_inject,
 	.ipi_sync = clint_ipi_sync,
 	.ipi_clear = clint_ipi_clear,
