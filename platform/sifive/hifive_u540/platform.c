@@ -54,12 +54,12 @@ static int sifive_u_final_init(u32 hartid, bool cold_boot)
 	return 0;
 }
 
-static u32 sifive_u_pmp_region_count(u32 target_hart)
+static u32 sifive_u_pmp_region_count(u32 hartid)
 {
 	return 1;
 }
 
-static int sifive_u_pmp_region_info(u32 target_hart, u32 index,
+static int sifive_u_pmp_region_info(u32 hartid, u32 index,
 				    ulong *prot, ulong *addr, ulong *log2size)
 {
 	int ret = 0;
