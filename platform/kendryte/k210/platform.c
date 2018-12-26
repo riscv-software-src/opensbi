@@ -102,8 +102,6 @@ struct sbi_platform platform = {
 	.timer_event_start = clint_timer_event_start,
 	.warm_timer_init = clint_warm_timer_init,
 
-	.cold_final_init = NULL,
-
 	.system_reboot = k210_system_reboot,
 	.system_shutdown = k210_system_shutdown
 };

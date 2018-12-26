@@ -29,11 +29,15 @@
 #define SIFIVE_U_UART0_ADDR			0x10013000
 #define SIFIVE_U_UART1_ADDR			0x10023000
 
-static int sifive_u_cold_final_init(void)
+static int sifive_u_final_init(u32 hartid, bool cold_boot)
 {
 	u32 i;
-	void *fdt = sbi_scratch_thishart_arg1_ptr();
+	void *fdt;
 
+	if (!cold_boot)
+		return 0;
+
+	fdt = sbi_scratch_thishart_arg1_ptr();
 	for (i = 0; i < SIFIVE_U_HART_COUNT; i++)
 		plic_fdt_fixup(fdt, "riscv,plic0", 2 * i);
 
@@ -110,7 +114,7 @@ struct sbi_platform platform = {
 	.disabled_hart_mask = 0,
 	.pmp_region_count = sifive_u_pmp_region_count,
 	.pmp_region_info = sifive_u_pmp_region_info,
-	.cold_final_init = sifive_u_cold_final_init,
+	.final_init = sifive_u_final_init,
 	.console_putc = sifive_uart_putc,
 	.console_getc = sifive_uart_getc,
 	.console_init = sifive_u_console_init,
