@@ -36,8 +36,8 @@ struct sbi_platform {
 	u64 disabled_hart_mask;
 	int (*early_init)(u32 hartid, bool cold_boot);
 	int (*final_init)(u32 hartid, bool cold_boot);
-	u32 (*pmp_region_count)(u32 target_hart);
-	int (*pmp_region_info)(u32 target_hart, u32 index,
+	u32 (*pmp_region_count)(u32 hartid);
+	int (*pmp_region_info)(u32 hartid, u32 index,
 			       ulong *prot, ulong *addr, ulong *log2size);
 	void (*console_putc)(char ch);
 	char (*console_getc)(void);
@@ -117,21 +117,21 @@ static inline int sbi_platform_final_init(struct sbi_platform *plat,
 }
 
 static inline u32 sbi_platform_pmp_region_count(struct sbi_platform *plat,
-						u32 target_hart)
+						u32 hartid)
 {
 	if (plat && plat->pmp_region_count)
-		return plat->pmp_region_count(target_hart);
+		return plat->pmp_region_count(hartid);
 	return 0;
 }
 
 static inline int sbi_platform_pmp_region_info(struct sbi_platform *plat,
-					       u32 target_hart, u32 index,
+					       u32 hartid, u32 index,
 					       ulong *prot, ulong *addr,
 					       ulong *log2size)
 {
 	if (plat && plat->pmp_region_info)
-		return plat->pmp_region_info(target_hart, index,
-					      prot, addr, log2size);
+		return plat->pmp_region_info(hartid, index,
+					     prot, addr, log2size);
 	return 0;
 }
 
