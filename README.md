@@ -27,7 +27,7 @@ OpenSBI provides three components:
 Building and Installing generic *libsbi.a*
 ------------------------------------------
 
-For cross-compiling, the environment variable *CROSS_COMPILE_PREFIX* must
+For cross-compiling, the environment variable *CROSS_COMPILE* must
 be defined to specify the toolchain executable name prefix, e.g.
 *riscv64-unknown-elf-* if the gcc executable used is
 *riscv64-unknown-elf-gcc*.

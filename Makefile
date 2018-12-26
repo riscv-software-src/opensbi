@@ -102,7 +102,7 @@ deps-y+=$(lib-objs-path-y:.o=.dep)
 deps-y+=$(firmware-objs-path-y:.o=.dep)
 
 # Setup compilation environment
-cpp=$(CROSS_COMPILE_PREFIX)cpp
+cpp=$(CROSS_COMPILE)cpp
 cppflags+=-DOPENSBI_MAJOR=$(MAJOR)
 cppflags+=-DOPENSBI_MINOR=$(MINOR)
 cppflags+=-I$(platform_dir)/include
@@ -110,7 +110,7 @@ cppflags+=-I$(platform_common_dir)/include
 cppflags+=-I$(include_dir)
 cppflags+=$(platform-cppflags-y)
 cppflags+=$(firmware-cppflags-y)
-cc=$(CROSS_COMPILE_PREFIX)gcc
+cc=$(CROSS_COMPILE)gcc
 cflags=-g -Wall -Werror -nostdlib -fno-strict-aliasing -O2
 cflags+=-fno-omit-frame-pointer -fno-optimize-sibling-calls
 cflags+=-mno-save-restore -mstrict-align
@@ -118,7 +118,7 @@ cflags+=$(cppflags)
 cflags+=$(platform-cflags-y)
 cflags+=$(firmware-cflags-y)
 cflags+=$(EXTRA_CFLAGS)
-as=$(CROSS_COMPILE_PREFIX)gcc
+as=$(CROSS_COMPILE)gcc
 asflags=-g -Wall -nostdlib -D__ASSEMBLY__
 asflags+=-fno-omit-frame-pointer -fno-optimize-sibling-calls
 asflags+=-mno-save-restore -mstrict-align
@@ -126,15 +126,15 @@ asflags+=$(cppflags)
 asflags+=$(platform-asflags-y)
 asflags+=$(firmware-asflags-y)
 asflags+=$(EXTRA_ASFLAGS)
-ar=$(CROSS_COMPILE_PREFIX)ar
+ar=$(CROSS_COMPILE)ar
 arflags=rcs
-ld=$(CROSS_COMPILE_PREFIX)gcc
+ld=$(CROSS_COMPILE)gcc
 ldflags=-g -Wall -nostdlib -Wl,--build-id=none
 ldflags+=$(platform-ldflags-y)
 ldflags+=$(firmware-ldflags-y)
-merge=$(CROSS_COMPILE_PREFIX)ld
+merge=$(CROSS_COMPILE)ld
 mergeflags=-r
-objcopy=$(CROSS_COMPILE_PREFIX)objcopy
+objcopy=$(CROSS_COMPILE)objcopy
 
 # Setup functions for compilation
 define dynamic_flags
