@@ -11,24 +11,18 @@
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_system.h>
 
-int sbi_system_warm_early_init(struct sbi_scratch *scratch, u32 hartid)
+int sbi_system_early_init(struct sbi_scratch *scratch, u32 hartid,
+			  bool cold_boot)
 {
-	return sbi_platform_warm_early_init(sbi_platform_ptr(scratch), hartid);
+	return sbi_platform_early_init(sbi_platform_ptr(scratch),
+					hartid, cold_boot);
 }
 
-int sbi_system_warm_final_init(struct sbi_scratch *scratch, u32 hartid)
+int sbi_system_final_init(struct sbi_scratch *scratch, u32 hartid,
+			  bool cold_boot)
 {
-	return sbi_platform_warm_final_init(sbi_platform_ptr(scratch), hartid);
-}
-
-int sbi_system_cold_early_init(struct sbi_scratch *scratch)
-{
-	return sbi_platform_cold_early_init(sbi_platform_ptr(scratch));
-}
-
-int sbi_system_cold_final_init(struct sbi_scratch *scratch)
-{
-	return sbi_platform_cold_final_init(sbi_platform_ptr(scratch));
+	return sbi_platform_final_init(sbi_platform_ptr(scratch),
+					hartid, cold_boot);
 }
 
 void __attribute__((noreturn)) sbi_system_reboot(struct sbi_scratch *scratch,

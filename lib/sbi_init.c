@@ -34,11 +34,7 @@ static void __attribute__((noreturn)) init_coldboot(struct sbi_scratch *scratch,
 	char str[64];
 	struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	rc = sbi_system_cold_early_init(scratch);
-	if (rc)
-		sbi_hart_hang();
-
-	rc = sbi_system_warm_early_init(scratch, hartid);
+	rc = sbi_system_early_init(scratch, hartid, TRUE);
 	if (rc)
 		sbi_hart_hang();
 
@@ -74,11 +70,7 @@ static void __attribute__((noreturn)) init_coldboot(struct sbi_scratch *scratch,
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_system_cold_final_init(scratch);
-	if (rc)
-		sbi_hart_hang();
-
-	rc = sbi_system_warm_final_init(scratch, hartid);
+	rc = sbi_system_final_init(scratch, hartid, TRUE);
 	if (rc)
 		sbi_hart_hang();
 
@@ -125,7 +117,7 @@ static void __attribute__((noreturn)) init_warmboot(struct sbi_scratch *scratch,
 	if (sbi_platform_hart_disabled(plat, hartid))
 		sbi_hart_hang();
 
-	rc = sbi_system_warm_early_init(scratch, hartid);
+	rc = sbi_system_early_init(scratch, hartid, FALSE);
 	if (rc)
 		sbi_hart_hang();
 
@@ -145,7 +137,7 @@ static void __attribute__((noreturn)) init_warmboot(struct sbi_scratch *scratch,
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_system_warm_final_init(scratch, hartid);
+	rc = sbi_system_final_init(scratch, hartid, FALSE);
 	if (rc)
 		sbi_hart_hang();
 

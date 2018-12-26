@@ -34,10 +34,8 @@ struct sbi_platform {
 	u32 hart_count;
 	u32 hart_stack_size;
 	u64 disabled_hart_mask;
-	int (*cold_early_init)(void);
-	int (*cold_final_init)(void);
-	int (*warm_early_init)(u32 target_hart);
-	int (*warm_final_init)(u32 target_hart);
+	int (*early_init)(u32 hartid, bool cold_boot);
+	int (*final_init)(u32 hartid, bool cold_boot);
 	u32 (*pmp_region_count)(u32 target_hart);
 	int (*pmp_region_info)(u32 target_hart, u32 index,
 			       ulong *prot, ulong *addr, ulong *log2size);
@@ -105,33 +103,19 @@ static inline u32 sbi_platform_hart_stack_size(struct sbi_platform *plat)
 	return 0;
 }
 
-static inline int sbi_platform_cold_early_init(struct sbi_platform *plat)
+static inline int sbi_platform_early_init(struct sbi_platform *plat,
+					  u32 hartid, bool cold_boot)
 {
-	if (plat && plat->cold_early_init)
-		return plat->cold_early_init();
+	if (plat && plat->early_init)
+		return plat->early_init(hartid, cold_boot);
 	return 0;
 }
 
-static inline int sbi_platform_cold_final_init(struct sbi_platform *plat)
+static inline int sbi_platform_final_init(struct sbi_platform *plat,
+					  u32 hartid, bool cold_boot)
 {
-	if (plat && plat->cold_final_init)
-		return plat->cold_final_init();
-	return 0;
-}
-
-static inline int sbi_platform_warm_early_init(struct sbi_platform *plat,
-					       u32 target_hart)
-{
-	if (plat && plat->warm_early_init)
-		return plat->warm_early_init(target_hart);
-	return 0;
-}
-
-static inline int sbi_platform_warm_final_init(struct sbi_platform *plat,
-					       u32 target_hart)
-{
-	if (plat && plat->warm_final_init)
-		return plat->warm_final_init(target_hart);
+	if (plat && plat->final_init)
+		return plat->final_init(hartid, cold_boot);
 	return 0;
 }
 

@@ -29,11 +29,15 @@
 #define VIRT_UART_BAUDRATE		115200
 #define VIRT_UART_SHIFTREG_ADDR		1843200
 
-static int virt_cold_final_init(void)
+static int virt_final_init(u32 hartid, bool cold_boot)
 {
 	u32 i;
-	void *fdt = sbi_scratch_thishart_arg1_ptr();
+	void *fdt;
 
+	if (!cold_boot)
+		return 0;
+
+	fdt = sbi_scratch_thishart_arg1_ptr();
 	for (i = 0; i < VIRT_HART_COUNT; i++)
 		plic_fdt_fixup(fdt, "riscv,plic0", 2 * i);
 
@@ -111,7 +115,7 @@ struct sbi_platform platform = {
 	.disabled_hart_mask = 0,
 	.pmp_region_count = virt_pmp_region_count,
 	.pmp_region_info = virt_pmp_region_info,
-	.cold_final_init = virt_cold_final_init,
+	.final_init = virt_final_init,
 	.console_putc = uart8250_putc,
 	.console_getc = uart8250_getc,
 	.console_init = virt_console_init,
