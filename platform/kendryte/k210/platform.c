@@ -66,9 +66,18 @@ static int k210_ipi_init(u32 hartid, bool cold_boot)
 	return clint_warm_ipi_init(hartid);
 }
 
-static int k210_cold_timer_init(void)
+static int k210_timer_init(u32 hartid, bool cold_boot)
 {
-	return clint_cold_timer_init(CLINT_BASE_ADDR, K210_HART_COUNT);
+	int rc;
+
+	if (cold_boot) {
+		rc = clint_cold_timer_init(CLINT_BASE_ADDR,
+					   K210_HART_COUNT);
+		if (rc)
+			return rc;
+	}
+
+	return clint_warm_timer_init(hartid);
 }
 
 static int k210_system_reboot(u32 type)
@@ -107,11 +116,10 @@ struct sbi_platform platform = {
 	.ipi_sync = clint_ipi_sync,
 	.ipi_clear = clint_ipi_clear,
 
-	.cold_timer_init = k210_cold_timer_init,
+	.timer_init = k210_timer_init,
 	.timer_value = clint_timer_value,
 	.timer_event_stop = clint_timer_event_stop,
 	.timer_event_start = clint_timer_event_start,
-	.warm_timer_init = clint_warm_timer_init,
 
 	.system_reboot = k210_system_reboot,
 	.system_shutdown = k210_system_shutdown

@@ -106,10 +106,18 @@ static int virt_ipi_init(u32 hartid, bool cold_boot)
 	return clint_warm_ipi_init(hartid);
 }
 
-static int virt_cold_timer_init(void)
+static int virt_timer_init(u32 hartid, bool cold_boot)
 {
-	return clint_cold_timer_init(VIRT_CLINT_ADDR,
-				     VIRT_HART_COUNT);
+	int rc;
+
+	if (cold_boot) {
+		rc = clint_cold_timer_init(VIRT_CLINT_ADDR,
+					   VIRT_HART_COUNT);
+		if (rc)
+			return rc;
+	}
+
+	return clint_warm_timer_init(hartid);
 }
 
 static int virt_system_down(u32 type)
@@ -138,8 +146,7 @@ struct sbi_platform platform = {
 	.timer_value = clint_timer_value,
 	.timer_event_stop = clint_timer_event_stop,
 	.timer_event_start = clint_timer_event_start,
-	.warm_timer_init = clint_warm_timer_init,
-	.cold_timer_init = virt_cold_timer_init,
+	.timer_init = virt_timer_init,
 	.system_reboot = virt_system_down,
 	.system_shutdown = virt_system_down
 };

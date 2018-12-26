@@ -54,11 +54,7 @@ static void __attribute__((noreturn)) init_coldboot(struct sbi_scratch *scratch,
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_timer_cold_init(scratch);
-	if (rc)
-		sbi_hart_hang();
-
-	rc = sbi_timer_warm_init(scratch, hartid);
+	rc = sbi_timer_init(scratch, hartid, TRUE);
 	if (rc)
 		sbi_hart_hang();
 
@@ -125,7 +121,7 @@ static void __attribute__((noreturn)) init_warmboot(struct sbi_scratch *scratch,
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_timer_warm_init(scratch, hartid);
+	rc = sbi_timer_init(scratch, hartid, FALSE);
 	if (rc)
 		sbi_hart_hang();
 

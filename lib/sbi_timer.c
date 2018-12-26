@@ -67,12 +67,9 @@ void sbi_timer_process(struct sbi_scratch *scratch, u32 hartid)
 	csr_set(mip, MIP_STIP);
 }
 
-int sbi_timer_warm_init(struct sbi_scratch *scratch, u32 hartid)
+int sbi_timer_init(struct sbi_scratch *scratch, u32 hartid,
+		   bool cold_boot)
 {
-	return sbi_platform_warm_timer_init(sbi_platform_ptr(scratch), hartid);
-}
-
-int sbi_timer_cold_init(struct sbi_scratch *scratch)
-{
-	return sbi_platform_cold_timer_init(sbi_platform_ptr(scratch));
+	return sbi_platform_timer_init(sbi_platform_ptr(scratch),
+					hartid, cold_boot);
 }
