@@ -9,6 +9,7 @@
 
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_ecall.h>
+#include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_system.h>
@@ -17,16 +18,6 @@
 
 #define SBI_ECALL_VERSION_MAJOR			0
 #define SBI_ECALL_VERSION_MINOR			1
-
-#define SBI_ECALL_SET_TIMER			0
-#define SBI_ECALL_CONSOLE_PUTCHAR		1
-#define SBI_ECALL_CONSOLE_GETCHAR		2
-#define SBI_ECALL_CLEAR_IPI			3
-#define SBI_ECALL_SEND_IPI			4
-#define SBI_ECALL_REMOTE_FENCE_I		5
-#define SBI_ECALL_REMOTE_SFENCE_VMA		6
-#define SBI_ECALL_REMOTE_SFENCE_VMA_ASID	7
-#define SBI_ECALL_SHUTDOWN			8
 
 u16 sbi_ecall_version_major(void)
 {
