@@ -26,8 +26,7 @@ static int truly_illegal_insn(ulong insn,
 			      struct sbi_trap_regs *regs,
 			      struct sbi_scratch *scratch)
 {
-	/* For now, always fails */
-	return SBI_ENOTSUPP;
+	return sbi_trap_redirect(regs, scratch, regs->mepc, mcause, insn);
 }
 
 static int system_opcode_insn(ulong insn,
@@ -132,7 +131,8 @@ int sbi_illegal_insn_handler(u32 hartid, ulong mcause,
 			insn = get_insn(regs->mepc, &mstatus);
 		}
 		if ((insn & 3) != 3)
-			return SBI_ENOTSUPP;
+			return truly_illegal_insn(insn, hartid, mcause,
+						  regs, scratch);
 	}
 
 	return illegal_insn_table[(insn & 0x7c) >> 2](insn, hartid, mcause,

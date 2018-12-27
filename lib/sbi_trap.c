@@ -66,6 +66,49 @@ static void __attribute__((noreturn)) sbi_trap_error(const char *msg,
 	sbi_hart_hang();
 }
 
+int sbi_trap_redirect(struct sbi_trap_regs *regs,
+		      struct sbi_scratch *scratch,
+		      ulong epc, ulong cause, ulong tval)
+{
+	ulong new_mstatus, prev_mode;
+
+	/* Sanity check on previous mode */
+	prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
+	if (prev_mode != PRV_S && prev_mode != PRV_U)
+		return SBI_ENOTSUPP;
+
+	/* Update S-mode exception info */
+	csr_write(stval, tval);
+	csr_write(sepc, epc);
+	csr_write(scause, cause);
+
+	/* Set MEPC to S-mode exception vector base */
+	regs->mepc = csr_read(stvec);
+
+	/* Initial value of new MSTATUS */
+	new_mstatus = regs->mstatus;
+
+	/* Clear MPP, SPP, SPIE, and SIE */
+	new_mstatus &= ~(MSTATUS_MPP |
+			 MSTATUS_SPP | MSTATUS_SPIE | MSTATUS_SIE);
+
+	/* Set SPP */
+	if (prev_mode == PRV_S)
+		new_mstatus |= (1UL << MSTATUS_SPP_SHIFT);
+
+	/* Set SPIE */
+	if (regs->mstatus & MSTATUS_SIE)
+		new_mstatus |= (1UL << MSTATUS_SPIE_SHIFT);
+
+	/* Set MPP */
+	new_mstatus |= (PRV_S << MSTATUS_MPP_SHIFT);
+
+	/* Set new value in MSTATUS */
+	regs->mstatus = new_mstatus;
+
+	return 0;
+}
+
 void sbi_trap_handler(struct sbi_trap_regs *regs,
 		      struct sbi_scratch *scratch)
 {

@@ -51,6 +51,10 @@ struct sbi_trap_regs {
 
 struct sbi_scratch;
 
+int sbi_trap_redirect(struct sbi_trap_regs *regs,
+		      struct sbi_scratch *scratch,
+		      ulong epc, ulong cause, ulong tval);
+
 void sbi_trap_handler(struct sbi_trap_regs *regs,
 		      struct sbi_scratch *scratch);
 
