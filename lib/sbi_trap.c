@@ -21,13 +21,15 @@
 
 static void __attribute__((noreturn)) sbi_trap_error(const char *msg,
 						int rc, u32 hartid,
-						ulong mcause,
+						ulong mcause, ulong mtval,
 						struct sbi_trap_regs *regs)
 {
 	sbi_printf("%s: hart%d: %s (error %d)\n",
 		   __func__, hartid, msg, rc);
-	sbi_printf("%s: hart%d: mcause=0x%lx mepc=0x%lx mstatus=0x%lx\n",
-		   __func__, hartid, mcause, regs->mepc, regs->mstatus);
+	sbi_printf("%s: hart%d: mcause=0x%lx mtval=0x%lx\n",
+		   __func__, hartid, mcause, mtval);
+	sbi_printf("%s: hart%d: mepc=0x%lx mstatus=0x%lx\n",
+		   __func__, hartid, regs->mepc, regs->mstatus);
 	sbi_printf("%s: hart%d: %s=0x%lx %s=0x%lx\n",
 		   __func__, hartid, "ra", regs->ra, "sp", regs->sp);
 	sbi_printf("%s: hart%d: %s=0x%lx %s=0x%lx\n",
@@ -67,8 +69,8 @@ static void __attribute__((noreturn)) sbi_trap_error(const char *msg,
 void sbi_trap_handler(struct sbi_trap_regs *regs,
 		      struct sbi_scratch *scratch)
 {
-	int rc;
-	const char *msg;
+	int rc = SBI_ENOTSUPP;
+	const char *msg = "trap handler failed";
 	u32 hartid = sbi_current_hartid();
 	ulong mcause = csr_read(mcause);
 
@@ -82,15 +84,12 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 			sbi_ipi_process(scratch, hartid);
 			break;
 		default:
-			sbi_trap_error("unhandled external interrupt",
-					SBI_ENOTSUPP, hartid, mcause, regs);
-			break;
+			msg = "unhandled external interrupt";
+			goto trap_error;
 		};
 		return;
 	}
 
-	rc = SBI_ENOTSUPP;
-	msg = "trap handler failed";
 	switch (mcause) {
 	case CAUSE_ILLEGAL_INSTRUCTION:
 		rc = sbi_illegal_insn_handler(hartid, mcause, regs, scratch);
@@ -113,7 +112,8 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 		break;
 	};
 
+trap_error:
 	if (rc) {
-		sbi_trap_error(msg, rc, hartid, mcause, regs);
+		sbi_trap_error(msg, rc, hartid, mcause, csr_read(mtval), regs);
 	}
 }
