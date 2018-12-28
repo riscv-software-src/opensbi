@@ -4,10 +4,9 @@ RISC-V Open Source Supervisor Binary Interface (OpenSBI)
 The **RISC-V Supervisor Binary Interface (SBI)** is a recommended
 interface between:
 
-1. A pplatform specific firmware executed in M-mode and a general purpose
-   OS hypervisor or bootloader executed in S-mode or HS-mode.
-2. A hypervisor executed in HS-mode and a general purpose OS or bootloader
-   executed in VS-mode
+1. A platform specific firmware (M-mode) and a general purpose
+   OS or hypervisor or bootloader (S-mode or HS-mode).
+2. A hypervisor (HS-mode) and a general purpose OS or bootloader (VS-mode)
 
 The *RISC-V SBI specification* is maintained as an independent project
 by the RISC-V Foundation in [Github](https://github.com/riscv/riscv-sbi-doc)
@@ -59,17 +58,16 @@ Building and Installing platform specific *libsbi.a* and firmwares
 ------------------------------------------------------------------
 
 The libplatsbi.a and firmware files are only built if the
-*PLATFORM=<platform path>* argument is specified on make command lines.
-*<platform path>* must specify the path to one of the leaf directories
-under the *platform* directory. For example, to compile the library and
-firmware for QEMU generic RISC-V *virt* machine, *<platform path>*
-should be *qemu/virt*.
+*`PLATFORM=<platform_subdir>`* argument is specified on make command lines.
+*`<platform_subdir>`* must specify the path to one of the leaf directories
+under the *`platform`* directory. For example, to compile the library and
+firmware for QEMU RISC-V *virt* machine, *`<platform_subdir>`*
+should be *`qemu/virt`*.
 
 To build *libsbi, libplatsbi, and firmwares* for a specific platform, run:
 ```
 make PLATFORM=<platform_subdir>
 ```
-
 or
 
 ```
@@ -80,7 +78,6 @@ To install *libsbi, headers, libplatsbi, and firmwares*, run:
 ```
 make PLATFORM=<platform_subdir> install
 ```
-
 or
 
 ```
@@ -88,7 +85,7 @@ make PLATFORM=<platform_subdir> I=<install_directory> install`
 ```
 
 In addition, platform specific make command-line options to top-level make
-,such as *PLATFORM_<xyz>* or *FW_<abc>* can also be specified. These
+, such as *PLATFORM_<xyz>* or *FW_<abc>* can also be specified. These
 options are described under *docs/platform/<platform_name>.md* and
 *docs/firmware/<firmware_name>.md*.
 
