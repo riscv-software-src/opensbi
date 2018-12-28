@@ -1,0 +1,172 @@
+/*
+ * Copyright (c) 2018 Western Digital Corporation or its affiliates.
+ *
+ * Authors:
+ *   Atish Patra <atish.patra@wdc.com>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include <sbi/riscv_encoding.h>
+#include <sbi/sbi_const.h>
+#include <sbi/sbi_platform.h>
+#include <sbi/riscv_io.h>
+#include <plat/irqchip/plic.h>
+#include <plat/serial/sifive-uart.h>
+#include <plat/sys/clint.h>
+
+#define FU540_HART_COUNT			5
+#define FU540_HART_STACK_SIZE			8192
+
+#define FU540_SYS_CLK				1000000000
+
+#define FU540_CLINT_ADDR			0x2000000
+
+#define FU540_PLIC_ADDR				0xc000000
+#define FU540_PLIC_NUM_SOURCES			0x35
+#define FU540_PLIC_NUM_PRIORITIES		7
+
+#define FU540_UART0_ADDR			0x10010000
+#define FU540_UART1_ADDR			0x10011000
+#define FU540_UART_BAUDRATE			115200
+
+#define FU540_HARITD_ENABLED			1
+
+/* PRCI clock related macros */
+//TODO: Do we need a separate driver for this ?
+#define FU540_PRCI_BASE_ADDR			0x10000000
+#define FU540_PRCI_CLKMUXSTATUSREG    		0x002C
+#define FU540_PRCI_CLKMUX_STATUS_TLCLKSEL      (0x1 << 1)
+
+static int fu540_final_init(u32 hartid, bool cold_boot)
+{
+	u32 i;
+	void *fdt;
+
+	if (!cold_boot)
+		return 0;
+
+	fdt = sbi_scratch_thishart_arg1_ptr();
+	plic_fdt_fixup(fdt, "riscv,plic0", 0);
+	for (i = 1; i < FU540_HART_COUNT; i++)
+		plic_fdt_fixup(fdt, "riscv,plic0", 2 * i - 1);
+
+	return 0;
+}
+
+static u32 fu540_pmp_region_count(u32 hartid)
+{
+	return 1;
+}
+
+static int fu540_pmp_region_info(u32 hartid, u32 index,
+				 ulong *prot, ulong *addr, ulong *log2size)
+{
+	int ret = 0;
+
+	switch (index) {
+	case 0:
+		*prot = PMP_R | PMP_W | PMP_X;
+		*addr = 0;
+		*log2size = __riscv_xlen;
+		break;
+	default:
+		ret = -1;
+		break;
+	};
+
+	return ret;
+}
+
+static int fu540_console_init(void)
+{
+	unsigned long peri_in_freq;
+
+	if (readl((volatile void *)FU540_PRCI_BASE_ADDR +
+		  FU540_PRCI_CLKMUXSTATUSREG) &
+		  FU540_PRCI_CLKMUX_STATUS_TLCLKSEL) {
+		peri_in_freq = FU540_SYS_CLK;
+	} else {
+		peri_in_freq = FU540_SYS_CLK / 2;
+	}
+
+	return sifive_uart_init(FU540_UART0_ADDR,
+				peri_in_freq, FU540_UART_BAUDRATE);
+}
+
+static int fu540_irqchip_init(u32 hartid, bool cold_boot)
+{
+	int rc;
+
+	if (cold_boot) {
+		rc = plic_cold_irqchip_init(FU540_PLIC_ADDR,
+					    FU540_PLIC_NUM_SOURCES,
+					    FU540_HART_COUNT);
+		if (rc)
+			return rc;
+	}
+
+	return plic_warm_irqchip_init(hartid,
+			(hartid) ? (2 * hartid - 1) : 0,
+			(hartid) ? (2 * hartid) : -1);
+}
+
+static int fu540_ipi_init(u32 hartid, bool cold_boot)
+{
+	int rc;
+
+	if (cold_boot) {
+		rc = clint_cold_ipi_init(FU540_CLINT_ADDR,
+					 FU540_HART_COUNT);
+		if (rc)
+			return rc;
+
+	}
+
+	return clint_warm_ipi_init(hartid);
+}
+
+static int fu540_timer_init(u32 hartid, bool cold_boot)
+{
+	int rc;
+
+	if (cold_boot) {
+		rc = clint_cold_timer_init(FU540_CLINT_ADDR,
+					   FU540_HART_COUNT);
+		if (rc)
+			return rc;
+	}
+
+	return clint_warm_timer_init(hartid);
+}
+
+static int fu540_system_down(u32 type)
+{
+	/* For now nothing to do. */
+	return 0;
+}
+
+struct sbi_platform platform = {
+	.name = "SiFive Freedom U540",
+	.features = SBI_PLATFORM_DEFAULT_FEATURES,
+	.hart_count = FU540_HART_COUNT,
+	.hart_stack_size = FU540_HART_STACK_SIZE,
+	.disabled_hart_mask = ~(1 << FU540_HARITD_ENABLED),
+	.pmp_region_count = fu540_pmp_region_count,
+	.pmp_region_info = fu540_pmp_region_info,
+	.final_init = fu540_final_init,
+	.console_putc = sifive_uart_putc,
+	.console_getc = sifive_uart_getc,
+	.console_init = fu540_console_init,
+	.irqchip_init = fu540_irqchip_init,
+	.ipi_inject = clint_ipi_inject,
+	.ipi_sync = clint_ipi_sync,
+	.ipi_clear = clint_ipi_clear,
+	.ipi_init = fu540_ipi_init,
+	.timer_value = clint_timer_value,
+	.timer_event_stop = clint_timer_event_stop,
+	.timer_event_start = clint_timer_event_start,
+	.timer_init = fu540_timer_init,
+	.system_reboot = fu540_system_down,
+	.system_shutdown = fu540_system_down
+};
