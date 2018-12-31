@@ -9,6 +9,7 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
+#include <sbi/sbi_scratch.h>
 
 	.align 3
 	.section .entry, "ax", %progbits
@@ -146,34 +147,34 @@ _start_warm:
 	add	tp, tp, a5
 	mul	a5, s8, s6
 	sub	tp, tp, a5
-	li	a5, RISCV_SCRATCH_SIZE
+	li	a5, SBI_SCRATCH_SIZE
 	sub	tp, tp, a5
 	csrw	mscratch, tp
 
 	/* Initialize scratch space */
-	REG_S	zero, RISCV_SCRATCH_TMP0_OFFSET(tp)
+	REG_S	zero, SBI_SCRATCH_TMP0_OFFSET(tp)
 	la	a4, _fw_start
 	la	a5, _fw_end
 	mul	t0, s7, s8
 	add	a5, a5, t0
 	sub	a5, a5, a4
-	REG_S	a4, RISCV_SCRATCH_FW_START_OFFSET(tp)
-	REG_S	a5, RISCV_SCRATCH_FW_SIZE_OFFSET(tp)
+	REG_S	a4, SBI_SCRATCH_FW_START_OFFSET(tp)
+	REG_S	a5, SBI_SCRATCH_FW_SIZE_OFFSET(tp)
 	/* Note: fw_next_arg1() uses a0, a1, and ra */
 	call	fw_next_arg1
-	REG_S	a0, RISCV_SCRATCH_NEXT_ARG1_OFFSET(tp)
+	REG_S	a0, SBI_SCRATCH_NEXT_ARG1_OFFSET(tp)
 	/* Note: fw_next_addr() uses a0, a1, and ra */
 	call	fw_next_addr
-	REG_S	a0, RISCV_SCRATCH_NEXT_ADDR_OFFSET(tp)
+	REG_S	a0, SBI_SCRATCH_NEXT_ADDR_OFFSET(tp)
 	li	a4, PRV_S
-	REG_S	a4, RISCV_SCRATCH_NEXT_MODE_OFFSET(tp)
+	REG_S	a4, SBI_SCRATCH_NEXT_MODE_OFFSET(tp)
 	la	a4, _start_warm
-	REG_S	a4, RISCV_SCRATCH_WARMBOOT_ADDR_OFFSET(tp)
+	REG_S	a4, SBI_SCRATCH_WARMBOOT_ADDR_OFFSET(tp)
 	la	a4, platform
-	REG_S	a4, RISCV_SCRATCH_PLATFORM_ADDR_OFFSET(tp)
+	REG_S	a4, SBI_SCRATCH_PLATFORM_ADDR_OFFSET(tp)
 	la	a4, _hartid_to_scratch
-	REG_S	a4, RISCV_SCRATCH_HARTID_TO_SCRATCH_OFFSET(tp)
-	REG_S	zero, RISCV_SCRATCH_IPI_TYPE_OFFSET(tp)
+	REG_S	a4, SBI_SCRATCH_HARTID_TO_SCRATCH_OFFSET(tp)
+	REG_S	zero, SBI_SCRATCH_IPI_TYPE_OFFSET(tp)
 
 	/* Setup stack */
 	add	sp, tp, zero
@@ -211,7 +212,7 @@ _hartid_to_scratch:
 	add	s1, s1, s2
 	mul	s2, s0, a0
 	sub	s1, s1, s2
-	li	s2, RISCV_SCRATCH_SIZE
+	li	s2, SBI_SCRATCH_SIZE
 	sub	a0, s1, s2
 	REG_L	s0, (sp)
 	REG_L	s1, (__SIZEOF_POINTER__)(sp)
