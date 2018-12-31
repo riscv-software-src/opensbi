@@ -10,6 +10,13 @@
 #ifndef __SBI_PLATFORM_H__
 #define __SBI_PLATFORM_H__
 
+#define SBI_PLATFORM_NAME_OFFSET		(0x0)
+#define SBI_PLATFORM_FEATURES_OFFSET		(0x40)
+#define SBI_PLATFORM_HART_COUNT_OFFSET		(0x48)
+#define SBI_PLATFORM_HART_STACK_SIZE_OFFSET	(0x4c)
+
+#ifndef __ASSEMBLY__
+
 #include <sbi/sbi_scratch.h>
 
 enum sbi_platform_features {
@@ -238,5 +245,7 @@ static inline int sbi_platform_system_shutdown(struct sbi_platform *plat,
 		return plat->system_shutdown(type);
 	return 0;
 }
+
+#endif
 
 #endif

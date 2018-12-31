@@ -9,6 +9,7 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
+#include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
 
 	.align 3
@@ -134,8 +135,8 @@ _start_warm:
 	 */
 	csrr	s6, mhartid
 	la	a4, platform
-	lwu	s7, RISCV_PLATFORM_HART_COUNT_OFFSET(a4)
-	lwu	s8, RISCV_PLATFORM_HART_STACK_SIZE_OFFSET(a4)
+	lwu	s7, SBI_PLATFORM_HART_COUNT_OFFSET(a4)
+	lwu	s8, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(a4)
 
 	/* HART ID should be within expected limit */
 	csrr	s6, mhartid
@@ -205,8 +206,8 @@ _hartid_to_scratch:
 	 * s2 -> Temporary
 	 */
 	la	s2, platform
-	lwu	s0, RISCV_PLATFORM_HART_STACK_SIZE_OFFSET(s2)
-	lwu	s2, RISCV_PLATFORM_HART_COUNT_OFFSET(s2)
+	lwu	s0, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(s2)
+	lwu	s2, SBI_PLATFORM_HART_COUNT_OFFSET(s2)
 	mul	s2, s2, s0
 	la	s1, _fw_end
 	add	s1, s1, s2
