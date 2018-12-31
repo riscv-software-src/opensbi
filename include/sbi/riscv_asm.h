@@ -69,46 +69,6 @@
 #error "Unexpected __SIZEOF_SHORT__"
 #endif
 
-#define RISCV_TRAP_REGS_zero			0
-#define RISCV_TRAP_REGS_ra			1
-#define RISCV_TRAP_REGS_sp			2
-#define RISCV_TRAP_REGS_gp			3
-#define RISCV_TRAP_REGS_tp			4
-#define RISCV_TRAP_REGS_t0			5
-#define RISCV_TRAP_REGS_t1			6
-#define RISCV_TRAP_REGS_t2			7
-#define RISCV_TRAP_REGS_s0			8
-#define RISCV_TRAP_REGS_s1			9
-#define RISCV_TRAP_REGS_a0			10
-#define RISCV_TRAP_REGS_a1			11
-#define RISCV_TRAP_REGS_a2			12
-#define RISCV_TRAP_REGS_a3			13
-#define RISCV_TRAP_REGS_a4			14
-#define RISCV_TRAP_REGS_a5			15
-#define RISCV_TRAP_REGS_a6			16
-#define RISCV_TRAP_REGS_a7			17
-#define RISCV_TRAP_REGS_s2			18
-#define RISCV_TRAP_REGS_s3			19
-#define RISCV_TRAP_REGS_s4			20
-#define RISCV_TRAP_REGS_s5			21
-#define RISCV_TRAP_REGS_s6			22
-#define RISCV_TRAP_REGS_s7			23
-#define RISCV_TRAP_REGS_s8			24
-#define RISCV_TRAP_REGS_s9			25
-#define RISCV_TRAP_REGS_s10			26
-#define RISCV_TRAP_REGS_s11			27
-#define RISCV_TRAP_REGS_t3			28
-#define RISCV_TRAP_REGS_t4			29
-#define RISCV_TRAP_REGS_t5			30
-#define RISCV_TRAP_REGS_t6			31
-#define RISCV_TRAP_REGS_mepc			32
-#define RISCV_TRAP_REGS_mstatus			33
-#define RISCV_TRAP_REGS_last			34
-
-#define RISCV_TRAP_REGS_OFFSET(x)		\
-				((RISCV_TRAP_REGS_##x) * __SIZEOF_POINTER__)
-#define RISCV_TRAP_REGS_SIZE			RISCV_TRAP_REGS_OFFSET(last)
-
 #ifndef __ASSEMBLY__
 
 #define csr_swap(csr, val)					\
