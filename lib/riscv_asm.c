@@ -17,64 +17,64 @@ unsigned long csr_read_num(int csr_num)
 
 	switch (csr_num) {
 	case CSR_PMPCFG0:
-		ret = csr_read_n(CSR_PMPCFG0);
+		ret = csr_read(CSR_PMPCFG0);
 		break;
 	case CSR_PMPCFG1:
-		ret = csr_read_n(CSR_PMPCFG1);
+		ret = csr_read(CSR_PMPCFG1);
 		break;
 	case CSR_PMPCFG2:
-		ret = csr_read_n(CSR_PMPCFG2);
+		ret = csr_read(CSR_PMPCFG2);
 		break;
 	case CSR_PMPCFG3:
-		ret = csr_read_n(CSR_PMPCFG3);
+		ret = csr_read(CSR_PMPCFG3);
 		break;
 	case CSR_PMPADDR0:
-		ret = csr_read_n(CSR_PMPADDR0);
+		ret = csr_read(CSR_PMPADDR0);
 		break;
 	case CSR_PMPADDR1:
-		ret = csr_read_n(CSR_PMPADDR1);
+		ret = csr_read(CSR_PMPADDR1);
 		break;
 	case CSR_PMPADDR2:
-		ret = csr_read_n(CSR_PMPADDR2);
+		ret = csr_read(CSR_PMPADDR2);
 		break;
 	case CSR_PMPADDR3:
-		ret = csr_read_n(CSR_PMPADDR3);
+		ret = csr_read(CSR_PMPADDR3);
 		break;
 	case CSR_PMPADDR4:
-		ret = csr_read_n(CSR_PMPADDR4);
+		ret = csr_read(CSR_PMPADDR4);
 		break;
 	case CSR_PMPADDR5:
-		ret = csr_read_n(CSR_PMPADDR5);
+		ret = csr_read(CSR_PMPADDR5);
 		break;
 	case CSR_PMPADDR6:
-		ret = csr_read_n(CSR_PMPADDR6);
+		ret = csr_read(CSR_PMPADDR6);
 		break;
 	case CSR_PMPADDR7:
-		ret = csr_read_n(CSR_PMPADDR7);
+		ret = csr_read(CSR_PMPADDR7);
 		break;
 	case CSR_PMPADDR8:
-		ret = csr_read_n(CSR_PMPADDR8);
+		ret = csr_read(CSR_PMPADDR8);
 		break;
 	case CSR_PMPADDR9:
-		ret = csr_read_n(CSR_PMPADDR9);
+		ret = csr_read(CSR_PMPADDR9);
 		break;
 	case CSR_PMPADDR10:
-		ret = csr_read_n(CSR_PMPADDR10);
+		ret = csr_read(CSR_PMPADDR10);
 		break;
 	case CSR_PMPADDR11:
-		ret = csr_read_n(CSR_PMPADDR11);
+		ret = csr_read(CSR_PMPADDR11);
 		break;
 	case CSR_PMPADDR12:
-		ret = csr_read_n(CSR_PMPADDR12);
+		ret = csr_read(CSR_PMPADDR12);
 		break;
 	case CSR_PMPADDR13:
-		ret = csr_read_n(CSR_PMPADDR13);
+		ret = csr_read(CSR_PMPADDR13);
 		break;
 	case CSR_PMPADDR14:
-		ret = csr_read_n(CSR_PMPADDR14);
+		ret = csr_read(CSR_PMPADDR14);
 		break;
 	case CSR_PMPADDR15:
-		ret = csr_read_n(CSR_PMPADDR15);
+		ret = csr_read(CSR_PMPADDR15);
 		break;
 	default:
 		break;
@@ -87,64 +87,64 @@ void csr_write_num(int csr_num, unsigned long val)
 {
 	switch (csr_num) {
 	case CSR_PMPCFG0:
-		csr_write_n(CSR_PMPCFG0, val);
+		csr_write(CSR_PMPCFG0, val);
 		break;
 	case CSR_PMPCFG1:
-		csr_write_n(CSR_PMPCFG1, val);
+		csr_write(CSR_PMPCFG1, val);
 		break;
 	case CSR_PMPCFG2:
-		csr_write_n(CSR_PMPCFG2, val);
+		csr_write(CSR_PMPCFG2, val);
 		break;
 	case CSR_PMPCFG3:
-		csr_write_n(CSR_PMPCFG3, val);
+		csr_write(CSR_PMPCFG3, val);
 		break;
 	case CSR_PMPADDR0:
-		csr_write_n(CSR_PMPADDR0, val);
+		csr_write(CSR_PMPADDR0, val);
 		break;
 	case CSR_PMPADDR1:
-		csr_write_n(CSR_PMPADDR1, val);
+		csr_write(CSR_PMPADDR1, val);
 		break;
 	case CSR_PMPADDR2:
-		csr_write_n(CSR_PMPADDR2, val);
+		csr_write(CSR_PMPADDR2, val);
 		break;
 	case CSR_PMPADDR3:
-		csr_write_n(CSR_PMPADDR3, val);
+		csr_write(CSR_PMPADDR3, val);
 		break;
 	case CSR_PMPADDR4:
-		csr_write_n(CSR_PMPADDR4, val);
+		csr_write(CSR_PMPADDR4, val);
 		break;
 	case CSR_PMPADDR5:
-		csr_write_n(CSR_PMPADDR5, val);
+		csr_write(CSR_PMPADDR5, val);
 		break;
 	case CSR_PMPADDR6:
-		csr_write_n(CSR_PMPADDR6, val);
+		csr_write(CSR_PMPADDR6, val);
 		break;
 	case CSR_PMPADDR7:
-		csr_write_n(CSR_PMPADDR7, val);
+		csr_write(CSR_PMPADDR7, val);
 		break;
 	case CSR_PMPADDR8:
-		csr_write_n(CSR_PMPADDR8, val);
+		csr_write(CSR_PMPADDR8, val);
 		break;
 	case CSR_PMPADDR9:
-		csr_write_n(CSR_PMPADDR9, val);
+		csr_write(CSR_PMPADDR9, val);
 		break;
 	case CSR_PMPADDR10:
-		csr_write_n(CSR_PMPADDR10, val);
+		csr_write(CSR_PMPADDR10, val);
 		break;
 	case CSR_PMPADDR11:
-		csr_write_n(CSR_PMPADDR11, val);
+		csr_write(CSR_PMPADDR11, val);
 		break;
 	case CSR_PMPADDR12:
-		csr_write_n(CSR_PMPADDR12, val);
+		csr_write(CSR_PMPADDR12, val);
 		break;
 	case CSR_PMPADDR13:
-		csr_write_n(CSR_PMPADDR13, val);
+		csr_write(CSR_PMPADDR13, val);
 		break;
 	case CSR_PMPADDR14:
-		csr_write_n(CSR_PMPADDR14, val);
+		csr_write(CSR_PMPADDR14, val);
 		break;
 	case CSR_PMPADDR15:
-		csr_write_n(CSR_PMPADDR15, val);
+		csr_write(CSR_PMPADDR15, val);
 		break;
 	default:
 		break;
