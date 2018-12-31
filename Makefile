@@ -285,26 +285,26 @@ install_firmwares: $(build_dir)/$(platform_subdir)/lib/libplatsbi.a $(build_dir)
 .PHONY: clean
 clean:
 	$(V)mkdir -p $(build_dir)
-	$(if $(V), @echo " RM        <build_directory>/*.o")
+	$(if $(V), @echo " RM        $(build_dir)/*.o")
 	$(V)find $(build_dir) -type f -name "*.o" -exec rm -rf {} +
-	$(if $(V), @echo " RM        <build_directory>/*.a")
+	$(if $(V), @echo " RM        $(build_dir)/*.a")
 	$(V)find $(build_dir) -type f -name "*.a" -exec rm -rf {} +
-	$(if $(V), @echo " RM        <build_directory>/*.elf")
+	$(if $(V), @echo " RM        $(build_dir)/*.elf")
 	$(V)find $(build_dir) -type f -name "*.elf" -exec rm -rf {} +
-	$(if $(V), @echo " RM        <build_directory>/*.bin")
+	$(if $(V), @echo " RM        $(build_dir)/*.bin")
 	$(V)find $(build_dir) -type f -name "*.bin" -exec rm -rf {} +
 
 # Rule for "make distclean"
 .PHONY: distclean
 distclean: clean
 	$(V)mkdir -p $(build_dir)
-	$(if $(V), @echo " RM        <build_directory>/*.dep")
+	$(if $(V), @echo " RM        $(build_dir)/*.dep")
 	$(V)find $(build_dir) -type f -name "*.dep" -exec rm -rf {} +
 ifeq ($(build_dir),$(CURDIR)/build)
-	$(if $(V), @echo " RM        <build_directory>")
+	$(if $(V), @echo " RM        $(build_dir)")
 	$(V)rm -rf $(build_dir)
 endif
 ifeq ($(install_dir),$(CURDIR)/install)
-	$(if $(V), @echo " RM        <install_directory>")
+	$(if $(V), @echo " RM        $(install_dir)")
 	$(V)rm -rf $(install_dir)
 endif
