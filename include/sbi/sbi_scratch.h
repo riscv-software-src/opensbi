@@ -11,6 +11,21 @@
 #define __SBI_SCRATCH_H__
 
 #include <sbi/riscv_asm.h>
+
+#define SBI_SCRATCH_TMP0_OFFSET			(0 * __SIZEOF_POINTER__)
+#define SBI_SCRATCH_FW_START_OFFSET		(1 * __SIZEOF_POINTER__)
+#define SBI_SCRATCH_FW_SIZE_OFFSET		(2 * __SIZEOF_POINTER__)
+#define SBI_SCRATCH_NEXT_ARG1_OFFSET		(3 * __SIZEOF_POINTER__)
+#define SBI_SCRATCH_NEXT_ADDR_OFFSET		(4 * __SIZEOF_POINTER__)
+#define SBI_SCRATCH_NEXT_MODE_OFFSET		(5 * __SIZEOF_POINTER__)
+#define SBI_SCRATCH_WARMBOOT_ADDR_OFFSET	(6 * __SIZEOF_POINTER__)
+#define SBI_SCRATCH_PLATFORM_ADDR_OFFSET	(7 * __SIZEOF_POINTER__)
+#define SBI_SCRATCH_HARTID_TO_SCRATCH_OFFSET	(8 * __SIZEOF_POINTER__)
+#define SBI_SCRATCH_IPI_TYPE_OFFSET		(9 * __SIZEOF_POINTER__)
+#define SBI_SCRATCH_SIZE			256
+
+#ifndef __ASSEMBLY__
+
 #include <sbi/sbi_types.h>
 
 struct sbi_scratch {
@@ -31,5 +46,7 @@ struct sbi_scratch {
 
 #define sbi_scratch_thishart_arg1_ptr()	\
 ((void *)(sbi_scratch_thishart_ptr()->next_arg1))
+
+#endif
 
 #endif
