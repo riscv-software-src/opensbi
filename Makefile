@@ -165,7 +165,7 @@ inst_header_dir =  $(CMD_PREFIX)mkdir -p $(1); \
 	     cp -rf $(2) $(1)
 compile_cpp = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " CPP       $(subst $(build_dir)/,,$(1))"; \
-	     $(CPP) $(CPPFLAGS) $(2) | grep -v "\#" > $(1)
+	     $(CPP) $(CPPFLAGS) -x c $(2) | grep -v "\#" > $(1)
 compile_cc_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " CC-DEP    $(subst $(build_dir)/,,$(1))"; \
 	     echo -n `dirname $(1)`/ > $(1) && \
