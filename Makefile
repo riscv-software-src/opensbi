@@ -91,20 +91,23 @@ deps-y+=$(platform-common-objs-path-y:.o=.dep)
 deps-y+=$(lib-objs-path-y:.o=.dep)
 deps-y+=$(firmware-objs-path-y:.o=.dep)
 
+GENFLAGS	=	-DOPENSBI_MAJOR=$(MAJOR)
+GENFLAGS	+=	-DOPENSBI_MINOR=$(MINOR)
+GENFLAGS	+=	-I$(platform_dir)/include
+GENFLAGS	+=	-I$(platform_common_dir)/include
+GENFLAGS	+=	-I$(include_dir)
+GENFLAGS	+=	$(platform-genflags-y)
+
 # Setup compilation environment
 cpp=$(CROSS_COMPILE)cpp
-cppflags+=-DOPENSBI_MAJOR=$(MAJOR)
-cppflags+=-DOPENSBI_MINOR=$(MINOR)
-cppflags+=-I$(platform_dir)/include
-cppflags+=-I$(platform_common_dir)/include
-cppflags+=-I$(include_dir)
+cppflags+=$(GENFLAGS)
 cppflags+=$(platform-cppflags-y)
 cppflags+=$(firmware-cppflags-y)
 cc=$(CROSS_COMPILE)gcc
 cflags=-g -Wall -Werror -nostdlib -fno-strict-aliasing -O2
 cflags+=-fno-omit-frame-pointer -fno-optimize-sibling-calls
 cflags+=-mno-save-restore -mstrict-align
-cflags+=$(cppflags)
+cflags+=$(GENFLAGS)
 cflags+=$(platform-cflags-y)
 cflags+=$(firmware-cflags-y)
 cflags+=$(EXTRA_CFLAGS)
@@ -112,7 +115,7 @@ as=$(CROSS_COMPILE)gcc
 asflags=-g -Wall -nostdlib -D__ASSEMBLY__
 asflags+=-fno-omit-frame-pointer -fno-optimize-sibling-calls
 asflags+=-mno-save-restore -mstrict-align
-asflags+=$(cppflags)
+asflags+=$(GENFLAGS)
 asflags+=$(platform-asflags-y)
 asflags+=$(firmware-asflags-y)
 asflags+=$(EXTRA_ASFLAGS)
