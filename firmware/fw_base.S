@@ -154,7 +154,6 @@ _start_warm:
 	csrw	mscratch, tp
 
 	/* Initialize scratch space */
-	REG_S	zero, SBI_SCRATCH_TMP0_OFFSET(tp)
 	la	a4, _fw_start
 	la	a5, _fw_end
 	mul	t0, s7, s8
