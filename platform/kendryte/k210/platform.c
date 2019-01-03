@@ -18,14 +18,14 @@
 
 #define K210_UART_BAUDRATE		115200
 
-int k210_console_init(void)
+static int k210_console_init(void)
 {
 	uarths_init(K210_UART_BAUDRATE, UARTHS_STOP_1);
 
 	return 0;
 }
 
-void k210_console_putc(char c)
+static void k210_console_putc(char c)
 {
 	uarths_putc(c);
 }
