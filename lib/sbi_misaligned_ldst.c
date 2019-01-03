@@ -9,6 +9,7 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
+#include <sbi/riscv_fp.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_misaligned_ldst.h>
 #include <sbi/sbi_trap.h>
@@ -28,7 +29,7 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 	ulong mstatus = csr_read(mstatus);
 	ulong insn = get_insn(regs->mepc, &mstatus);
 	ulong addr = csr_read(mtval);
-	int i, shift = 0, len = 0;
+	int i, fp = 0, shift = 0, len = 0;
 
 	if ((insn & INSN_MASK_LW) == INSN_MATCH_LW) {
 		len = 4;
@@ -40,6 +41,12 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 	} else if ((insn & INSN_MASK_LWU) == INSN_MATCH_LWU) {
 		len = 4;
 #endif
+	} else if ((insn & INSN_MASK_FLD) == INSN_MATCH_FLD) {
+		fp = 1;
+		len = 8;
+	} else if ((insn & INSN_MASK_FLW) == INSN_MATCH_FLW) {
+		fp = 1;
+		len = 4;
 	} else if ((insn & INSN_MASK_LH) == INSN_MATCH_LH) {
 		len = 2;
 		shift = 8 * (sizeof(ulong) - len);
@@ -64,6 +71,22 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 		   ((insn >> SH_RD) & 0x1f)) {
 		len = 4;
 		shift = 8 * (sizeof(ulong) - len);
+	} else if ((insn & INSN_MASK_C_FLD) == INSN_MATCH_C_FLD) {
+		fp = 1;
+		len = 8;
+		insn = RVC_RS2S(insn) << SH_RD;
+	} else if ((insn & INSN_MASK_C_FLDSP) == INSN_MATCH_C_FLDSP) {
+		fp = 1;
+		len = 8;
+# if __riscv_xlen == 32
+	} else if ((insn & INSN_MASK_C_FLW) == INSN_MATCH_C_FLW) {
+		fp = 1;
+		len = 4;
+		insn = RVC_RS2S(insn) << SH_RD;
+	} else if ((insn & INSN_MASK_C_FLWSP) == INSN_MATCH_C_FLWSP) {
+		fp = 1;
+		len = 4;
+# endif
 #endif
 	} else
 		return SBI_EILL;
@@ -72,7 +95,12 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 	for (i = 0; i < len; i++)
 		val.data_bytes[i] = load_u8((void *)(addr + i), regs->mepc);
 
-	SET_RD(insn, regs, val.data_ulong << shift >> shift);
+	if (!fp)
+		SET_RD(insn, regs, val.data_ulong << shift >> shift);
+	else if (len == 8)
+		SET_F64_RD(insn, regs, val.data_u64);
+	else
+		SET_F32_RD(insn, regs, val.data_ulong);
 
 	regs->mepc += INSN_LEN(insn);
 
@@ -97,6 +125,12 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 	} else if ((insn & INSN_MASK_SD) == INSN_MATCH_SD) {
 		len = 8;
 #endif
+	} else if ((insn & INSN_MASK_FSD) == INSN_MATCH_FSD) {
+		len = 8;
+		val.data_u64 = GET_F64_RS2(insn, regs);
+	} else if ((insn & INSN_MASK_FSW) == INSN_MATCH_FSW) {
+		len = 4;
+		val.data_ulong = GET_F32_RS2(insn, regs);
 	} else if ((insn & INSN_MASK_SH) == INSN_MATCH_SH) {
 		len = 2;
 #ifdef __riscv_compressed
@@ -116,6 +150,20 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 		   ((insn >> SH_RD) & 0x1f)) {
 		len = 4;
 		val.data_ulong = GET_RS2C(insn, regs);
+	} else if ((insn & INSN_MASK_C_FSD) == INSN_MATCH_C_FSD) {
+		len = 8;
+		val.data_u64 = GET_F64_RS2S(insn, regs);
+	} else if ((insn & INSN_MASK_C_FSDSP) == INSN_MATCH_C_FSDSP) {
+		len = 8;
+		val.data_u64 = GET_F64_RS2C(insn, regs);
+# if __riscv_xlen == 32
+	} else if ((insn & INSN_MASK_C_FSW) == INSN_MATCH_C_FSW) {
+		len = 4;
+		val.data_ulong = GET_F32_RS2S(insn, regs);
+	} else if ((insn & INSN_MASK_C_FSWSP) == INSN_MATCH_C_FSWSP) {
+		len = 4;
+		val.data_ulong = GET_F32_RS2C(insn, regs);
+# endif
 #endif
 	} else
 		return SBI_EILL;
