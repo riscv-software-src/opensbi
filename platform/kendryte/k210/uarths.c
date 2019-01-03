@@ -21,7 +21,7 @@ static volatile struct uarths *const uarths =
 
 void uarths_init(u32 baud_rate, enum uarths_stopbit stopbit)
 {
-	u32 freq = sysctl_clock_get_freq(SYSCTL_CLOCK_CPU);
+	u32 freq = sysctl_get_cpu_freq();
 	u16 div = freq / baud_rate - 1;
 
 	/* Set UART registers */
