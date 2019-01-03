@@ -10,6 +10,7 @@
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_barrier.h>
 #include <sbi/riscv_encoding.h>
+#include <sbi/riscv_fp.h>
 #include <sbi/riscv_locks.h>
 #include <sbi/sbi_bits.h>
 #include <sbi/sbi_console.h>
@@ -47,13 +48,6 @@ static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
 	if (misa_extension('S'))
 		csr_write(sptbr, 0);
 }
-
-#ifdef __riscv_flen
-static void init_fp_reg(int i)
-{
-	/* TODO: */
-}
-#endif
 
 static int fp_init(u32 hartid)
 {

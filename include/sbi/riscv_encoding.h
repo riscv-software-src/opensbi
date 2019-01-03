@@ -446,6 +446,19 @@
 #define INSN_MATCH_SD			0x3023
 #define INSN_MASK_SD			0x707f
 
+#define INSN_MATCH_FLW			0x2007
+#define INSN_MASK_FLW			0x707f
+#define INSN_MATCH_FLD			0x3007
+#define INSN_MASK_FLD			0x707f
+#define INSN_MATCH_FLQ			0x4007
+#define INSN_MASK_FLQ			0x707f
+#define INSN_MATCH_FSW			0x2027
+#define INSN_MASK_FSW			0x707f
+#define INSN_MATCH_FSD			0x3027
+#define INSN_MASK_FSD			0x707f
+#define INSN_MATCH_FSQ			0x4027
+#define INSN_MASK_FSQ			0x707f
+
 #define INSN_MATCH_C_LD			0x6000
 #define INSN_MASK_C_LD			0xe003
 #define INSN_MATCH_C_SD			0xe000
