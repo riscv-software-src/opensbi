@@ -96,6 +96,9 @@ GENFLAGS	+=	-DOPENSBI_MINOR=$(MINOR)
 GENFLAGS	+=	-I$(platform_dir)/include
 GENFLAGS	+=	-I$(platform_common_dir)/include
 GENFLAGS	+=	-I$(include_dir)
+ifdef PLATFORM_INCLUDE_LIBFDT
+GENFLAGS	+=	-I$(platform_common_dir)/libfdt/
+endif
 GENFLAGS	+=	$(platform-genflags-y)
 GENFLAGS	+=	$(firmware-genflags-y)
 
