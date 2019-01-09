@@ -31,15 +31,13 @@
 
 static int virt_final_init(u32 hartid, bool cold_boot)
 {
-	u32 i;
 	void *fdt;
 
 	if (!cold_boot)
 		return 0;
 
 	fdt = sbi_scratch_thishart_arg1_ptr();
-	for (i = 0; i < VIRT_HART_COUNT; i++)
-		plic_fdt_fixup(fdt, "riscv,plic0", 2 * i);
+	plic_fdt_fixup(fdt, "riscv,plic0");
 
 	return 0;
 }

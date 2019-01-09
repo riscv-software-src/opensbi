@@ -69,10 +69,7 @@ static void fu540_modify_dt(void *fdt)
 	fdt_setprop_string(fdt, chosen_offset, "stdout-path",
 			   "/soc/serial@10010000:115200");
 
-	plic_fdt_fixup(fdt, "riscv,plic0", 0);
-
-	for (i = 1; i < FU540_HART_COUNT; i++)
-		plic_fdt_fixup(fdt, "riscv,plic0", 2 * i - 1);
+	plic_fdt_fixup(fdt, "riscv,plic0");
 }
 static int fu540_final_init(u32 hartid, bool cold_boot)
 {
