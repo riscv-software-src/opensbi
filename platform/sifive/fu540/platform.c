@@ -7,8 +7,11 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <libfdt.h>
+#include <fdt.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_const.h>
+#include <sbi/sbi_console.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/riscv_io.h>
 #include <plat/irqchip/plic.h>
@@ -38,18 +41,48 @@
 #define FU540_PRCI_CLKMUXSTATUSREG    		0x002C
 #define FU540_PRCI_CLKMUX_STATUS_TLCLKSEL      (0x1 << 1)
 
+static void fu540_modify_dt(void *fdt)
+{
+	u32 i, size;
+	int chosen_offset, err;
+	int cpu_offset;
+	char cpu_node[32] = "";
+	const char *mmu_type;
+
+	for (i = 0; i < FU540_HART_COUNT; i++) {
+		sbi_sprintf(cpu_node, "/cpus/cpu@%d", i);
+		cpu_offset = fdt_path_offset(fdt, cpu_node);
+		mmu_type = fdt_getprop(fdt, cpu_offset, "mmu-type", NULL);
+		if (mmu_type && (!strcmp(mmu_type, "riscv,sv39") ||
+		    !strcmp(mmu_type,"riscv,sv48")))
+			continue;
+		else
+			fdt_setprop_string(fdt, cpu_offset, "status", "masked");
+		memset(cpu_node, 0, sizeof(cpu_node));
+	}
+	size = fdt_totalsize(fdt);
+	err = fdt_open_into(fdt, fdt, size + 256);
+	if (err < 0)
+		sbi_printf("Device Tree can't be expanded to accmodate new node");
+
+	chosen_offset = fdt_path_offset(fdt, "/chosen");
+	fdt_setprop_string(fdt, chosen_offset, "stdout-path",
+			   "/soc/serial@10010000:115200");
+
+	plic_fdt_fixup(fdt, "riscv,plic0", 0);
+
+	for (i = 1; i < FU540_HART_COUNT; i++)
+		plic_fdt_fixup(fdt, "riscv,plic0", 2 * i - 1);
+}
 static int fu540_final_init(u32 hartid, bool cold_boot)
 {
-	u32 i;
 	void *fdt;
 
 	if (!cold_boot)
 		return 0;
 
 	fdt = sbi_scratch_thishart_arg1_ptr();
-	plic_fdt_fixup(fdt, "riscv,plic0", 0);
-	for (i = 1; i < FU540_HART_COUNT; i++)
-		plic_fdt_fixup(fdt, "riscv,plic0", 2 * i - 1);
+	fu540_modify_dt(fdt);
 
 	return 0;
 }
