@@ -8,6 +8,7 @@
  */
 
 #include <sbi/riscv_io.h>
+#include <sbi/riscv_encoding.h>
 #include <plat/tinyfdt.h>
 #include <plat/irqchip/plic.h>
 
@@ -49,7 +50,6 @@ static void plic_fdt_fixup_prop(const struct fdt_node *node,
 {
 	u32 *cells;
 	u32 i, cells_count;
-	u32 *cntx_id = priv;
 
 	if (!prop)
 		return;
@@ -63,14 +63,14 @@ static void plic_fdt_fixup_prop(const struct fdt_node *node,
 		return;
 
 	for (i = 0; i < cells_count; i++) {
-		if (((i % 2) == 1) && ((i / 2) == *cntx_id))
+		if (i == IRQ_M_EXT)
 			cells[i] = fdt_rev32(0xffffffff);
 	}
 }
 
-void plic_fdt_fixup(void *fdt, const char *compat, u32 cntx_id)
+void plic_fdt_fixup(void *fdt, const char *compat)
 {
-	fdt_compat_node_prop(fdt, compat, plic_fdt_fixup_prop, &cntx_id);
+	fdt_compat_node_prop(fdt, compat, plic_fdt_fixup_prop, NULL);
 }
 
 int plic_warm_irqchip_init(u32 target_hart,

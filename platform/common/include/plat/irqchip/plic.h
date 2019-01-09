@@ -12,7 +12,7 @@
 
 #include <sbi/sbi_types.h>
 
-void plic_fdt_fixup(void *fdt, const char *compat, u32 cntx_id);
+void plic_fdt_fixup(void *fdt, const char *compat);
 
 int plic_warm_irqchip_init(u32 target_hart,
 			   int m_cntx_id, int s_cntx_id);
