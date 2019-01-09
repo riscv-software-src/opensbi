@@ -89,6 +89,21 @@ In addition, platform specific make command-line options to top-level make
 options are described under *docs/platform/<platform_name>.md* and
 *docs/firmware/<firmware_name>.md*.
 
+License
+-------------
+The software is provided under a BSD-2-Clause license. Contributions to this
+project are accepted under the same license with developer sign-off as
+described in the Contributing Guidelines.
+
+This project also contains code from other projects as listed below. The original
+license text is included in those source files.
+
+1. The libc source code is derived from SCC. The SCC code is used under the BSD-3-Clause
+   license with the author's permission.
+2. The libfdt source code is disjunctively dual licensed (GPL-2.0+ OR BSD-2-Clause). It is
+   used by this project under the terms of the BSD-2-Clause license. Any contributions to
+   this code must be made under the terms of both licenses.
+
 Documentation
 -------------
 
