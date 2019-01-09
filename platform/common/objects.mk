@@ -7,4 +7,4 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-platform-common-objs-y += fdt.o
+platform-common-objs-y += tinyfdt.o
