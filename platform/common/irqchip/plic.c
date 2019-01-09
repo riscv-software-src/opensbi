@@ -8,7 +8,7 @@
  */
 
 #include <sbi/riscv_io.h>
-#include <plat/fdt.h>
+#include <plat/tinyfdt.h>
 #include <plat/irqchip/plic.h>
 
 #define PLIC_PRIORITY_BASE		0x0
