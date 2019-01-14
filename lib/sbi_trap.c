@@ -19,10 +19,10 @@
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_trap.h>
 
-static void __attribute__((noreturn)) sbi_trap_error(const char *msg,
-						int rc, u32 hartid,
-						ulong mcause, ulong mtval,
-						struct sbi_trap_regs *regs)
+static void __noreturn sbi_trap_error(const char *msg,
+				      int rc, u32 hartid,
+				      ulong mcause, ulong mtval,
+				      struct sbi_trap_regs *regs)
 {
 	sbi_printf("%s: hart%d: %s (error %d)\n",
 		   __func__, hartid, msg, rc);
@@ -66,6 +66,17 @@ static void __attribute__((noreturn)) sbi_trap_error(const char *msg,
 	sbi_hart_hang();
 }
 
+/**
+ * Redirect trap to lower privledge mode (S-mode or U-mode)
+ *
+ * @param regs pointer to register state
+ * @param scratch pointer to sbi_scratch of current HART
+ * @param epc error PC for lower privledge mode
+ * @param cause exception cause for lower privledge mode
+ * @param tval trap value for lower privledge mode
+ *
+ * Returns 0 on success and error code (< 0) on failure
+ */
 int sbi_trap_redirect(struct sbi_trap_regs *regs,
 		      struct sbi_scratch *scratch,
 		      ulong epc, ulong cause, ulong tval)
@@ -109,6 +120,21 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 	return 0;
 }
 
+/**
+ * Handle trap/interrupt
+ *
+ * This function is called by firmware linked to OpenSBI
+ * library for handling trap/interrupt. It expects the
+ * following:
+ * 1. The 'mscratch' CSR is pointing to sbi_scratch of current HART
+ * 2. The 'mcause' CSR is having exception/interrupt cause
+ * 3. The 'mtval' CSR is having additional trap information
+ * 4. Stack pointer (SP) is setup for current HART
+ * 5. Interrupts are disabled in MSTATUS CSR
+ *
+ * @param regs pointer to register state
+ * @param scratch pointer to sbi_scratch of current HART
+ */
 void sbi_trap_handler(struct sbi_trap_regs *regs,
 		      struct sbi_scratch *scratch)
 {
