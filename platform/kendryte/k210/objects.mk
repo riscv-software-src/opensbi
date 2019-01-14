@@ -8,3 +8,4 @@
 #
 
 platform-objs-y += uarths.o sysctl.o platform.o
+platform-dtb-y += k210.dtb
