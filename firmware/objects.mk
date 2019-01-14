@@ -35,6 +35,10 @@ firmware-genflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_PATH=$(FW_PAYLOAD_PATH_FINAL)
 ifdef FW_PAYLOAD_OFFSET
 firmware-genflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_OFFSET=$(FW_PAYLOAD_OFFSET)
 endif
+ifdef FW_PAYLOAD_ALIGN
+firmware-genflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_ALIGN=$(FW_PAYLOAD_ALIGN)
+endif
+
 ifdef FW_PAYLOAD_FDT_PATH
 firmware-genflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_FDT_PATH=$(FW_PAYLOAD_FDT_PATH)
 endif
