@@ -57,7 +57,7 @@ struct sbi_scratch {
 	unsigned long hartid_to_scratch;
 	/** IPI type (or flags) */
 	unsigned long ipi_type;
-} __attribute__((packed));
+} __packed;
 
 /** Get pointer to sbi_scratch for current HART */
 #define sbi_scratch_thishart_ptr()	\
