@@ -67,27 +67,21 @@ should be *`qemu/virt`*.
 To build *libsbi, libplatsbi, and firmwares* for a specific platform, run:
 ```
 make PLATFORM=<platform_subdir>
-```
 or
-
-```
 make PLATFORM=<platform_subdir> O=<build_directory>
 ```
 
 To install *libsbi, headers, libplatsbi, and firmwares*, run:
 ```
 make PLATFORM=<platform_subdir> install
-```
 or
-
-```
-make PLATFORM=<platform_subdir> I=<install_directory> install`
+make PLATFORM=<platform_subdir> I=<install_directory> install
 ```
 
 In addition, platform specific make command-line options to top-level make
 , such as *PLATFORM_<xyz>* or *FW_<abc>* can also be specified. These
-options are described under *docs/platform/<platform_name>.md* and
-*docs/firmware/<firmware_name>.md*.
+options are described under *`docs/platform/<platform_name>.md`* and
+*`docs/firmware/<firmware_name>.md`*.
 
 Documentation
 -------------
@@ -95,15 +89,36 @@ Documentation
 A more detailed documenation is under the *docs* directory and organized
 as follows.
 
-* *docs/platform_guide.md* - Guidelines for adding new platform support
-* *docs/library_usage.md* - Guidelines for using the static library
-* *docs/platform/<platform_name>.md* - Platform specific documentation for
-                                       the platform *<platform_name>*
-* *docs/firmware/<firmware_name>.md* - Platform specific documentation for
-                                       the firmware *<firmware_name>*
+* *`docs/contributing.md`* - Guidelines for contributing to OpenSBI project
+* *`docs/platform_guide.md`* - Guidelines for adding new platform support
+* *`docs/library_usage.md`* - Guidelines for using the static library
+* *`docs/platform/<platform_name>.md`* - Documentation for the platform *<platform_name>*
+* *`docs/firmware/<firmware_name>.md`* - Documentation for the firmware *<firmware_name>*
 
 The source code is also well documented. For source level documentation,
 doxygen style is used. Please refer to [Doxygen manual]
 (http://www.stack.nl/~dimitri/doxygen/manual.html) for details on this
 format.
 
+The Doxygen can be installed on your debian build system using following:
+```
+sudo apt-get install doxygen doxygen-latex doxygen-doc doxygen-gui graphviz
+```
+
+To build a consolidated `refman.pdf` of all documenation, run:
+```
+make docs
+or
+make O=<build_directory> docs
+```
+
+**NOTE:** `refman.pdf` will be available under `<build_directory>/docs/latex`.
+
+To install a consolidated `refman.pdf` of all documenation, run:
+```
+make install_docs
+or
+make I=<install_directory> install_docs
+```
+
+**NOTE:** `refman.pdf` will be installed under `<install_directory>/docs`.
