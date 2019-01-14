@@ -264,6 +264,19 @@ $(build_dir)/$(platform_subdir)/%.dep: $(src_dir)/%.S
 $(build_dir)/$(platform_subdir)/%.o: $(src_dir)/%.S
 	$(call compile_as,$@,$<)
 
+# Rule for "make docs"
+$(build_dir)/docs/latex/refman.pdf: $(build_dir)/docs/latex/refman.tex
+	$(CMD_PREFIX)mkdir -p $(build_dir)/docs
+	$(CMD_PREFIX)$(MAKE) -C $(build_dir)/docs/latex
+$(build_dir)/docs/latex/refman.tex: $(build_dir)/docs/doxygen.cfg
+	$(CMD_PREFIX)mkdir -p $(build_dir)/docs
+	$(CMD_PREFIX)doxygen $(build_dir)/docs/doxygen.cfg
+$(build_dir)/docs/doxygen.cfg: $(src_dir)/docs/doxygen.cfg
+	$(CMD_PREFIX)mkdir -p $(build_dir)/docs
+	$(CMD_PREFIX)cat docs/doxygen.cfg | sed -e "s#@@SRC_DIR@@#$(src_dir)#" -e "s#@@BUILD_DIR@@#$(build_dir)#" > $(build_dir)/docs/doxygen.cfg
+.PHONY: docs
+docs: $(build_dir)/docs/latex/refman.pdf
+
 # Dependency files should only be included after default Makefile rules
 # They should not be included for any "xxxconfig" or "xxxclean" rule
 all-deps-1 = $(if $(findstring config,$(MAKECMDGOALS)),,$(deps-y))
@@ -297,6 +310,10 @@ install_libplatsbi: $(build_dir)/$(platform_subdir)/lib/libplatsbi.a $(build_dir
 install_firmwares: $(build_dir)/$(platform_subdir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a $(firmware-bins-path-y)
 	$(call inst_file_list,$(install_dir),$(build_dir),$(platform_subdir)/firmware,$(firmware-elfs-path-y))
 	$(call inst_file_list,$(install_dir),$(build_dir),$(platform_subdir)/firmware,$(firmware-bins-path-y))
+
+.PHONY: install_docs
+install_docs: $(build_dir)/docs/latex/refman.pdf
+	$(call inst_file,$(install_dir)/docs/refman.pdf,$(build_dir)/docs/latex/refman.pdf)
 
 # Rule for "make clean"
 .PHONY: clean
