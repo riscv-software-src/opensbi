@@ -27,8 +27,7 @@ static const char *logo =
 	"        | |\n"
 	"        |_|\n";
 
-static void __attribute__((noreturn)) init_coldboot(struct sbi_scratch *scratch,
-						    u32 hartid)
+static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 {
 	int rc;
 	char str[64];
@@ -93,8 +92,7 @@ static void __attribute__((noreturn)) init_coldboot(struct sbi_scratch *scratch,
 			     scratch->next_addr, scratch->next_mode);
 }
 
-static void __attribute__((noreturn)) init_warmboot(struct sbi_scratch *scratch,
-						    u32 hartid)
+static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 {
 	int rc;
 	struct sbi_platform *plat = sbi_platform_ptr(scratch);
@@ -141,7 +139,18 @@ static void __attribute__((noreturn)) init_warmboot(struct sbi_scratch *scratch,
 
 static atomic_t coldboot_lottery = ATOMIC_INITIALIZER(0);
 
-void __attribute__((noreturn)) sbi_init(struct sbi_scratch *scratch)
+/**
+ * Initialize OpenSBI library for current HART and jump to next
+ * booting stage.
+ *
+ * The function expects following:
+ * 1. The 'mscratch' CSR is pointing to sbi_scratch of current HART
+ * 2. Stack pointer (SP) is setup for current HART
+ * 3. All interrupts are disabled in MIE CSR except MSIP
+ *
+ * @param scratch pointer to sbi_scratch of current HART
+ */
+void __noreturn sbi_init(struct sbi_scratch *scratch)
 {
 	bool coldboot = FALSE;
 	u32 hartid = sbi_current_hartid();
