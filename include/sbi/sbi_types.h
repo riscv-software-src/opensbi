@@ -54,4 +54,6 @@ typedef unsigned long		physical_size_t;
 
 #define NULL			((void *)0)
 
+#define __noreturn		__attribute__((noreturn))
+
 #endif
