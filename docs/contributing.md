@@ -1,5 +1,5 @@
-Contrubuting to OpenSBI
-========================
+OpenSBI Contributing Guidelines
+===============================
 
 All contributions to OpenSBI should be sent as GitHub Pull Requests (PRs) to the main repo avaliable at: https://github.com/riscv/opensbi
 
