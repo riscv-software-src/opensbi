@@ -57,6 +57,14 @@ device tree file is specified by the platform (c.f. *FW_PAYLOAD_FDT*),
 then the firmware will expect the FDT to be passed as an argument by
 the prior booting stage.
 
+* **FW_PAYLOAD_FDT** - Path to an internal flattened device tree
+binary file defined by the platform code. The file name must match the
+DTB file name specified in the platform *objects.mk* file with the
+*platform-dtb-y* entry. This option results in *FW_PAYLOAD_FDT_PATH* to
+be automatically set. Specifying *FW_PAYLOAD_FDT_PATH* on the `make`
+command line disables *FW_PAYLOAD_FDT* and the command line specified
+device tree binary file is used for building the final firmware.
+
 * **FW_PAYLOAD_FDT_ADDR** - Address where the FDT passed by the prior
 booting stage or specified by the *FW_PAYLOAD_FDT_PATH* parameter and
 embedded in the *.text* section will be placed before executing the

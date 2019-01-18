@@ -79,6 +79,7 @@ include $(firmware-object-mks)
 lib-objs-path-y=$(foreach obj,$(lib-objs-y),$(build_dir)/lib/$(obj))
 ifdef PLATFORM
 platform-objs-path-y=$(foreach obj,$(platform-objs-y),$(build_dir)/$(platform_subdir)/$(obj))
+platform-dtb-path-y=$(foreach obj,$(platform-dtb-y),$(build_dir)/$(platform_subdir)/$(obj))
 platform-common-objs-path-y=$(foreach obj,$(platform-common-objs-y),$(build_dir)/platform/common/$(obj))
 firmware-bins-path-y=$(foreach bin,$(firmware-bins-y),$(build_dir)/$(platform_subdir)/firmware/$(bin))
 endif
@@ -154,6 +155,9 @@ else
 OBJCOPY		?=	objcopy
 endif
 
+DTC		=	dtc
+DTCFLAGS	=	-O dtb
+
 # Setup functions for compilation
 define dynamic_flags
 -I$(shell dirname $(2)) -D__OBJNAME__=$(subst -,_,$(shell basename $(1) .o))
@@ -212,10 +216,14 @@ compile_ar = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 compile_objcopy = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " OBJCOPY   $(subst $(build_dir)/,,$(1))"; \
 	     $(OBJCOPY) -S -O binary $(2) $(1)
+compile_dts = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
+	     echo " DTC       $(subst $(build_dir)/,,$(1))"; \
+	     $(DTC) $(DTCFLAGS) -o $(1) $(2)
 
 targets-y  = $(build_dir)/lib/libsbi.a
 ifdef PLATFORM
 targets-y += $(build_dir)/$(platform_subdir)/lib/libplatsbi.a
+targets-y += $(platform-dtb-path-y)
 endif
 targets-y += $(firmware-bins-path-y)
 
@@ -264,6 +272,9 @@ $(build_dir)/$(platform_subdir)/%.dep: $(src_dir)/%.S
 
 $(build_dir)/$(platform_subdir)/%.o: $(src_dir)/%.S
 	$(call compile_as,$@,$<)
+
+$(build_dir)/%.dtb: $(src_dir)/%.dts
+	$(call compile_dts,$@,$<)
 
 # Rule for "make docs"
 $(build_dir)/docs/latex/refman.pdf: $(build_dir)/docs/latex/refman.tex
