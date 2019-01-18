@@ -17,15 +17,15 @@
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_timer.h>
 
-static const char *logo =
-	"   ____                    _____ ____ _____\n"
-	"  / __ \\                  / ____|  _ \\_   _|\n"
-	" | |  | |_ __   ___ _ __ | (___ | |_) || |\n"
-	" | |  | | '_ \\ / _ \\ '_ \\ \\___ \\|  _ < | |\n"
-	" | |__| | |_) |  __/ | | |____) | |_) || |_\n"
-	"  \\____/| .__/ \\___|_| |_|_____/|____/_____|\n"
-	"        | |\n"
-	"        |_|\n";
+#define BANNER \
+	"   ____                    _____ ____ _____\n" \
+	"  / __ \\                  / ____|  _ \\_   _|\n" \
+	" | |  | |_ __   ___ _ __ | (___ | |_) || |\n" \
+	" | |  | | '_ \\ / _ \\ '_ \\ \\___ \\|  _ < | |\n" \
+	" | |__| | |_) |  __/ | | |____) | |_) || |_\n" \
+	"  \\____/| .__/ \\___|_| |_|_____/|____/_____|\n" \
+	"        | |\n" \
+	"        |_|\n\n"
 
 static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 {
@@ -62,11 +62,11 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 
 	misa_string(str, sizeof(str));
-	sbi_printf("OpenSBI v%d.%d (%s %s)\n",
+	sbi_printf("\nOpenSBI v%d.%d (%s %s)\n",
 		   OPENSBI_MAJOR, OPENSBI_MINOR,
 		   __DATE__, __TIME__);
 
-	sbi_printf("%s\n", logo);
+	sbi_printf(BANNER);
 
 	/* Platform details */
 	sbi_printf("Platform Name          : %s\n", sbi_platform_name(plat));
