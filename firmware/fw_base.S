@@ -125,10 +125,6 @@ _start_warm:
 	csrw	mie, zero
 	csrw	mip, zero
 
-	/* Set MSIE bit to receive IPI */
-	li	a2, MIP_MSIP
-	csrw	mie, a2
-
 	/* Preload per-HART details
 	 * s6 -> HART ID
 	 * s7 -> HART Count

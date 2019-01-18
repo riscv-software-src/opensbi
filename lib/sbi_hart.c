@@ -304,6 +304,10 @@ void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if ((sbi_platform_hart_count(plat) <= hartid) ||
 	    (COLDBOOT_WAIT_BITMAP_SIZE <= hartid))
 		sbi_hart_hang();
+	
+	/* Set MSIE bit to receive IPI */
+	csr_set(mie, MIP_MSIP);
+
 	do {
 		spin_lock(&coldboot_wait_bitmap_lock);
 		coldboot_wait_bitmap |= (1UL << hartid);
