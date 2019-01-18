@@ -7,13 +7,13 @@
 # SPDX-License-Identifier: BSD-2-Clause
 #
 
-firmware-bins-$(FW_PAYLOAD) += payloads/dummy.bin
+firmware-bins-$(FW_PAYLOAD) += payloads/test.bin
 
-dummy-y += dummy_head.o
-dummy-y += dummy_main.o
+test-y += test_head.o
+test-y += test_main.o
 
-%/dummy.o: $(foreach obj,$(dummy-y),%/$(obj))
+%/test.o: $(foreach obj,$(test-y),%/$(obj))
 	$(call merge_objs,$@,$^)
 
-%/dummy.dep: $(foreach dep,$(dummy-y:.o=.dep),%/$(dep))
+%/test.dep: $(foreach dep,$(test-y:.o=.dep),%/$(dep))
 	$(call merge_deps,$@,$^)
