@@ -101,12 +101,24 @@ GENFLAGS	+=	$(platform-common-genflags-y)
 GENFLAGS	+=	$(platform-genflags-y)
 GENFLAGS	+=	$(firmware-genflags-y)
 
-# Setup compilation environment
+# Setup compilation commands
 ifdef CROSS_COMPILE
 CC		=	$(CROSS_COMPILE)gcc
+CPP		=	$(CROSS_COMPILE)cpp
+AR		=	$(CROSS_COMPILE)ar
+LD		=	$(CROSS_COMPILE)ld
+OBJCOPY		=	$(CROSS_COMPILE)objcopy
 else
 CC		?=	gcc
+CPP		?=	cpp
+AR		?=	ar
+LD		?=	ld
+OBJCOPY		?=	objcopy
 endif
+AS		=	$(CC)
+DTC		=	dtc
+
+# Setup compilation commands flags
 CFLAGS		=	-g -Wall -Werror -nostdlib -fno-strict-aliasing -O2
 CFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
 CFLAGS		+=	-mno-save-restore -mstrict-align
@@ -114,16 +126,10 @@ CFLAGS		+=	$(GENFLAGS)
 CFLAGS		+=	$(platform-cflags-y)
 CFLAGS		+=	$(firmware-cflags-y)
 
-ifdef CROSS_COMPILE
-CPP		=	$(CROSS_COMPILE)cpp
-else
-CPP		?=	cpp
-endif
 CPPFLAGS	+=	$(GENFLAGS)
 CPPFLAGS	+=	$(platform-cppflags-y)
 CPPFLAGS	+=	$(firmware-cppflags-y)
 
-AS		=	$(CC)
 ASFLAGS		=	-g -Wall -nostdlib -D__ASSEMBLY__
 ASFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
 ASFLAGS		+=	-mno-save-restore -mstrict-align
@@ -131,31 +137,14 @@ ASFLAGS		+=	$(GENFLAGS)
 ASFLAGS		+=	$(platform-asflags-y)
 ASFLAGS		+=	$(firmware-asflags-y)
 
-ifdef CROSS_COMPILE
-AR		=	$(CROSS_COMPILE)ar
-else
-AR		?=	ar
-endif
 ARFLAGS		=	rcs
 
-ifdef CROSS_COMPILE
-LD		=	$(CROSS_COMPILE)ld
-else
-LD		?=	ld
-endif
 LDFLAGS		+=	-g -Wall -nostdlib -Wl,--build-id=none -N
 LDFLAGS		+=	$(platform-ldflags-y)
 LDFLAGS		+=	$(firmware-ldflags-y)
 
 MERGEFLAGS	+=	-r
 
-ifdef CROSS_COMPILE
-OBJCOPY		=	$(CROSS_COMPILE)objcopy
-else
-OBJCOPY		?=	objcopy
-endif
-
-DTC		=	dtc
 DTCFLAGS	=	-O dtb
 
 # Setup functions for compilation
