@@ -7,8 +7,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <plat/string.h>
 #include <plat/tinyfdt.h>
-#include <string.h>
 
 #define FDT_MAGIC	0xd00dfeed
 #define FDT_VERSION	17

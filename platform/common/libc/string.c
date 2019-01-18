@@ -12,12 +12,13 @@
  * bugs as well. Use any optimized routines from newlib or glibc if required.
  */
 
-#include <string.h>
+#include <plat/string.h>
 
 int strcmp(const char *a, const char *b)
 {
 	/* search first diff or end of string */
 	for (; *a == *b && *a != '\0'; a++, b++);
+
 	return *a - *b;
 }
 
@@ -46,7 +47,7 @@ size_t strnlen(const char *str, size_t count)
 	return ret;
 }
 
-char * strcpy(char * dest,const char *src)
+char *strcpy(char *dest, const char *src)
 {
 	char *ret = dest;
 
@@ -57,7 +58,7 @@ char * strcpy(char * dest,const char *src)
 	return ret;
 }
 
-char * strncpy(char * dest,const char *src,size_t count)
+char *strncpy(char *dest, const char *src, size_t count)
 {
 	char *ret = dest;
 
@@ -68,7 +69,7 @@ char * strncpy(char * dest,const char *src,size_t count)
 	return ret;
 }
 
-char * strchr(const char * s, int c)
+char *strchr(const char *s, int c)
 {
 	while(*s != '\0' && *s != (char)c)
 		s++;
@@ -79,7 +80,7 @@ char * strchr(const char * s, int c)
 		return (char *)s;
 }
 
-char * strrchr(const char * s, int c)
+char *strrchr(const char *s, int c)
 {
 	const char *last = s + strlen(s);
 
@@ -91,7 +92,7 @@ char * strrchr(const char * s, int c)
 	else
 		return (char *)last;
 }
-void * memset(void * s,int c,size_t count)
+void *memset(void *s, int c, size_t count)
 {
 	char *temp = s;
 
@@ -103,7 +104,7 @@ void * memset(void * s,int c,size_t count)
 	return s;
 }
 
-void * memcpy(void *dest, const void *src, size_t count)
+void *memcpy(void *dest, const void *src, size_t count)
 {
 	char *temp1 = dest;
 	const char *temp2 = src;
@@ -116,7 +117,7 @@ void * memcpy(void *dest, const void *src, size_t count)
 	return dest;
 }
 
-void * memmove(void * dest,const void *src,size_t count)
+void *memmove(void *dest, const void *src, size_t count)
 {
 	char *temp1 = (char *)dest;
 	const char *temp2 = (char *)src;
@@ -138,13 +139,15 @@ void * memmove(void * dest,const void *src,size_t count)
 			count--;
 		}
 	}
+
 	return dest;
 }
 
-int memcmp(const void * s1,const void * s2,size_t count)
+int memcmp(const void *s1, const void *s2, size_t count)
 {
 	const char *temp1 = s1;
 	const char *temp2 = s2;
+
 	for (; count > 0 && (*temp1 == *temp2); count--) {
 		temp1++;
 		temp2++;
@@ -166,5 +169,6 @@ void *memchr(const void *s, int c, size_t count)
 		}
 		count--;
 	}
+
 	return NULL;
 }
