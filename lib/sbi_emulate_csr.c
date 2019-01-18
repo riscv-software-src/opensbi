@@ -60,8 +60,7 @@ int sbi_emulate_csr_read(int csr_num,
 	case CSR_TIMEH:
 		if (!((cen >> (CSR_TIME - CSR_CYCLE)) & 1))
 			return -1;
-		*csr_val = sbi_timer_value(scratch);
-		*csr_val = *csr_val >> 32;
+		*csr_val = sbi_timer_value(scratch) >> 32;
 		break;
 	case CSR_INSTRETH:
 		if (!((cen >> (CSR_INSTRET - CSR_CYCLE)) & 1))
