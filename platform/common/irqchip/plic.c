@@ -10,9 +10,9 @@
 #include <sbi/riscv_io.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_console.h>
+#include <plat/string.h>
 #include <plat/tinyfdt.h>
 #include <plat/irqchip/plic.h>
-#include <string.h>
 
 #define PLIC_PRIORITY_BASE		0x0
 #define PLIC_PENDING_BASE		0x1000

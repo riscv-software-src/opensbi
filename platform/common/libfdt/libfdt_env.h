@@ -52,11 +52,13 @@
  *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <sbi/sbi_types.h>
+#include <plat/string.h>
+
+#define INT_MAX		((int)(~0U >> 1))
+#define UINT_MAX	((unsigned int)~0U)
+
 #include <stddef.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
 
 #ifdef __CHECKER__
 #define FDT_FORCE __attribute__((force))
