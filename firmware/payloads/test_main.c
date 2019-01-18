@@ -14,17 +14,9 @@ do {							\
 	__asm__ __volatile__ ("wfi" ::: "memory");	\
 } while (0)
 
-static void sbi_puts(const char *str)
-{
-	while (*str) {
-		SBI_ECALL_1(SBI_ECALL_CONSOLE_PUTCHAR, *str);
-		str++;
-	}
-}
-
 void test_main(unsigned long a0, unsigned long a1)
 {
-	sbi_puts("\nTest payload running\n");
+	sbi_ecall_console_puts("\nTest payload running\n");
 
 	while (1)
 		wfi();
