@@ -35,6 +35,7 @@ firmware:
 
 * **FW_PAYLOAD_OFFSET** - Offset from *FW_TEXT_BASE* where the payload
 binary will be linked in the final *FW_PAYLOAD* firmware binary image.
+<<<<<<< HEAD
 This configuration parameter is mandatory if *FW_PAYLOAD_ALIGN* is not
 defined.  Compilation errors will result from an incorrect definition
 of *FW_PAYLOAD_OFFSET* or *FW_PAYLOAD_ALIGN*, or if neither of these

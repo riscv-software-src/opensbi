@@ -22,9 +22,9 @@ static void sbi_puts(const char *str)
 	}
 }
 
-void dummy_main(unsigned long a0, unsigned long a1)
+void test_main(unsigned long a0, unsigned long a1)
 {
-	sbi_puts("\nDummy Payload\n");
+	sbi_puts("\nTest payload running\n");
 
 	while (1)
 		wfi();
