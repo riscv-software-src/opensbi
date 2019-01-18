@@ -12,6 +12,8 @@ platform-cppflags-y =
 # 	-mabi=lp64 -march=rv64imafdc -mcmodel=medany
 # For a 32 bits platform, this will likely be:
 # 	-mabi=lp32 -march=rv32imafdc -mcmodel=medlow
+# You can also use the Makefile variable OPENSBI_CC_XLEN for the xlen
+# See the QEMU virt machine for an example of this
 platform-cflags-y = -mabi=lp64 -march=rv64imafdc -mcmodel=medany
 platform-asflags-y = -mabi=lp64 -march=rv64imafdc -mcmodel=medany
 

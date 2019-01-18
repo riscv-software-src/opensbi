@@ -116,6 +116,9 @@ endif
 AS		=	$(CC)
 DTC		=	dtc
 
+# Guess the compillers xlen
+OPENSBI_CC_XLEN = `expr substr \`$(CC) -dumpmachine\`  6 2`
+
 # Setup compilation commands flags
 CFLAGS		=	-g -Wall -Werror -nostdlib -fno-strict-aliasing -O2
 CFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
