@@ -8,3 +8,4 @@
 #
 
 $(build_dir)/$(platform_subdir)/firmware/fw_payload.o: $(FW_PAYLOAD_PATH_FINAL)
+$(build_dir)/$(platform_subdir)/firmware/fw_payload.o: $(FW_PAYLOAD_FDT_PATH)
