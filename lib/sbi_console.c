@@ -331,6 +331,7 @@ out:
 	}
 	if (out)
 		**out = '\0';
+
 	return pc;
 }
 
@@ -338,9 +339,11 @@ int sbi_sprintf(char *out, const char *format, ...)
 {
 	va_list args;
 	int retval;
+
 	va_start(args, format);
 	retval = print(&out, NULL, format, args);
 	va_end(args);
+
 	return retval;
 }
 
@@ -348,9 +351,11 @@ int sbi_snprintf(char *out, u32 out_sz, const char *format, ...)
 {
 	va_list args;
 	int retval;
+
 	va_start(args, format);
 	retval = print(&out, &out_sz, format, args);
 	va_end(args);
+
 	return retval;
 }
 
