@@ -35,6 +35,10 @@ void uarths_init(u32 baud_rate, enum uarths_stopbit stopbit)
 	uarths->ip.rxwm = 0;
 	uarths->ie.txwm = 1;
 	uarths->ie.rxwm = 0;
+
+	/* Clear input */
+	if (!uarths->rxdata.empty)
+		(void)uarths_getc();
 }
 
 void uarths_putc(char c)
@@ -46,11 +50,11 @@ void uarths_putc(char c)
 
 char uarths_getc(void)
 {
-	struct uarths_rxdata recv = uarths->rxdata;
+	struct uarths_rxdata rx = uarths->rxdata;
 
-	if (recv.empty)
+	if (rx.empty)
 		return '\0';
 
-	return recv.data;
+	return rx.data;
 }
 
