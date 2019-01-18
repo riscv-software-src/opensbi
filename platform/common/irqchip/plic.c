@@ -10,6 +10,7 @@
 #include <sbi/riscv_io.h>
 #include <plat/tinyfdt.h>
 #include <plat/irqchip/plic.h>
+#include <string.h>
 
 #define PLIC_PRIORITY_BASE		0x0
 #define PLIC_PENDING_BASE		0x1000
@@ -53,7 +54,7 @@ static void plic_fdt_fixup_prop(const struct fdt_node *node,
 
 	if (!prop)
 		return;
-	if (fdt_strcmp(prop->name, "interrupts-extended"))
+	if (strcmp(prop->name, "interrupts-extended"))
 		return;
 
 	cells = prop->value;

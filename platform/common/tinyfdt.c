@@ -7,7 +7,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include <plat/fdt.h>
+#include <plat/tinyfdt.h>
+#include <string.h>
 
 #define FDT_MAGIC	0xd00dfeed
 #define FDT_VERSION	17
@@ -39,25 +40,6 @@ u32 fdt_rev32(u32 v)
 	       ((v & 0xFF000000) >> 24);
 }
 
-ulong fdt_strlen(const char *str)
-{
-	ulong ret = 0;
-
-	while (*str != '\0') {
-		ret++;
-		str++;
-	}
-
-	return ret;
-}
-
-int fdt_strcmp(const char *a, const char *b)
-{
-	/* search first diff or end of string */
-	for (; *a == *b && *a != '\0'; a++, b++);
-	return *a - *b;
-}
-
 int fdt_prop_string_index(const struct fdt_prop *prop,
 			  const char *str)
 {
@@ -69,10 +51,10 @@ int fdt_prop_string_index(const struct fdt_prop *prop,
 	end = p + prop->len;
 
 	for (i = 0; p < end; i++, p += l) {
-		l = fdt_strlen(p) + 1;
+		l = strlen(p) + 1;
 		if (p + l > end)
 			return -1;
-		if (fdt_strcmp(str, p) == 0)
+		if (strcmp(str, p) == 0)
 			return i; /* Found it; return index */
 	}
 
@@ -105,7 +87,7 @@ static void recursive_iter(char **data, struct recursive_iter_info *info,
 	node.parent = parent;
 	node.name = *data;
 
-	*data += fdt_strlen(*data) + 1;
+	*data += strlen(*data) + 1;
 	while ((ulong)(*data) % sizeof(u32) != 0)
 		(*data)++;
 
@@ -179,7 +161,7 @@ static void match_iter(const struct fdt_node *node,
 	data += sizeof(u32);
 
 	/* Skip node name */
-	data += fdt_strlen(data) + 1;
+	data += strlen(data) + 1;
 	while ((ulong)(data) % sizeof(u32) != 0)
 		data++;
 
@@ -256,7 +238,7 @@ static int match_compat(const struct fdt_node *node,
 	if (!prop)
 		return 0;
 
-	if (fdt_strcmp(prop->name, "compatible"))
+	if (strcmp(prop->name, "compatible"))
 		return 0;
 
 	if (fdt_prop_string_index(prop, cinfo->compat) < 0)
