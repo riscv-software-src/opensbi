@@ -75,7 +75,7 @@ static void __noreturn sbi_trap_error(const char *msg,
  * @param cause exception cause for lower privledge mode
  * @param tval trap value for lower privledge mode
  *
- * Returns 0 on success and error code (< 0) on failure
+ * @return 0 on success and negative error code on failure
  */
 int sbi_trap_redirect(struct sbi_trap_regs *regs,
 		      struct sbi_scratch *scratch,
