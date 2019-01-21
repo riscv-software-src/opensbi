@@ -26,8 +26,8 @@ Configuration Options
 ---------------------
 
 A *FW_PAYLOAD* firmware needs to be built according to some predefined
-configuation options to work correctly. These configuration details can
-be passed as paramters to the top-level `make` command or can be defined
+configuration options to work correctly. These configuration details can
+be passed as parameters to the top-level `make` command or can be defined
  in a platform *config.mk* build configuration file.
 
 The following are the build configuration parameters for a *FW_PAYLOAD*
@@ -39,10 +39,10 @@ binary will be linked in the final *FW_PAYLOAD* firmware binary image.
 This configuration parameter is mandatory if *FW_PAYLOAD_ALIGN* is not
 defined.  Compilation errors will result from an incorrect definition
 of *FW_PAYLOAD_OFFSET* or *FW_PAYLOAD_ALIGN*, or if neither of these
-paramreters are defined.
+parameters are defined.
 
 * **FW_PAYLOAD_ALIGN** - Address alignment constraint where the payload
-binary will be linked after the end of the base firmaware binary in the
+binary will be linked after the end of the base firmware binary in the
 final *FW_PAYLOAD* firmware binary image. This configuration parameter
 is mandatory if *FW_PAYLOAD_OFFSET* is not defined and should not be
 defined otherwise.
