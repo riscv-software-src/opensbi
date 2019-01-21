@@ -137,16 +137,40 @@ long atomic_sub_return(atomic_t *atom, long value)
 
 long arch_atomic_cmpxchg(atomic_t *atom, long oldval, long newval)
 {
+#ifdef __riscv_atomic
+	return __sync_val_compare_and_swap(&atom->counter, oldval, newval);
+#else
 	return cmpxchg(&atom->counter, oldval, newval);
+#endif
 }
 
 long arch_atomic_xchg(atomic_t *atom, long newval)
 {
+	/* Atomically set new value and return old value. */
+#ifdef __riscv_atomic
+	/*
+	 * The name of GCC built-in macro __sync_lock_test_and_set()
+	 * is misleading. A more appropriate name for GCC built-in
+	 * macro would be __sync_val_exchange().
+	 */
+	return __sync_lock_test_and_set(&atom->counter, newval);
+#else
 	return xchg(&atom->counter, newval);
+#endif
 }
 
 unsigned int atomic_raw_xchg_uint(volatile unsigned int *ptr,
 				  unsigned int newval)
 {
+	/* Atomically set new value and return old value. */
+#ifdef __riscv_atomic
+	/*
+	 * The name of GCC built-in macro __sync_lock_test_and_set()
+	 * is misleading. A more appropriate name for GCC built-in
+	 * macro would be __sync_val_exchange().
+	 */
+	return __sync_lock_test_and_set(ptr, newval);
+#else
 	return xchg(ptr, newval);
+#endif
 }
