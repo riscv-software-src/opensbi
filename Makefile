@@ -304,7 +304,6 @@ install_libsbi: $(build_dir)/lib/libsbi.a
 
 .PHONY: install_libplatsbi
 install_libplatsbi: $(build_dir)/$(platform_subdir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a
-	$(call inst_header_dir,$(install_dir)/$(platform_subdir)/include,$(include_dir)/sbi)
 	$(call inst_file,$(install_dir)/$(platform_subdir)/lib/libplatsbi.a,$(build_dir)/$(platform_subdir)/lib/libplatsbi.a)
 
 .PHONY: install_firmwares
