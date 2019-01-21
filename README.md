@@ -14,7 +14,7 @@ by the RISC-V Foundation in [Github](https://github.com/riscv/riscv-sbi-doc)
 OpenSBI aims to provides an open-source and extensible implementation of
 the RISC-V SBI specification for case 1 mentioned above. OpenSBI
 implementation can be easily extended by RISC-V platform or System-on-Chip
-vendors to fit a particular hadware configuration.
+vendors to fit a particular hardware configuration.
 
 OpenSBI provides three components:
 
@@ -99,7 +99,7 @@ license text is included in those source files.
 Documentation
 -------------
 
-A more detailed documenation is under the *docs* directory and organized
+A more detailed documentation is under the *docs* directory and organized
 as follows.
 
 * *`docs/contributing.md`* - Guidelines for contributing to OpenSBI project
@@ -119,7 +119,7 @@ The Doxygen can be installed on your debian build system using following:
 sudo apt-get install doxygen doxygen-latex doxygen-doc doxygen-gui graphviz
 ```
 
-To build a consolidated `refman.pdf` of all documenation, run:
+To build a consolidated `refman.pdf` of all documentation, run:
 ```
 make docs
 or
@@ -128,7 +128,7 @@ make O=<build_directory> docs
 
 **NOTE:** `refman.pdf` will be available under `<build_directory>/docs/latex`.
 
-To install a consolidated `refman.pdf` of all documenation, run:
+To install a consolidated `refman.pdf` of all documentation, run:
 ```
 make install_docs
 or

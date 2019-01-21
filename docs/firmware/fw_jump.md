@@ -23,15 +23,17 @@ Config Options
 --------------
 
 We need more config details for **FW_JUMP** firmware to work
-correctly. These config details can be passed as paramter to
+correctly. These configuration details can be passed as parameters to
 top-level `make` or can be set in platform `config.mk`.
 
-Following are the config options for **FW_JUMP** firmware:
+Following are the configuration options for a **FW_JUMP** firmware:
 
 * **FW_JUMP_ADDR** - Address where next booting stage is
 located. This is a mandatory config option and will result
 in compile error if not provided.
-* **FW_JUMP_FDT_ADDR** - Address where FDT passed by prior
-booting stage will be placed before passing to next booting
-stage. If this option is not provided then firmware will pass
-zero as FDT address to next booting stage.
+
+* **FW_JUMP_FDT_ADDR** - Address where the FDT passed by the prior
+booting stage will be placed before passing to the next booting
+stage. If this option is not provided then the firmware will pass
+zero as the FDT address to the next booting stage.
+>>>>>>> 2c0dc4dc... docs: Typo fixes.
