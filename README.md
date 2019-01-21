@@ -87,7 +87,7 @@ License
 -------------
 The software is provided under a BSD-2-Clause license. Contributions to this
 project are accepted under the same license with developer sign-off as
-described in the [Contributing Guidelines] [docs/contributing.md].
+described in the [Contributing Guidelines](docs/contributing.md).
 
 This project also contains code from other projects as listed below. The original
 license text is included in those source files.
@@ -109,9 +109,10 @@ as follows.
 * *`docs/firmware/<firmware_name>.md`* - Documentation for the firmware *<firmware_name>*
 
 The source code is also well documented. For source level documentation,
-doxygen style is used. Please refer to [Doxygen manual]
-(http://www.stack.nl/~dimitri/doxygen/manual.html) for details on this
+doxygen style is used. Please refer to [Doxygen manual] for details on this
 format.
+
+[Doxygen manual]: http://www.stack.nl/~dimitri/doxygen/manual.html
 
 The Doxygen can be installed on your debian build system using following:
 ```
