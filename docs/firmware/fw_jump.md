@@ -1,5 +1,5 @@
-OpenSBI Firmware with Jump Address(FW_JUMP)
-===========================================
+OpenSBI Firmware with Jump Address (FW_JUMP)
+============================================
 
 The **OpenSBI firmware with Jump Address (FW_JUMP)** is a
 firmware which only know the address of next booting stage
