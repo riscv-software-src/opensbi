@@ -274,7 +274,7 @@ $(build_dir)/docs/latex/refman.tex: $(build_dir)/docs/doxygen.cfg
 	$(CMD_PREFIX)doxygen $(build_dir)/docs/doxygen.cfg
 $(build_dir)/docs/doxygen.cfg: $(src_dir)/docs/doxygen.cfg
 	$(CMD_PREFIX)mkdir -p $(build_dir)/docs
-	$(CMD_PREFIX)cat docs/doxygen.cfg | sed -e "s#@@SRC_DIR@@#$(src_dir)#" -e "s#@@BUILD_DIR@@#$(build_dir)#" > $(build_dir)/docs/doxygen.cfg
+	$(CMD_PREFIX)cat docs/doxygen.cfg | sed -e "s#@@SRC_DIR@@#$(src_dir)#" -e "s#@@BUILD_DIR@@#$(build_dir)#" -e "s#@@OPENSBI_MAJOR@@#$(MAJOR)#" -e "s#@@OPENSBI_MINOR@@#$(MINOR)#" > $(build_dir)/docs/doxygen.cfg
 .PHONY: docs
 docs: $(build_dir)/docs/latex/refman.pdf
 
