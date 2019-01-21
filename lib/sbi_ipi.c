@@ -9,7 +9,10 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_barrier.h>
+#include <sbi/riscv_atomic.h>
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_bitops.h>
+#include <sbi/sbi_console.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_timer.h>
@@ -30,7 +33,7 @@ int sbi_ipi_send_many(struct sbi_scratch *scratch,
 	for (i = 0, m = mask; m; i++, m >>= 1) {
 		if ((m & 1) && (i != hartid) && !sbi_platform_hart_disabled(plat, hartid)) {
 			oth = sbi_hart_id_to_scratch(scratch, i);
-			oth->ipi_type = event;
+			atomic_raw_set_bit(event, &oth->ipi_type);
 			mb();
 			sbi_platform_ipi_inject(plat, i, hartid);
 			if (event != SBI_IPI_EVENT_SOFT)
@@ -49,23 +52,31 @@ void sbi_ipi_clear_smode(struct sbi_scratch *scratch, u32 hartid)
 void sbi_ipi_process(struct sbi_scratch *scratch, u32 hartid)
 {
 	struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	volatile unsigned long ipi_type;
+	unsigned int ipi_event;
 
 	sbi_platform_ipi_clear(plat, hartid);
-	switch (scratch->ipi_type) {
-	case SBI_IPI_EVENT_SOFT:
-		csr_set(mip, MIP_SSIP);
-		break;
-	case SBI_IPI_EVENT_FENCE_I:
-		__asm__ __volatile("fence.i");
-		break;
-	case SBI_IPI_EVENT_SFENCE_VMA:
-		__asm__ __volatile("sfence.vma");
-		break;
-	case SBI_IPI_EVENT_HALT:
-		sbi_hart_hang();
-		break;
-	};
-	scratch->ipi_type = 0;
+
+	do {
+		ipi_type = scratch->ipi_type;
+		rmb();
+		ipi_event = __ffs(ipi_type);
+		switch (ipi_event) {
+		case SBI_IPI_EVENT_SOFT:
+			csr_set(mip, MIP_SSIP);
+			break;
+		case SBI_IPI_EVENT_FENCE_I:
+			__asm__ __volatile("fence.i");
+			break;
+		case SBI_IPI_EVENT_SFENCE_VMA:
+			__asm__ __volatile("sfence.vma");
+			break;
+		case SBI_IPI_EVENT_HALT:
+			sbi_hart_hang();
+			break;
+		};
+		ipi_type = atomic_raw_clear_bit(ipi_event, &scratch->ipi_type);
+	} while(ipi_type > 0);
 }
 
 int sbi_ipi_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
