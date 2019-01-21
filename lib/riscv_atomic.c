@@ -8,8 +8,10 @@
  */
 
 #include <sbi/sbi_types.h>
+#include <sbi/riscv_asm.h>
 #include <sbi/riscv_atomic.h>
 #include <sbi/riscv_barrier.h>
+#include <sbi/sbi_bits.h>
 
 long atomic_read(atomic_t *atom)
 {
@@ -173,4 +175,51 @@ unsigned int atomic_raw_xchg_uint(volatile unsigned int *ptr,
 #else
 	return xchg(ptr, newval);
 #endif
+}
+
+#if (BITS_PER_LONG == 64)
+#define __AMO(op)	"amo" #op ".d"
+#elif (BITS_PER_LONG == 32)
+#define __AMO(op)	"amo" #op ".w"
+#else
+#error "Unexpected BITS_PER_LONG"
+#endif
+
+#define __atomic_op_bit_ord(op, mod, nr, addr, ord)		\
+({								\
+	unsigned long __res, __mask;				\
+	__mask = BIT_MASK(nr);					\
+	__asm__ __volatile__ (					\
+		__AMO(op) #ord " %0, %2, %1"			\
+		: "=r" (__res), "+A" (addr[BIT_WORD(nr)])	\
+		: "r" (mod(__mask))				\
+		: "memory");					\
+	__res;							\
+})
+
+#define __atomic_op_bit(op, mod, nr, addr) 			\
+	__atomic_op_bit_ord(op, mod, nr, addr, .aqrl)
+
+/* Bitmask modifiers */
+#define __NOP(x)	(x)
+#define __NOT(x)	(~(x))
+
+inline int atomic_raw_set_bit(int nr, volatile unsigned long *addr)
+{
+	return __atomic_op_bit(or, __NOP, nr, addr);
+}
+
+inline int atomic_raw_clear_bit(int nr, volatile unsigned long *addr)
+{
+	return __atomic_op_bit(and, __NOT, nr, addr);
+}
+
+inline int atomic_set_bit(int nr, atomic_t *atom)
+{
+	return atomic_raw_set_bit(nr, (unsigned long *)&atom->counter);
+}
+
+inline int atomic_clear_bit(int nr, atomic_t *atom)
+{
+	return atomic_raw_clear_bit(nr, (unsigned long *)&atom->counter);
 }

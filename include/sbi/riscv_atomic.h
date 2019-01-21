@@ -34,5 +34,33 @@ long arch_atomic_xchg(atomic_t *atom, long newval);
 
 unsigned int atomic_raw_xchg_uint(volatile unsigned int *ptr,
 				  unsigned int newval);
+/**
+ * Set a bit in an atomic variable and return the new value.
+ * @nr : Bit to set.
+ * @atom: atomic variable to modify
+ */
+int atomic_set_bit(int nr, atomic_t *atom);
+
+/**
+ * Clear a bit in an atomic variable and return the new value.
+ * @nr : Bit to set.
+ * @atom: atomic variable to modify
+ */
+
+int atomic_clear_bit(int nr, atomic_t *atom);
+
+/**
+ * Set a bit in any address and return the new value .
+ * @nr : Bit to set.
+ * @addr: Address to modify
+ */
+int atomic_raw_set_bit(int nr, volatile unsigned long *addr);
+
+/**
+ * Clear a bit in any address and return the new value .
+ * @nr : Bit to set.
+ * @addr: Address to modify
+ */
+int atomic_raw_clear_bit(int nr, volatile unsigned long *addr);
 
 #endif
