@@ -9,28 +9,28 @@
 
 #include <sbi/riscv_io.h>
 #include <sbi/riscv_atomic.h>
+#include <sbi/sbi_hart.h>
 #include <plat/sys/clint.h>
 
 static u32 clint_ipi_hart_count;
 static volatile void *clint_ipi_base;
 static volatile u32 *clint_ipi;
 
-void clint_ipi_inject(u32 target_hart, u32 source_hart)
+void clint_ipi_inject(u32 target_hart)
 {
-	if ((clint_ipi_hart_count <= target_hart) ||
-	    (clint_ipi_hart_count <= source_hart))
+	if (clint_ipi_hart_count <= target_hart)
 		return;
 
 	/* Set CLINT IPI */
 	writel(1, &clint_ipi[target_hart]);
 }
 
-void clint_ipi_sync(u32 target_hart, u32 source_hart)
+void clint_ipi_sync(u32 target_hart)
 {
 	u32 target_ipi, incoming_ipi;
+	u32 source_hart = sbi_current_hartid();
 
-	if ((clint_ipi_hart_count <= target_hart) ||
-	    (clint_ipi_hart_count <= source_hart))
+	if (clint_ipi_hart_count <= target_hart)
 		return;
 
 	/* Wait until target HART has handled IPI */
@@ -57,14 +57,15 @@ void clint_ipi_clear(u32 target_hart)
 	writel(0, &clint_ipi[target_hart]);
 }
 
-int clint_warm_ipi_init(u32 target_hart)
+int clint_warm_ipi_init(void)
 {
-	if (clint_ipi_hart_count <= target_hart ||
-	    !clint_ipi_base)
+	u32 hartid = sbi_current_hartid();
+
+	if (!clint_ipi_base)
 		return -1;
 
 	/* Clear CLINT IPI */
-	clint_ipi_clear(target_hart);
+	clint_ipi_clear(hartid);
 
 	return 0;
 }

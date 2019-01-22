@@ -52,7 +52,7 @@ static int k210_irqchip_init(u32 hartid, bool cold_boot)
 				      (2 * hartid + 1));
 }
 
-static int k210_ipi_init(u32 hartid, bool cold_boot)
+static int k210_ipi_init(bool cold_boot)
 {
 	int rc;
 
@@ -63,7 +63,7 @@ static int k210_ipi_init(u32 hartid, bool cold_boot)
 			return rc;
 	}
 
-	return clint_warm_ipi_init(hartid);
+	return clint_warm_ipi_init();
 }
 
 static int k210_timer_init(u32 hartid, bool cold_boot)

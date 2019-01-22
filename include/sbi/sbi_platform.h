@@ -85,13 +85,13 @@ struct sbi_platform {
 	int (*irqchip_init)(u32 hartid, bool cold_boot);
 
 	/** Inject IPI to a target HART */
-	void (*ipi_inject)(u32 target_hart, u32 source_hart);
+	void (*ipi_inject)(u32 target_hart);
 	/** Wait for target HART to acknowledge IPI */
-	void (*ipi_sync)(u32 target_hart, u32 source_hart);
+	void (*ipi_sync)(u32 target_hart);
 	/** Clear IPI for a target HART */
 	void (*ipi_clear)(u32 target_hart);
 	/** Initialize IPI for given HART */
-	int (*ipi_init)(u32 hartid, bool cold_boot);
+	int (*ipi_init)(bool cold_boot);
 
 	/** Get MMIO timer value */
 	u64 (*timer_value)(void);
@@ -328,10 +328,10 @@ static inline int sbi_platform_irqchip_init(struct sbi_platform *plat,
  * @param target_hart HART ID of IPI target
  */
 static inline void sbi_platform_ipi_inject(struct sbi_platform *plat,
-					   u32 target_hart, u32 source_hart)
+					   u32 target_hart)
 {
 	if (plat && plat->ipi_inject)
-		plat->ipi_inject(target_hart, source_hart);
+		plat->ipi_inject(target_hart);
 }
 
 /**
@@ -339,13 +339,12 @@ static inline void sbi_platform_ipi_inject(struct sbi_platform *plat,
  *
  * @param plat pointer to struct sbi_platform
  * @param target_hart HART ID of IPI target
- * @param source_hart HART ID of IPI source
  */
 static inline void sbi_platform_ipi_sync(struct sbi_platform *plat,
-					 u32 target_hart, u32 source_hart)
+					 u32 target_hart)
 {
 	if (plat && plat->ipi_sync)
-		plat->ipi_sync(target_hart, source_hart);
+		plat->ipi_sync(target_hart);
 }
 
 /**
@@ -365,16 +364,15 @@ static inline void sbi_platform_ipi_clear(struct sbi_platform *plat,
  * Initialize the platform IPI support for given HART
  *
  * @param plat pointer to struct sbi_platform
- * @param hartid HART ID
  * @param cold_boot whether cold boot (TRUE) or warm_boot (FALSE)
  *
  * @return 0 on success and negative error code on failure
  */
 static inline int sbi_platform_ipi_init(struct sbi_platform *plat,
-					u32 hartid, bool cold_boot)
+					bool cold_boot)
 {
 	if (plat && plat->ipi_init)
-		return plat->ipi_init(hartid, cold_boot);
+		return plat->ipi_init(cold_boot);
 	return 0;
 }
 
