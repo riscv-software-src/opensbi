@@ -82,21 +82,19 @@ static int delegate_traps(struct sbi_scratch *scratch, u32 hartid)
 	struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	unsigned long interrupts, exceptions;
 
-	if (!misa_extension('S')) {
-		/* No delegation possible */
-		interrupts = 0;
-		exceptions = 0;
-	} else {
-		/* Send M-mode interrupts and most exceptions to S-mode */
-		interrupts = MIP_SSIP | MIP_STIP | MIP_SEIP;
-		exceptions = (1U << CAUSE_MISALIGNED_FETCH) |
-			     (1U << CAUSE_BREAKPOINT) |
-			     (1U << CAUSE_USER_ECALL);
-		if (sbi_platform_has_mfaults_delegation(plat))
-			exceptions |= (1U << CAUSE_FETCH_PAGE_FAULT) |
-				      (1U << CAUSE_LOAD_PAGE_FAULT) |
-				      (1U << CAUSE_STORE_PAGE_FAULT);
-	}
+	if (!misa_extension('S'))
+		/* No delegation possible as mideleg does not exist*/
+		return 0;
+
+	/* Send M-mode interrupts and most exceptions to S-mode */
+	interrupts = MIP_SSIP | MIP_STIP | MIP_SEIP;
+	exceptions = (1U << CAUSE_MISALIGNED_FETCH) |
+		     (1U << CAUSE_BREAKPOINT) |
+		     (1U << CAUSE_USER_ECALL);
+	if (sbi_platform_has_mfaults_delegation(plat))
+		exceptions |= (1U << CAUSE_FETCH_PAGE_FAULT) |
+			      (1U << CAUSE_LOAD_PAGE_FAULT) |
+			      (1U << CAUSE_STORE_PAGE_FAULT);
 
 	csr_write(mideleg, interrupts);
 	csr_write(medeleg, exceptions);
