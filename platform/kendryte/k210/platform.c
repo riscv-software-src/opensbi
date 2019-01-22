@@ -9,6 +9,7 @@
 
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_const.h>
+#include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_console.h>
 #include <plat/irqchip/plic.h>
@@ -35,9 +36,10 @@ static char k210_console_getc(void)
 	return uarths_getc();
 }
 
-static int k210_irqchip_init(u32 hartid, bool cold_boot)
+static int k210_irqchip_init(bool cold_boot)
 {
 	int rc;
+	u32 hartid = sbi_current_hartid();
 
 	if (cold_boot) {
 		rc = plic_cold_irqchip_init(PLIC_BASE_ADDR,

@@ -9,6 +9,7 @@
 
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_const.h>
+#include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
 #include <plat/irqchip/plic.h>
 #include <plat/serial/uart8250.h>
@@ -73,9 +74,10 @@ static int virt_console_init(void)
 			     VIRT_UART_BAUDRATE, 0, 1);
 }
 
-static int virt_irqchip_init(u32 hartid, bool cold_boot)
+static int virt_irqchip_init(bool cold_boot)
 {
 	int rc;
+	u32 hartid = sbi_current_hartid();
 
 	if (cold_boot) {
 		rc = plic_cold_irqchip_init(VIRT_PLIC_ADDR,
