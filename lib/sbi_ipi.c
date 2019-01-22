@@ -31,7 +31,7 @@ int sbi_ipi_send_many(struct sbi_scratch *scratch,
 
 	/* send IPIs to everyone */
 	for (i = 0, m = mask; m; i++, m >>= 1) {
-		if ((m & 1) && (i != hartid) && !sbi_platform_hart_disabled(plat, hartid)) {
+		if ((m & 1) && !sbi_platform_hart_disabled(plat, hartid)) {
 			oth = sbi_hart_id_to_scratch(scratch, i);
 			atomic_raw_set_bit(event, &oth->ipi_type);
 			mb();
