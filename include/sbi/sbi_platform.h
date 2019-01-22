@@ -25,7 +25,7 @@
 
 /** Possible feature flags of a platform */
 enum sbi_platform_features {
-	/** Platform has MMIO based timer */
+	/** Platform has MMIO timer value */
 	SBI_PLATFORM_HAS_MMIO_TIMER_VALUE	= (1 << 0),
 	/** Platform has HART hotplug support */
 	SBI_PLATFORM_HAS_HART_HOTPLUG		= (1 << 1),
@@ -81,7 +81,7 @@ struct sbi_platform {
 	/** Initialize the platform console */
 	int (*console_init)(void);
 
-	/** Initialize the platform interrupt controller */
+	/** Initialize the platform interrupt controller for current HART */
 	int (*irqchip_init)(bool cold_boot);
 
 	/** Inject IPI to a target HART */
@@ -90,16 +90,16 @@ struct sbi_platform {
 	void (*ipi_sync)(u32 target_hart);
 	/** Clear IPI for a target HART */
 	void (*ipi_clear)(u32 target_hart);
-	/** Initialize IPI for given HART */
+	/** Initialize IPI for current HART */
 	int (*ipi_init)(bool cold_boot);
 
-	/** Get MMIO timer value */
+	/** Get platform timer value */
 	u64 (*timer_value)(void);
-	/** Start MMIO timer event for a target HART */
+	/** Start platform timer event for current HART */
 	void (*timer_event_start)(u64 next_event);
-	/** Stop MMIO timer event for a target HART */
+	/** Stop platform timer event for current HART */
 	void (*timer_event_stop)(void);
-	/** Initialize MMIO timer for given HART */
+	/** Initialize platform timer for current HART */
 	int (*timer_init)(bool cold_boot);
 
 	/** Reboot the platform */
@@ -114,7 +114,7 @@ struct sbi_platform {
 /** Get pointer to sbi_platform for current HART */
 #define sbi_platform_thishart_ptr()	\
 	((struct sbi_platform *)(sbi_scratch_thishart_ptr()->platform_addr))
-/** Check whether the platform supports MMIO timer */
+/** Check whether the platform supports MMIO timer value */
 #define sbi_platform_has_mmio_timer_value(__p)	\
 	((__p)->features & SBI_PLATFORM_HAS_MMIO_TIMER_VALUE)
 /** Check whether the platform supports HART hotplug */
@@ -192,7 +192,7 @@ static inline u32 sbi_platform_hart_stack_size(struct sbi_platform *plat)
 }
 
 /**
- * Early initialization of a given HART
+ * Early initialization for current HART
  *
  * @param plat pointer to struct sbi_platform
  * @param cold_boot whether cold boot (TRUE) or warm_boot (FALSE)
@@ -208,7 +208,7 @@ static inline int sbi_platform_early_init(struct sbi_platform *plat,
 }
 
 /**
- * Final initialization of a HART
+ * Final initialization for current HART
  *
  * @param plat pointer to struct sbi_platform
  * @param cold_boot whether cold boot (TRUE) or warm_boot (FALSE)
@@ -305,7 +305,7 @@ static inline int sbi_platform_console_init(struct sbi_platform *plat)
 }
 
 /**
- * Initialize the platform interrupt controller for given HART
+ * Initialize the platform interrupt controller for current HART
  *
  * @param plat pointer to struct sbi_platform
  * @param cold_boot whether cold boot (TRUE) or warm_boot (FALSE)
@@ -360,7 +360,7 @@ static inline void sbi_platform_ipi_clear(struct sbi_platform *plat,
 }
 
 /**
- * Initialize the platform IPI support for given HART
+ * Initialize the platform IPI support for current HART
  *
  * @param plat pointer to struct sbi_platform
  * @param cold_boot whether cold boot (TRUE) or warm_boot (FALSE)
@@ -376,7 +376,7 @@ static inline int sbi_platform_ipi_init(struct sbi_platform *plat,
 }
 
 /**
- * Get MMIO timer value
+ * Get platform timer value
  *
  * @param plat pointer to struct sbi_platform
  *
@@ -390,7 +390,7 @@ static inline u64 sbi_platform_timer_value(struct sbi_platform *plat)
 }
 
 /**
- * Start MMIO timer event for a target HART
+ * Start platform timer event for current HART
  *
  * @param plat pointer to struct struct sbi_platform
  * @param next_event timer value when timer event will happen
@@ -403,7 +403,7 @@ static inline void sbi_platform_timer_event_start(struct sbi_platform *plat,
 }
 
 /**
- * Stop MMIO timer event for a target HART
+ * Stop platform timer event for current HART
  *
  * @param plat pointer to struct sbi_platform
  */
@@ -414,7 +414,7 @@ static inline void sbi_platform_timer_event_stop(struct sbi_platform *plat)
 }
 
 /**
- * Initialize the platform MMIO timer for given HART
+ * Initialize the platform timer for current HART
  *
  * @param plat pointer to struct sbi_platform
  * @param cold_boot whether cold boot (TRUE) or warm_boot (FALSE)
