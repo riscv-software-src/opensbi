@@ -82,7 +82,7 @@ struct sbi_platform {
 	int (*console_init)(void);
 
 	/** Initialize the platform interrupt controller */
-	int (*irqchip_init)(u32 hartid, bool cold_boot);
+	int (*irqchip_init)(bool cold_boot);
 
 	/** Inject IPI to a target HART */
 	void (*ipi_inject)(u32 target_hart);
@@ -308,16 +308,15 @@ static inline int sbi_platform_console_init(struct sbi_platform *plat)
  * Initialize the platform interrupt controller for given HART
  *
  * @param plat pointer to struct sbi_platform
- * @param hartid HART ID
  * @param cold_boot whether cold boot (TRUE) or warm_boot (FALSE)
  *
  * @return 0 on success and negative error code on failure
  */
 static inline int sbi_platform_irqchip_init(struct sbi_platform *plat,
-					    u32 hartid, bool cold_boot)
+					    bool cold_boot)
 {
 	if (plat && plat->irqchip_init)
-		return plat->irqchip_init(hartid, cold_boot);
+		return plat->irqchip_init(cold_boot);
 	return 0;
 }
 

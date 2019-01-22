@@ -11,6 +11,7 @@
 #include <fdt.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_const.h>
+#include <sbi/sbi_hart.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/riscv_io.h>
@@ -124,9 +125,10 @@ static int fu540_console_init(void)
 				peri_in_freq, FU540_UART_BAUDRATE);
 }
 
-static int fu540_irqchip_init(u32 hartid, bool cold_boot)
+static int fu540_irqchip_init(bool cold_boot)
 {
 	int rc;
+	u32 hartid = sbi_current_hartid();
 
 	if (cold_boot) {
 		rc = plic_cold_irqchip_init(FU540_PLIC_ADDR,

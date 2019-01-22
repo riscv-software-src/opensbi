@@ -9,6 +9,7 @@
 
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_const.h>
+#include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
 #include <plat/irqchip/plic.h>
 #include <plat/serial/sifive-uart.h>
@@ -72,9 +73,10 @@ static int sifive_u_console_init(void)
 				SIFIVE_U_PERIPH_CLK, 115200);
 }
 
-static int sifive_u_irqchip_init(u32 hartid, bool cold_boot)
+static int sifive_u_irqchip_init(bool cold_boot)
 {
 	int rc;
+	u32 hartid = sbi_current_hartid();
 
 	if (cold_boot) {
 		rc = plic_cold_irqchip_init(SIFIVE_U_PLIC_ADDR,
