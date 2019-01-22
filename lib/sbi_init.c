@@ -147,7 +147,7 @@ static atomic_t coldboot_lottery = ATOMIC_INITIALIZER(0);
  * 1. The 'mscratch' CSR is pointing to sbi_scratch of current HART
  * 2. Stack pointer (SP) is setup for current HART
  * 3. Interrupts are disabled in MSTATUS CSR
- * 4. All interrupts are disabled in MIE CSR except MSIP
+ * 4. All interrupts are disabled in MIE CSR
  *
  * @param scratch pointer to sbi_scratch of current HART
  */
