@@ -29,7 +29,7 @@
 #define SIFIVE_U_UART0_ADDR			0x10013000
 #define SIFIVE_U_UART1_ADDR			0x10023000
 
-static int sifive_u_final_init(u32 hartid, bool cold_boot)
+static int sifive_u_final_init(bool cold_boot)
 {
 	void *fdt;
 

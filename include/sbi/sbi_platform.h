@@ -61,9 +61,9 @@ struct sbi_platform {
 	u64 disabled_hart_mask;
 
 	/** Platform early initialization */
-	int (*early_init)(u32 hartid, bool cold_boot);
+	int (*early_init)(bool cold_boot);
 	/** Platform final initialization */
-	int (*final_init)(u32 hartid, bool cold_boot);
+	int (*final_init)(bool cold_boot);
 
 	/** Get number of PMP regions for given HART */
 	u32 (*pmp_region_count)(u32 hartid);
@@ -155,12 +155,12 @@ static inline const char *sbi_platform_name(struct sbi_platform *plat)
  *
  * @return TRUE if HART is disabled and FALSE otherwise
  */
-static inline bool sbi_platform_hart_disabled(struct sbi_platform *plat, u32 hartid)
+static inline bool sbi_platform_hart_disabled(struct sbi_platform *plat,
+					      u32 hartid)
 {
 	if (plat && (plat->disabled_hart_mask & (1 << hartid)))
 		return 1;
-	else
-		return 0;
+	return 0;
 }
 
 /**
@@ -195,16 +195,15 @@ static inline u32 sbi_platform_hart_stack_size(struct sbi_platform *plat)
  * Early initialization of a given HART
  *
  * @param plat pointer to struct sbi_platform
- * @param hartid HART ID
  * @param cold_boot whether cold boot (TRUE) or warm_boot (FALSE)
  *
  * @return 0 on success and negative error code on failure
  */
 static inline int sbi_platform_early_init(struct sbi_platform *plat,
-					  u32 hartid, bool cold_boot)
+					  bool cold_boot)
 {
 	if (plat && plat->early_init)
-		return plat->early_init(hartid, cold_boot);
+		return plat->early_init(cold_boot);
 	return 0;
 }
 
@@ -212,16 +211,15 @@ static inline int sbi_platform_early_init(struct sbi_platform *plat,
  * Final initialization of a HART
  *
  * @param plat pointer to struct sbi_platform
- * @param hartid HART ID
  * @param cold_boot whether cold boot (TRUE) or warm_boot (FALSE)
  *
  * @return 0 on success and negative error code on failure
  */
 static inline int sbi_platform_final_init(struct sbi_platform *plat,
-					  u32 hartid, bool cold_boot)
+					  bool cold_boot)
 {
 	if (plat && plat->final_init)
-		return plat->final_init(hartid, cold_boot);
+		return plat->final_init(cold_boot);
 	return 0;
 }
 
