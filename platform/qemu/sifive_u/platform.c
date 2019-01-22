@@ -105,7 +105,7 @@ static int sifive_u_ipi_init(bool cold_boot)
 	return clint_warm_ipi_init();
 }
 
-static int sifive_u_timer_init(u32 hartid, bool cold_boot)
+static int sifive_u_timer_init(bool cold_boot)
 {
 	int rc;
 
@@ -116,7 +116,7 @@ static int sifive_u_timer_init(u32 hartid, bool cold_boot)
 			return rc;
 	}
 
-	return clint_warm_timer_init(hartid);
+	return clint_warm_timer_init();
 }
 
 static int sifive_u_system_down(u32 type)

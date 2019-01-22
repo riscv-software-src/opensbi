@@ -24,11 +24,11 @@ int clint_cold_ipi_init(unsigned long base, u32 hart_count);
 
 u64 clint_timer_value(void);
 
-void clint_timer_event_stop(u32 target_hart);
+void clint_timer_event_stop(void);
 
-void clint_timer_event_start(u32 target_hart, u64 next_event);
+void clint_timer_event_start(u64 next_event);
 
-int clint_warm_timer_init(u32 target_hart);
+int clint_warm_timer_init(void);
 
 int clint_cold_timer_init(unsigned long base, u32 hart_count);
 
