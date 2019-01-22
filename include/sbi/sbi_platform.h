@@ -96,11 +96,11 @@ struct sbi_platform {
 	/** Get MMIO timer value */
 	u64 (*timer_value)(void);
 	/** Start MMIO timer event for a target HART */
-	void (*timer_event_start)(u32 target_hart, u64 next_event);
+	void (*timer_event_start)(u64 next_event);
 	/** Stop MMIO timer event for a target HART */
-	void (*timer_event_stop)(u32 target_hart);
+	void (*timer_event_stop)(void);
 	/** Initialize MMIO timer for given HART */
-	int (*timer_init)(u32 hartid, bool cold_boot);
+	int (*timer_init)(bool cold_boot);
 
 	/** Reboot the platform */
 	int (*system_reboot)(u32 type);
@@ -393,44 +393,39 @@ static inline u64 sbi_platform_timer_value(struct sbi_platform *plat)
  * Start MMIO timer event for a target HART
  *
  * @param plat pointer to struct struct sbi_platform
- * @param target_hart HART ID of timer event target
  * @param next_event timer value when timer event will happen
  */
 static inline void sbi_platform_timer_event_start(struct sbi_platform *plat,
-						  u32 target_hart,
 						  u64 next_event)
 {
 	if (plat && plat->timer_event_start)
-		plat->timer_event_start(target_hart, next_event);
+		plat->timer_event_start(next_event);
 }
 
 /**
  * Stop MMIO timer event for a target HART
  *
  * @param plat pointer to struct sbi_platform
- * @param target_hart HART ID of timer event target
  */
-static inline void sbi_platform_timer_event_stop(struct sbi_platform *plat,
-						 u32 target_hart)
+static inline void sbi_platform_timer_event_stop(struct sbi_platform *plat)
 {
 	if (plat && plat->timer_event_stop)
-		plat->timer_event_stop(target_hart);
+		plat->timer_event_stop();
 }
 
 /**
  * Initialize the platform MMIO timer for given HART
  *
  * @param plat pointer to struct sbi_platform
- * @param hartid HART ID
  * @param cold_boot whether cold boot (TRUE) or warm_boot (FALSE)
  *
  * @return 0 on success and negative error code on failure
  */
 static inline int sbi_platform_timer_init(struct sbi_platform *plat,
-					  u32 hartid, bool cold_boot)
+					  bool cold_boot)
 {
 	if (plat && plat->timer_init)
-		return plat->timer_init(hartid, cold_boot);
+		return plat->timer_init(cold_boot);
 	return 0;
 }
 

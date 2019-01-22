@@ -90,8 +90,10 @@ u64 clint_timer_value(void)
 	return readq_relaxed(clint_time_val);
 }
 
-void clint_timer_event_stop(u32 target_hart)
+void clint_timer_event_stop(void)
 {
+	u32 target_hart = sbi_current_hartid();
+
 	if (clint_time_hart_count <= target_hart)
 		return;
 
@@ -99,8 +101,10 @@ void clint_timer_event_stop(u32 target_hart)
 	writeq_relaxed(-1ULL, &clint_time_cmp[target_hart]);
 }
 
-void clint_timer_event_start(u32 target_hart, u64 next_event)
+void clint_timer_event_start(u64 next_event)
 {
+	u32 target_hart = sbi_current_hartid();
+
 	if (clint_time_hart_count <= target_hart)
 		return;
 
@@ -108,8 +112,10 @@ void clint_timer_event_start(u32 target_hart, u64 next_event)
 	writeq_relaxed(next_event, &clint_time_cmp[target_hart]);
 }
 
-int clint_warm_timer_init(u32 target_hart)
+int clint_warm_timer_init(void)
 {
+	u32 target_hart = sbi_current_hartid();
+
 	if (clint_time_hart_count <= target_hart ||
 	    !clint_time_base)
 		return -1;

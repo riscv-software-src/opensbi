@@ -47,29 +47,27 @@ u64 sbi_timer_value(struct sbi_scratch *scratch)
 		return get_ticks();
 }
 
-void sbi_timer_event_stop(struct sbi_scratch *scratch, u32 hartid)
+void sbi_timer_event_stop(struct sbi_scratch *scratch)
 {
-	sbi_platform_timer_event_stop(sbi_platform_ptr(scratch), hartid);
+	sbi_platform_timer_event_stop(sbi_platform_ptr(scratch));
 }
 
-void sbi_timer_event_start(struct sbi_scratch *scratch, u32 hartid,
-			   u64 next_event)
+void sbi_timer_event_start(struct sbi_scratch *scratch, u64 next_event)
 {
 	sbi_platform_timer_event_start(sbi_platform_ptr(scratch),
-				       hartid, next_event);
+				       next_event);
 	csr_clear(mip, MIP_STIP);
 	csr_set(mie, MIP_MTIP);
 }
 
-void sbi_timer_process(struct sbi_scratch *scratch, u32 hartid)
+void sbi_timer_process(struct sbi_scratch *scratch)
 {
 	csr_clear(mie, MIP_MTIP);
 	csr_set(mip, MIP_STIP);
 }
 
-int sbi_timer_init(struct sbi_scratch *scratch, u32 hartid,
-		   bool cold_boot)
+int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot)
 {
 	return sbi_platform_timer_init(sbi_platform_ptr(scratch),
-					hartid, cold_boot);
+				       cold_boot);
 }
