@@ -71,7 +71,7 @@ static void fu540_modify_dt(void *fdt)
 
 	plic_fdt_fixup(fdt, "riscv,plic0");
 }
-static int fu540_final_init(u32 hartid, bool cold_boot)
+static int fu540_final_init(bool cold_boot)
 {
 	void *fdt;
 

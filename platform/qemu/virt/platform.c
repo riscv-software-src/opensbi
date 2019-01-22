@@ -29,7 +29,7 @@
 #define VIRT_UART_BAUDRATE		115200
 #define VIRT_UART_SHIFTREG_ADDR		1843200
 
-static int virt_final_init(u32 hartid, bool cold_boot)
+static int virt_final_init(bool cold_boot)
 {
 	void *fdt;
 
