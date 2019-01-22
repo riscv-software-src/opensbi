@@ -141,7 +141,7 @@ static int fu540_irqchip_init(u32 hartid, bool cold_boot)
 			(hartid) ? (2 * hartid) : -1);
 }
 
-static int fu540_ipi_init(u32 hartid, bool cold_boot)
+static int fu540_ipi_init(bool cold_boot)
 {
 	int rc;
 
@@ -153,7 +153,7 @@ static int fu540_ipi_init(u32 hartid, bool cold_boot)
 
 	}
 
-	return clint_warm_ipi_init(hartid);
+	return clint_warm_ipi_init();
 }
 
 static int fu540_timer_init(u32 hartid, bool cold_boot)

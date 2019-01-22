@@ -54,23 +54,20 @@ int sbi_ecall_handler(u32 hartid, ulong mcause,
 		ret = 0;
 		break;
 	case SBI_ECALL_CLEAR_IPI:
-		sbi_ipi_clear_smode(scratch, hartid);
+		sbi_ipi_clear_smode(scratch);
 		ret = 0;
 		break;
 	case SBI_ECALL_SEND_IPI:
-		ret = sbi_ipi_send_many(scratch, hartid,
-					(ulong *)regs->a0,
+		ret = sbi_ipi_send_many(scratch, (ulong *)regs->a0,
 					SBI_IPI_EVENT_SOFT);
 		break;
 	case SBI_ECALL_REMOTE_FENCE_I:
-		ret = sbi_ipi_send_many(scratch, hartid,
-					(ulong *)regs->a0,
+		ret = sbi_ipi_send_many(scratch, (ulong *)regs->a0,
 					SBI_IPI_EVENT_FENCE_I);
 		break;
 	case SBI_ECALL_REMOTE_SFENCE_VMA:
 	case SBI_ECALL_REMOTE_SFENCE_VMA_ASID:
-		ret = sbi_ipi_send_many(scratch, hartid,
-					(ulong *)regs->a0,
+		ret = sbi_ipi_send_many(scratch, (ulong *)regs->a0,
 					SBI_IPI_EVENT_SFENCE_VMA);
 		break;
 	case SBI_ECALL_SHUTDOWN:

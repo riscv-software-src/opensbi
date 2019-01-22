@@ -20,12 +20,12 @@
 struct sbi_scratch;
 
 int sbi_ipi_send_many(struct sbi_scratch *scratch,
-		      u32 hartid, ulong *pmask, u32 event);
+		      ulong *pmask, u32 event);
 
-void sbi_ipi_clear_smode(struct sbi_scratch *scratch, u32 hartid);
+void sbi_ipi_clear_smode(struct sbi_scratch *scratch);
 
-void sbi_ipi_process(struct sbi_scratch *scratch, u32 hartid);
+void sbi_ipi_process(struct sbi_scratch *scratch);
 
-int sbi_ipi_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot);
+int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot);
 
 #endif

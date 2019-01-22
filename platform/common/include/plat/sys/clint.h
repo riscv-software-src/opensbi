@@ -12,13 +12,13 @@
 
 #include <sbi/sbi_types.h>
 
-void clint_ipi_inject(u32 target_hart, u32 source_hart);
+void clint_ipi_inject(u32 target_hart);
 
-void clint_ipi_sync(u32 target_hart, u32 source_hart);
+void clint_ipi_sync(u32 target_hart);
 
 void clint_ipi_clear(u32 target_hart);
 
-int clint_warm_ipi_init(u32 target_hart);
+int clint_warm_ipi_init(void);
 
 int clint_cold_ipi_init(unsigned long base, u32 hart_count);
 
