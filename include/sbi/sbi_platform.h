@@ -25,8 +25,8 @@
 
 /** Possible feature flags of a platform */
 enum sbi_platform_features {
-	/** Platform has MMIO timer value */
-	SBI_PLATFORM_HAS_MMIO_TIMER_VALUE	= (1 << 0),
+	/** Platform has timer value */
+	SBI_PLATFORM_HAS_TIMER_VALUE		= (1 << 0),
 	/** Platform has HART hotplug support */
 	SBI_PLATFORM_HAS_HART_HOTPLUG		= (1 << 1),
 	/** Platform has PMP support */
@@ -41,7 +41,7 @@ enum sbi_platform_features {
 
 /** Default feature set for a platform */
 #define SBI_PLATFORM_DEFAULT_FEATURES	\
-	(SBI_PLATFORM_HAS_MMIO_TIMER_VALUE | \
+	(SBI_PLATFORM_HAS_TIMER_VALUE | \
 	 SBI_PLATFORM_HAS_PMP | \
 	 SBI_PLATFORM_HAS_SCOUNTEREN | \
 	 SBI_PLATFORM_HAS_MCOUNTEREN | \
@@ -114,9 +114,9 @@ struct sbi_platform {
 /** Get pointer to sbi_platform for current HART */
 #define sbi_platform_thishart_ptr()	\
 	((struct sbi_platform *)(sbi_scratch_thishart_ptr()->platform_addr))
-/** Check whether the platform supports MMIO timer value */
-#define sbi_platform_has_mmio_timer_value(__p)	\
-	((__p)->features & SBI_PLATFORM_HAS_MMIO_TIMER_VALUE)
+/** Check whether the platform supports timer value */
+#define sbi_platform_has_timer_value(__p)	\
+	((__p)->features & SBI_PLATFORM_HAS_TIMER_VALUE)
 /** Check whether the platform supports HART hotplug */
 #define sbi_platform_has_hart_hotplug(__p)	\
 	((__p)->features & SBI_PLATFORM_HAS_HART_HOTPLUG)

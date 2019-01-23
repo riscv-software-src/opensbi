@@ -41,7 +41,7 @@ u64 sbi_timer_value(struct sbi_scratch *scratch)
 {
 	struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	if (sbi_platform_has_mmio_timer_value(plat))
+	if (sbi_platform_has_timer_value(plat))
 		return sbi_platform_timer_value(plat);
 	else
 		return get_ticks();
