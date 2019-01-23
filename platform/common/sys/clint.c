@@ -87,7 +87,15 @@ static volatile u64 *clint_time_cmp;
 
 u64 clint_timer_value(void)
 {
+#if __riscv_xlen == 64
 	return readq_relaxed(clint_time_val);
+#else
+	u64 tmp;
+	tmp = readl_relaxed((void *)clint_time_val + 0x04);
+	tmp <<= 32;
+	tmp |= readl_relaxed(clint_time_val);
+	return tmp;
+#endif
 }
 
 void clint_timer_event_stop(void)
@@ -98,7 +106,12 @@ void clint_timer_event_stop(void)
 		return;
 
 	/* Clear CLINT Time Compare */
+#if __riscv_xlen == 64
 	writeq_relaxed(-1ULL, &clint_time_cmp[target_hart]);
+#else
+	writel_relaxed(-1UL, &clint_time_cmp[target_hart]);
+	writel_relaxed(-1UL, (void *)(&clint_time_cmp[target_hart]) + 0x04);
+#endif
 }
 
 void clint_timer_event_start(u64 next_event)
@@ -109,7 +122,13 @@ void clint_timer_event_start(u64 next_event)
 		return;
 
 	/* Program CLINT Time Compare */
+#if __riscv_xlen == 64
 	writeq_relaxed(next_event, &clint_time_cmp[target_hart]);
+#else
+	u32 mask = -1UL;
+	writel_relaxed(next_event & mask, &clint_time_cmp[target_hart]);
+	writel_relaxed(next_event >> 32, (void *)(&clint_time_cmp[target_hart]) + 0x04);
+#endif
 }
 
 int clint_warm_timer_init(void)
@@ -121,7 +140,12 @@ int clint_warm_timer_init(void)
 		return -1;
 
 	/* Clear CLINT Time Compare */
+#if __riscv_xlen == 64
 	writeq_relaxed(-1ULL, &clint_time_cmp[target_hart]);
+#else
+	writel_relaxed(-1UL, &clint_time_cmp[target_hart]);
+	writel_relaxed(-1UL, (void *)(&clint_time_cmp[target_hart]) + 0x04);
+#endif
 
 	return 0;
 }
