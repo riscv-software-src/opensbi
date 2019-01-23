@@ -331,7 +331,7 @@ void sbi_hart_wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 		/* send an IPI to every other hart */
 		spin_lock(&coldboot_wait_bitmap_lock);
 		if ((i != hartid) && (coldboot_wait_bitmap & (1UL << i)))
-			sbi_platform_ipi_inject(plat, i);
+			sbi_platform_ipi_send(plat, i);
 		spin_unlock(&coldboot_wait_bitmap_lock);
 	}
 }

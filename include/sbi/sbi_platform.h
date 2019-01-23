@@ -84,8 +84,8 @@ struct sbi_platform {
 	/** Initialize the platform interrupt controller for current HART */
 	int (*irqchip_init)(bool cold_boot);
 
-	/** Inject IPI to a target HART */
-	void (*ipi_inject)(u32 target_hart);
+	/** Send IPI to a target HART */
+	void (*ipi_send)(u32 target_hart);
 	/** Wait for target HART to acknowledge IPI */
 	void (*ipi_sync)(u32 target_hart);
 	/** Clear IPI for a target HART */
@@ -321,16 +321,16 @@ static inline int sbi_platform_irqchip_init(struct sbi_platform *plat,
 }
 
 /**
- * Inject IPI to a target HART
+ * Send IPI to a target HART
  *
  * @param plat pointer to struct sbi_platform
  * @param target_hart HART ID of IPI target
  */
-static inline void sbi_platform_ipi_inject(struct sbi_platform *plat,
-					   u32 target_hart)
+static inline void sbi_platform_ipi_send(struct sbi_platform *plat,
+					 u32 target_hart)
 {
-	if (plat && plat->ipi_inject)
-		plat->ipi_inject(target_hart);
+	if (plat && plat->ipi_send)
+		plat->ipi_send(target_hart);
 }
 
 /**
