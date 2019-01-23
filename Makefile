@@ -140,7 +140,7 @@ ASFLAGS		+=	$(firmware-asflags-y)
 
 ARFLAGS		=	rcs
 
-LDFLAGS		+=	-g -Wall -nostdlib -Wl,--build-id=none -N
+LDFLAGS		+=	-g -Wall -nostdlib -Wl,--build-id=none -N -static-libgcc -lgcc
 LDFLAGS		+=	$(platform-ldflags-y)
 LDFLAGS		+=	$(firmware-ldflags-y)
 
