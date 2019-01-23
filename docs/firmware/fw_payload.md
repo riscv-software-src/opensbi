@@ -1,75 +1,90 @@
-OpenSBI Firmware with Payload (FW_PAYLOAD)
+OpenSBI Firmware with Payload *FW_PAYLOAD*
 ==========================================
 
-The **OpenSBI firmware with Payload (FW_PAYLOAD)** is a firmware which
-includes the next booting stage binary (i.e. bootloader/kernel) as a
-payload embedded in the OpenSBI firmware binary image.
+OpenSBI **firmware with Payload (FW_PAYLOAD)** is a firmware which directly
+includes the binary for the booting stage to follow OpenSBI firmware execution.
+Typically, this payload will be a bootloader or an OS kernel.
 
-This *FW_PAYLOAD* firmware is particularly useful when the booting stage
-prior to OpenSBI firmware is not capable of loading the OpenSBI firmware
-and the booting stage after OpenSBI firmware separately.
+A *FW_PAYLOAD* firmware is particularly useful when the booting stage executed
+prior to OpenSBI firmware is not capable of loading both OpenSBI firmware and
+the booting stage to follow OpenSBI firmware.
 
-It is also possible that the booting stage prior to OpenSBI firmware
-does not pass a *flattened device tree (FDT)*. In this case, a
-*FW_PAYLOAD* firmware allows embedding a flattened device tree in
-the .text section of the final firmware.
+A *FW_PAYLOAD* firmware is also useful for cases where the booting stage prior
+to OpenSBI firmware does not pass a *flattened device tree (FDT file)*. In such
+case, a *FW_PAYLOAD* firmware allows embedding a flattened device tree in the
+.text section of the final firmware.
 
-How to Enable?
---------------
+Enabling *FW_PAYLOAD* compilation
+---------------------------------
 
-The *FW_PAYLOAD* firmware can be enabled by any of the following methods:
+The *FW_PAYLOAD* firmware can be enabled by any of the following methods.
 
-1. Passing `FW_PAYLOAD=y` command-line parameter to top-level `make`
-2. Setting `FW_PAYLOAD=y` in platform `config.mk`
+1. Specifying `FW_PAYLOAD=y` on the top level `make` command line.
+2. Specifying `FW_PAYLOAD=y` in the target platform *config.mk* configuration
+   file.
+
+The compiled *FW_PAYLOAD* firmware ELF file is named *fw_jump.elf*. Its
+expanded image file is *fw_payload.bin*. Both files are created in the
+platform specific build directory under the
+*build/platform/<platform_subdir>/firmware* directory.
 
 Configuration Options
 ---------------------
 
-A *FW_PAYLOAD* firmware needs to be built according to some predefined
-configuration options to work correctly. These configuration details can
-be passed as parameters to the top-level `make` command or can be defined
- in a platform *config.mk* build configuration file.
+A *FW_PAYLOAD* firmware is built according to configuration parameters and
+options. These configuration parameters can be defined using either the top
+level `make` command line or the target platform *config.mk* configuration
+file. The parameters currently defined are as   follows.
 
-The following are the build configuration parameters for a *FW_PAYLOAD*
-firmware:
+* **FW_PAYLOAD_OFFSET** - Offset from *FW_TEXT_BASE* where the payload binary
+  will be linked in the final *FW_PAYLOAD* firmware binary image. This
+  configuration parameter is mandatory if *FW_PAYLOAD_ALIGN* is not defined.
+  Compilation errors will result from an incorrect definition of
+  *FW_PAYLOAD_OFFSET* or of *FW_PAYLOAD_ALIGN*, or if neither of these
+  parameters are defined.
 
-* **FW_PAYLOAD_OFFSET** - Offset from *FW_TEXT_BASE* where the payload
-binary will be linked in the final *FW_PAYLOAD* firmware binary image.
-<<<<<<< HEAD
-This configuration parameter is mandatory if *FW_PAYLOAD_ALIGN* is not
-defined.  Compilation errors will result from an incorrect definition
-of *FW_PAYLOAD_OFFSET* or *FW_PAYLOAD_ALIGN*, or if neither of these
-parameters are defined.
+* **FW_PAYLOAD_ALIGN** - Address alignment constraint where the payload binary
+  will be linked after the end of the base firmware binary in the final
+  *FW_PAYLOAD* firmware binary image. This configuration parameter is mandatory
+  if *FW_PAYLOAD_OFFSET* is not defined. If both *FW_PAYLOAD_OFFSET* and
+  *FW_PAYLOAD_ALIGN* are defined, *FW_PAYLOAD_OFFSET* is used and 
+  *FW_PAYLOAD_ALIGN* ignored.
 
-* **FW_PAYLOAD_ALIGN** - Address alignment constraint where the payload
-binary will be linked after the end of the base firmware binary in the
-final *FW_PAYLOAD* firmware binary image. This configuration parameter
-is mandatory if *FW_PAYLOAD_OFFSET* is not defined and should not be
-defined otherwise.
+* **FW_PAYLOAD_PATH** - Path to the image file of the next booting stage
+  binary.  If this option is not provided then a simple test payload is
+  automatically generated and used as a payload. This test payload executes
+  an infinite `while (1)` loop after printing a message on the platform console.
 
-* **FW_PAYLOAD_PATH** - Path to the next booting stage binary image
-file.  If this option is not provided then a simple test payload is
-automatically generated, executing a `while (1)` loop.
+* **FW_PAYLOAD_FDT_PATH** - Path to an external flattened device tree binary
+  file to be embedded in the *.text* section of the final firmware. If this
+  option is not provided and no internal device tree file is specified by the
+  platform (c.f. *FW_PAYLOAD_FDT*), then the firmware will expect the FDT to
+  be passed as an argument by the prior booting stage.
 
-* **FW_PAYLOAD_FDT_PATH** - Path to an external flattened device tree
-binary file to be embedded in the *.text* section of the final
-*FW_PAYLOAD* firmware. If this option is not provided and no internal
-device tree file is specified by the platform (c.f. *FW_PAYLOAD_FDT*),
-then the firmware will expect the FDT to be passed as an argument by
-the prior booting stage.
+* **FW_PAYLOAD_FDT** - Path to an internal flattened device tree binary file
+  defined by the platform code. The file name must match the DTB file name
+  specified in the platform *objects.mk* file with the *platform-dtb-y* entry.
+  This option results in *FW_PAYLOAD_FDT_PATH* to be automatically set.
+  Specifying *FW_PAYLOAD_FDT_PATH* on the `make` command line disables
+  *FW_PAYLOAD_FDT* and the command line specified device tree binary file is
+  used for building the final firmware.
 
-* **FW_PAYLOAD_FDT** - Path to an internal flattened device tree
-binary file defined by the platform code. The file name must match the
-DTB file name specified in the platform *objects.mk* file with the
-*platform-dtb-y* entry. This option results in *FW_PAYLOAD_FDT_PATH* to
-be automatically set. Specifying *FW_PAYLOAD_FDT_PATH* on the `make`
-command line disables *FW_PAYLOAD_FDT* and the command line specified
-device tree binary file is used for building the final firmware.
+* **FW_PAYLOAD_FDT_ADDR** - Address where the FDT passed by the prior booting
+  stage or specified by the *FW_PAYLOAD_FDT_PATH* parameter and embedded in
+  the *.text* section will be placed before executing the next booting stage,
+  that is, the payload firmware. If this option is not provided then the
+  firmware will pass zero as the FDT address to the next booting stage.
 
-* **FW_PAYLOAD_FDT_ADDR** - Address where the FDT passed by the prior
-booting stage or specified by the *FW_PAYLOAD_FDT_PATH* parameter and
-embedded in the *.text* section will be placed before executing the
-next booting stage, that is, the payload firmware. If this option is
-not provided then the firmware will pass zero as the FDT address to the
-next booting stage.
+*FW_PAYLOAD* Example
+--------------------
+
+The *[qemu/virt]* and *[qemu/sifive_u]* platforms illustrates how to configure
+and use a *FW_PAYLOAD* firmware. Detailed information regarding these platforms
+can be found in the platforms documentation files.
+
+The *kendryte/k210* platform also enables build of a *FW_PAYLOAD* using an
+internally defined device tree file (*FW_PAYLOAD_FDT*).
+
+[qemu/virt]: ../platform/qemu_virt.md
+[qemu/sifive_u]: ../platform/qemu_sifive_u.md
 
