@@ -1,39 +1,52 @@
-OpenSBI Firmware with Jump Address (FW_JUMP)
+OpenSBI Firmware with Jump Address *FW_JUMP*
 ============================================
 
-The **OpenSBI firmware with Jump Address (FW_JUMP)** is a
-firmware which only know the address of next booting stage
-(i.e. bootloader/kernel).
+OpenSBI **firmware with Jump Address (FW_JUMP)** is a firmware which only
+handles the address of the next booting stage entry, e.g. a bootloader or an OS
+kernel, without directly including the binary code for this next stage.
 
-This **FW_JUMP** firmware is particularly useful when booting
-stage prior to OpenSBI firmware is capable of loading OpenSBI
-firmware and booting stage after OpenSBI firmware separately.
+A *FW_JUMP* firmware is particularly useful when the booting stage executed
+prior to OpenSBI firmware is capable of loading both the OpenSBI firmware and
+the booting stage binary to follow OpenSBI firmware.
 
-How to Enable?
---------------
+*FW_JUMP* Compilation
+---------------------
 
-The **FW_JUMP** firmware can be enabled by any of the following
-methods:
+A platform *FW_JUMP* firmware can be enabled by any of the following methods.
 
-1. Passing `FW_JUMP=y` command-line parameter to
-top-level `make`
-2. Setting `FW_JUMP=y` in platform `config.mk`
+1. Spedifying `FW_JUMP=y` on the top level `make` command line.
+2. Specifying `FW_JUMP=y` in the target platform *config.mk* configuration file.
 
-Config Options
---------------
+The compiled *FW_JUMP* firmware ELF file is named *fw_jump.elf*. Its expanded
+image file is *fw_jump.bin*. Both files are created in the platform specific
+build directory under the *build/platform/<platform_subdir>/firmware* directory.
 
-We need more config details for **FW_JUMP** firmware to work
-correctly. These configuration details can be passed as parameters to
-top-level `make` or can be set in platform `config.mk`.
+*FW_JUMP* Firmware Configuration Options
+----------------------------------------
 
-Following are the configuration options for a **FW_JUMP** firmware:
+To operate correctly, a *FW_JUMP* firmware requires some configuration
+parameters to be defined using either the top level `make` command line or the
+target platform *config.mk* configuration file. The possible parameters are as
+follows.
 
-* **FW_JUMP_ADDR** - Address where next booting stage is
-located. This is a mandatory config option and will result
-in compile error if not provided.
+* **FW_JUMP_ADDR** - Address of the entry point of the booting stage to be
+  executed following OpenSBI firmware. This address generally correspond
+  exactly to the address where this next booting stage was loaded. This is a
+  mandatory parameter. Compilation errors will result from not defining this
+  address.
 
-* **FW_JUMP_FDT_ADDR** - Address where the FDT passed by the prior
-booting stage will be placed before passing to the next booting
-stage. If this option is not provided then the firmware will pass
-zero as the FDT address to the next booting stage.
->>>>>>> 2c0dc4dc... docs: Typo fixes.
+* **FW_JUMP_FDT_ADDR** - Address where the *flattened device tree (FDT file)*
+  passed by the prior booting stage will be placed in memory before executing
+  the booting stage following OpenSBI firmware. If this option is not provided
+  then OpenSBI firmware will pass zero as the FDT address to the following
+  booting stage.
+
+*FW_JUMP* Example
+-----------------
+
+The *[qemu/virt]* and *[qemu/sifive_u]* platforms illustrates how to configure
+and use a *FW_JUMP* firmware. Detailed information regarding these platforms
+can be found in the platforms documentation files.
+
+[qemu/virt]: ../platform/qemu_virt.md
+[qemu/sifive_u]: ../platform/qemu_sifive_u.md
