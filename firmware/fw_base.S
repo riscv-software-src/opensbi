@@ -69,7 +69,11 @@ _prev_arg1_override_done:
 	add	t0, a1, zero
 	and	t0, t0, a3
 	/* t2 = source FDT size in big-endian */
+#if __riscv_xlen == 64
 	lwu	t2, 4(t0)
+#else
+	lw	t2, 4(t0)
+#endif
 	/* t3 = bit[15:8] of FDT size */
 	add	t3, t2, zero
 	srli	t3, t3, 16
@@ -132,8 +136,13 @@ _start_warm:
 	 */
 	csrr	s6, mhartid
 	la	a4, platform
+#if __riscv_xlen == 64
 	lwu	s7, SBI_PLATFORM_HART_COUNT_OFFSET(a4)
 	lwu	s8, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(a4)
+#else
+	lw	s7, SBI_PLATFORM_HART_COUNT_OFFSET(a4)
+	lw	s8, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(a4)
+#endif
 
 	/* HART ID should be within expected limit */
 	csrr	s6, mhartid
@@ -202,8 +211,13 @@ _hartid_to_scratch:
 	 * s2 -> Temporary
 	 */
 	la	s2, platform
+#if __riscv_xlen == 64
 	lwu	s0, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(s2)
 	lwu	s2, SBI_PLATFORM_HART_COUNT_OFFSET(s2)
+#else
+	lw	s0, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(s2)
+	lw	s2, SBI_PLATFORM_HART_COUNT_OFFSET(s2)
+#endif
 	mul	s2, s2, s0
 	la	s1, _fw_end
 	add	s1, s1, s2
