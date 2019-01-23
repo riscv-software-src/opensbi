@@ -1,42 +1,52 @@
-QEMU SiFive Unleashed Machine
-=============================
+QEMU SiFive Unleashed Machine Platform
+======================================
 
-The **QEMU SiFive Unleashed Machine** is an emulation of
-SiFive Unleashed platform.
+The **QEMU SiFive Unleashed Machine** is an emulation of the SiFive Unleashed
+platform.
 
-To build platform specific library and firmwares, provide
-`PLATFORM=qemu/sifive_u` parameter to top-level make.
+To build this platform specific library and firmwares, provide the
+*PLATFORM=qemu/sifive_u* parameter to the top level `make` command line.
 
 Platform Options
 ----------------
 
-We don't have any platform specific options for this platform.
+The *QEMU SiFive Unleashed Machine* platform does not have any platform specific
+options.
 
-Try on QEMU RISC-V 64bit
-------------------------
+Executing on QEMU RISC-V 64bit
+------------------------------
 
-**No Payload**
+**No Payload Case**
 
-*Build*:
+Build:
 ```
-    make PLATFORM=qemu/virt
-```
-*Run*:
-```
-    qemu-system-riscv64 -M sifive_u -m 256M -display none -serial stdio -kernel build/platform/qemu/sifive_u/firmware/fw_payload.elf
+make PLATFORM=qemu/virt
 ```
 
-**U-Boot Payload**
+Run:
+```
+qemu-system-riscv64 -M sifive_u -m 256M -display none -serial stdio \
+	-kernel build/platform/qemu/sifive_u/firmware/fw_payload.elf
+```
 
-*Note*: We assume that U-Boot is compiled using `qemu-riscv64_smode_defconfig`.
+**U-Boot as a Payload**
 
-*Build*:
+Note: the command line examples here assume that U-Boot was compiled using
+the `qemu-riscv64_smode_defconfig` configuration.
+
+Build:
 ```
-    make PLATFORM=qemu/virt FW_PAYLOAD_PATH=<uboot_build_directory>/u-boot.bin
+make PLATFORM=qemu/virt FW_PAYLOAD_PATH=<uboot_build_directory>/u-boot.bin
 ```
-*Run*:
+
+Run:
 ```
-    qemu-system-riscv64 -M sifive_u -m 256M -display none -serial stdio -kernel build/platform/qemu/sifive_u/firmware/fw_payload.elf
-    or
-    qemu-system-riscv64 -M sifive_u -m 256M -display none -serial stdio -kernel build/platform/qemu/sifive_u/firmware/fw_jump.elf -device loader,file=<uboot_build_directory>/u-boot.bin,addr=0x80200000
+qemu-system-riscv64 -M sifive_u -m 256M -display none -serial stdio \
+	-kernel build/platform/qemu/sifive_u/firmware/fw_payload.elf
+```
+or
+```
+qemu-system-riscv64 -M sifive_u -m 256M -display none -serial stdio \
+	-kernel build/platform/qemu/sifive_u/firmware/fw_jump.elf \
+	-device loader,file=<uboot_build_directory>/u-boot.bin,addr=0x80200000
 ```
