@@ -159,8 +159,8 @@ static inline bool sbi_platform_hart_disabled(struct sbi_platform *plat,
 					      u32 hartid)
 {
 	if (plat && (plat->disabled_hart_mask & (1 << hartid)))
-		return 1;
-	return 0;
+		return TRUE;
+	return FALSE;
 }
 
 /**
