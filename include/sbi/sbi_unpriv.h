@@ -77,7 +77,11 @@ static inline ulong get_insn(ulong mepc, ulong *mstatus)
 	ulong val;
 #ifndef __riscv_compressed
 	asm ("csrrs %[mstatus], mstatus, %[mprv]\n"
+#if __riscv_xlen == 64
 		STR(LWU) " %[insn], (%[addr])\n"
+#else
+		STR(LW) " %[insn], (%[addr])\n"
+#endif
 		"csrw mstatus, %[mstatus]"
 		: [mstatus] "+&r" (__mstatus), [insn] "=&r" (val)
 		: [mprv] "r" (MSTATUS_MPRV | MSTATUS_MXR), [addr] "r" (__mepc));
@@ -86,7 +90,11 @@ static inline ulong get_insn(ulong mepc, ulong *mstatus)
 	asm ("csrrs %[mstatus], mstatus, %[mprv]\n"
 		"and %[tmp], %[addr], 2\n"
 		"bnez %[tmp], 1f\n"
+#if __riscv_xlen == 64
 		STR(LWU) " %[insn], (%[addr])\n"
+#else
+		STR(LW) " %[insn], (%[addr])\n"
+#endif
 		"and %[tmp], %[insn], %[rvc_mask]\n"
 		"beq %[tmp], %[rvc_mask], 2f\n"
 		"sll %[insn], %[insn], %[xlen_minus_16]\n"
