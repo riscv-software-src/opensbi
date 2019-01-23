@@ -114,7 +114,7 @@ struct sbi_platform platform = {
 	.irqchip_init = k210_irqchip_init,
 
 	.ipi_init = k210_ipi_init,
-	.ipi_inject = clint_ipi_inject,
+	.ipi_send = clint_ipi_send,
 	.ipi_sync = clint_ipi_sync,
 	.ipi_clear = clint_ipi_clear,
 

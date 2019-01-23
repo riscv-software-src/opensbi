@@ -16,7 +16,7 @@ static u32 clint_ipi_hart_count;
 static volatile void *clint_ipi_base;
 static volatile u32 *clint_ipi;
 
-void clint_ipi_inject(u32 target_hart)
+void clint_ipi_send(u32 target_hart)
 {
 	if (clint_ipi_hart_count <= target_hart)
 		return;

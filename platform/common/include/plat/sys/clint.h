@@ -12,7 +12,7 @@
 
 #include <sbi/sbi_types.h>
 
-void clint_ipi_inject(u32 target_hart);
+void clint_ipi_send(u32 target_hart);
 
 void clint_ipi_sync(u32 target_hart);
 

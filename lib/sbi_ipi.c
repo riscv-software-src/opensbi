@@ -35,7 +35,7 @@ int sbi_ipi_send_many(struct sbi_scratch *scratch,
 			oth = sbi_hart_id_to_scratch(scratch, i);
 			atomic_raw_set_bit(event, &oth->ipi_type);
 			mb();
-			sbi_platform_ipi_inject(plat, i);
+			sbi_platform_ipi_send(plat, i);
 			if (event != SBI_IPI_EVENT_SOFT)
 				sbi_platform_ipi_sync(plat, i);
 		}
