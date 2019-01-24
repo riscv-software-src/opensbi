@@ -1,0 +1,29 @@
+OpenSBI Supported Platforms
+===========================
+
+OpenSBI currently supports the following virtual and hardware platforms.
+
+* **QEMU RISC-V Virt Machine**: Platform support for QEMU *virt* virtual RISC-V
+  machine. This virtual machine is intended for RISC-V software development and
+  test. More details on this platform can be found in the file *[qemu_virt.md]*.
+
+* **QEMU SiFive Unleashed Machine**: Platform support for the *sifive_u* QEMU
+  virtual RISC-V machine. This is an emulation machine of the SiFive Unleashed
+  board. More details on this platform can be found in the file
+  *[qemu_sifive_u.md]*.
+
+* **SiFive FU540 SoC**: Platform support for SiFive FU540 SoC used on the
+  SiFive Unleashed board. This platform is very similar to the *QEMU sifive_u*
+  platform.
+
+* **Kendryte K210 SoC**: Platform support for the Kendryte K210 SoC used on
+  boards such as the Kendryte KD233 and Sipeed MAIX Dock boards.
+
+The code for these supported platforms can be used as example to implement
+support for other platforms. The *platform/template* directory also provides
+template files for implementing support for a new platform. The *object.mk*,
+*config.mk* and *platform.c* template files provided are commented to facilitate
+the implementation.
+
+[qemu_virt.md]: qemu_virt.md
+[qemu_sifive_u.md]: qemu_sifive_u.md
