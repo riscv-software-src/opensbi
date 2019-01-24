@@ -34,7 +34,15 @@
 #define FU540_UART1_ADDR			0x10011000
 #define FU540_UART_BAUDRATE			115200
 
-#define FU540_HARITD_ENABLED			1
+/**
+ * The FU540 SoC has 5 HARTs but HART ID 0 doesn't have S mode. enable only
+ * HARTs 1 to 4.
+ */
+#ifndef FU540_ENABLED_HART_MASK
+#define FU540_ENABLED_HART_MASK (1 << 1 | 1 << 2 | 1 << 3 | 1 << 4)
+#endif
+
+#define FU540_HARITD_DISABLED			~(FU540_ENABLED_HART_MASK)
 
 /* PRCI clock related macros */
 //TODO: Do we need a separate driver for this ?
@@ -183,7 +191,7 @@ struct sbi_platform platform = {
 	.features = SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count = FU540_HART_COUNT,
 	.hart_stack_size = FU540_HART_STACK_SIZE,
-	.disabled_hart_mask = ~(1 << FU540_HARITD_ENABLED),
+	.disabled_hart_mask = FU540_HARITD_DISABLED,
 	.pmp_region_count = fu540_pmp_region_count,
 	.pmp_region_info = fu540_pmp_region_info,
 	.final_init = fu540_final_init,
