@@ -1,10 +1,10 @@
 #
-# Copyright (c) 2018 Western Digital Corporation or its affiliates.
+# SPDX-License-Identifier: BSD-2-Clause
+#
+# Copyright (c) 2019 Western Digital Corporation or its affiliates.
 #
 # Authors:
 #   Atish Patra<atish.patra@wdc.com>
-#
-# SPDX-License-Identifier: BSD-2-Clause
 #
 
 libfdt_files = fdt.o fdt_ro.o fdt_wip.o fdt_rw.o fdt_sw.o fdt_strerror.o \

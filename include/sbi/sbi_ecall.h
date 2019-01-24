@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2018 Western Digital Corporation or its affiliates.
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
+ * Copyright (c) 2019 Western Digital Corporation or its affiliates.
  *
  * Authors:
  *   Anup Patel <anup.patel@wdc.com>
- *
- * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #ifndef __SBI_ECALL_H__
