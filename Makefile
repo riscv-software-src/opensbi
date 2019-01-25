@@ -49,6 +49,7 @@ endif
 # Setup path of directories
 export platform_subdir=platform/$(PLATFORM)
 export platform_dir=$(CURDIR)/$(platform_subdir)
+export platform_root_dir=$(CURDIR)/platform
 export platform_common_dir=$(CURDIR)/platform/common
 export include_dir=$(CURDIR)/include
 export lib_dir=$(CURDIR)/lib
@@ -56,6 +57,7 @@ export firmware_dir=$(CURDIR)/firmware
 
 # Setup list of objects.mk files
 ifdef PLATFORM
+platform-root-object-mks=$(shell if [ -d $(platform_root_dir) ]; then find $(platform_root_dir) -maxdepth 1 -iname "objects.mk" | sort -r; fi)
 platform-object-mks=$(shell if [ -d $(platform_dir) ]; then find $(platform_dir) -iname "objects.mk" | sort -r; fi)
 platform-common-object-mks=$(shell if [ -d $(platform_common_dir) ]; then find $(platform_common_dir) -iname "objects.mk" | sort -r; fi)
 endif
@@ -69,6 +71,7 @@ endif
 
 # Include all object.mk files
 ifdef PLATFORM
+include $(platform-root-object-mks)
 include $(platform-object-mks)
 include $(platform-common-object-mks)
 endif
