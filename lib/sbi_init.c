@@ -16,6 +16,7 @@
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_timer.h>
+#include <sbi/sbi_version.h>
 
 #define BANNER \
 	"   ____                    _____ ____ _____\n" \
@@ -63,7 +64,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 
 	misa_string(str, sizeof(str));
 	sbi_printf("\nOpenSBI v%d.%d (%s %s)\n",
-		   OPENSBI_MAJOR, OPENSBI_MINOR,
+		   OPENSBI_VERSION_MAJOR, OPENSBI_VERSION_MINOR,
 		   __DATE__, __TIME__);
 
 	sbi_printf(BANNER);
