@@ -7,10 +7,6 @@
 #   Anup Patel <anup.patel@wdc.com>
 #
 
-# Current Version
-MAJOR = 0
-MINOR = 1
-
 # Select Make Options:
 # o  Do not use make's built-in rules and variables
 # o  Do not print "Entering directory ...";
@@ -54,6 +50,10 @@ export include_dir=$(CURDIR)/include
 export lib_dir=$(CURDIR)/lib
 export firmware_dir=$(CURDIR)/firmware
 
+# Find library version
+OPENSBI_VERSION_MAJOR=`grep MAJOR $(include_dir)/sbi/sbi_version.h | awk '{ print $$3 }'`
+OPENSBI_VERSION_MINOR=`grep MINOR $(include_dir)/sbi/sbi_version.h | awk '{ print $$3 }'`
+
 # Setup list of objects.mk files
 ifdef PLATFORM
 platform-object-mks=$(shell if [ -d $(platform_dir) ]; then find $(platform_dir) -iname "objects.mk" | sort -r; fi)
@@ -92,9 +92,7 @@ deps-y+=$(platform-common-objs-path-y:.o=.dep)
 deps-y+=$(lib-objs-path-y:.o=.dep)
 deps-y+=$(firmware-objs-path-y:.o=.dep)
 
-GENFLAGS	=	-DOPENSBI_MAJOR=$(MAJOR)
-GENFLAGS	+=	-DOPENSBI_MINOR=$(MINOR)
-GENFLAGS	+=	-I$(platform_dir)/include
+GENFLAGS	=	-I$(platform_dir)/include
 GENFLAGS	+=	-I$(platform_common_dir)/include
 GENFLAGS	+=	-I$(include_dir)
 GENFLAGS	+=	$(platform-common-genflags-y)
@@ -274,7 +272,7 @@ $(build_dir)/docs/latex/refman.tex: $(build_dir)/docs/doxygen.cfg
 	$(CMD_PREFIX)doxygen $(build_dir)/docs/doxygen.cfg
 $(build_dir)/docs/doxygen.cfg: $(src_dir)/docs/doxygen.cfg
 	$(CMD_PREFIX)mkdir -p $(build_dir)/docs
-	$(CMD_PREFIX)cat docs/doxygen.cfg | sed -e "s#@@SRC_DIR@@#$(src_dir)#" -e "s#@@BUILD_DIR@@#$(build_dir)#" -e "s#@@OPENSBI_MAJOR@@#$(MAJOR)#" -e "s#@@OPENSBI_MINOR@@#$(MINOR)#" > $(build_dir)/docs/doxygen.cfg
+	$(CMD_PREFIX)cat docs/doxygen.cfg | sed -e "s#@@SRC_DIR@@#$(src_dir)#" -e "s#@@BUILD_DIR@@#$(build_dir)#" -e "s#@@OPENSBI_MAJOR@@#$(OPENSBI_VERSION_MAJOR)#" -e "s#@@OPENSBI_MINOR@@#$(OPENSBI_VERSION_MINOR)#" > $(build_dir)/docs/doxygen.cfg
 .PHONY: docs
 docs: $(build_dir)/docs/latex/refman.pdf
 
