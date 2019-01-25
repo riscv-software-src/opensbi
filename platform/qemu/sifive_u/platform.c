@@ -30,6 +30,12 @@
 #define SIFIVE_U_UART0_ADDR			0x10013000
 #define SIFIVE_U_UART1_ADDR			0x10023000
 
+#ifdef PLATFORM_ENABLED_HART_MASK
+#define SIFIVE_U_HARITD_DISABLED		~(PLATFORM_ENABLED_HART_MASK)
+#else
+#define SIFIVE_U_HARITD_DISABLED		0
+#endif
+
 static int sifive_u_final_init(bool cold_boot)
 {
 	void *fdt;
@@ -130,7 +136,7 @@ struct sbi_platform platform = {
 	.features = SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count = SIFIVE_U_HART_COUNT,
 	.hart_stack_size = SIFIVE_U_HART_STACK_SIZE,
-	.disabled_hart_mask = 0,
+	.disabled_hart_mask = SIFIVE_U_HARITD_DISABLED,
 	.pmp_region_count = sifive_u_pmp_region_count,
 	.pmp_region_info = sifive_u_pmp_region_info,
 	.final_init = sifive_u_final_init,

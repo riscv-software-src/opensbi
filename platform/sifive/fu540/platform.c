@@ -33,8 +33,13 @@
 #define FU540_UART0_ADDR			0x10010000
 #define FU540_UART1_ADDR			0x10011000
 #define FU540_UART_BAUDRATE			115200
+#define PLATFORM_ENABLED_HART_DEFAULT		0x1E
 
-#define FU540_HARITD_ENABLED			0x1E
+#ifdef PLATFORM_ENABLED_HART_MASK
+#define FU540_HARITD_DISABLED			~(PLATFORM_ENABLED_HART_MASK)
+#else
+#define FU540_HARITD_DISABLED			~(PLATFORM_ENABLED_HART_DEFAULT)
+#endif
 
 /* PRCI clock related macros */
 //TODO: Do we need a separate driver for this ?
@@ -183,7 +188,7 @@ struct sbi_platform platform = {
 	.features = SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count = FU540_HART_COUNT,
 	.hart_stack_size = FU540_HART_STACK_SIZE,
-	.disabled_hart_mask = ~(FU540_HARITD_ENABLED),
+	.disabled_hart_mask = FU540_HARITD_DISABLED,
 	.pmp_region_count = fu540_pmp_region_count,
 	.pmp_region_info = fu540_pmp_region_info,
 	.final_init = fu540_final_init,

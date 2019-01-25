@@ -19,6 +19,12 @@
 
 #define K210_UART_BAUDRATE		115200
 
+#ifdef PLATFORM_ENABLED_HART_MASK
+#define K210_HARITD_DISABLED		~(PLATFORM_ENABLED_HART_MASK)
+#else
+#define K210_HARITD_DISABLED		0
+#endif
+
 static int k210_console_init(void)
 {
 	uarths_init(K210_UART_BAUDRATE, UARTHS_STOP_1);
@@ -105,7 +111,7 @@ struct sbi_platform platform = {
 
 	.hart_count = K210_HART_COUNT,
 	.hart_stack_size = K210_HART_STACK_SIZE,
-	.disabled_hart_mask = 0,
+	.disabled_hart_mask = K210_HARITD_DISABLED,
 
 	.console_init = k210_console_init,
 	.console_putc = k210_console_putc,

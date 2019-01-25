@@ -30,6 +30,12 @@
 #define VIRT_UART_BAUDRATE		115200
 #define VIRT_UART_SHIFTREG_ADDR		1843200
 
+#ifdef PLATFORM_ENABLED_HART_MASK
+#define VIRT_HARITD_DISABLED		~(PLATFORM_ENABLED_HART_MASK)
+#else
+#define VIRT_HARITD_DISABLED		0
+#endif
+
 static int virt_final_init(bool cold_boot)
 {
 	void *fdt;
@@ -131,7 +137,7 @@ struct sbi_platform platform = {
 	.features = SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count = VIRT_HART_COUNT,
 	.hart_stack_size = VIRT_HART_STACK_SIZE,
-	.disabled_hart_mask = 0,
+	.disabled_hart_mask = VIRT_HARITD_DISABLED,
 	.pmp_region_count = virt_pmp_region_count,
 	.pmp_region_info = virt_pmp_region_info,
 	.final_init = virt_final_init,
