@@ -2,7 +2,7 @@ QEMU RISC-V Virt Machine Platform
 =================================
 
 The **QEMU RISC-V Virt Machine** is virtual platform created for RISC-V
-software development and test. It is also referred to as
+software development and testing. It is also referred as
 *QEMU RISC-V VirtIO machine* because it uses VirtIO devices for network,
 storage, and other types of IO.
 
