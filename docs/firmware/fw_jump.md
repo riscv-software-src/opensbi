@@ -14,7 +14,7 @@ the booting stage binary to follow OpenSBI firmware.
 
 A platform *FW_JUMP* firmware can be enabled by any of the following methods.
 
-1. Spedifying `FW_JUMP=y` on the top level `make` command line.
+1. Specifying `FW_JUMP=y` on the top level `make` command line.
 2. Specifying `FW_JUMP=y` in the target platform *config.mk* configuration file.
 
 The compiled *FW_JUMP* firmware ELF file is named *fw_jump.elf*. Its expanded
@@ -37,7 +37,7 @@ follows.
 
 * **FW_JUMP_FDT_ADDR** - Address where the *flattened device tree (FDT file)*
   passed by the prior booting stage will be placed in memory before executing
-  the booting stage following OpenSBI firmware. If this option is not provided
+  the booting stage following OpenSBI firmware. If this option is not provided,
   then OpenSBI firmware will pass zero as the FDT address to the following
   booting stage.
 

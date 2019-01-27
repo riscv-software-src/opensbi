@@ -72,7 +72,7 @@ file. The parameters currently defined are as   follows.
 * **FW_PAYLOAD_FDT_ADDR** - Address where the FDT passed by the prior booting
   stage or specified by the *FW_PAYLOAD_FDT_PATH* parameter and embedded in
   the *.text* section will be placed before executing the next booting stage,
-  that is, the payload firmware. If this option is not provided then the
+  that is, the payload firmware. If this option is not provided, then the
   firmware will pass zero as the FDT address to the next booting stage.
 
 *FW_PAYLOAD* Example
