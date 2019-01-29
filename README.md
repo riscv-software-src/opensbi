@@ -80,8 +80,8 @@ make PLATFORM=<platform_subdir> O=<build_directory>
 ```
 
 The platform specific library *libplatsbi.a* will be generated in the
-*build/platform/<platform_sub_dir>/lib* directory. The platform firmware files
-will be under the *build/platform/<platform_sub_dir>/firmware* directory.
+*build/platform/<platform_subdir>/lib* directory. The platform firmware files
+will be under the *build/platform/<platform_subdir>/firmware* directory.
 The compiled firmwares will be available in two different format: an ELF file
 and an expanded image file.
 
@@ -91,7 +91,7 @@ make PLATFORM=<platform_subdir> install
 ```
 
 This will copy the compiled platform specific libraries and firmware files
-under the *install/platform/<platform_sub_dir>/* directory. An alternate
+under the *install/platform/<platform_subdir>/* directory. An alternate
 install root directory path can be specified as follows.
 ```
 make PLATFORM=<platform_subdir> I=<install_directory> install
