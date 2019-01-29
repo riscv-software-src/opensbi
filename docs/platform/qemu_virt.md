@@ -50,7 +50,7 @@ or
 ```
 qemu-system-riscv64 -M virt -m 256M -display none -serial stdio \
 	-kernel build/platform/qemu/virt/firmware/fw_jump.elf \
-	-device loader,file=<uboot_build_directory>/u-boot.bin,addr=0x80200000
+	-device loader,file=<uboot_build_directory>/u-boot.bin,addr=0x80400000
 ```
 
 **Linux Kernel Payload**
@@ -75,7 +75,7 @@ or
 ```
 qemu-system-riscv64 -M virt -m 256M -display none -serial stdio \
 	-kernel build/platform/qemu/virt/firmware/fw_jump.elf \
-	-device loader,file=<linux_build_directory>/arch/riscv/boot/Image,addr=0x80200000 \
+	-device loader,file=<linux_build_directory>/arch/riscv/boot/Image,addr=0x80400000 \
 	-drive file=<path_to_linux_rootfs>,format=raw,id=hd0 \
 	-device virtio-blk-device,drive=hd0 \
 	-append "root=/dev/vda rw console=ttyS0"

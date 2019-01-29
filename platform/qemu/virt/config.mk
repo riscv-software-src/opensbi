@@ -30,10 +30,12 @@ PLATFORM_SYS_CLINT=y
 # Blobs to build
 FW_TEXT_START=0x80000000
 FW_JUMP=y
-FW_JUMP_ADDR=0x80200000
+# This needs to be 4MB alligned for 32-bit support
+FW_JUMP_ADDR=0x80400000
 FW_JUMP_FDT_ADDR=0x82200000
 FW_PAYLOAD=y
-FW_PAYLOAD_OFFSET=0x200000
+# This needs to be 4MB alligned for 32-bit support
+FW_PAYLOAD_OFFSET=0x400000
 FW_PAYLOAD_FDT_ADDR=0x82200000
 
 # External Libraries to include
