@@ -13,6 +13,9 @@ platform-cflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
 platform-asflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
 platform-ldflags-y =
 
+platform-runcmd = qemu-system-riscv64 -M virt -m 256M -display none -serial stdio \
+        -kernel build/platform/qemu/virt/firmware/fw_payload.elf
+
 # Common drivers to enable
 PLATFORM_IRQCHIP_PLIC=y
 PLATFORM_SERIAL_UART8250=y
