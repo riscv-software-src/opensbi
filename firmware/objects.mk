@@ -31,7 +31,7 @@ FW_PAYLOAD_PATH_FINAL=$(FW_PAYLOAD_PATH)
 else
 FW_PAYLOAD_PATH_FINAL=$(build_dir)/$(platform_subdir)/firmware/payloads/test.bin
 endif
-firmware-genflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_PATH=$(FW_PAYLOAD_PATH_FINAL)
+firmware-genflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_PATH=\"$(FW_PAYLOAD_PATH_FINAL)\"
 ifdef FW_PAYLOAD_OFFSET
 firmware-genflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_OFFSET=$(FW_PAYLOAD_OFFSET)
 endif
@@ -45,7 +45,7 @@ FW_PAYLOAD_FDT_PATH=$(build_dir)/$(platform_subdir)/$(FW_PAYLOAD_FDT)
 endif
 endif
 ifdef FW_PAYLOAD_FDT_PATH
-firmware-genflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_FDT_PATH=$(FW_PAYLOAD_FDT_PATH)
+firmware-genflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_FDT_PATH=\"$(FW_PAYLOAD_FDT_PATH)\"
 endif
 ifdef FW_PAYLOAD_FDT_ADDR
 firmware-genflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_FDT_ADDR=$(FW_PAYLOAD_FDT_ADDR)
