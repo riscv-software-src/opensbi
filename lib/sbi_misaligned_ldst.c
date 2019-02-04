@@ -28,7 +28,7 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 	union reg_data val;
 	ulong mstatus = csr_read(mstatus);
 	ulong insn = get_insn(regs->mepc, &mstatus);
-	ulong addr = csr_read(mtval);
+	ulong addr = csr_read(CSR_MTVAL);
 	int i, fp = 0, shift = 0, len = 0;
 
 	if ((insn & INSN_MASK_LW) == INSN_MATCH_LW) {
@@ -114,7 +114,7 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 	union reg_data val;
 	ulong mstatus = csr_read(mstatus);
 	ulong insn = get_insn(regs->mepc, &mstatus);
-	ulong addr = csr_read(mtval);
+	ulong addr = csr_read(CSR_MTVAL);
 	int i, len = 0;
 
 	val.data_ulong = GET_RS2(insn, regs);
