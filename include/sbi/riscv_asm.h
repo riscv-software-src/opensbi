@@ -10,6 +10,8 @@
 #ifndef __RISCV_ASM_H__
 #define __RISCV_ASM_H__
 
+#include <sbi/riscv_encoding.h>
+
 #ifdef __ASSEMBLY__
 #define __ASM_STR(x)	x
 #else
@@ -144,17 +146,17 @@ do {								\
 
 static inline int misa_extension(char ext)
 {
-	return csr_read(misa) & (1 << (ext - 'A'));
+	return csr_read(CSR_MISA) & (1 << (ext - 'A'));
 }
 
 static inline int misa_xlen(void)
 {
-	return ((long)csr_read(misa) < 0) ? 64 : 32;
+	return ((long)csr_read(CSR_MISA) < 0) ? 64 : 32;
 }
 
 static inline void misa_string(char *out, unsigned int out_sz)
 {
-	unsigned long i, val = csr_read(misa);
+	unsigned long i, val = csr_read(CSR_MISA);
 
 	for (i = 0; i < 26; i++) {
 		if (val & (1 << i)) {

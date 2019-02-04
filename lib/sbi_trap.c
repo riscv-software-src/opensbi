@@ -89,9 +89,9 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 		return SBI_ENOTSUPP;
 
 	/* Update S-mode exception info */
-	csr_write(stval, tval);
-	csr_write(sepc, epc);
-	csr_write(scause, cause);
+	csr_write(CSR_STVAL, tval);
+	csr_write(CSR_SEPC, epc);
+	csr_write(CSR_SCAUSE, cause);
 
 	/* Set MEPC to S-mode exception vector base */
 	regs->mepc = csr_read(stvec);
@@ -183,6 +183,6 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 
 trap_error:
 	if (rc) {
-		sbi_trap_error(msg, rc, hartid, mcause, csr_read(mtval), regs);
+		sbi_trap_error(msg, rc, hartid, mcause, csr_read(CSR_MTVAL), regs);
 	}
 }
