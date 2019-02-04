@@ -41,15 +41,12 @@ fw_next_addr:
 	la	a0, payload_bin
 	ret
 
-#define	str(s)		#s
-#define	stringify(s)	str(s)
-
 #ifdef FW_PAYLOAD_FDT_PATH
 	.align 3
 	.section .text, "ax", %progbits
 	.globl fdt_bin
 fdt_bin:
-	.incbin	stringify(FW_PAYLOAD_FDT_PATH)
+	.incbin	FW_PAYLOAD_FDT_PATH
 #endif
 
 	.section .payload, "ax", %progbits
@@ -59,5 +56,5 @@ payload_bin:
 	wfi
 	j	payload_bin
 #else
-	.incbin	stringify(FW_PAYLOAD_PATH)
+	.incbin	FW_PAYLOAD_PATH
 #endif
