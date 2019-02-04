@@ -180,7 +180,7 @@ compile_cpp = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     $(CPP) $(CPPFLAGS) -x c $(2) | grep -v "\#" > $(1)
 compile_cc_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " CC-DEP    $(subst $(build_dir)/,,$(1))"; \
-	     echo -n `dirname $(1)`/ > $(1) && \
+	     echo `dirname $(1)`/ \\  > $(1) && \
 	     $(CC) $(CFLAGS) $(call dynamic_flags,$(1),$(2))   \
 	       -MM $(2) >> $(1) || rm -f $(1)
 compile_cc = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
@@ -188,7 +188,7 @@ compile_cc = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     $(CC) $(CFLAGS) $(call dynamic_flags,$(1),$(2)) -c $(2) -o $(1)
 compile_as_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " AS-DEP    $(subst $(build_dir)/,,$(1))"; \
-	     echo -n `dirname $(1)`/ > $(1) && \
+	     echo `dirname $(1)`/ \\ > $(1) && \
 	     $(AS) $(ASFLAGS) $(call dynamic_flags,$(1),$(2)) \
 	       -MM $(2) >> $(1) || rm -f $(1)
 compile_as = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
