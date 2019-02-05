@@ -41,7 +41,8 @@ FW_TEXT_START=0x80000000
 # as needed.
 #
 FW_JUMP=<y|n>
-FW_JUMP_ADDR=0x80200000
+# This needs to be 4MB alligned for 32-bit support
+FW_JUMP_ADDR=0x80400000
 # FW_JUMP_FDT_ADDR=0x82200000
 
 #
@@ -50,7 +51,8 @@ FW_JUMP_ADDR=0x80200000
 # as needed.
 #
 FW_PAYLOAD=<y|n>
-FW_PAYLOAD_OFFSET=0x200000
+# This needs to be 4MB alligned for 32-bit support
+FW_PAYLOAD_OFFSET=0x400000
 # FW_PAYLOAD_ALIGN=0x1000
 # FW_PAYLOAD_PATH="path to next boot stage binary image file"
 # FW_PAYLOAD_FDT_PATH="path to platform flattened device tree file"
