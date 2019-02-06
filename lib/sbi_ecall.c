@@ -39,7 +39,7 @@ int sbi_ecall_handler(u32 hartid, ulong mcause,
 	case SBI_ECALL_SET_TIMER:
 #if __riscv_xlen == 32
 		sbi_timer_event_start(scratch,
-			(((u64)regs->a1 << 32) || (u64)regs->a0));
+			(((u64)regs->a1 << 32) | (u64)regs->a0));
 #else
 		sbi_timer_event_start(scratch, (u64)regs->a0);
 #endif
