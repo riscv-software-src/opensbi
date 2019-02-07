@@ -1,22 +1,31 @@
 OpenSBI Platform Support Guideline
 ==================================
 
-The OpenSBI platform support is a set of platform specific hooks provided
-in the form of a *struct sbi_platform* instance. It is required by:
+OpenSBI platform support allows an implementation to define a set of platform
+specific hooks (hardware manipulation functions) in the form of a
+*struct sbi_platform* data structure instance. This instance is required by
+platform independent *libsbi.a* to execute platform specific operations.
 
-1. *libplatsbi.a* - A platform specific OpenSBI static library, that is,
-   libsbi.a plus a *struct sbi_platform* instance installed at
-   *<install_directory>/platform/<platform_subdir>/lib/libplatsbi.a*
-2. *firmwares* - Platform specific bootable firmware binaries installed at
-   *<install_directory>/platform/<platform_subdir>/bin*
+Each of the reference platform support provided by OpenSBI define an instance
+of the *struct sbi_platform* data structure. For each supported platform,
+*libplatsbi.a* integrates this instance with *libsbi.a* to create a platform
+specific OpenSBI static library. This library is installed
+in *<install_directory>/platform/<platform_subdir>/lib/libplatsbi.a*
+
+OpenSBI also provides implementation examples of bootable runtime firmwares for
+the supported platforms. These firmwares are linked against *libplatsbi.a*.
+Firmware binaries are installed in
+*<install_directory>/platform/<platform_subdir>/bin*. These firmwares can be
+used as executable runtime firmwares on the supported platforms as a replacement
+for the legacy *riskv-pk* boot loader (BBL).
 
 A complete doxygen-style documentation of *struct sbi_platform* and related
-APIs is available in sbi/sbi_platform.h.
+APIs is available in the file *include/sbi/sbi_platform.h*.
 
 Adding a new platform support
 -----------------------------
 
-The support of a new platform named *<xyz>* can be added as follows:
+Support for a new platform named *<xyz>* can be added as follows:
 
 1. Create a directory named *<xyz>* under *platform/* directory
 2. Create a platform configuration file named *config.mk* under
@@ -27,6 +36,7 @@ The support of a new platform named *<xyz>* can be added as follows:
 4. Create *platform/<xyz>/platform.c* file providing a *struct sbi_platform*
    instance
 
-A template platform support code is available under the *platform/template*.
-Copying this directory as new directory named *<xyz>* under *platform/*
-directory will create all the files mentioned above.
+A template platform support code is available under the *platform/template*
+directory. Copying this directory and its content as a new directory named
+*<xyz>* under the *platform/* directory will create all the files mentioned
+above.
