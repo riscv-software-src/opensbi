@@ -1,39 +1,52 @@
 RISC-V Open Source Supervisor Binary Interface (OpenSBI)
 ========================================================
 
-The **RISC-V Supervisor Binary Interface (SBI)** is a recommended interface
+The **RISC-V Supervisor Binary Interface (SBI)** is the recommended interface
 between:
 
-1. A platform specific firmware running in M-mode and a general purpose OS,
-   hypervisor or bootloader running in S-mode or HS-mode.
-2. A hypervisor running in HS-mode and a general purpose OS or bootloader
-   executed in VS-mode.
+1. A platform specific firmware running in M-mode and bootloader, hypervisor or
+   a general purpose OS executing in S-mode or HS-mode.
+2. A hypervisor running in HS-mode and a bootloader or a general purpose OS
+   executing in VS-mode.
 
 The *RISC-V SBI specification* is maintained as an independent project by the
 RISC-V Foundation in [Github].
 
-OpenSBI aims to provides an open-source and extensible implementation of the
-RISC-V SBI specification for case 1 mentioned above. OpenSBI implementation
-can be easily extended by RISC-V platform or System-on-Chip vendors to fit a
+The goal of the OpenSBI project is to provide an open-source reference
+implementation of the RISC-V SBI specifications for platform specific firmwares
+executing in M-mode (case 1 mentioned above). OpenSBI implementation can be
+easily extended by RISC-V platform and system-on-chip vendors to fit a
 particular hardware configuration.
 
-OpenSBI provides three different components:
-1. *libsbi.a* - A generic OpenSBI static library
-2. *libplatsbi.a* - A platform specific OpenSBI static library, that is,
-                    libsbi.a plus platform specific hooks
-3. *firmwares* - Platform specific bootable firmware binaries
+The main component of OpenSBI is provided in the form of a platform independent
+static library **libsbi.a** implementing the SBI interface. A firmware or
+bootloader implementation can link against this library to ensure conformance
+with the SBI interface specifications. *libsbi.a* also defines an interface for
+integrating with platform specific operations provided by the platform firmware
+implementation (e.g. console access functions, inter-processor interrupts
+control, etc).
 
-Building and Installing the generic OpenSBI static library
-----------------------------------------------------------
+To illustrate the use of *libsbi.a* library, OpenSBI also provides a set of
+platform specific support examples. For each example, a platform
+specific static library *libplatsbi.a* can be compiled. This library implements
+SBI calls processing by integrating *libsbi.a* with necessary platform dependent
+hardware manipulation functions. For all supported platforms, OpenSBI also
+provides several runtime firmware examples built using the platform
+*libplatsbi.a*. These example firmwares can be used to replace the legacy
+*riskv-pk* bootloader (aka BBL) and enable the use of well known bootloaders
+such as [U-Boot].
 
-*libsbi.a* can be natively compiled or cross-compiled on a host with a
-different base architecture than RISC-V.
+Building and Installing OpenSBI Platform Independent Library
+------------------------------------------------------------
+
+OpenSBI platform independent static library *libsbi.a* can be natively compiled
+or cross-compiled on a host with a different base architecture than RISC-V.
 
 For cross-compiling, the environment variable *CROSS_COMPILE* must be defined
 to specify the name prefix of the RISC-V compiler toolchain executables, e.g.
 *riscv64-unknown-elf-* if the gcc executable used is *riscv64-unknown-elf-gcc*.
 
-To build the generic OpenSBI library *libsbi.a*, simply execute:
+To build *libsbi.a* simply execute:
 ```
 make
 ```
@@ -58,18 +71,18 @@ path, run:
 make I=<install_directory> install
 ```
 
-Building and Installing the platform specific static library and firmwares
---------------------------------------------------------------------------
+Building and Installing a Reference Platform Static Library and Firmwares
+-------------------------------------------------------------------------
 
-The platform specific *libplatsbi.a* static library and the platform firmwares
-are only built if the *PLATFORM=<platform_subdir>* argument is specified on
-the make command line. *<platform_subdir>* must specify the relative path from
-OpenSBI code directory to one of the leaf directories under the *platform*
-directory. For example, to compile the platform library and firmwares for QEMU
-RISC-V *virt* machine, *<platform_subdir>* should be *qemu/virt*.
+When the *PLATFORM=<platform_subdir>* argument is specified on the make command
+line, the platform specific static library *libplatsbi.a* and firmware examples
+are built for the platform *<platform_subdir>* present in the directory
+*platform* in OpenSBI top directory. For example, to compile the platform
+library and firmware examples for QEMU RISC-V *virt* machine,
+*<platform_subdir>* should be *qemu/virt*.
 
-To build *libsbi.a*, *libplatsbi.a* and the firmwares for a specific platform,
-run:
+To build *libsbi.a*, *libplatsbi.a* and the firmwares for one of the supported
+platform, run:
 ```
 make PLATFORM=<platform_subdir>
 ```
@@ -144,11 +157,11 @@ Detailed documentation of various aspects of OpenSBI can be found under the
 *docs* directory. The documentation covers the following topics.
 
 * [Contribution Guideline]: Guideline for contributing code to OpenSBI project
-* [Platform Support Guide]: Guideline for implementing support for new platforms
 * [Library Usage]: API documentation of OpenSBI static library *libsbi.a*
+* [Platform Support Guide]: Guideline for implementing support for new platforms
 * [Platform Documentation]: Documentation of the platforms currently supported.
 * [Firmware Documentation]: Documentation for the different types of firmware
-  build supported by OpenSBI.
+  examples build supported by OpenSBI.
 
 OpenSBI source code is also well documented. For source level documentation,
 doxygen style is used. Please refer to [Doxygen manual] for details on this
@@ -191,11 +204,12 @@ make I=<install_directory> install_docs
 *refman.pdf* will be installed under *<install_directory>/docs*.
 
 [Github]: https://github.com/riscv/riscv-sbi-doc
+[U-Boot]: https://www.denx.de/wiki/U-Boot/SourceCode
 [COPYING.BSD]: COPYING.BSD
 [SPDX]: http://spdx.org/licenses/
 [Contribution Guideline]: docs/contributing.md
-[Platform Support Guide]: docs/platform_guide.md
 [Library Usage]: docs/library_usage.md
+[Platform Support Guide]: docs/platform_guide.md
 [Platform Documentation]: docs/platform/platform.md
 [Firmware Documentation]: docs/firmware/fw.md
 [Doxygen manual]: http://www.stack.nl/~dimitri/doxygen/manual.html
