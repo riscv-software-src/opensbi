@@ -9,8 +9,8 @@
 
 # Compiler flags
 platform-cppflags-y =
-platform-cflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
-platform-asflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
+platform-cflags-y =
+platform-asflags-y =
 platform-ldflags-y =
 
 # Common drivers to enable

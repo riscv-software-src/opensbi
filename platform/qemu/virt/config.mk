@@ -9,17 +9,8 @@
 
 # Compiler flags
 platform-cppflags-y =
-# If we know the compillers xlen use it below
-ifeq ($(OPENSBI_CC_XLEN), 32)
-	platform-cflags-y =-mabi=ilp$(OPENSBI_CC_XLEN) -march=rv$(OPENSBI_CC_XLEN)imafdc
-	platform-asflags-y =-mabi=ilp$(OPENSBI_CC_XLEN) -march=rv$(OPENSBI_CC_XLEN)imafdc
-endif
-ifeq ($(OPENSBI_CC_XLEN), 64)
-	platform-cflags-y =-mabi=lp$(OPENSBI_CC_XLEN) -march=rv$(OPENSBI_CC_XLEN)imafdc
-	platform-asflags-y =-mabi=lp$(OPENSBI_CC_XLEN) -march=rv$(OPENSBI_CC_XLEN)imafdc
-endif
-platform-cflags-y +=  -mcmodel=medany
-platform-asflags-y += -mcmodel=medany
+platform-cflags-y =
+platform-asflags-y =
 platform-ldflags-y =
 
 # Common drivers to enable
