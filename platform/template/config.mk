@@ -8,18 +8,22 @@
 platform-cppflags-y =
 
 # C Compiler and assembler flags.
-# For a 64 bits platform, this will likely be:
-# 	-mabi=lp64 -march=rv64imafdc -mcmodel=medany
-# For a 32 bits platform, this will likely be:
-# 	-mabi=lp32 -march=rv32imafdc -mcmodel=medlow
-# You can also use the Makefile variable OPENSBI_CC_XLEN for the xlen
-# See the QEMU virt machine for an example of this
-platform-cflags-y = -mabi=lp64 -march=rv64imafdc -mcmodel=medany
-platform-asflags-y = -mabi=lp64 -march=rv64imafdc -mcmodel=medany
+platform-cflags-y =
+platform-asflags-y =
 
 # Linker flags: additional libraries and object files that the platform
 # code needs can be added here
 platform-ldflags-y =
+
+#
+# Platform RISC-V XLEN, ABI, ISA and Code Model configuration.
+# These are optional parameters but platforms can optionaly provide it.
+# Some of these are guessed based on GCC compiler capabilities
+#
+# PLATFORM_RISCV_XLEN = 64
+# PLATFORM_RISCV_ABI = lp64
+# PLATFORM_RISCV_ISA = rv64imafdc
+# PLATFORM_RISCV_CODE_MODEL = medany
 
 #
 # OpenSBI implements generic drivers for some common generic hardware. The

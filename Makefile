@@ -119,10 +119,34 @@ DTC		=	dtc
 # Guess the compillers xlen
 OPENSBI_CC_XLEN = `expr substr \`$(CC) -dumpmachine\`  6 2`
 
+# Setup platform XLEN, ABI, ISA and Code Model
+ifndef PLATFORM_RISCV_XLEN
+  ifeq ($(OPENSBI_CC_XLEN), 32)
+    PLATFORM_RISCV_XLEN = 32
+  else
+    PLATFORM_RISCV_XLEN = 64
+  endif
+endif
+ifndef PLATFORM_RISCV_ABI
+  ifeq ($(PLATFORM_RISCV_XLEN), 32)
+    PLATFORM_RISCV_ABI = ilp$(PLATFORM_RISCV_XLEN)
+  else
+    PLATFORM_RISCV_ABI = lp$(PLATFORM_RISCV_XLEN)
+  endif
+endif
+ifndef PLATFORM_RISCV_ISA
+  PLATFORM_RISCV_ISA = rv$(PLATFORM_RISCV_XLEN)imafdc
+endif
+ifndef PLATFORM_RISCV_CODE_MODEL
+  PLATFORM_RISCV_CODE_MODEL = medany
+endif
+
 # Setup compilation commands flags
 CFLAGS		=	-g -Wall -Werror -nostdlib -fno-strict-aliasing -O2
 CFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
 CFLAGS		+=	-mno-save-restore -mstrict-align
+CFLAGS		+=	-mabi=$(PLATFORM_RISCV_ABI) -march=$(PLATFORM_RISCV_ISA)
+CFLAGS		+=	-mcmodel=$(PLATFORM_RISCV_CODE_MODEL)
 CFLAGS		+=	$(GENFLAGS)
 CFLAGS		+=	$(platform-cflags-y)
 CFLAGS		+=	$(firmware-cflags-y)
@@ -134,6 +158,8 @@ CPPFLAGS	+=	$(firmware-cppflags-y)
 ASFLAGS		=	-g -Wall -nostdlib -D__ASSEMBLY__
 ASFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
 ASFLAGS		+=	-mno-save-restore -mstrict-align
+ASFLAGS		+=	-mabi=$(PLATFORM_RISCV_ABI) -march=$(PLATFORM_RISCV_ISA)
+ASFLAGS		+=	-mcmodel=$(PLATFORM_RISCV_CODE_MODEL)
 ASFLAGS		+=	$(GENFLAGS)
 ASFLAGS		+=	$(platform-asflags-y)
 ASFLAGS		+=	$(firmware-asflags-y)
