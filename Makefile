@@ -119,10 +119,27 @@ DTC		=	dtc
 # Setup compilation commands flags
 CFLAGS		=	-g -Wall -Werror -nostdlib -fno-strict-aliasing -O2
 CFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
-CFLAGS		+=	-mno-save-restore -mstrict-align
+CFLAGS		+=	-mno-save-restore -mstrict-align -mcmodel=medany
 CFLAGS		+=	$(GENFLAGS)
 CFLAGS		+=	$(platform-cflags-y)
 CFLAGS		+=	$(firmware-cflags-y)
+ifeq ($(PLATFORM_RISCV_XLEN), 32)
+	CFLAGS		+=	-mabi=lp32
+	ifeq ($(PLATFORM_HAS_C_EXT), y)
+		CFLAGS		+=	-march=rv32imafdc
+	else
+		CFLAGS		+=	-march=rv32imafd
+	endif
+endif
+ifeq ($(PLATFORM_RISCV_XLEN), 64)
+	CFLAGS		+=	-mabi=lp64
+	ifeq ($(PLATFORM_HAS_C_EXT), y)
+		CFLAGS		+=	-march=rv64imafdc
+	else
+		CFLAGS		+=	-march=rv64imafd
+	endif
+endif
+
 
 CPPFLAGS	+=	$(GENFLAGS)
 CPPFLAGS	+=	$(platform-cppflags-y)
@@ -130,10 +147,27 @@ CPPFLAGS	+=	$(firmware-cppflags-y)
 
 ASFLAGS		=	-g -Wall -nostdlib -D__ASSEMBLY__
 ASFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
-ASFLAGS		+=	-mno-save-restore -mstrict-align
+ASFLAGS		+=	-mno-save-restore -mstrict-align -mcmodel=medany
 ASFLAGS		+=	$(GENFLAGS)
 ASFLAGS		+=	$(platform-asflags-y)
 ASFLAGS		+=	$(firmware-asflags-y)
+ifeq ($(PLATFORM_RISCV_XLEN), 32)
+	ASFLAGS		+=	-mabi=lp32
+	ifeq ($(PLATFORM_HAS_C_EXT), y)
+		ASFLAGS		+=	-march=rv32imafdc
+	else
+		ASFLAGS		+=	-march=rv32imafd
+	endif
+endif
+ifeq ($(PLATFORM_RISCV_XLEN), 64)
+	ASFLAGS		+=	-mabi=lp64
+	ifeq ($(PLATFORM_HAS_C_EXT), y)
+		ASFLAGS		+=	-march=rv64imafdc
+	else
+		ASFLAGS		+=	-march=rv64imafd
+	endif
+endif
+
 
 ARFLAGS		=	rcs
 

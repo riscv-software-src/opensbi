@@ -8,12 +8,12 @@
 platform-cppflags-y =
 
 # C Compiler and assembler flags.
-# For a 64 bits platform, this will likely be:
-# 	-mabi=lp64 -march=rv64imafdc -mcmodel=medany
-# For a 32 bits platform, this will likely be:
-# 	-mabi=lp32 -march=rv32imafdc -mcmodel=medlow
-platform-cflags-y = -mabi=lp64 -march=rv64imafdc -mcmodel=medany
-platform-asflags-y = -mabi=lp64 -march=rv64imafdc -mcmodel=medany
+platform-cflags-y =
+platform-asflags-y =
+
+# If you always know these you can set them here, otherwise we will use the compiler defaults
+PLATFORM_RISCV_XLEN=64
+PLATFORM_HAS_C_EXT=y
 
 # Linker flags: additional libraries and object files that the platform
 # code needs can be added here

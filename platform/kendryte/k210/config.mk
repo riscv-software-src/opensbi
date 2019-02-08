@@ -9,9 +9,12 @@
 
 # Compiler flags
 platform-cppflags-y =
-platform-cflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
-platform-asflags-y =-mabi=lp64 -march=rv64imafdc -mcmodel=medany
+platform-cflags-y =
+platform-asflags-y =
 platform-ldflags-y =
+
+PLATFORM_RISCV_XLEN=64
+PLATFORM_HAS_C_EXT=y
 
 # Common drivers to enable
 PLATFORM_IRQCHIP_PLIC=y
