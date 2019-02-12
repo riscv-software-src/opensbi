@@ -1,6 +1,6 @@
 SiFive FU540 SoC Platform
 ==========================
-The FU540-C000 is the world’s first 4+1 64-bit RISC‑V SoC from SiFive.
+The FU540-C000 is the world’s first 4+1 64-bit RISC-V SoC from SiFive.
 The HiFive Unleashed development platform is based on FU540-C000 and capable
 of running Linux.
 
