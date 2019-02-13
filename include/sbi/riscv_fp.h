@@ -43,12 +43,12 @@
   ulong offset = SHIFT_RIGHT(insn, (pos)-3) & 0xf8; \
   ulong tmp; \
   asm volatile ("1: auipc %0, %%pcrel_hi(put_f64_reg); add %0, %0, %2; jalr t0, %0, %%pcrel_lo(1b)" : "=&r"(tmp) : "r"(value), "r"(offset) : "t0"); })
-#define GET_FCSR() csr_read(fcsr)
-#define SET_FCSR(value) csr_write(fcsr, (value))
-#define GET_FRM() csr_read(frm)
-#define SET_FRM(value) csr_write(frm, (value))
-#define GET_FFLAGS() csr_read(fflags)
-#define SET_FFLAGS(value) csr_write(fflags, (value))
+#define GET_FCSR() csr_read(CSR_FCSR)
+#define SET_FCSR(value) csr_write(CSR_FCSR, (value))
+#define GET_FRM() csr_read(CSR_FRM)
+#define SET_FRM(value) csr_write(CSR_FRM, (value))
+#define GET_FFLAGS() csr_read(CSR_FFLAGS)
+#define SET_FFLAGS(value) csr_write(CSR_FFLAGS, (value))
 
 #define SET_FS_DIRTY() ((void) 0)
 

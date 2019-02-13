@@ -26,7 +26,7 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 				struct sbi_scratch *scratch)
 {
 	union reg_data val;
-	ulong mstatus = csr_read(mstatus);
+	ulong mstatus = csr_read(CSR_MSTATUS);
 	ulong insn = get_insn(regs->mepc, &mstatus);
 	ulong addr = csr_read(CSR_MTVAL);
 	int i, fp = 0, shift = 0, len = 0;
@@ -112,7 +112,7 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 				 struct sbi_scratch *scratch)
 {
 	union reg_data val;
-	ulong mstatus = csr_read(mstatus);
+	ulong mstatus = csr_read(CSR_MSTATUS);
 	ulong insn = get_insn(regs->mepc, &mstatus);
 	ulong addr = csr_read(CSR_MTVAL);
 	int i, len = 0;

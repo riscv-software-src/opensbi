@@ -23,7 +23,7 @@
  */
 unsigned int sbi_current_hartid()
 {
-	return (u32)csr_read(mhartid);
+	return (u32)csr_read(CSR_MHARTID);
 }
 
 static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
@@ -32,21 +32,21 @@ static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
 
 	/* Enable FPU */
 	if (misa_extension('D') || misa_extension('F'))
-		csr_write(mstatus, MSTATUS_FS);
+		csr_write(CSR_MSTATUS, MSTATUS_FS);
 
 	/* Enable user/supervisor use of perf counters */
 	if (misa_extension('S') &&
 	     sbi_platform_has_scounteren(plat))
-		csr_write(scounteren, -1);
+		csr_write(CSR_SCOUNTEREN, -1);
 	if (sbi_platform_has_mcounteren(plat))
-		csr_write(mcounteren, -1);
+		csr_write(CSR_MCOUNTEREN, -1);
 
 	/* Disable all interrupts */
-	csr_write(mie, 0);
+	csr_write(CSR_MIE, 0);
 
 	/* Disable S-mode paging */
 	if (misa_extension('S'))
-		csr_write(sptbr, 0);
+		csr_write(CSR_SATP, 0);
 }
 
 static int fp_init(u32 hartid)
@@ -60,17 +60,17 @@ static int fp_init(u32 hartid)
 	if (!misa_extension('D') && !misa_extension('F'))
 		return 0;
 
-	if (!(csr_read(mstatus) & MSTATUS_FS))
+	if (!(csr_read(CSR_MSTATUS) & MSTATUS_FS))
 		return SBI_EINVAL;
 
 #ifdef __riscv_flen
 	for (i = 0; i < 32; i++)
 		init_fp_reg(i);
-	csr_write(fcsr, 0);
+	csr_write(CSR_FCSR, 0);
 #else
 	fd_mask = (1 << ('F' - 'A')) | (1 << ('D' - 'A'));
-	csr_clear(misa, fd_mask);
-	if (csr_read(misa) & fd_mask)
+	csr_clear(CSR_MISA, fd_mask);
+	if (csr_read(CSR_MISA) & fd_mask)
 		return SBI_ENOTSUPP;
 #endif
 
@@ -96,12 +96,12 @@ static int delegate_traps(struct sbi_scratch *scratch, u32 hartid)
 			      (1U << CAUSE_LOAD_PAGE_FAULT) |
 			      (1U << CAUSE_STORE_PAGE_FAULT);
 
-	csr_write(mideleg, interrupts);
-	csr_write(medeleg, exceptions);
+	csr_write(CSR_MIDELEG, interrupts);
+	csr_write(CSR_MEDELEG, exceptions);
 
-	if (csr_read(mideleg) != interrupts)
+	if (csr_read(CSR_MIDELEG) != interrupts)
 		return SBI_EFAIL;
-	if (csr_read(medeleg) != exceptions)
+	if (csr_read(CSR_MEDELEG) != exceptions)
 		return SBI_EFAIL;
 
 	return 0;
@@ -230,22 +230,22 @@ void __attribute__((noreturn)) sbi_hart_switch_mode(unsigned long arg0,
 		sbi_hart_hang();
 	}
 
-	val = csr_read(mstatus);
+	val = csr_read(CSR_MSTATUS);
 	val = INSERT_FIELD(val, MSTATUS_MPP, next_mode);
 	val = INSERT_FIELD(val, MSTATUS_MPIE, 0);
 
-	csr_write(mstatus, val);
-	csr_write(mepc, next_addr);
+	csr_write(CSR_MSTATUS, val);
+	csr_write(CSR_MEPC, next_addr);
 
 	if (next_mode == PRV_S) {
-		csr_write(stvec, next_addr);
-		csr_write(sscratch, 0);
-		csr_write(sie, 0);
-		csr_write(satp, 0);
+		csr_write(CSR_STVEC, next_addr);
+		csr_write(CSR_SSCRATCH, 0);
+		csr_write(CSR_SIE, 0);
+		csr_write(CSR_SATP, 0);
 	} else if (next_mode == PRV_U) {
-		csr_write(utvec, next_addr);
-		csr_write(uscratch, 0);
-		csr_write(uie, 0);
+		csr_write(CSR_UTVEC, next_addr);
+		csr_write(CSR_USCRATCH, 0);
+		csr_write(CSR_UIE, 0);
 	}
 
 	register unsigned long a0 asm ("a0") = arg0;
@@ -304,7 +304,7 @@ void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 	
 	/* Set MSIE bit to receive IPI */
-	csr_set(mie, MIP_MSIP);
+	csr_set(CSR_MIE, MIP_MSIP);
 
 	do {
 		spin_lock(&coldboot_wait_bitmap_lock);
@@ -312,14 +312,14 @@ void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		spin_unlock(&coldboot_wait_bitmap_lock);
 
 		wfi();
-		mipval = csr_read(mip);
+		mipval = csr_read(CSR_MIP);
 
 		spin_lock(&coldboot_wait_bitmap_lock);
 		coldboot_wait_bitmap &= ~(1UL << hartid);
 		spin_unlock(&coldboot_wait_bitmap_lock);
 	} while (!(mipval && MIP_MSIP));
 
-	csr_clear(mip, MIP_MSIP);
+	csr_clear(CSR_MIP, MIP_MSIP);
 }
 
 void sbi_hart_wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
