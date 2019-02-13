@@ -22,7 +22,7 @@ _start:
 	 * Jump to warm-boot if this is not the first core booting,
 	 * that is, for mhartid != 0
 	 */
-	csrr	a6, mhartid
+	csrr	a6, CSR_MHARTID
 	blt	zero, a6, _wait_for_boot_hart
 
 	/* Zero-out BSS */
@@ -126,15 +126,15 @@ _wait_for_boot_hart:
 
 _start_warm:
 	/* Disable and clear all interrupts */
-	csrw	mie, zero
-	csrw	mip, zero
+	csrw	CSR_MIE, zero
+	csrw	CSR_MIP, zero
 
 	/* Preload per-HART details
 	 * s6 -> HART ID
 	 * s7 -> HART Count
 	 * s8 -> HART Stack Size
 	 */
-	csrr	s6, mhartid
+	csrr	s6, CSR_MHARTID
 	la	a4, platform
 #if __riscv_xlen == 64
 	lwu	s7, SBI_PLATFORM_HART_COUNT_OFFSET(a4)
@@ -145,7 +145,7 @@ _start_warm:
 #endif
 
 	/* HART ID should be within expected limit */
-	csrr	s6, mhartid
+	csrr	s6, CSR_MHARTID
 	bge	s6, s7, _start_hang
 
 	/* Setup scratch space */
@@ -156,7 +156,7 @@ _start_warm:
 	sub	tp, tp, a5
 	li	a5, SBI_SCRATCH_SIZE
 	sub	tp, tp, a5
-	csrw	mscratch, tp
+	csrw	CSR_MSCRATCH, tp
 
 	/* Initialize scratch space */
 	la	a4, _fw_start
@@ -187,11 +187,11 @@ _start_warm:
 
 	/* Setup trap handler */
 	la	a4, _trap_handler
-	csrw	mtvec, a4
+	csrw	CSR_MTVEC, a4
 
 	/* Initialize SBI runtime */
-	csrr	a0, mscratch
-	call	sbi_init
+	csrr	a0, CSR_MSCRATCH
+	Call	sbi_init
 
 	/* We don't expect to reach here hence just hang */
 	j	_start_hang
@@ -243,7 +243,7 @@ _start_hang:
 	.globl _trap_handler
 _trap_handler:
 	/* Swap SP and MSCRATCH */
-	csrrw	sp, mscratch, sp
+	csrrw	sp, CSR_MSCRATCH, sp
 
 	/* Setup exception stack */
 	add	sp, sp, -(SBI_TRAP_REGS_SIZE)
@@ -256,12 +256,12 @@ _trap_handler:
 
 	/* Save original SP and restore MSCRATCH */
 	add	t0, sp, SBI_TRAP_REGS_SIZE
-	csrrw	t0, mscratch, t0
+	csrrw	t0, CSR_MSCRATCH, t0
 	REG_S	t0, SBI_TRAP_REGS_OFFSET(sp)(sp)
 
 	/* Save MEPC and MSTATUS CSRs */
-	csrr	t0, mepc
-	csrr	t1, mstatus
+	csrr	t0, CSR_MEPC
+	csrr	t1, CSR_MSTATUS
 
 	/*
 	 * Note: Fast path trap handling can be done here
@@ -305,7 +305,7 @@ _trap_handler:
 
 	/* Call C routine */
 	add	a0, sp, zero
-	csrr	a1, mscratch
+	csrr	a1, CSR_MSCRATCH
 	call	sbi_trap_handler
 
 	/* Restore all general regisers except SP, RA, T0, T1, T2, and T3 */
@@ -348,8 +348,8 @@ _trap_handler:
 	 */
 
 	/* Restore MEPC and MSTATUS CSRs */
-	csrw	mepc, t0
-	csrw	mstatus, t1
+	csrw	CSR_MEPC, t0
+	csrw	CSR_MSTATUS, t1
 
 	/* Restore RA, T0, T1, and T2 */
 	REG_L	ra, SBI_TRAP_REGS_OFFSET(ra)(sp)
