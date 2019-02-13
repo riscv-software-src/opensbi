@@ -195,10 +195,18 @@
 #define RISCV_PGSHIFT			12
 #define RISCV_PGSIZE			(1 << RISCV_PGSHIFT)
 
+#define CSR_USTATUS			0x0
 #define CSR_FFLAGS			0x1
 #define CSR_FRM				0x2
 #define CSR_FCSR			0x3
 #define CSR_CYCLE			0xc00
+#define CSR_UIE				0x4
+#define CSR_UTVEC			0x5
+#define CSR_USCRATCH			0x40
+#define CSR_UEPC			0x41
+#define CSR_UCAUSE			0x42
+#define CSR_UTVAL			0x43
+#define CSR_UIP				0x44
 #define CSR_TIME			0xc01
 #define CSR_INSTRET			0xc02
 #define CSR_HPMCOUNTER3			0xc03

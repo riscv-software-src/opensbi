@@ -94,7 +94,7 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 	csr_write(CSR_SCAUSE, cause);
 
 	/* Set MEPC to S-mode exception vector base */
-	regs->mepc = csr_read(stvec);
+	regs->mepc = csr_read(CSR_STVEC);
 
 	/* Initial value of new MSTATUS */
 	new_mstatus = regs->mstatus;
@@ -141,7 +141,7 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 	int rc = SBI_ENOTSUPP;
 	const char *msg = "trap handler failed";
 	u32 hartid = sbi_current_hartid();
-	ulong mcause = csr_read(mcause);
+	ulong mcause = csr_read(CSR_MCAUSE);
 
 	if (mcause & (1UL << (__riscv_xlen - 1))) {
 		mcause &= ~(1UL << (__riscv_xlen - 1));

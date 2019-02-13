@@ -23,13 +23,13 @@ int sbi_emulate_csr_read(int csr_num,
 	ulong cen = -1UL;
 
 	if (EXTRACT_FIELD(mstatus, MSTATUS_MPP) == PRV_U)
-		cen = csr_read(scounteren);
+		cen = csr_read(CSR_SCOUNTEREN);
 
 	switch (csr_num) {
 	case CSR_CYCLE:
 		if (!((cen >> (CSR_CYCLE - CSR_CYCLE)) & 1))
 			return -1;
-		*csr_val = csr_read(mcycle);
+		*csr_val = csr_read(CSR_MCYCLE);
 		break;
 	case CSR_TIME:
 		if (!((cen >> (CSR_TIME - CSR_CYCLE)) & 1))
@@ -39,23 +39,23 @@ int sbi_emulate_csr_read(int csr_num,
 	case CSR_INSTRET:
 		if (!((cen >> (CSR_INSTRET - CSR_CYCLE)) & 1))
 			return -1;
-		*csr_val = csr_read(minstret);
+		*csr_val = csr_read(CSR_MINSTRET);
 		break;
 	case CSR_MHPMCOUNTER3:
 		if (!((cen >> (3 + CSR_MHPMCOUNTER3 - CSR_MHPMCOUNTER3)) & 1))
 			return -1;
-		*csr_val = csr_read(mhpmcounter3);
+		*csr_val = csr_read(CSR_MHPMCOUNTER3);
 		break;
 	case CSR_MHPMCOUNTER4:
 		if (!((cen >> (3 + CSR_MHPMCOUNTER4 - CSR_MHPMCOUNTER3)) & 1))
 			return -1;
-		*csr_val = csr_read(mhpmcounter4);
+		*csr_val = csr_read(CSR_MHPMCOUNTER4);
 		break;
 #if __riscv_xlen == 32
 	case CSR_CYCLEH:
 		if (!((cen >> (CSR_CYCLE - CSR_CYCLE)) & 1))
 			return -1;
-		*csr_val = csr_read(mcycleh);
+		*csr_val = csr_read(CSR_MCYCLEH);
 		break;
 	case CSR_TIMEH:
 		if (!((cen >> (CSR_TIME - CSR_CYCLE)) & 1))
@@ -65,24 +65,24 @@ int sbi_emulate_csr_read(int csr_num,
 	case CSR_INSTRETH:
 		if (!((cen >> (CSR_INSTRET - CSR_CYCLE)) & 1))
 			return -1;
-		*csr_val = csr_read(minstreth);
+		*csr_val = csr_read(CSR_MINSTRETH);
 		break;
 	case CSR_MHPMCOUNTER3H:
 		if (!((cen >> (3 + CSR_MHPMCOUNTER3 - CSR_MHPMCOUNTER3)) & 1))
 			return -1;
-		*csr_val = csr_read(mhpmcounter3h);
+		*csr_val = csr_read(CSR_MHPMCOUNTER3H);
 		break;
 	case CSR_MHPMCOUNTER4H:
 		if (!((cen >> (3 + CSR_MHPMCOUNTER4 - CSR_MHPMCOUNTER3)) & 1))
 			return -1;
-		*csr_val = csr_read(mhpmcounter4h);
+		*csr_val = csr_read(CSR_MHPMCOUNTER4H);
 		break;
 #endif
 	case CSR_MHPMEVENT3:
-		*csr_val = csr_read(mhpmevent3);
+		*csr_val = csr_read(CSR_MHPMEVENT3);
 		break;
 	case CSR_MHPMEVENT4:
-		*csr_val = csr_read(mhpmevent4);
+		*csr_val = csr_read(CSR_MHPMEVENT4);
 		break;
 	default:
 		sbi_printf("%s: hartid%d: invalid csr_num=0x%x\n",
@@ -100,36 +100,36 @@ int sbi_emulate_csr_write(int csr_num,
 {
 	switch (csr_num) {
 	case CSR_CYCLE:
-		csr_write(mcycle, csr_val);
+		csr_write(CSR_MCYCLE, csr_val);
 		break;
 	case CSR_INSTRET:
-		csr_write(minstret, csr_val);
+		csr_write(CSR_MINSTRET, csr_val);
 		break;
 	case CSR_MHPMCOUNTER3:
-		csr_write(mhpmcounter3, csr_val);
+		csr_write(CSR_MHPMCOUNTER3, csr_val);
 		break;
 	case CSR_MHPMCOUNTER4:
-		csr_write(mhpmcounter4, csr_val);
+		csr_write(CSR_MHPMCOUNTER4, csr_val);
 		break;
 #if __riscv_xlen == 32
 	case CSR_CYCLEH:
-		csr_write(mcycleh, csr_val);
+		csr_write(CSR_MCYCLEH, csr_val);
 		break;
 	case CSR_INSTRETH:
-		csr_write(minstreth, csr_val);
+		csr_write(CSR_MINSTRETH, csr_val);
 		break;
 	case CSR_MHPMCOUNTER3H:
-		csr_write(mhpmcounter3h, csr_val);
+		csr_write(CSR_MHPMCOUNTER3H, csr_val);
 		break;
 	case CSR_MHPMCOUNTER4H:
-		csr_write(mhpmcounter4h, csr_val);
+		csr_write(CSR_MHPMCOUNTER4H, csr_val);
 		break;
 #endif
 	case CSR_MHPMEVENT3:
-		csr_write(mhpmevent3, csr_val);
+		csr_write(CSR_MHPMEVENT3, csr_val);
 		break;
 	case CSR_MHPMEVENT4:
-		csr_write(mhpmevent4, csr_val);
+		csr_write(CSR_MHPMEVENT4, csr_val);
 		break;
 	default:
 		sbi_printf("%s: hartid%d: invalid csr_num=0x%x\n",
