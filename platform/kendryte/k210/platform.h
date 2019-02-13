@@ -88,7 +88,7 @@
 #define SPI1_BASE_ADDR		(0x53000000U)
 #define SPI3_BASE_ADDR		(0x54000000U)
 
-#define read_cycle()		csr_read(mcycle)
+#define read_cycle()		csr_read(CSR_MCYCLE)
 
 /*
  * PLIC External Interrupt Numbers
