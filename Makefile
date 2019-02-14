@@ -171,6 +171,8 @@ LDFLAGS		+=	$(platform-ldflags-y)
 LDFLAGS		+=	$(firmware-ldflags-y)
 
 MERGEFLAGS	+=	-r
+MERGEFLAGS	+=	-b elf$(PLATFORM_RISCV_XLEN)-littleriscv
+MERGEFLAGS	+=	-m elf$(PLATFORM_RISCV_XLEN)lriscv
 
 DTCFLAGS	=	-O dtb
 
@@ -225,7 +227,7 @@ compile_as = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     $(AS) $(ASFLAGS) $(call dynamic_flags,$(1),$(2)) -c $(2) -o $(1)
 compile_ld = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " LD        $(subst $(build_dir)/,,$(1))"; \
-	     $(CC) $(3) $(LDFLAGS) -Wl,-T$(2) -o $(1)
+	     $(CC) $(CFLAGS) $(3) $(LDFLAGS) -Wl,-T$(2) -o $(1)
 compile_ar = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " AR        $(subst $(build_dir)/,,$(1))"; \
 	     $(AR) $(ARFLAGS) $(1) $(2)
