@@ -127,7 +127,7 @@ int sbi_illegal_insn_handler(u32 hartid, ulong mcause,
 
 	if (unlikely((insn & 3) != 3)) {
 		if (insn == 0) {
-			mstatus = csr_read(mstatus);
+			mstatus = csr_read(CSR_MSTATUS);
 			insn = get_insn(regs->mepc, &mstatus);
 		}
 		if ((insn & 3) != 3)

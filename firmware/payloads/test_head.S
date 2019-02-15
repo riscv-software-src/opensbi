@@ -7,6 +7,7 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
+#include <sbi/riscv_encoding.h>
 #define __ASM_STR(x)	x
 
 #if __riscv_xlen == 64
@@ -48,12 +49,12 @@ _bss_zero:
 
 _start_warm:
 	/* Disable and clear all interrupts */
-	csrw	sie, zero
-	csrw	sip, zero
+	csrw	CSR_SIE, zero
+	csrw	CSR_SIP, zero
 
 	/* Setup exception vectors */
 	la	a3, _start_hang
-	csrw	stvec, a3
+	csrw	CSR_STVEC, a3
 
 	/* Setup stack */
 	la	a3, _payload_end

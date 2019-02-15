@@ -9,7 +9,7 @@
 
 #include "fw_base.S"
 
-	.align 3
+	.align 4
 	.section .entry, "ax", %progbits
 	.global fw_prev_arg1
 fw_prev_arg1:
@@ -21,7 +21,7 @@ fw_prev_arg1:
 #endif
 	ret
 
-	.align 3
+	.align 4
 	.section .entry, "ax", %progbits
 	.global fw_next_arg1
 fw_next_arg1:
@@ -33,7 +33,7 @@ fw_next_arg1:
 #endif
 	ret
 
-	.align 3
+	.align 4
 	.section .entry, "ax", %progbits
 	.global fw_next_addr
 fw_next_addr:
@@ -42,13 +42,14 @@ fw_next_addr:
 	ret
 
 #ifdef FW_PAYLOAD_FDT_PATH
-	.align 3
+	.align 4
 	.section .text, "ax", %progbits
 	.globl fdt_bin
 fdt_bin:
 	.incbin	FW_PAYLOAD_FDT_PATH
 #endif
 
+	.align 4
 	.section .payload, "ax", %progbits
 	.globl payload_bin
 payload_bin:

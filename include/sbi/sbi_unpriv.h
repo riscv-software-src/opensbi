@@ -20,9 +20,9 @@ static inline type load_##type(const type *addr, ulong mepc)		\
 	register ulong __mepc asm ("a2") = mepc;			\
 	register ulong __mstatus asm ("a3");				\
 	type val;							\
-	asm ("csrrs %0, mstatus, %3\n"					\
+	asm ("csrrs %0, "STR(CSR_MSTATUS)", %3\n"					\
 		#insn " %1, %2\n"					\
-		"csrw mstatus, %0"					\
+		"csrw "STR(CSR_MSTATUS)", %0"					\
 	: "+&r" (__mstatus), "=&r" (val)				\
 	: "m" (*addr), "r" (MSTATUS_MPRV), "r" (__mepc));		\
 	return val;							\
@@ -33,9 +33,9 @@ static inline void store_##type(type *addr, type val, ulong mepc)	\
 {									\
 	register ulong __mepc asm ("a2") = mepc;			\
 	register ulong __mstatus asm ("a3");				\
-	asm volatile ("csrrs %0, mstatus, %3\n"				\
+	asm volatile ("csrrs %0, "STR(CSR_MSTATUS)", %3\n"				\
 		#insn " %1, %2\n"					\
-		"csrw mstatus, %0"					\
+		"csrw "STR(CSR_MSTATUS)", %0"					\
 	: "+&r" (__mstatus)						\
 	: "r" (val), "m" (*addr), "r" (MSTATUS_MPRV), "r" (__mepc));	\
 }
@@ -76,18 +76,18 @@ static inline ulong get_insn(ulong mepc, ulong *mstatus)
 	register ulong __mstatus asm ("a3");
 	ulong val;
 #ifndef __riscv_compressed
-	asm ("csrrs %[mstatus], mstatus, %[mprv]\n"
+	asm ("csrrs %[mstatus], "STR(CSR_MSTATUS)", %[mprv]\n"
 #if __riscv_xlen == 64
 		STR(LWU) " %[insn], (%[addr])\n"
 #else
 		STR(LW) " %[insn], (%[addr])\n"
 #endif
-		"csrw mstatus, %[mstatus]"
+		"csrw "STR(CSR_MSTATUS)", %[mstatus]"
 		: [mstatus] "+&r" (__mstatus), [insn] "=&r" (val)
 		: [mprv] "r" (MSTATUS_MPRV | MSTATUS_MXR), [addr] "r" (__mepc));
 #else
 	ulong rvc_mask = 3, tmp;
-	asm ("csrrs %[mstatus], mstatus, %[mprv]\n"
+	asm ("csrrs %[mstatus], "STR(CSR_MSTATUS)", %[mprv]\n"
 		"and %[tmp], %[addr], 2\n"
 		"bnez %[tmp], 1f\n"
 #if __riscv_xlen == 64
@@ -107,7 +107,7 @@ static inline ulong get_insn(ulong mepc, ulong *mstatus)
 		"lhu %[tmp], 2(%[addr])\n"
 		"sll %[tmp], %[tmp], 16\n"
 		"add %[insn], %[insn], %[tmp]\n"
-		"2: csrw mstatus, %[mstatus]"
+		"2: csrw "STR(CSR_MSTATUS)", %[mstatus]"
 	: [mstatus] "+&r" (__mstatus), [insn] "=&r" (val), [tmp] "=&r" (tmp)
 	: [mprv] "r" (MSTATUS_MPRV | MSTATUS_MXR), [addr] "r" (__mepc),
 	[rvc_mask] "r" (rvc_mask), [xlen_minus_16] "i" (__riscv_xlen - 16));

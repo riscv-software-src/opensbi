@@ -27,7 +27,7 @@ int sbi_ipi_send_many(struct sbi_scratch *scratch,
 	struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if (pmask)
-		mask &= load_ulong(pmask, csr_read(mepc));
+		mask &= load_ulong(pmask, csr_read(CSR_MEPC));
 
 	/* send IPIs to everyone */
 	for (i = 0, m = mask; m; i++, m >>= 1) {
@@ -46,7 +46,7 @@ int sbi_ipi_send_many(struct sbi_scratch *scratch,
 
 void sbi_ipi_clear_smode(struct sbi_scratch *scratch)
 {
-	csr_clear(mip, MIP_SSIP);
+	csr_clear(CSR_MIP, MIP_SSIP);
 }
 
 void sbi_ipi_process(struct sbi_scratch *scratch)
@@ -64,7 +64,7 @@ void sbi_ipi_process(struct sbi_scratch *scratch)
 		ipi_event = __ffs(ipi_type);
 		switch (ipi_event) {
 		case SBI_IPI_EVENT_SOFT:
-			csr_set(mip, MIP_SSIP);
+			csr_set(CSR_MIP, MIP_SSIP);
 			break;
 		case SBI_IPI_EVENT_FENCE_I:
 			__asm__ __volatile("fence.i");
@@ -83,7 +83,7 @@ void sbi_ipi_process(struct sbi_scratch *scratch)
 int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
 {
 	/* Enable software interrupts */
-	csr_set(mie, MIP_MSIP);
+	csr_set(CSR_MIE, MIP_MSIP);
 
 	return sbi_platform_ipi_init(sbi_platform_ptr(scratch),
 				     cold_boot);
