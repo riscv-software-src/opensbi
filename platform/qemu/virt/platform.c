@@ -5,11 +5,14 @@
  *
  * Authors:
  *   Anup Patel <anup.patel@wdc.com>
+ *   Nick Kossifidis <mick@ics.forth.gr>
  */
 
 #include <sbi/riscv_encoding.h>
+#include <sbi/riscv_io.h>
 #include <sbi/sbi_const.h>
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_ipi.h>
 #include <sbi/sbi_platform.h>
 #include <plat/irqchip/plic.h>
 #include <plat/serial/uart8250.h>
@@ -19,6 +22,8 @@
 #define VIRT_HART_STACK_SIZE		8192
 
 #define VIRT_TEST_ADDR			0x100000
+#define VIRT_TEST_FINISHER_FAIL		0x3333
+#define VIRT_TEST_FINISHER_PASS		0x5555
 
 #define VIRT_CLINT_ADDR			0x2000000
 
@@ -122,8 +127,29 @@ static int virt_timer_init(bool cold_boot)
 
 static int virt_system_down(u32 type)
 {
-	/* For now nothing to do. */
-	return 0;
+	struct sbi_scratch *local_scratch = NULL;
+	int ret = 0;
+
+	/* Tell the "finisher" that the simulation
+	 * was successful so that QEMU exits
+	 */
+	writew(VIRT_TEST_FINISHER_PASS, (void *)VIRT_TEST_ADDR);
+
+	/* The above didn't work, send an IPI on
+	 * everyone to hang
+	 */
+	local_scratch = sbi_scratch_thishart_ptr();
+
+	ret = sbi_ipi_send_many(local_scratch,
+				NULL, SBI_IPI_EVENT_HALT);
+
+	/* We should be done by now, if not something
+	 * weird happened, all we can do is hang
+	 */
+	sbi_hart_hang();
+
+	/* Make the compiler happy */
+	return ret;
 }
 
 struct sbi_platform platform = {
