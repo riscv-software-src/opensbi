@@ -316,6 +316,21 @@ all-deps-2 = $(if $(findstring clean,$(MAKECMDGOALS)),,$(all-deps-1))
 # Include external dependency of firmwares after default Makefile rules
 include $(src_dir)/firmware/external_deps.mk
 
+# Convenient "make run" command for emulated platforms
+.PHONY: run
+run: all
+ifneq ($(platform-runcmd),)
+	$(platform-runcmd) $(RUN_ARGS)
+else
+ifdef PLATFORM
+	@echo Platform $(PLATFORM) doesn't specify a run command
+	@false
+else
+	@echo Run command only available when targeting a platform
+	@false
+endif
+endif
+
 install_targets-y  = install_libsbi
 ifdef PLATFORM
 install_targets-y += install_libplatsbi
