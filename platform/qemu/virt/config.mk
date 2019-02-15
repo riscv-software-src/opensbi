@@ -13,6 +13,10 @@ platform-cflags-y =
 platform-asflags-y =
 platform-ldflags-y =
 
+# Command for platform specific "make run"
+platform-runcmd = qemu-system-riscv$(PLATFORM_RISCV_XLEN) -M virt -m 256M \
+  -nographic -kernel $(build_dir)/platform/qemu/virt/firmware/fw_payload.elf
+
 # Common drivers to enable
 PLATFORM_IRQCHIP_PLIC=y
 PLATFORM_SERIAL_UART8250=y
@@ -21,7 +25,7 @@ PLATFORM_SYS_CLINT=y
 # Blobs to build
 FW_TEXT_START=0x80000000
 FW_JUMP=y
-ifeq ($(OPENSBI_CC_XLEN), 32)
+ifeq ($(PLATFORM_RISCV_XLEN), 32)
   # This needs to be 4MB alligned for 32-bit system
   FW_JUMP_ADDR=0x80400000
 else
@@ -30,7 +34,7 @@ else
 endif
 FW_JUMP_FDT_ADDR=0x82200000
 FW_PAYLOAD=y
-ifeq ($(OPENSBI_CC_XLEN), 32)
+ifeq ($(PLATFORM_RISCV_XLEN), 32)
   # This needs to be 4MB alligned for 32-bit system
   FW_PAYLOAD_OFFSET=0x400000
 else
