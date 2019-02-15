@@ -54,6 +54,9 @@ export firmware_dir=$(CURDIR)/firmware
 OPENSBI_VERSION_MAJOR=`grep MAJOR $(include_dir)/sbi/sbi_version.h | awk '{ print $$3 }'`
 OPENSBI_VERSION_MINOR=`grep MINOR $(include_dir)/sbi/sbi_version.h | awk '{ print $$3 }'`
 
+# Guess the compillers xlen
+OPENSBI_CC_XLEN := $(shell TMP=`$(CC) -dumpmachine`; echo $${TMP:5:2})
+
 # Setup list of objects.mk files
 ifdef PLATFORM
 platform-object-mks=$(shell if [ -d $(platform_dir) ]; then find $(platform_dir) -iname "objects.mk" | sort -r; fi)
@@ -115,9 +118,6 @@ OBJCOPY		?=	objcopy
 endif
 AS		=	$(CC)
 DTC		=	dtc
-
-# Guess the compillers xlen
-OPENSBI_CC_XLEN = `expr substr \`$(CC) -dumpmachine\`  6 2`
 
 # Setup platform XLEN, ABI, ISA and Code Model
 ifndef PLATFORM_RISCV_XLEN
