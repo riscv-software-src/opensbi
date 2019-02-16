@@ -104,9 +104,14 @@ bootm 0x80600000 - 0x82200000
 Booting SiFive Fu540 Platform with Microsemi Expansion board
 ------------------------------------------------------------
 
-Until the Linux kernel has in-tree support for device trees and mainline u-boot is fully supported on the HiFive Unleashed you can follow these steps to boot Linux with the Microsemi expansion board. This method should not be copied on future boards and is considered a temporary solution until we can use a more standardised boot flow.
+Until the Linux kernel has in-tree support for device trees and mainline u-boot
+is fully supported on the HiFive Unleashed you can follow these steps to boot
+Linux with the Microsemi expansion board. This method should not be copied on
+future boards and is considered a temporary solution until we can use a more
+standardised boot flow.
 
-To boot the Linux kernel with a device tree that has support for the Microsemi Expansion board you can include the following line when compiling the firmware:
+To boot the Linux kernel with a device tree that has support for the Microsemi
+Expansion board you can include the following line when compiling the firmware:
 ```
 FW_PAYLOAD_FDT="HiFiveUnleashed-MicroSemi-Expansion.dtb"
 ```
