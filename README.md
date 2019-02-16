@@ -36,6 +36,16 @@ provides several runtime firmware examples built using the platform
 *riskv-pk* bootloader (aka BBL) and enable the use of well known bootloaders
 such as [U-Boot].
 
+Required Toolchain
+------------------
+
+OpenSBI can be compiled natively or cross-compiled on a x86 host. For
+cross-compilation, you can build your tool chain or just download from
+the [bootlin] (https://toolchains.bootlin.com/).
+
+Please note that only 64bit version of toolchain is available in bootlin
+for now.
+
 Building and Installing OpenSBI Platform Independent Library
 ------------------------------------------------------------
 
