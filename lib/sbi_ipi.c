@@ -5,6 +5,7 @@
  *
  * Authors:
  *   Anup Patel <anup.patel@wdc.com>
+ *   Nick Kossifidis <mick@ics.forth.gr
  */
 
 #include <sbi/riscv_asm.h>
@@ -18,28 +19,48 @@
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_unpriv.h>
 
+static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid, u32 event)
+{
+	struct sbi_scratch *remote_scratch = NULL;
+	struct sbi_platform *plat = sbi_platform_ptr(scratch);
+
+	if (sbi_platform_hart_disabled(plat, hartid))
+		return -1;
+
+	/* Set IPI type on remote hart's scratch area and
+	 * trigger the interrupt
+	 */
+	remote_scratch = sbi_hart_id_to_scratch(scratch, hartid);
+	atomic_raw_set_bit(event, &remote_scratch->ipi_type);
+	mb();
+	sbi_platform_ipi_send(plat, hartid);
+	if (event != SBI_IPI_EVENT_SOFT)
+		sbi_platform_ipi_sync(plat, hartid);
+
+	return 0;
+}
+
 int sbi_ipi_send_many(struct sbi_scratch *scratch,
 		      ulong *pmask, u32 event)
 {
 	ulong i, m;
-	struct sbi_scratch *oth;
 	ulong mask = sbi_hart_available_mask();
-	struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	u32 hartid = sbi_current_hartid();
 
 	if (pmask)
 		mask &= load_ulong(pmask, csr_read(CSR_MEPC));
 
-	/* send IPIs to everyone */
-	for (i = 0, m = mask; m; i++, m >>= 1) {
-		if ((m & 1) && !sbi_platform_hart_disabled(plat, i)) {
-			oth = sbi_hart_id_to_scratch(scratch, i);
-			atomic_raw_set_bit(event, &oth->ipi_type);
-			mb();
-			sbi_platform_ipi_send(plat, i);
-			if (event != SBI_IPI_EVENT_SOFT)
-				sbi_platform_ipi_sync(plat, i);
-		}
-	}
+	/* send IPIs to every other hart on the set */
+	for (i = 0, m = mask; m > 0; m >>= ++i)
+		if ((m & 1UL) && (i != hartid))
+			sbi_ipi_send(scratch, i, event);
+
+	/* If the current hart is on the set, send an IPI
+	 * to it as well
+	 */
+	if (mask & (1UL << hartid))
+		sbi_ipi_send(scratch, hartid, event);
+
 
 	return 0;
 }
