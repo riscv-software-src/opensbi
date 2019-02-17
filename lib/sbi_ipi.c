@@ -5,7 +5,7 @@
  *
  * Authors:
  *   Anup Patel <anup.patel@wdc.com>
- *   Nick Kossifidis <mick@ics.forth.gr
+ *   Nick Kossifidis <mick@ics.forth.gr>
  */
 
 #include <sbi/riscv_asm.h>
