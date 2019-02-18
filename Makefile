@@ -54,8 +54,25 @@ export firmware_dir=$(CURDIR)/firmware
 OPENSBI_VERSION_MAJOR=`grep MAJOR $(include_dir)/sbi/sbi_version.h | awk '{ print $$3 }'`
 OPENSBI_VERSION_MINOR=`grep MINOR $(include_dir)/sbi/sbi_version.h | awk '{ print $$3 }'`
 
+# Setup compilation commands
+ifdef CROSS_COMPILE
+CC		=	$(CROSS_COMPILE)gcc
+CPP		=	$(CROSS_COMPILE)cpp
+AR		=	$(CROSS_COMPILE)ar
+LD		=	$(CROSS_COMPILE)ld
+OBJCOPY		=	$(CROSS_COMPILE)objcopy
+else
+CC		?=	gcc
+CPP		?=	cpp
+AR		?=	ar
+LD		?=	ld
+OBJCOPY		?=	objcopy
+endif
+AS		=	$(CC)
+DTC		=	dtc
+
 # Guess the compillers xlen
-OPENSBI_CC_XLEN := $(shell TMP=`$(CC) -dumpmachine`; echo $${TMP:5:2})
+OPENSBI_CC_XLEN := $(shell TMP=`$(CC) -dumpmachine | sed 's/riscv\([0-9][0-9]\).*/\1/'`; echo $${TMP})
 
 # Setup list of objects.mk files
 ifdef PLATFORM
@@ -95,30 +112,6 @@ deps-y+=$(platform-common-objs-path-y:.o=.dep)
 deps-y+=$(lib-objs-path-y:.o=.dep)
 deps-y+=$(firmware-objs-path-y:.o=.dep)
 
-GENFLAGS	=	-I$(platform_dir)/include
-GENFLAGS	+=	-I$(platform_common_dir)/include
-GENFLAGS	+=	-I$(include_dir)
-GENFLAGS	+=	$(platform-common-genflags-y)
-GENFLAGS	+=	$(platform-genflags-y)
-GENFLAGS	+=	$(firmware-genflags-y)
-
-# Setup compilation commands
-ifdef CROSS_COMPILE
-CC		=	$(CROSS_COMPILE)gcc
-CPP		=	$(CROSS_COMPILE)cpp
-AR		=	$(CROSS_COMPILE)ar
-LD		=	$(CROSS_COMPILE)ld
-OBJCOPY		=	$(CROSS_COMPILE)objcopy
-else
-CC		?=	gcc
-CPP		?=	cpp
-AR		?=	ar
-LD		?=	ld
-OBJCOPY		?=	objcopy
-endif
-AS		=	$(CC)
-DTC		=	dtc
-
 # Setup platform XLEN, ABI, ISA and Code Model
 ifndef PLATFORM_RISCV_XLEN
   ifeq ($(OPENSBI_CC_XLEN), 32)
@@ -142,6 +135,13 @@ ifndef PLATFORM_RISCV_CODE_MODEL
 endif
 
 # Setup compilation commands flags
+GENFLAGS	=	-I$(platform_dir)/include
+GENFLAGS	+=	-I$(platform_common_dir)/include
+GENFLAGS	+=	-I$(include_dir)
+GENFLAGS	+=	$(platform-common-genflags-y)
+GENFLAGS	+=	$(platform-genflags-y)
+GENFLAGS	+=	$(firmware-genflags-y)
+
 CFLAGS		=	-g -Wall -Werror -nostdlib -fno-strict-aliasing -O2
 CFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
 CFLAGS		+=	-mno-save-restore -mstrict-align
