@@ -27,7 +27,7 @@ static int platform_early_init(bool cold_boot)
 /*
  * Platform final initialization.
  */
-static int platform_final_init(bool cold_boot);
+static int platform_final_init(bool cold_boot)
 {
 	return 0;
 }
