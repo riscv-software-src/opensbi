@@ -51,7 +51,7 @@ int sbi_ipi_send_many(struct sbi_scratch *scratch,
 		mask &= load_ulong(pmask, csr_read(CSR_MEPC));
 
 	/* send IPIs to every other hart on the set */
-	for (i = 0, m = mask; m > 0; m >>= ++i)
+	for (i = 0, m = mask; m; i++, m >>= 1)
 		if ((m & 1UL) && (i != hartid))
 			sbi_ipi_send(scratch, i, event);
 
