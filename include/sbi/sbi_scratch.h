@@ -30,6 +30,8 @@
 #define SBI_SCRATCH_HARTID_TO_SCRATCH_OFFSET	(7 * __SIZEOF_POINTER__)
 /** Offset of ipi_type member in sbi_scratch */
 #define SBI_SCRATCH_IPI_TYPE_OFFSET		(8 * __SIZEOF_POINTER__)
+/** Offset of tmp0 member in sbi_scratch */
+#define SBI_SCRATCH_TMP0_OFFSET			(9 * __SIZEOF_POINTER__)
 /** Maximum size of sbi_scratch */
 #define SBI_SCRATCH_SIZE			256
 
@@ -57,6 +59,8 @@ struct sbi_scratch {
 	unsigned long hartid_to_scratch;
 	/** IPI type (or flags) */
 	unsigned long ipi_type;
+	/** Temporary storage */
+	unsigned long tmp0;
 } __packed;
 
 /** Get pointer to sbi_scratch for current HART */
