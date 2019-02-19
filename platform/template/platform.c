@@ -215,7 +215,7 @@ struct sbi_platform platform = {
 	.hart_stack_size = 4096,
 	.disabled_hart_mask = 0,
 
-	.early_init = platform_final_init,
+	.early_init = platform_early_init,
 	.final_init = platform_final_init,
 
 	.pmp_region_count = platform_pmp_region_count,
@@ -236,7 +236,7 @@ struct sbi_platform platform = {
 	.timer_event_start = platform_timer_event_start,
 	.timer_event_stop = platform_timer_event_stop,
 
-	.system_reboot = platform_system_down,
-	.system_shutdown = platform_system_down
+	.system_reboot = platform_system_reboot,
+	.system_shutdown = platform_system_shutdown
 };
 
