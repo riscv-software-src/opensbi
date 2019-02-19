@@ -181,6 +181,7 @@ _start_warm:
 	la	a4, _hartid_to_scratch
 	REG_S	a4, SBI_SCRATCH_HARTID_TO_SCRATCH_OFFSET(tp)
 	REG_S	zero, SBI_SCRATCH_IPI_TYPE_OFFSET(tp)
+	REG_S	zero, SBI_SCRATCH_TMP0_OFFSET(tp)
 
 	/* Setup stack */
 	add	sp, tp, zero
@@ -242,42 +243,64 @@ _start_hang:
 	.section .entry, "ax", %progbits
 	.globl _trap_handler
 _trap_handler:
-	/* Swap SP and MSCRATCH */
-	csrrw	sp, CSR_MSCRATCH, sp
+	/* Swap TP and MSCRATCH */
+	csrrw	tp, CSR_MSCRATCH, tp
+
+	/* Save T0 in scratch space */
+	REG_S	t0, SBI_SCRATCH_TMP0_OFFSET(tp)
+
+	/* Check which mode we came from */
+	csrr	t0, CSR_MSTATUS
+	srl	t0, t0, MSTATUS_MPP_SHIFT
+	and	t0, t0, PRV_M
+	xori	t0, t0, PRV_M
+	beq	t0, zero, _trap_handler_m_mode
+
+	/* We came from S-mode or U-mode */
+_trap_handler_s_mode:
+	/* Set T0 to original SP */
+	add	t0, sp, zero
 
 	/* Setup exception stack */
+	add	sp, tp, -(SBI_TRAP_REGS_SIZE)
+
+	/* Jump to code common for all modes */
+	j	_trap_handler_all_mode
+
+	/* We came from M-mode */
+_trap_handler_m_mode:
+	/* Set T0 to original SP */
+	add	t0, sp, zero
+
+	/* Re-use current SP as exception stack */
 	add	sp, sp, -(SBI_TRAP_REGS_SIZE)
 
-	/* Save RA, T0, T1, and T2 */
-	REG_S	ra, SBI_TRAP_REGS_OFFSET(ra)(sp)
-	REG_S	t0, SBI_TRAP_REGS_OFFSET(t0)(sp)
-	REG_S	t1, SBI_TRAP_REGS_OFFSET(t1)(sp)
-	REG_S	t2, SBI_TRAP_REGS_OFFSET(t2)(sp)
-
-	/* Save original SP and restore MSCRATCH */
-	add	t0, sp, SBI_TRAP_REGS_SIZE
-	csrrw	t0, CSR_MSCRATCH, t0
+_trap_handler_all_mode:
+	/* Save original SP (from T0) on stack */
 	REG_S	t0, SBI_TRAP_REGS_OFFSET(sp)(sp)
+
+	/* Restore T0 from scratch space */
+	REG_L	t0, SBI_SCRATCH_TMP0_OFFSET(tp)
+
+	/* Save T0 on stack */
+	REG_S	t0, SBI_TRAP_REGS_OFFSET(t0)(sp)
+
+	/* Swap TP and MSCRATCH */
+	csrrw	tp, CSR_MSCRATCH, tp
 
 	/* Save MEPC and MSTATUS CSRs */
 	csrr	t0, CSR_MEPC
-	csrr	t1, CSR_MSTATUS
-
-	/*
-	 * Note: Fast path trap handling can be done here
-	 * using SP, RA, T0, T1, and T2 registers where
-	 * T0 <- MEPC
-	 * T1 <- MSTATUS
-	 */
-
-	/* Save MEPC and MSTATUS CSRs */
 	REG_S	t0, SBI_TRAP_REGS_OFFSET(mepc)(sp)
-	REG_S	t1, SBI_TRAP_REGS_OFFSET(mstatus)(sp)
+	csrr	t0, CSR_MSTATUS
+	REG_S	t0, SBI_TRAP_REGS_OFFSET(mstatus)(sp)
 
-	/* Save all general regisers except SP, RA, T0, T1, and T2 */
+	/* Save all general regisers except SP and T0 */
 	REG_S	zero, SBI_TRAP_REGS_OFFSET(zero)(sp)
+	REG_S	ra, SBI_TRAP_REGS_OFFSET(ra)(sp)
 	REG_S	gp, SBI_TRAP_REGS_OFFSET(gp)(sp)
 	REG_S	tp, SBI_TRAP_REGS_OFFSET(tp)(sp)
+	REG_S	t1, SBI_TRAP_REGS_OFFSET(t1)(sp)
+	REG_S	t2, SBI_TRAP_REGS_OFFSET(t2)(sp)
 	REG_S	s0, SBI_TRAP_REGS_OFFSET(s0)(sp)
 	REG_S	s1, SBI_TRAP_REGS_OFFSET(s1)(sp)
 	REG_S	a0, SBI_TRAP_REGS_OFFSET(a0)(sp)
@@ -308,9 +331,12 @@ _trap_handler:
 	csrr	a1, CSR_MSCRATCH
 	call	sbi_trap_handler
 
-	/* Restore all general regisers except SP, RA, T0, T1, T2, and T3 */
+	/* Restore all general regisers except SP and T0 */
+	REG_L	ra, SBI_TRAP_REGS_OFFSET(ra)(sp)
 	REG_L	gp, SBI_TRAP_REGS_OFFSET(gp)(sp)
 	REG_L	tp, SBI_TRAP_REGS_OFFSET(tp)(sp)
+	REG_L	t1, SBI_TRAP_REGS_OFFSET(t1)(sp)
+	REG_L	t2, SBI_TRAP_REGS_OFFSET(t2)(sp)
 	REG_L	s0, SBI_TRAP_REGS_OFFSET(s0)(sp)
 	REG_L	s1, SBI_TRAP_REGS_OFFSET(s1)(sp)
 	REG_L	a0, SBI_TRAP_REGS_OFFSET(a0)(sp)
@@ -336,26 +362,14 @@ _trap_handler:
 	REG_L	t5, SBI_TRAP_REGS_OFFSET(t5)(sp)
 	REG_L	t6, SBI_TRAP_REGS_OFFSET(t6)(sp)
 
-	/* Load T0 and T1 with MEPC and MSTATUS */
-	REG_L	t0, SBI_TRAP_REGS_OFFSET(mepc)(sp)
-	REG_L	t1, SBI_TRAP_REGS_OFFSET(mstatus)(sp)
-
-	/*
-	 * Note: Jump here after fast trap handling
-	 * using SP, RA, T0, T1, and T2
-	 * T0 <- MEPC
-	 * T1 <- MSTATUS
-	 */
-
 	/* Restore MEPC and MSTATUS CSRs */
+	REG_L	t0, SBI_TRAP_REGS_OFFSET(mepc)(sp)
 	csrw	CSR_MEPC, t0
-	csrw	CSR_MSTATUS, t1
+	REG_L	t0, SBI_TRAP_REGS_OFFSET(mstatus)(sp)
+	csrw	CSR_MSTATUS, t0
 
-	/* Restore RA, T0, T1, and T2 */
-	REG_L	ra, SBI_TRAP_REGS_OFFSET(ra)(sp)
+	/* Restore T0 */
 	REG_L	t0, SBI_TRAP_REGS_OFFSET(t0)(sp)
-	REG_L	t1, SBI_TRAP_REGS_OFFSET(t1)(sp)
-	REG_L	t2, SBI_TRAP_REGS_OFFSET(t2)(sp)
 
 	/* Restore SP */
 	REG_L	sp, SBI_TRAP_REGS_OFFSET(sp)(sp)
