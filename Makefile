@@ -51,8 +51,8 @@ export lib_dir=$(CURDIR)/lib
 export firmware_dir=$(CURDIR)/firmware
 
 # Find library version
-OPENSBI_VERSION_MAJOR=`grep MAJOR $(include_dir)/sbi/sbi_version.h | awk '{ print $$3 }'`
-OPENSBI_VERSION_MINOR=`grep MINOR $(include_dir)/sbi/sbi_version.h | awk '{ print $$3 }'`
+OPENSBI_VERSION_MAJOR=`grep MAJOR $(include_dir)/sbi/sbi_version.h | sed 's/.*MAJOR.*\([0-9][0-9]*\)/\1/'`
+OPENSBI_VERSION_MINOR=`grep MINOR $(include_dir)/sbi/sbi_version.h | sed 's/.*MINOR.*\([0-9][0-9]*\)/\1/'`
 
 # Setup compilation commands
 ifdef CROSS_COMPILE
