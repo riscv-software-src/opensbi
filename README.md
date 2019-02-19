@@ -135,7 +135,7 @@ A copy of this license with OpenSBI copyright can be found in the file
 [COPYING.BSD].
 
 All source files in OpenSBI contain the 2-Clause BSD license SPDX short
-indentifier in place of the full license text.
+identifier in place of the full license text.
 
 ```
 SPDX-License-Identifier:    BSD-2-Clause

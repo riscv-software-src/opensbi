@@ -5,7 +5,7 @@ OpenSBI provides firmware builds for specific platforms. Different types of
 firmwares are supported to deal with the differences between different platforms
 early boot stage. All firmwares will execute the same initialization procedure
 of the platform hardware according to the platform specific code as well as
-OpenSBI generic library code. The supported firmwares types will differ in how
+OpenSBI generic library code. The supported firmwares type will differ in how
 the arguments passed by the platform early boot stage are handled, as well as
 how the boot stage following the firmware will be handled and executed.
 
@@ -58,3 +58,20 @@ following documents.
 
 [FW_JUMP]: fw_jump.md
 [FW_PAYLOAD]: fw_payload.md
+
+Providing different payloads to OpenSBI Firmware
+------------------------------------------------
+OpenSBI firmware can accept various payloads using a compile time option.
+Typically, these payloads refer to the next stage boot loader (e.g. U-Boot)
+or operating system kernel images (e.g. Linux). By default, OpenSBI
+automatically provides a test payload if no specific payload is specified
+at compile time.
+
+To specify a payload at compile time, the make variable _FW_PAYLOAD_PATH_ is
+used.
+```
+make PLATFORM=<platform_subdir> FW_PAYLOAD_PATH=<payload path>
+```
+The instructions to build each payload is different and the details can
+be found in the
+*docs/firmware/payload_<payload_name>.md* files.
