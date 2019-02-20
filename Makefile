@@ -166,9 +166,9 @@ ASFLAGS		+=	$(firmware-asflags-y)
 
 ARFLAGS		=	rcs
 
-LDFLAGS		+=	-g -Wall -nostdlib -Wl,--build-id=none -N -static-libgcc -lgcc
-LDFLAGS		+=	$(platform-ldflags-y)
-LDFLAGS		+=	$(firmware-ldflags-y)
+ELFFLAGS	+=	-Wl,--build-id=none -N -static-libgcc -lgcc
+ELFFLAGS	+=	$(platform-ldflags-y)
+ELFFLAGS	+=	$(firmware-ldflags-y)
 
 MERGEFLAGS	+=	-r
 MERGEFLAGS	+=	-b elf$(PLATFORM_RISCV_XLEN)-littleriscv
@@ -225,9 +225,9 @@ compile_as_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 compile_as = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " AS        $(subst $(build_dir)/,,$(1))"; \
 	     $(AS) $(ASFLAGS) $(call dynamic_flags,$(1),$(2)) -c $(2) -o $(1)
-compile_ld = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " LD        $(subst $(build_dir)/,,$(1))"; \
-	     $(CC) $(CFLAGS) $(3) $(LDFLAGS) -Wl,-T$(2) -o $(1)
+compile_elf = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
+	     echo " ELF       $(subst $(build_dir)/,,$(1))"; \
+	     $(CC) $(CFLAGS) $(3) $(ELFFLAGS) -Wl,-T$(2) -o $(1)
 compile_ar = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " AR        $(subst $(build_dir)/,,$(1))"; \
 	     $(AR) $(ARFLAGS) $(1) $(2)
@@ -256,7 +256,7 @@ $(build_dir)/%.bin: $(build_dir)/%.elf
 	$(call compile_objcopy,$@,$<)
 
 $(build_dir)/%.elf: $(build_dir)/%.o $(build_dir)/%.elf.ld $(build_dir)/$(platform_subdir)/lib/libplatsbi.a
-	$(call compile_ld,$@,$@.ld,$< $(build_dir)/$(platform_subdir)/lib/libplatsbi.a)
+	$(call compile_elf,$@,$@.ld,$< $(build_dir)/$(platform_subdir)/lib/libplatsbi.a)
 
 $(build_dir)/$(platform_subdir)/%.ld: $(src_dir)/%.ldS
 	$(call compile_cpp,$@,$<)
