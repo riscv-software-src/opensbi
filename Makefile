@@ -74,6 +74,15 @@ DTC		=	dtc
 # Guess the compillers xlen
 OPENSBI_CC_XLEN := $(shell TMP=`$(CC) -dumpmachine | sed 's/riscv\([0-9][0-9]\).*/\1/'`; echo $${TMP})
 
+# Setup platform XLEN
+ifndef PLATFORM_RISCV_XLEN
+  ifeq ($(OPENSBI_CC_XLEN), 32)
+    PLATFORM_RISCV_XLEN = 32
+  else
+    PLATFORM_RISCV_XLEN = 64
+  endif
+endif
+
 # Setup list of objects.mk files
 ifdef PLATFORM
 platform-object-mks=$(shell if [ -d $(platform_dir) ]; then find $(platform_dir) -iname "objects.mk" | sort -r; fi)
@@ -112,14 +121,7 @@ deps-y+=$(platform-common-objs-path-y:.o=.dep)
 deps-y+=$(lib-objs-path-y:.o=.dep)
 deps-y+=$(firmware-objs-path-y:.o=.dep)
 
-# Setup platform XLEN, ABI, ISA and Code Model
-ifndef PLATFORM_RISCV_XLEN
-  ifeq ($(OPENSBI_CC_XLEN), 32)
-    PLATFORM_RISCV_XLEN = 32
-  else
-    PLATFORM_RISCV_XLEN = 64
-  endif
-endif
+# Setup platform ABI, ISA and Code Model
 ifndef PLATFORM_RISCV_ABI
   ifeq ($(PLATFORM_RISCV_XLEN), 32)
     PLATFORM_RISCV_ABI = ilp$(PLATFORM_RISCV_XLEN)
