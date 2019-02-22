@@ -161,8 +161,12 @@ tftpboot ${ramdisk_addr_r} /sifive/fu540/uRamdisk
 7. Set the boot command-line arguments.
 
 ```
-setenv bootargs "root=/dev/ram rw console=ttySIF0 earlycon=sbi"
+setenv bootargs "root=<root partition> rw console=ttySIF0 earlycon=sbi"
 ```
+
+N.B. root partition should point to
+     ** /dev/ram ** - If a ramdisk is used
+     ** root=/dev/mmcblk0pX ** - If a rootfs is already on some other partition of sdcard 
 
 8. Now boot into Linux.
 
