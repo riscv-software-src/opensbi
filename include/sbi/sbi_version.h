@@ -11,6 +11,6 @@
 #define __SBI_VERSION_H__
 
 #define OPENSBI_VERSION_MAJOR		0
-#define OPENSBI_VERSION_MINOR		2
+#define OPENSBI_VERSION_MINOR		3
 
 #endif
