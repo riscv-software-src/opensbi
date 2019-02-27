@@ -18,6 +18,8 @@
 	.globl _start
 	.globl _start_warm
 _start:
+	li ra, 0
+	call _reset_regs
 	/*
 	 * Jump to warm-boot if this is not the first core booting,
 	 * that is, for mhartid != 0
@@ -124,6 +126,10 @@ _wait_for_boot_hart:
 	REG_L	a5, (a4)
 	beqz	a5, _wait_for_boot_hart
 
+	csrr	a6, CSR_MHARTID
+	beqz	a6, _start_warm
+	li	ra, 0
+	call	_reset_regs
 _start_warm:
 	/* Disable and clear all interrupts */
 	csrw	CSR_MIE, zero
@@ -379,3 +385,41 @@ _trap_handler_all_mode:
 	REG_L	sp, SBI_TRAP_REGS_OFFSET(sp)(sp)
 
 	mret
+
+	.align 3
+	.section .entry, "ax", %progbits
+	.globl _reset_regs
+_reset_regs:
+
+	/* Reset all registers except ra,a0,a1 */
+	li sp, 0
+	li gp, 0
+	li tp, 0
+	li t0, 0
+	li t1, 0
+	li t2, 0
+	li s0, 0
+	li s1, 0
+	li a2, 0
+	li a3, 0
+	li a4, 0
+	li a5, 0
+	li a6, 0
+	li a7, 0
+	li s2, 0
+	li s3, 0
+	li s4, 0
+	li s5, 0
+	li s6, 0
+	li s7, 0
+	li s8, 0
+	li s9, 0
+	li s10, 0
+	li s11, 0
+	li t3, 0
+	li t4, 0
+	li t5, 0
+	li t6, 0
+	csrw CSR_MSCRATCH, x0
+
+	ret
