@@ -325,7 +325,7 @@ ifneq ($(platform-runcmd),)
 	$(platform-runcmd) $(RUN_ARGS)
 else
 ifdef PLATFORM
-	@echo Platform $(PLATFORM) doesn't specify a run command
+	@echo "Platform $(PLATFORM) doesn't specify a run command"
 	@false
 else
 	@echo Run command only available when targeting a platform
