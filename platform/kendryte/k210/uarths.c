@@ -48,12 +48,12 @@ void uarths_putc(char c)
 	uarths->txdata.data = (u8)c;
 }
 
-char uarths_getc(void)
+int uarths_getc(void)
 {
 	struct uarths_rxdata rx = uarths->rxdata;
 
 	if (rx.empty)
-		return '\0';
+		return -1;
 
 	return rx.data;
 }

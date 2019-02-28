@@ -73,7 +73,7 @@ static void platform_console_putc(char ch)
 /*
  * Read a character from the platform console input.
  */
-static char platform_console_getc(void)
+static int platform_console_getc(void)
 {
 	return uart8250_getc();
 }

@@ -31,7 +31,7 @@ static void k210_console_putc(char c)
 	uarths_putc(c);
 }
 
-static char k210_console_getc(void)
+static int k210_console_getc(void)
 {
 	return uarths_getc();
 }

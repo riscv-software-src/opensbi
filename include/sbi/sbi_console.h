@@ -16,7 +16,7 @@
 
 bool sbi_isprintable(char ch);
 
-char sbi_getc(void);
+int sbi_getc(void);
 
 void sbi_putc(char ch);
 

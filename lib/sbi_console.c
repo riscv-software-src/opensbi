@@ -26,7 +26,7 @@ bool sbi_isprintable(char c)
 	return FALSE;
 }
 
-char sbi_getc(void)
+int sbi_getc(void)
 {
 	return sbi_platform_console_getc(console_plat);
 }
@@ -50,10 +50,11 @@ void sbi_puts(const char *str)
 
 void sbi_gets(char *s, int maxwidth, char endchar)
 {
-	char ch, *retval = s;
+	int ch;
+	char *retval = s;
 
-	while ((ch = sbi_getc()) != endchar && maxwidth > 1) {
-		*retval = ch;
+	while ((ch = sbi_getc()) != endchar && ch >= 0 && maxwidth > 1) {
+		*retval = (char) ch;
 		retval++;
 		maxwidth--;
 	}
