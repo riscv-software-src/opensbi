@@ -71,11 +71,11 @@ void uart8250_putc(char ch)
 	set_reg(UART_THR_OFFSET, ch);
 }
 
-char uart8250_getc(void)
+int uart8250_getc(void)
 {
 	if (get_reg(UART_LSR_OFFSET) & UART_LSR_DR)
 		return get_reg(UART_RBR_OFFSET);
-	return 0;
+	return -1;
 }
 
 int uart8250_init(unsigned long base,

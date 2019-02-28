@@ -69,12 +69,12 @@ void sifive_uart_putc(char ch)
 	set_reg(UART_REG_TXFIFO, ch);
 }
 
-char sifive_uart_getc(void)
+int sifive_uart_getc(void)
 {
 	u32 ret = get_reg(UART_REG_RXFIFO);
 	if (!(ret & UART_RXFIFO_EMPTY))
 		return ret & UART_RXFIFO_DATA;
-	return 0;
+	return -1;
 }
 
 int sifive_uart_init(unsigned long base,

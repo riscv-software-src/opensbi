@@ -14,7 +14,7 @@
 
 void sifive_uart_putc(char ch);
 
-char sifive_uart_getc(void);
+int sifive_uart_getc(void);
 
 int sifive_uart_init(unsigned long base,
 		     u32 in_freq, u32 baudrate);

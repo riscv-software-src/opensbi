@@ -161,6 +161,6 @@ enum uarths_stopbit {
 
 void uarths_init(u32 baud_rate, enum uarths_stopbit stopbit);
 void uarths_putc(char c);
-char uarths_getc(void);
+int uarths_getc(void);
 
 #endif /* _K210_UARTHS_H_ */

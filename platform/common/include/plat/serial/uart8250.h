@@ -14,7 +14,7 @@
 
 void uart8250_putc(char ch);
 
-char uart8250_getc(void);
+int uart8250_getc(void);
 
 int uart8250_init(unsigned long base,
 		  u32 in_freq, u32 baudrate,

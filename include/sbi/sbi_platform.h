@@ -77,7 +77,7 @@ struct sbi_platform {
 	/** Write a character to the platform console output */
 	void (*console_putc)(char ch);
 	/** Read a character from the platform console input */
-	char (*console_getc)(void);
+	int (*console_getc)(void);
 	/** Initialize the platform console */
 	int (*console_init)(void);
 
@@ -283,11 +283,11 @@ static inline void sbi_platform_console_putc(struct sbi_platform *plat,
  *
  * @return character read from console input
  */
-static inline char sbi_platform_console_getc(struct sbi_platform *plat)
+static inline int sbi_platform_console_getc(struct sbi_platform *plat)
 {
 	if (plat && plat->console_getc)
 		return plat->console_getc();
-	return 0;
+	return -1;
 }
 
 /**
