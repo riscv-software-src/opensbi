@@ -187,7 +187,7 @@ _start_warm:
 
 	/* Initialize SBI runtime */
 	csrr	a0, CSR_MSCRATCH
-	Call	sbi_init
+	call	sbi_init
 
 	/* We don't expect to reach here hence just hang */
 	j	_start_hang
