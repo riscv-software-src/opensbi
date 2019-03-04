@@ -111,6 +111,7 @@ _fdt_reloc_done:
 	la	a4, _boot_hart_done
 	li	a5, 1
 	REG_S	a5, (a4)
+	fence	rw, rw
 	j	_wait_for_boot_hart
 
 	.align	3
@@ -121,6 +122,7 @@ _boot_hart_done:
 	/* Wait for boot hart */
 _wait_for_boot_hart:
 	la	a4, _boot_hart_done
+	fence	rw, rw
 	REG_L	a5, (a4)
 	beqz	a5, _wait_for_boot_hart
 
