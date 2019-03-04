@@ -111,12 +111,6 @@ _fdt_reloc_done:
 	la	a4, _boot_hart_done
 	li	a5, 1
 	REG_S	a5, (a4)
-	j	_wait_for_boot_hart
-
-	.align	3
-_boot_hart_done:
-	RISCV_PTR	0
-	.align	3
 
 	/* Wait for boot hart */
 _wait_for_boot_hart:
@@ -196,6 +190,11 @@ _start_warm:
 
 	/* We don't expect to reach here hence just hang */
 	j	_start_hang
+
+	.align 3
+	.section .data, "aw"
+_boot_hart_done:
+	RISCV_PTR	0
 
 	.align 3
 	.section .entry, "ax", %progbits
