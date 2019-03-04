@@ -27,6 +27,63 @@ _start:
 
 	li	ra, 0
 	call	_reset_regs
+
+	/* Preload HART details
+	 * s7 -> HART Count
+	 * s8 -> HART Stack Size
+	 */
+	la	a4, platform
+#if __riscv_xlen == 64
+	lwu	s7, SBI_PLATFORM_HART_COUNT_OFFSET(a4)
+	lwu	s8, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(a4)
+#else
+	lw	s7, SBI_PLATFORM_HART_COUNT_OFFSET(a4)
+	lw	s8, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(a4)
+#endif
+
+	/* Setup scratch space for all the HARTs*/
+	la	tp, _fw_end
+	mul	a5, s7, s8
+	add	tp, tp, a5
+	/* Keep a copy of tp */
+	add	t3, tp, zero
+	/* Counter */
+	li	t2, 1
+	/* hartid 0 is mandated by ISA */
+	li	t1, 0
+_scratch_init:
+	add	tp, t3, zero
+	mul	a5, s8, t1
+	sub	tp, tp, a5
+	li	a5, SBI_SCRATCH_SIZE
+	sub	tp, tp, a5
+
+	/* Initialize scratch space */
+	la	a4, _fw_start
+	la	a5, _fw_end
+	mul	t0, s7, s8
+	add	a5, a5, t0
+	sub	a5, a5, a4
+	REG_S	a4, SBI_SCRATCH_FW_START_OFFSET(tp)
+	REG_S	a5, SBI_SCRATCH_FW_SIZE_OFFSET(tp)
+	/* Note: fw_next_arg1() uses a0, a1, and ra */
+	call	fw_next_arg1
+	REG_S	a0, SBI_SCRATCH_NEXT_ARG1_OFFSET(tp)
+	/* Note: fw_next_addr() uses a0, a1, and ra */
+	call	fw_next_addr
+	REG_S	a0, SBI_SCRATCH_NEXT_ADDR_OFFSET(tp)
+	li	a4, PRV_S
+	REG_S	a4, SBI_SCRATCH_NEXT_MODE_OFFSET(tp)
+	la	a4, _start_warm
+	REG_S	a4, SBI_SCRATCH_WARMBOOT_ADDR_OFFSET(tp)
+	la	a4, platform
+	REG_S	a4, SBI_SCRATCH_PLATFORM_ADDR_OFFSET(tp)
+	la	a4, _hartid_to_scratch
+	REG_S	a4, SBI_SCRATCH_HARTID_TO_SCRATCH_OFFSET(tp)
+	REG_S	zero, SBI_SCRATCH_TMP0_OFFSET(tp)
+	add	t1, t1, t2
+	blt	t1, s7, _scratch_init
+
 	/* Zero-out BSS */
 	la	a4, _bss_start
 	la	a5, _bss_end
@@ -132,12 +189,6 @@ _start_warm:
 	csrw	CSR_MIE, zero
 	csrw	CSR_MIP, zero
 
-	/* Preload per-HART details
-	 * s6 -> HART ID
-	 * s7 -> HART Count
-	 * s8 -> HART Stack Size
-	 */
-	csrr	s6, CSR_MHARTID
 	la	a4, platform
 #if __riscv_xlen == 64
 	lwu	s7, SBI_PLATFORM_HART_COUNT_OFFSET(a4)
@@ -151,7 +202,7 @@ _start_warm:
 	csrr	s6, CSR_MHARTID
 	bge	s6, s7, _start_hang
 
-	/* Setup scratch space */
+	/* find the scratch space for this hart */
 	la	tp, _fw_end
 	mul	a5, s7, s8
 	add	tp, tp, a5
@@ -159,31 +210,9 @@ _start_warm:
 	sub	tp, tp, a5
 	li	a5, SBI_SCRATCH_SIZE
 	sub	tp, tp, a5
-	csrw	CSR_MSCRATCH, tp
 
-	/* Initialize scratch space */
-	la	a4, _fw_start
-	la	a5, _fw_end
-	mul	t0, s7, s8
-	add	a5, a5, t0
-	sub	a5, a5, a4
-	REG_S	a4, SBI_SCRATCH_FW_START_OFFSET(tp)
-	REG_S	a5, SBI_SCRATCH_FW_SIZE_OFFSET(tp)
-	/* Note: fw_next_arg1() uses a0, a1, and ra */
-	call	fw_next_arg1
-	REG_S	a0, SBI_SCRATCH_NEXT_ARG1_OFFSET(tp)
-	/* Note: fw_next_addr() uses a0, a1, and ra */
-	call	fw_next_addr
-	REG_S	a0, SBI_SCRATCH_NEXT_ADDR_OFFSET(tp)
-	li	a4, PRV_S
-	REG_S	a4, SBI_SCRATCH_NEXT_MODE_OFFSET(tp)
-	la	a4, _start_warm
-	REG_S	a4, SBI_SCRATCH_WARMBOOT_ADDR_OFFSET(tp)
-	la	a4, platform
-	REG_S	a4, SBI_SCRATCH_PLATFORM_ADDR_OFFSET(tp)
-	la	a4, _hartid_to_scratch
-	REG_S	a4, SBI_SCRATCH_HARTID_TO_SCRATCH_OFFSET(tp)
-	REG_S	zero, SBI_SCRATCH_TMP0_OFFSET(tp)
+	/* update the mscratch */
+	csrw	CSR_MSCRATCH, tp
 
 	/* Setup stack */
 	add	sp, tp, zero
