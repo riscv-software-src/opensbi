@@ -6,3 +6,6 @@
 #Build & install directories
 build/
 install/
+
+# Development friendly files
+tags
