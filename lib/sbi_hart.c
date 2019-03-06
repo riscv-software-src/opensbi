@@ -28,7 +28,7 @@ unsigned int sbi_current_hartid()
 
 static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
 {
-	struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	/* Enable FPU */
 	if (misa_extension('D') || misa_extension('F'))
@@ -79,7 +79,7 @@ static int fp_init(u32 hartid)
 
 static int delegate_traps(struct sbi_scratch *scratch, u32 hartid)
 {
-	struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	unsigned long interrupts, exceptions;
 
 	if (!misa_extension('S'))
@@ -122,7 +122,7 @@ unsigned long log2roundup(unsigned long x)
 
 void sbi_hart_pmp_dump(struct sbi_scratch *scratch)
 {
-	struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	unsigned long prot, addr, size, l2l;
 	unsigned int i;
 
@@ -160,7 +160,7 @@ static int pmp_init(struct sbi_scratch *scratch, u32 hartid)
 	u32 i, count;
 	unsigned long fw_start, fw_size_log2;
 	ulong prot, addr, log2size;
-	struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if (!sbi_platform_has_pmp(plat))
 		return 0;
@@ -297,7 +297,7 @@ static unsigned long coldboot_wait_bitmap = 0;
 void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 {
 	unsigned long mipval;
-	struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if ((sbi_platform_hart_count(plat) <= hartid) ||
 	    (COLDBOOT_WAIT_BITMAP_SIZE <= hartid))
@@ -324,7 +324,7 @@ void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 
 void sbi_hart_wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 {
-	struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	int max_hart = sbi_platform_hart_count(plat);
 
 	for(int i = 0; i < max_hart ; i++) {

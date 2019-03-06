@@ -110,10 +110,10 @@ struct sbi_platform {
 
 /** Get pointer to sbi_platform for sbi_scratch pointer */
 #define sbi_platform_ptr(__s)	\
-	((struct sbi_platform *)((__s)->platform_addr))
+	((const struct sbi_platform *)((__s)->platform_addr))
 /** Get pointer to sbi_platform for current HART */
 #define sbi_platform_thishart_ptr()	\
-	((struct sbi_platform *)(sbi_scratch_thishart_ptr()->platform_addr))
+	((const struct sbi_platform *)(sbi_scratch_thishart_ptr()->platform_addr))
 /** Check whether the platform supports timer value */
 #define sbi_platform_has_timer_value(__p)	\
 	((__p)->features & SBI_PLATFORM_HAS_TIMER_VALUE)
@@ -140,7 +140,7 @@ struct sbi_platform {
  *
  * @return pointer to platform name on success and NULL on failure
  */
-static inline const char *sbi_platform_name(struct sbi_platform *plat)
+static inline const char *sbi_platform_name(const struct sbi_platform *plat)
 {
 	if (plat)
 		return plat->name;
@@ -155,7 +155,7 @@ static inline const char *sbi_platform_name(struct sbi_platform *plat)
  *
  * @return TRUE if HART is disabled and FALSE otherwise
  */
-static inline bool sbi_platform_hart_disabled(struct sbi_platform *plat,
+static inline bool sbi_platform_hart_disabled(const struct sbi_platform *plat,
 					      u32 hartid)
 {
 	if (plat && (plat->disabled_hart_mask & (1 << hartid)))
@@ -170,7 +170,7 @@ static inline bool sbi_platform_hart_disabled(struct sbi_platform *plat,
  *
  * @return total number of HARTs
  */
-static inline u32 sbi_platform_hart_count(struct sbi_platform *plat)
+static inline u32 sbi_platform_hart_count(const struct sbi_platform *plat)
 {
 	if (plat)
 		return plat->hart_count;
@@ -184,7 +184,7 @@ static inline u32 sbi_platform_hart_count(struct sbi_platform *plat)
  *
  * @return stack size in bytes
  */
-static inline u32 sbi_platform_hart_stack_size(struct sbi_platform *plat)
+static inline u32 sbi_platform_hart_stack_size(const struct sbi_platform *plat)
 {
 	if (plat)
 		return plat->hart_stack_size;
@@ -199,7 +199,7 @@ static inline u32 sbi_platform_hart_stack_size(struct sbi_platform *plat)
  *
  * @return 0 on success and negative error code on failure
  */
-static inline int sbi_platform_early_init(struct sbi_platform *plat,
+static inline int sbi_platform_early_init(const struct sbi_platform *plat,
 					  bool cold_boot)
 {
 	if (plat && plat->early_init)
@@ -215,7 +215,7 @@ static inline int sbi_platform_early_init(struct sbi_platform *plat,
  *
  * @return 0 on success and negative error code on failure
  */
-static inline int sbi_platform_final_init(struct sbi_platform *plat,
+static inline int sbi_platform_final_init(const struct sbi_platform *plat,
 					  bool cold_boot)
 {
 	if (plat && plat->final_init)
@@ -231,7 +231,7 @@ static inline int sbi_platform_final_init(struct sbi_platform *plat,
  *
  * @return number of PMP regions
  */
-static inline u32 sbi_platform_pmp_region_count(struct sbi_platform *plat,
+static inline u32 sbi_platform_pmp_region_count(const struct sbi_platform *plat,
 						u32 hartid)
 {
 	if (plat && plat->pmp_region_count)
@@ -252,7 +252,7 @@ static inline u32 sbi_platform_pmp_region_count(struct sbi_platform *plat,
  *
  * @return 0 on success and negative error code on failure
  */
-static inline int sbi_platform_pmp_region_info(struct sbi_platform *plat,
+static inline int sbi_platform_pmp_region_info(const struct sbi_platform *plat,
 					       u32 hartid, u32 index,
 					       ulong *prot, ulong *addr,
 					       ulong *log2size)
@@ -269,7 +269,7 @@ static inline int sbi_platform_pmp_region_info(struct sbi_platform *plat,
  * @param plat pointer to struct sbi_platform
  * @param ch character to write
  */
-static inline void sbi_platform_console_putc(struct sbi_platform *plat,
+static inline void sbi_platform_console_putc(const struct sbi_platform *plat,
 					     char ch)
 {
 	if (plat && plat->console_putc)
@@ -283,7 +283,7 @@ static inline void sbi_platform_console_putc(struct sbi_platform *plat,
  *
  * @return character read from console input
  */
-static inline int sbi_platform_console_getc(struct sbi_platform *plat)
+static inline int sbi_platform_console_getc(const struct sbi_platform *plat)
 {
 	if (plat && plat->console_getc)
 		return plat->console_getc();
@@ -297,7 +297,7 @@ static inline int sbi_platform_console_getc(struct sbi_platform *plat)
  *
  * @return 0 on success and negative error code on failure
  */
-static inline int sbi_platform_console_init(struct sbi_platform *plat)
+static inline int sbi_platform_console_init(const struct sbi_platform *plat)
 {
 	if (plat && plat->console_init)
 		return plat->console_init();
@@ -312,7 +312,7 @@ static inline int sbi_platform_console_init(struct sbi_platform *plat)
  *
  * @return 0 on success and negative error code on failure
  */
-static inline int sbi_platform_irqchip_init(struct sbi_platform *plat,
+static inline int sbi_platform_irqchip_init(const struct sbi_platform *plat,
 					    bool cold_boot)
 {
 	if (plat && plat->irqchip_init)
@@ -326,7 +326,7 @@ static inline int sbi_platform_irqchip_init(struct sbi_platform *plat,
  * @param plat pointer to struct sbi_platform
  * @param target_hart HART ID of IPI target
  */
-static inline void sbi_platform_ipi_send(struct sbi_platform *plat,
+static inline void sbi_platform_ipi_send(const struct sbi_platform *plat,
 					 u32 target_hart)
 {
 	if (plat && plat->ipi_send)
@@ -339,7 +339,7 @@ static inline void sbi_platform_ipi_send(struct sbi_platform *plat,
  * @param plat pointer to struct sbi_platform
  * @param target_hart HART ID of IPI target
  */
-static inline void sbi_platform_ipi_sync(struct sbi_platform *plat,
+static inline void sbi_platform_ipi_sync(const struct sbi_platform *plat,
 					 u32 target_hart)
 {
 	if (plat && plat->ipi_sync)
@@ -352,7 +352,7 @@ static inline void sbi_platform_ipi_sync(struct sbi_platform *plat,
  * @param plat pointer to struct sbi_platform
  * @param target_hart HART ID of IPI target
  */
-static inline void sbi_platform_ipi_clear(struct sbi_platform *plat,
+static inline void sbi_platform_ipi_clear(const struct sbi_platform *plat,
 					  u32 target_hart)
 {
 	if (plat && plat->ipi_clear)
@@ -367,7 +367,7 @@ static inline void sbi_platform_ipi_clear(struct sbi_platform *plat,
  *
  * @return 0 on success and negative error code on failure
  */
-static inline int sbi_platform_ipi_init(struct sbi_platform *plat,
+static inline int sbi_platform_ipi_init(const struct sbi_platform *plat,
 					bool cold_boot)
 {
 	if (plat && plat->ipi_init)
@@ -382,7 +382,7 @@ static inline int sbi_platform_ipi_init(struct sbi_platform *plat,
  *
  * @return 64bit timer value
  */
-static inline u64 sbi_platform_timer_value(struct sbi_platform *plat)
+static inline u64 sbi_platform_timer_value(const struct sbi_platform *plat)
 {
 	if (plat && plat->timer_value)
 		return plat->timer_value();
@@ -395,8 +395,9 @@ static inline u64 sbi_platform_timer_value(struct sbi_platform *plat)
  * @param plat pointer to struct struct sbi_platform
  * @param next_event timer value when timer event will happen
  */
-static inline void sbi_platform_timer_event_start(struct sbi_platform *plat,
-						  u64 next_event)
+static inline void sbi_platform_timer_event_start(
+					const struct sbi_platform *plat,
+					u64 next_event)
 {
 	if (plat && plat->timer_event_start)
 		plat->timer_event_start(next_event);
@@ -407,7 +408,8 @@ static inline void sbi_platform_timer_event_start(struct sbi_platform *plat,
  *
  * @param plat pointer to struct sbi_platform
  */
-static inline void sbi_platform_timer_event_stop(struct sbi_platform *plat)
+static inline void sbi_platform_timer_event_stop(
+					const struct sbi_platform *plat)
 {
 	if (plat && plat->timer_event_stop)
 		plat->timer_event_stop();
@@ -421,7 +423,7 @@ static inline void sbi_platform_timer_event_stop(struct sbi_platform *plat)
  *
  * @return 0 on success and negative error code on failure
  */
-static inline int sbi_platform_timer_init(struct sbi_platform *plat,
+static inline int sbi_platform_timer_init(const struct sbi_platform *plat,
 					  bool cold_boot)
 {
 	if (plat && plat->timer_init)
@@ -437,7 +439,7 @@ static inline int sbi_platform_timer_init(struct sbi_platform *plat,
  *
  * @return 0 on success and negative error code on failure
  */
-static inline int sbi_platform_system_reboot(struct sbi_platform *plat,
+static inline int sbi_platform_system_reboot(const struct sbi_platform *plat,
 					     u32 type)
 {
 	if (plat && plat->system_reboot)
@@ -453,7 +455,7 @@ static inline int sbi_platform_system_reboot(struct sbi_platform *plat,
  *
  * @return 0 on success and negative error code on failure
  */
-static inline int sbi_platform_system_shutdown(struct sbi_platform *plat,
+static inline int sbi_platform_system_shutdown(const struct sbi_platform *plat,
 					       u32 type)
 {
 	if (plat && plat->system_shutdown)

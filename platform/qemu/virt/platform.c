@@ -134,7 +134,7 @@ static int virt_system_down(u32 type)
 	return 0;
 }
 
-struct sbi_platform platform = {
+const struct sbi_platform platform = {
 	.name = "QEMU Virt Machine",
 	.features = SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count = VIRT_HART_COUNT,

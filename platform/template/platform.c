@@ -207,7 +207,7 @@ static int platform_system_shutdown(u32 type)
 /*
  * Platform descriptor.
  */
-struct sbi_platform platform = {
+const struct sbi_platform platform = {
 
 	.name = "platform-name",
 	.features = SBI_PLATFORM_DEFAULT_FEATURES,

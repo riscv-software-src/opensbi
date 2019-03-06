@@ -98,7 +98,7 @@ static int k210_system_shutdown(u32 type)
 	return 0;
 }
 
-struct sbi_platform platform = {
+const struct sbi_platform platform = {
 
 	.name = "Kendryte K210",
 	.features = SBI_PLATFORM_HAS_TIMER_VALUE,

@@ -11,7 +11,7 @@
 #include <sbi/sbi_console.h>
 #include <sbi/riscv_locks.h>
 
-static struct sbi_platform *console_plat = NULL;
+static const struct sbi_platform *console_plat = NULL;
 static spinlock_t console_out_lock = SPIN_LOCK_INITIALIZER;
 
 bool sbi_isprintable(char c)

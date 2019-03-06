@@ -187,7 +187,7 @@ static int fu540_system_down(u32 type)
 	return 0;
 }
 
-struct sbi_platform platform = {
+const struct sbi_platform platform = {
 	.name = "SiFive Freedom U540",
 	.features = SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count = FU540_HART_COUNT,

@@ -32,7 +32,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 {
 	int rc;
 	char str[64];
-	struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	rc = sbi_system_early_init(scratch, TRUE);
 	if (rc)
@@ -96,7 +96,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 {
 	int rc;
-	struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if (!sbi_platform_has_hart_hotplug(plat))
 		sbi_hart_wait_for_coldboot(scratch, hartid);
@@ -156,7 +156,7 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 {
 	bool coldboot = FALSE;
 	u32 hartid = sbi_current_hartid();
-	struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if (sbi_platform_hart_disabled(plat, hartid))
 		sbi_hart_hang();
