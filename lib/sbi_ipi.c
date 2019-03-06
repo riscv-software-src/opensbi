@@ -22,7 +22,7 @@
 static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid, u32 event)
 {
 	struct sbi_scratch *remote_scratch = NULL;
-	struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if (sbi_platform_hart_disabled(plat, hartid))
 		return -1;
@@ -72,7 +72,7 @@ void sbi_ipi_clear_smode(struct sbi_scratch *scratch)
 
 void sbi_ipi_process(struct sbi_scratch *scratch)
 {
-	struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	volatile unsigned long ipi_type;
 	unsigned int ipi_event;
 	u32 hartid = sbi_current_hartid();
