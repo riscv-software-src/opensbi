@@ -25,6 +25,8 @@ _start:
 	csrr	a6, CSR_MHARTID
 	blt	zero, a6, _wait_for_boot_hart
 
+	li	ra, 0
+	call	_reset_regs
 	/* Zero-out BSS */
 	la	a4, _bss_start
 	la	a5, _bss_end
@@ -392,6 +394,8 @@ _trap_handler_all_mode:
 	.globl _reset_regs
 _reset_regs:
 
+	/* flush the instruction cache */
+	fence.i
 	/* Reset all registers except ra, a0,a1 */
 	li sp, 0
 	li gp, 0
