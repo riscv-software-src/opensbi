@@ -114,7 +114,6 @@ _fdt_reloc_done:
 
 	/* Wait for boot hart */
 _wait_for_boot_hart:
-	fence	rw, rw
 	la	a4, _boot_hart_done
 	REG_L	a5, (a4)
 	beqz	a5, _wait_for_boot_hart
