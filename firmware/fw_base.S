@@ -116,6 +116,10 @@ _fdt_reloc_done:
 _wait_for_boot_hart:
 	la	a4, _boot_hart_done
 	REG_L	a5, (a4)
+	/* Reduce the bus traffic so that boot hart may proceed faster */
+	nop
+	nop
+	nop
 	beqz	a5, _wait_for_boot_hart
 
 _start_warm:
