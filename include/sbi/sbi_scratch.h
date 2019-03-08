@@ -28,16 +28,23 @@
 #define SBI_SCRATCH_PLATFORM_ADDR_OFFSET	(6 * __SIZEOF_POINTER__)
 /** Offset of hartid_to_scratch member in sbi_scratch */
 #define SBI_SCRATCH_HARTID_TO_SCRATCH_OFFSET	(7 * __SIZEOF_POINTER__)
-/** Offset of ipi_type member in sbi_scratch */
-#define SBI_SCRATCH_IPI_TYPE_OFFSET		(8 * __SIZEOF_POINTER__)
 /** Offset of tmp0 member in sbi_scratch */
-#define SBI_SCRATCH_TMP0_OFFSET			(9 * __SIZEOF_POINTER__)
-/** Maximum size of sbi_scratch */
-#define SBI_SCRATCH_SIZE			256
+#define SBI_SCRATCH_TMP0_OFFSET			(8 * __SIZEOF_POINTER__)
+
+/** sbi_ipi_data is located behind sbi_scratch. This struct is not packed. */
+/** Offset of ipi_type in sbi_ipi_data */
+#define SBI_IPI_DATA_IPI_TYPE_OFFSET		(15 * __SIZEOF_POINTER__)
+
+/** Maximum size of sbi_scratch and sbi_ipi_data */
+#define SBI_SCRATCH_SIZE			(32 * __SIZEOF_POINTER__)
 
 #ifndef __ASSEMBLY__
 
 #include <sbi/sbi_types.h>
+
+struct sbi_ipi_data {
+	unsigned long ipi_type;
+};
 
 /** Representation of per-HART scratch space */
 struct sbi_scratch {
@@ -57,8 +64,6 @@ struct sbi_scratch {
 	unsigned long platform_addr;
 	/** Address of HART ID to sbi_scratch conversion function */
 	unsigned long hartid_to_scratch;
-	/** IPI type (or flags) */
-	unsigned long ipi_type;
 	/** Temporary storage */
 	unsigned long tmp0;
 } __packed;
@@ -70,6 +75,10 @@ struct sbi_scratch {
 /** Get Arg1 of next booting stage for current HART */
 #define sbi_scratch_thishart_arg1_ptr()	\
 ((void *)(sbi_scratch_thishart_ptr()->next_arg1))
+
+/** Get pointer to sbi_ipi_data from sbi_scratch */
+#define sbi_ipi_data_ptr(scratch)      \
+((struct sbi_ipi_data *)(void*)scratch + SBI_IPI_DATA_IPI_TYPE_OFFSET)
 
 #endif
 

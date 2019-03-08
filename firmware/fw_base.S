@@ -183,7 +183,6 @@ _start_warm:
 	REG_S	a4, SBI_SCRATCH_PLATFORM_ADDR_OFFSET(tp)
 	la	a4, _hartid_to_scratch
 	REG_S	a4, SBI_SCRATCH_HARTID_TO_SCRATCH_OFFSET(tp)
-	REG_S	zero, SBI_SCRATCH_IPI_TYPE_OFFSET(tp)
 	REG_S	zero, SBI_SCRATCH_TMP0_OFFSET(tp)
 
 	/* Setup stack */
