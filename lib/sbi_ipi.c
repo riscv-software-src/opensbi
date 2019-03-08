@@ -31,7 +31,7 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid, u32 event)
 	 * trigger the interrupt
 	 */
 	remote_scratch = sbi_hart_id_to_scratch(scratch, hartid);
-	atomic_raw_set_bit(event, &remote_scratch->ipi_type);
+	atomic_raw_set_bit(event, &sbi_ipi_data_ptr(remote_scratch)->ipi_type);
 	mb();
 	sbi_platform_ipi_send(plat, hartid);
 	if (event != SBI_IPI_EVENT_SOFT)
@@ -80,7 +80,7 @@ void sbi_ipi_process(struct sbi_scratch *scratch)
 	sbi_platform_ipi_clear(plat, hartid);
 
 	do {
-		ipi_type = scratch->ipi_type;
+		ipi_type = sbi_ipi_data_ptr(scratch)->ipi_type;
 		rmb();
 		ipi_event = __ffs(ipi_type);
 		switch (ipi_event) {
@@ -97,12 +97,14 @@ void sbi_ipi_process(struct sbi_scratch *scratch)
 			sbi_hart_hang();
 			break;
 		};
-		ipi_type = atomic_raw_clear_bit(ipi_event, &scratch->ipi_type);
+		ipi_type = atomic_raw_clear_bit(ipi_event, &sbi_ipi_data_ptr(scratch)->ipi_type);
 	} while(ipi_type > 0);
 }
 
 int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
 {
+	sbi_ipi_data_ptr(scratch)->ipi_type = 0x00;
+
 	/* Enable software interrupts */
 	csr_set(CSR_MIE, MIP_MSIP);
 
