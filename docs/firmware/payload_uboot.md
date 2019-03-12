@@ -3,11 +3,11 @@ U-Boot as a payload to OpenSBI
 
 [U-Boot](https://www.denx.de/wiki/U-Boot) is an open-source primary boot loader.
 It can be used as first and/or second stage boot loader in an embedded
-environment. In the context of OpenSBI, U-boot can be specified as a payload to
+environment. In the context of OpenSBI, U-Boot can be specified as a payload to
 OpenSBI firmware, becoming the boot stage following OpenSBI firmware
 execution.
 
-The current stable upstream code of U-boot does not yet include all patches
+The current stable upstream code of U-Boot does not yet include all patches
 necessary to fully support OpenSBI. To use U-Boot as an OpenSBI payload, the
 following out-of-tree patch series must be applied to the upstream U-Boot source
 code.
