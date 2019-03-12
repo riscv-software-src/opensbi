@@ -39,7 +39,7 @@
  * HARTs 1 to 4.
  */
 #ifndef FU540_ENABLED_HART_MASK
-#define FU540_ENABLED_HART_MASK (1 << 1 | 1 << 2 | 1 << 3 | 1 << 4)
+#define FU540_ENABLED_HART_MASK	(1 << 1 | 1 << 2 | 1 << 3 | 1 << 4)
 #endif
 
 #define FU540_HARITD_DISABLED			~(FU540_ENABLED_HART_MASK)
@@ -47,8 +47,8 @@
 /* PRCI clock related macros */
 //TODO: Do we need a separate driver for this ?
 #define FU540_PRCI_BASE_ADDR			0x10000000
-#define FU540_PRCI_CLKMUXSTATUSREG    		0x002C
-#define FU540_PRCI_CLKMUX_STATUS_TLCLKSEL      (0x1 << 1)
+#define FU540_PRCI_CLKMUXSTATUSREG		0x002C
+#define FU540_PRCI_CLKMUX_STATUS_TLCLKSEL	(0x1 << 1)
 
 static void fu540_modify_dt(void *fdt)
 {
