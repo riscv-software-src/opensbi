@@ -80,11 +80,9 @@ void sbi_ipi_clear_smode(struct sbi_scratch *scratch)
 	csr_clear(CSR_MIP, MIP_SSIP);
 }
 
-static void sbi_ipi_tlb_flush_all(unsigned long asid)
+static void sbi_ipi_tlb_flush_all()
 {
-	__asm__ __volatile__ ("sfence.vma x0, %0"
-				: : "r" (asid)
-				: "memory");
+	__asm__ __volatile("sfence.vma");
 }
 
 static void sbi_ipi_sfence_vma(struct sbi_tlb_info *tinfo)
@@ -93,8 +91,10 @@ static void sbi_ipi_sfence_vma(struct sbi_tlb_info *tinfo)
 	unsigned long size = tinfo->size;
 	unsigned long i;
 
-	if (start == 0 && size == 0)
-		sbi_ipi_tlb_flush_all(0);
+	if ((start == 0 && size == 0) || (size == SBI_TLB_FLUSH_ALL)) {
+		sbi_ipi_tlb_flush_all();
+		return;
+	}
 
 	for (i = 0; i < size; i += PAGE_SIZE) {
 		__asm__ __volatile__ ("sfence.vma %0"
@@ -110,11 +110,16 @@ static void sbi_ipi_sfence_vma_asid(struct sbi_tlb_info *tinfo)
 	unsigned long asid = tinfo->asid;
 	unsigned long i;
 
-	if (start == 0 && size == 0)
-		sbi_ipi_tlb_flush_all(0);
-	/* Flush entire MM context */
+	if (start == 0 && size == 0) {
+		sbi_ipi_tlb_flush_all();
+		return;
+	}
+
+	/* Flush entire MM context for a given ASID */
 	if (size == SBI_TLB_FLUSH_ALL) {
-		sbi_ipi_tlb_flush_all(asid);
+		__asm__ __volatile__ ("sfence.vma x0, %0"
+				       : : "r" (asid)
+				       : "memory");
 		return;
 	}
 
