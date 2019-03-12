@@ -140,6 +140,7 @@ endif
 GENFLAGS	=	-I$(platform_dir)/include
 GENFLAGS	+=	-I$(platform_common_dir)/include
 GENFLAGS	+=	-I$(include_dir)
+GENFLAGS	+=	$(lib-genflags-y)
 GENFLAGS	+=	$(platform-common-genflags-y)
 GENFLAGS	+=	$(platform-genflags-y)
 GENFLAGS	+=	$(firmware-genflags-y)

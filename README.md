@@ -68,6 +68,12 @@ directory path, run:
 make O=<build_directory>
 ```
 
+By default OpenSBI outputs its banner and some generic details like platform
+and firmware on the serial console, and this can be quiesced by:
+```
+make QUIESCE=y
+```
+
 To generate files to be installed for using *libsbi.a* in other projects, run:
 ```
 make install
@@ -107,6 +113,11 @@ The platform specific library *libplatsbi.a* will be generated in the
 will be under the *build/platform/<platform_subdir>/firmware* directory.
 The compiled firmwares will be available in two different format: an ELF file
 and an expanded image file.
+
+The OpenSBI console output messages can also be quiesced by:
+```
+make PLATFORM=<platform_subdir> QUIESCE=y
+```
 
 To install *libsbi.a*, *libplatsbi.a*, and the compiled firmwares, run:
 ```

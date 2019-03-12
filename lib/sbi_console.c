@@ -362,6 +362,7 @@ int sbi_snprintf(char *out, u32 out_sz, const char *format, ...)
 
 int sbi_printf(const char *format, ...)
 {
+#ifndef QUIESCE
 	va_list args;
 	int retval;
 
@@ -372,6 +373,9 @@ int sbi_printf(const char *format, ...)
 	spin_unlock(&console_out_lock);
 
 	return retval;
+#else
+	return 0;
+#endif
 }
 
 int sbi_console_init(struct sbi_scratch *scratch)

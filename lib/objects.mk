@@ -23,3 +23,7 @@ lib-objs-y += sbi_misaligned_ldst.o
 lib-objs-y += sbi_system.o
 lib-objs-y += sbi_timer.o
 lib-objs-y += sbi_trap.o
+
+ifdef QUIESCE
+lib-genflags-y += -DQUIESCE
+endif
