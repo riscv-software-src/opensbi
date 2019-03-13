@@ -27,7 +27,10 @@ static volatile void *plic_base;
 
 static void plic_set_priority(u32 source, u32 val)
 {
-	writel(val, plic_base);
+	volatile void *plic_priority = plic_base +
+				PLIC_PRIORITY_BASE +
+				4 * source;
+	writel(val, plic_priority);
 }
 
 static void plic_set_thresh(u32 cntxid, u32 val)
