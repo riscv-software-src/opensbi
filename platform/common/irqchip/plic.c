@@ -118,7 +118,7 @@ int plic_cold_irqchip_init(unsigned long base,
 	plic_base = (void *)base;
 
 	/* Configure default priorities of all IRQs */
-	for (i = 0; i < plic_num_sources; i++)
+	for (i = 1; i <= plic_num_sources; i++)
 		plic_set_priority(i, 1);
 
 	return 0;
