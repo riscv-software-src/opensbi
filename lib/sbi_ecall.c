@@ -86,6 +86,8 @@ int sbi_ecall_handler(u32 hartid, ulong mcause,
 		ret = 0;
 		break;
 	default:
+		regs->a0 = SBI_ENOTSUPP;
+		ret = 0;
 		break;
 	};
 
