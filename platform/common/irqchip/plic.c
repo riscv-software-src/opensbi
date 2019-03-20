@@ -14,7 +14,7 @@
 #include <plat/tinyfdt.h>
 #include <plat/irqchip/plic.h>
 
-#define PLIC_PRIORITY_BASE		0x0
+#define PLIC_PRIORITY_BASE		0x04
 #define PLIC_PENDING_BASE		0x1000
 #define PLIC_ENABLE_BASE		0x2000
 #define PLIC_ENABLE_STRIDE		0x80
@@ -29,7 +29,7 @@ static void plic_set_priority(u32 source, u32 val)
 {
 	volatile void *plic_priority = plic_base +
 				PLIC_PRIORITY_BASE +
-				4 * source;
+				4 * (source - 1);
 	writel(val, plic_priority);
 }
 
