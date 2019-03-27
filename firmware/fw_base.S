@@ -81,6 +81,12 @@ _scratch_init:
 	la	a4, _hartid_to_scratch
 	REG_S	a4, SBI_SCRATCH_HARTID_TO_SCRATCH_OFFSET(tp)
 	REG_S	zero, SBI_SCRATCH_TMP0_OFFSET(tp)
+#ifdef FW_OPTIONS
+	li	a4, FW_OPTIONS
+	REG_S	a4, SBI_SCRATCH_OPTIONS_OFFSET(tp)
+#else
+	REG_S	zero, SBI_SCRATCH_OPTIONS_OFFSET(tp)
+#endif
 	add	t1, t1, t2
 	blt	t1, s7, _scratch_init
 

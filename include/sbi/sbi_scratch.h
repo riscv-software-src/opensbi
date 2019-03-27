@@ -30,6 +30,8 @@
 #define SBI_SCRATCH_HARTID_TO_SCRATCH_OFFSET	(7 * __SIZEOF_POINTER__)
 /** Offset of tmp0 member in sbi_scratch */
 #define SBI_SCRATCH_TMP0_OFFSET			(8 * __SIZEOF_POINTER__)
+/** Offset of options member in sbi_scratch */
+#define SBI_SCRATCH_OPTIONS_OFFSET		(9 * __SIZEOF_POINTER__)
 
 /** sbi_ipi_data is located behind sbi_scratch. This struct is not packed. */
 /** Offset of ipi_type in sbi_ipi_data */
@@ -64,6 +66,8 @@ struct sbi_scratch {
 	unsigned long hartid_to_scratch;
 	/** Temporary storage */
 	unsigned long tmp0;
+	/** Options for OpenSBI library */
+	unsigned long options;
 } __packed;
 
 /** Get pointer to sbi_scratch for current HART */
