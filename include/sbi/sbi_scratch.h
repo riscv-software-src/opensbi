@@ -70,6 +70,12 @@ struct sbi_scratch {
 	unsigned long options;
 } __packed;
 
+/** Possible options for OpenSBI library */
+enum sbi_scratch_options {
+	/** Disable prints during boot */
+	SBI_SCRATCH_NO_BOOT_PRINTS		= (1 << 0),
+};
+
 /** Get pointer to sbi_scratch for current HART */
 #define sbi_scratch_thishart_ptr()	\
 ((struct sbi_scratch *)csr_read(CSR_MSCRATCH))

@@ -75,3 +75,18 @@ make PLATFORM=<platform_subdir> FW_PAYLOAD_PATH=<payload path>
 The instructions to build each payload is different and the details can
 be found in the
 *docs/firmware/payload_<payload_name>.md* files.
+
+Options for OpenSBI Firmware behaviors
+--------------------------------------
+An optional compile time flag FW_OPTIONS can be used to control the OpenSBI
+firmware run-time behaviors.
+
+```
+make PLATFORM=<platform_subdir> FW_OPTIONS=<options>
+```
+
+FW_OPTIONS is a bitwise or'ed value of various options, eg: *FW_OPTIONS=0x1*
+stands for disabling boot prints from the OpenSBI library.
+
+For all supported options, please check "enum sbi_scratch_options" in the
+*include/sbi/sbi_scratch.h* header file.

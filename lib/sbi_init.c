@@ -91,7 +91,8 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
-	sbi_boot_prints(scratch, hartid);
+	if (!(scratch->options & SBI_SCRATCH_NO_BOOT_PRINTS))
+		sbi_boot_prints(scratch, hartid);
 
 	if (!sbi_platform_has_hart_hotplug(plat))
 		sbi_hart_wake_coldboot_harts(scratch, hartid);
