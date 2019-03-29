@@ -48,6 +48,7 @@ export platform_dir=$(CURDIR)/$(platform_subdir)
 export platform_common_dir=$(CURDIR)/platform/common
 export include_dir=$(CURDIR)/include
 export lib_dir=$(CURDIR)/lib
+export lib_common_dir=$(CURDIR)/lib/common
 export firmware_dir=$(CURDIR)/firmware
 
 # Find library version
@@ -89,6 +90,7 @@ platform-object-mks=$(shell if [ -d $(platform_dir) ]; then find $(platform_dir)
 platform-common-object-mks=$(shell if [ -d $(platform_common_dir) ]; then find $(platform_common_dir) -iname "objects.mk" | sort -r; fi)
 endif
 lib-object-mks=$(shell if [ -d $(lib_dir) ]; then find $(lib_dir) -iname "objects.mk" | sort -r; fi)
+lib-common-object-mks=$(shell if [ -d $(lib_common_dir) ]; then find $(lib_common_dir) -iname "objects.mk" | sort -r; fi)
 firmware-object-mks=$(shell if [ -d $(firmware_dir) ]; then find $(firmware_dir) -iname "objects.mk" | sort -r; fi)
 
 # Include platform specifig config.mk
@@ -102,10 +104,12 @@ include $(platform-object-mks)
 include $(platform-common-object-mks)
 endif
 include $(lib-object-mks)
+include $(lib-common-object-mks)
 include $(firmware-object-mks)
 
 # Setup list of objects
 lib-objs-path-y=$(foreach obj,$(lib-objs-y),$(build_dir)/lib/$(obj))
+lib-common-objs-path-y=$(foreach obj,$(lib-common-objs-y),$(build_dir)/lib/common/$(obj))
 ifdef PLATFORM
 platform-objs-path-y=$(foreach obj,$(platform-objs-y),$(build_dir)/$(platform_subdir)/$(obj))
 platform-dtb-path-y=$(foreach obj,$(platform-dtb-y),$(build_dir)/$(platform_subdir)/$(obj))
@@ -119,6 +123,7 @@ firmware-objs-path-y=$(firmware-bins-path-y:.bin=.o)
 deps-y=$(platform-objs-path-y:.o=.dep)
 deps-y+=$(platform-common-objs-path-y:.o=.dep)
 deps-y+=$(lib-objs-path-y:.o=.dep)
+deps-y+=$(lib-common-objs-path-y:.o=.dep)
 deps-y+=$(firmware-objs-path-y:.o=.dep)
 
 # Setup platform ABI, ISA and Code Model
@@ -263,10 +268,10 @@ $(build_dir)/%.elf: $(build_dir)/%.o $(build_dir)/%.elf.ld $(build_dir)/$(platfo
 $(build_dir)/$(platform_subdir)/%.ld: $(src_dir)/%.ldS
 	$(call compile_cpp,$@,$<)
 
-$(build_dir)/lib/libsbi.a: $(lib-objs-path-y)
+$(build_dir)/lib/libsbi.a: $(lib-objs-path-y) $(lib-common-objs-path-y)
 	$(call compile_ar,$@,$^)
 
-$(build_dir)/$(platform_subdir)/lib/libplatsbi.a: $(lib-objs-path-y) $(platform-common-objs-path-y) $(platform-objs-path-y)
+$(build_dir)/$(platform_subdir)/lib/libplatsbi.a: $(lib-objs-path-y) $(lib-common-objs-path-y) $(platform-common-objs-path-y) $(platform-objs-path-y)
 	$(call compile_ar,$@,$^)
 
 $(build_dir)/%.dep: $(src_dir)/%.c
