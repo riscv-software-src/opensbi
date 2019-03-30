@@ -122,14 +122,11 @@ int sbi_illegal_insn_handler(u32 hartid, ulong mcause,
 			     struct sbi_trap_regs *regs,
 			     struct sbi_scratch *scratch)
 {
-	ulong mstatus;
 	ulong insn = csr_read(mbadaddr);
 
 	if (unlikely((insn & 3) != 3)) {
-		if (insn == 0) {
-			mstatus = csr_read(CSR_MSTATUS);
-			insn = get_insn(regs->mepc, &mstatus);
-		}
+		if (insn == 0)
+			insn = get_insn(regs->mepc, NULL);
 		if ((insn & 3) != 3)
 			return truly_illegal_insn(insn, hartid, mcause,
 						  regs, scratch);
