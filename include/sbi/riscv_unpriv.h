@@ -82,7 +82,7 @@ static inline ulong get_insn(ulong mepc, ulong *mstatus)
 #endif
 		"csrw "STR(CSR_MSTATUS)", %[mstatus]"
 		: [mstatus] "+&r" (__mstatus), [insn] "=&r" (val)
-		: [mprv] "r" (MSTATUS_MPRV | MSTATUS_MXR), [addr] "r" (__mepc));
+		: [mprv] "r" (MSTATUS_MPRV|MSTATUS_MXR), [addr] "r" (__mepc));
 #else
 	ulong rvc_mask = 3, tmp;
 	asm ("csrrs %[mstatus], "STR(CSR_MSTATUS)", %[mprv]\n"
@@ -107,10 +107,11 @@ static inline ulong get_insn(ulong mepc, ulong *mstatus)
 		"add %[insn], %[insn], %[tmp]\n"
 		"2: csrw "STR(CSR_MSTATUS)", %[mstatus]"
 	: [mstatus] "+&r" (__mstatus), [insn] "=&r" (val), [tmp] "=&r" (tmp)
-	: [mprv] "r" (MSTATUS_MPRV | MSTATUS_MXR), [addr] "r" (__mepc),
+	: [mprv] "r" (MSTATUS_MPRV|MSTATUS_MXR), [addr] "r" (__mepc),
 	[rvc_mask] "r" (rvc_mask), [xlen_minus_16] "i" (__riscv_xlen - 16));
 #endif
-	*mstatus = __mstatus;
+	if (mstatus)
+		*mstatus = __mstatus;
 	return val;
 }
 
