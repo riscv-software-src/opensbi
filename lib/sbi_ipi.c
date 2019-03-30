@@ -8,12 +8,12 @@
  *   Nick Kossifidis <mick@ics.forth.gr>
  */
 
+#include <common/sbi_circular_queue.h>
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_barrier.h>
 #include <sbi/riscv_atomic.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_bitops.h>
-#include <sbi/sbi_console.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_timer.h>
@@ -24,8 +24,8 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid,
 {
 	struct sbi_scratch *remote_scratch = NULL;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
-	struct sbi_tlb_info *tlb_info = data;
-	struct sbi_tlb_info *ipi_tlb_data;
+	struct sbi_cqueue *ipi_tlb_queue;
+	int ret;
 
 	if (sbi_platform_hart_disabled(plat, hartid))
 		return -1;
@@ -36,10 +36,21 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid,
 	remote_scratch = sbi_hart_id_to_scratch(scratch, hartid);
 	if (event == SBI_IPI_EVENT_SFENCE_VMA ||
 	    event == SBI_IPI_EVENT_SFENCE_VMA_ASID) {
-		ipi_tlb_data = sbi_tlb_info_ptr(remote_scratch);
-		ipi_tlb_data->start = tlb_info->start;
-		ipi_tlb_data->size = tlb_info->size;
-		ipi_tlb_data->asid = tlb_info->asid;
+		ipi_tlb_queue = sbi_tlb_info_queue_ptr(remote_scratch);
+		ret = sbi_cq_enqueue(ipi_tlb_queue, data);
+		while (ret < 0) {
+			/**
+			 * For now, Busy loop until there is space in the queue.
+			 * There may be case where target hart is also
+			 * enqueue in source hart's queue. Both hart may busy
+			 * loop leading to a deadlock.
+			 * TODO: Introduce a wait/wakeup event mechansim to handle
+			 * this properly.
+			 */
+			__asm__ __volatile("nop");
+			__asm__ __volatile("nop");
+			ret = sbi_cq_enqueue(ipi_tlb_queue, data);
+		}
 	}
 	atomic_raw_set_bit(event, &sbi_ipi_data_ptr(remote_scratch)->ipi_type);
 	mb();
@@ -87,6 +98,9 @@ static void sbi_ipi_tlb_flush_all()
 
 static void sbi_ipi_sfence_vma(struct sbi_tlb_info *tinfo)
 {
+	if (!tinfo)
+		return;
+
 	unsigned long start = tinfo->start;
 	unsigned long size = tinfo->size;
 	unsigned long i;
@@ -105,6 +119,9 @@ static void sbi_ipi_sfence_vma(struct sbi_tlb_info *tinfo)
 
 static void sbi_ipi_sfence_vma_asid(struct sbi_tlb_info *tinfo)
 {
+	if (!tinfo)
+		return;
+
 	unsigned long start = tinfo->start;
 	unsigned long size = tinfo->size;
 	unsigned long asid = tinfo->asid;
@@ -132,11 +149,13 @@ static void sbi_ipi_sfence_vma_asid(struct sbi_tlb_info *tinfo)
 
 void sbi_ipi_process(struct sbi_scratch *scratch)
 {
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	volatile unsigned long ipi_type;
+	struct sbi_tlb_info *tinfo;
 	unsigned int ipi_event;
-	u32 hartid = sbi_current_hartid();
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	struct sbi_cqueue *ipi_tlb_queue = sbi_tlb_info_queue_ptr(scratch);
 
+	u32 hartid = sbi_current_hartid();
 	sbi_platform_ipi_clear(plat, hartid);
 
 	do {
@@ -151,10 +170,20 @@ void sbi_ipi_process(struct sbi_scratch *scratch)
 			__asm__ __volatile("fence.i");
 			break;
 		case SBI_IPI_EVENT_SFENCE_VMA:
-			sbi_ipi_sfence_vma(sbi_tlb_info_ptr(scratch));
-			break;
 		case SBI_IPI_EVENT_SFENCE_VMA_ASID:
-			sbi_ipi_sfence_vma_asid(sbi_tlb_info_ptr(scratch));
+			/**
+			 *TODO: We clear the queue here. But event bit is not
+			 *cleared from ipi_data.
+			 */
+			do {
+				tinfo = sbi_cq_dequeue(ipi_tlb_queue);
+				if (!tinfo) {
+					if (tinfo->type == SBI_TLB_FLUSH_VMA)
+						sbi_ipi_sfence_vma(tinfo);
+					else if (tinfo->type == SBI_TLB_FLUSH_VMA_ASID)
+						sbi_ipi_sfence_vma_asid(tinfo);
+				}
+			} while (!sbi_cq_is_empty(ipi_tlb_queue));
 			break;
 		case SBI_IPI_EVENT_HALT:
 			sbi_hart_hang();
@@ -166,10 +195,10 @@ void sbi_ipi_process(struct sbi_scratch *scratch)
 
 int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
 {
+	struct sbi_cqueue *tlb_info_q = sbi_tlb_info_queue_ptr(scratch);
+
 	sbi_ipi_data_ptr(scratch)->ipi_type = 0x00;
-	sbi_tlb_info_ptr(scratch)->start = 0x00;
-	sbi_tlb_info_ptr(scratch)->size = 0x00;
-	sbi_tlb_info_ptr(scratch)->asid = 0x00;
+	sbi_cq_init(tlb_info_q, SBI_TLB_INFO_MAX_QUEUE_SIZE);
 
 	/* Enable software interrupts */
 	csr_set(CSR_MIE, MIP_MSIP);

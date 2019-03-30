@@ -12,12 +12,18 @@
 
 void sbi_cq_init(struct sbi_cqueue *cq, unsigned long msize)
 {
+	int i;
+	struct sbi_tlb_info tlb_info_init = {0};
+
 	cq->head = -1;
 	cq->tail = -1;
 	cq->maxsize = msize;
 	SPIN_LOCK_INIT(&cq->qlock);
-}
 
+	for (i = 0; i < SBI_TLB_INFO_MAX_QUEUE_SIZE; i++) {
+		sbi_tlb_info_copy(&cq->queue[i], &tlb_info_init);
+	}
+}
 bool sbi_cq_is_full(struct sbi_cqueue *cq)
 {
 	if (((cq->head == SBI_TLB_INFO_MAX_QUEUE_SIZE-1) && cq->tail == 0) ||
