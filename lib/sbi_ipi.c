@@ -11,13 +11,13 @@
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_barrier.h>
 #include <sbi/riscv_atomic.h>
+#include <sbi/riscv_unpriv.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_timer.h>
-#include <sbi/sbi_unpriv.h>
 
 static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid,
 			u32 event, void *data)

@@ -9,11 +9,11 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
+#include <sbi/riscv_unpriv.h>
 #include <sbi/riscv_fp.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_misaligned_ldst.h>
 #include <sbi/sbi_trap.h>
-#include <sbi/sbi_unpriv.h>
 
 union reg_data {
 	u8 data_bytes[8];
