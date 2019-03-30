@@ -7,8 +7,8 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
-#ifndef __SBI_UNPRIV_H__
-#define __SBI_UNPRIV_H__
+#ifndef __RISCV_UNPRIV_H__
+#define __RISCV_UNPRIV_H__
 
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_bits.h>

@@ -9,12 +9,12 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
+#include <sbi/riscv_unpriv.h>
 #include <sbi/sbi_bits.h>
 #include <sbi/sbi_emulate_csr.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_illegal_insn.h>
 #include <sbi/sbi_trap.h>
-#include <sbi/sbi_unpriv.h>
 
 typedef int (*illegal_insn_func)(ulong insn,
 				 u32 hartid, ulong mcause,
