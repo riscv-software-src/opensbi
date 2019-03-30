@@ -93,7 +93,7 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 
 	val.data_u64 = 0;
 	for (i = 0; i < len; i++)
-		val.data_bytes[i] = load_u8((void *)(addr + i), regs->mepc);
+		val.data_bytes[i] = load_u8((void *)(addr + i));
 
 	if (!fp)
 		SET_RD(insn, regs, val.data_ulong << shift >> shift);
@@ -169,7 +169,7 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 		return SBI_EILL;
 
 	for (i = 0; i < len; i++)
-		store_u8((void *)(addr + i), val.data_bytes[i], regs->mepc);
+		store_u8((void *)(addr + i), val.data_bytes[i]);
 
 	regs->mepc += INSN_LEN(insn);
 

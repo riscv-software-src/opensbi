@@ -15,29 +15,27 @@
 #include <sbi/sbi_types.h>
 
 #define DECLARE_UNPRIVILEGED_LOAD_FUNCTION(type, insn)			\
-static inline type load_##type(const type *addr, ulong mepc)		\
+static inline type load_##type(const type *addr)			\
 {									\
-	register ulong __mepc asm ("a2") = mepc;			\
-	register ulong __mstatus asm ("a3");				\
+	register ulong __mstatus asm ("a2");				\
 	type val;							\
-	asm ("csrrs %0, "STR(CSR_MSTATUS)", %3\n"					\
+	asm ("csrrs %0, "STR(CSR_MSTATUS)", %3\n"			\
 		#insn " %1, %2\n"					\
-		"csrw "STR(CSR_MSTATUS)", %0"					\
+		"csrw "STR(CSR_MSTATUS)", %0"				\
 	: "+&r" (__mstatus), "=&r" (val)				\
-	: "m" (*addr), "r" (MSTATUS_MPRV), "r" (__mepc));		\
+	: "m" (*addr), "r" (MSTATUS_MPRV));				\
 	return val;							\
 }
 
 #define DECLARE_UNPRIVILEGED_STORE_FUNCTION(type, insn)			\
-static inline void store_##type(type *addr, type val, ulong mepc)	\
+static inline void store_##type(type *addr, type val)			\
 {									\
-	register ulong __mepc asm ("a2") = mepc;			\
 	register ulong __mstatus asm ("a3");				\
-	asm volatile ("csrrs %0, "STR(CSR_MSTATUS)", %3\n"				\
+	asm volatile ("csrrs %0, "STR(CSR_MSTATUS)", %3\n"		\
 		#insn " %1, %2\n"					\
-		"csrw "STR(CSR_MSTATUS)", %0"					\
+		"csrw "STR(CSR_MSTATUS)", %0"				\
 	: "+&r" (__mstatus)						\
-	: "r" (val), "m" (*addr), "r" (MSTATUS_MPRV), "r" (__mepc));	\
+	: "r" (val), "m" (*addr), "r" (MSTATUS_MPRV));			\
 }
 
 DECLARE_UNPRIVILEGED_LOAD_FUNCTION(u8, lbu)
@@ -57,16 +55,16 @@ DECLARE_UNPRIVILEGED_LOAD_FUNCTION(ulong, ld)
 DECLARE_UNPRIVILEGED_LOAD_FUNCTION(u32, lw)
 DECLARE_UNPRIVILEGED_LOAD_FUNCTION(ulong, lw)
 
-static inline u64 load_u64(const u64 *addr, ulong mepc)
+static inline u64 load_u64(const u64 *addr)
 {
-	return load_u32((u32 *)addr, mepc)
-		+ ((u64)load_u32((u32 *)addr + 1, mepc) << 32);
+	return load_u32((u32 *)addr)
+		+ ((u64)load_u32((u32 *)addr + 1) << 32);
 }
 
-static inline void store_u64(u64 *addr, u64 val, ulong mepc)
+static inline void store_u64(u64 *addr, u64 val)
 {
-	store_u32((u32 *)addr, val, mepc);
-	store_u32((u32 *)addr + 1, val >> 32, mepc);
+	store_u32((u32 *)addr, val);
+	store_u32((u32 *)addr + 1, val >> 32);
 }
 #endif
 
