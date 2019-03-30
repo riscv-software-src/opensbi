@@ -39,7 +39,7 @@
 
 #define SBI_SCRATCH_TLB_INFO_OFFSET		(16 * __SIZEOF_POINTER__)
 /** Maximum size of sbi_scratch and sbi_ipi_data */
-#define SBI_SCRATCH_SIZE			(32 * __SIZEOF_POINTER__)
+#define SBI_SCRATCH_SIZE			(64 * __SIZEOF_POINTER__)
 
 #ifndef __ASSEMBLY__
 
