@@ -18,6 +18,8 @@
 #define SBI_IPI_EVENT_SFENCE_VMA_ASID		0x8
 #define SBI_IPI_EVENT_HALT			0x10
 
+#define SBI_TLB_INFO_MAX_QUEUE_SIZE 4
+
 struct sbi_scratch;
 
 struct sbi_ipi_data {
