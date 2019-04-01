@@ -38,6 +38,14 @@ struct sbi_tlb_info {
 	unsigned long type;
 };
 
+inline void sbi_tlb_info_copy(struct sbi_tlb_info *dest, struct sbi_tlb_info *src)
+{
+	dest->start = src->start;
+	dest->size = src->size;
+	dest->asid = src->asid;
+	dest->type = src->type;
+}
+
 int sbi_ipi_send_many(struct sbi_scratch *scratch,
 		      ulong *pmask, u32 event, void *data);
 
