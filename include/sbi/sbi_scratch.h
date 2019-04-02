@@ -37,7 +37,9 @@
 /** Offset of ipi_type in sbi_ipi_data */
 #define SBI_IPI_DATA_IPI_TYPE_OFFSET		(15 * __SIZEOF_POINTER__)
 
-#define SBI_SCRATCH_TLB_INFO_OFFSET		(16 * __SIZEOF_POINTER__)
+#define SBI_SCRATCH_TLB_QUEUE_HEAD_OFFSET	(16 * __SIZEOF_POINTER__)
+#define SBI_SCRATCH_TLB_QUEUE_MEM_OFFSET	(SBI_SCRATCH_TLB_QUEUE_HEAD_OFFSET + SBI_TLB_INFO_SIZE)
+
 /** Maximum size of sbi_scratch and sbi_ipi_data */
 #define SBI_SCRATCH_SIZE			(64 * __SIZEOF_POINTER__)
 
@@ -88,9 +90,13 @@ enum sbi_scratch_options {
 #define sbi_ipi_data_ptr(scratch)      \
 ((struct sbi_ipi_data *)(void*)scratch + SBI_IPI_DATA_IPI_TYPE_OFFSET)
 
-/** Get pointer to tlb flush info from sbi_scratch */
-#define sbi_tlb_info_ptr(scratch)      \
-((struct sbi_tlb_info *)(void*)scratch + SBI_SCRATCH_TLB_INFO_OFFSET)
+/** Get pointer to tlb flush info fifo header from sbi_scratch */
+#define sbi_tlb_fifo_head_ptr(scratch)      \
+((struct sbi_fifo *)(void*)scratch + SBI_SCRATCH_TLB_QUEUE_HEAD_OFFSET)
+
+/** Get pointer to tlb flush info fifo queue address from sbi_scratch */
+#define sbi_tlb_fifo_mem_ptr(scratch)      \
+(void *)((void*)scratch + SBI_SCRATCH_TLB_QUEUE_MEM_OFFSET)
 
 #endif
 

@@ -12,20 +12,20 @@
 #include <sbi/riscv_barrier.h>
 #include <sbi/riscv_atomic.h>
 #include <sbi/riscv_unpriv.h>
+#include <sbi/sbi_fifo.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_bitops.h>
-#include <sbi/sbi_console.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_timer.h>
+#include <plat/string.h>
 
 static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid,
 			u32 event, void *data)
 {
 	struct sbi_scratch *remote_scratch = NULL;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
-	struct sbi_tlb_info *tlb_info = data;
-	struct sbi_tlb_info *ipi_tlb_data;
+	struct sbi_fifo *ipi_tlb_fifo;
 
 	if (sbi_platform_hart_disabled(plat, hartid))
 		return -1;
@@ -36,10 +36,19 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid,
 	remote_scratch = sbi_hart_id_to_scratch(scratch, hartid);
 	if (event == SBI_IPI_EVENT_SFENCE_VMA ||
 	    event == SBI_IPI_EVENT_SFENCE_VMA_ASID) {
-		ipi_tlb_data = sbi_tlb_info_ptr(remote_scratch);
-		ipi_tlb_data->start = tlb_info->start;
-		ipi_tlb_data->size = tlb_info->size;
-		ipi_tlb_data->asid = tlb_info->asid;
+		ipi_tlb_fifo = sbi_tlb_fifo_head_ptr(remote_scratch);
+		while(sbi_fifo_enqueue(ipi_tlb_fifo, data) < 0) {
+			/**
+			 * For now, Busy loop until there is space in the fifo.
+			 * There may be case where target hart is also
+			 * enqueue in source hart's fifo. Both hart may busy
+			 * loop leading to a deadlock.
+			 * TODO: Introduce a wait/wakeup event mechansim to handle
+			 * this properly.
+			 */
+			__asm__ __volatile("nop");
+			__asm__ __volatile("nop");
+		}
 	}
 	atomic_raw_set_bit(event, &sbi_ipi_data_ptr(remote_scratch)->ipi_type);
 	mb();
@@ -132,11 +141,13 @@ static void sbi_ipi_sfence_vma_asid(struct sbi_tlb_info *tinfo)
 
 void sbi_ipi_process(struct sbi_scratch *scratch)
 {
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	volatile unsigned long ipi_type;
+	struct sbi_tlb_info tinfo;
 	unsigned int ipi_event;
-	u32 hartid = sbi_current_hartid();
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	struct sbi_fifo *ipi_tlb_fifo = sbi_tlb_fifo_head_ptr(scratch);
 
+	u32 hartid = sbi_current_hartid();
 	sbi_platform_ipi_clear(plat, hartid);
 
 	do {
@@ -151,10 +162,14 @@ void sbi_ipi_process(struct sbi_scratch *scratch)
 			__asm__ __volatile("fence.i");
 			break;
 		case SBI_IPI_EVENT_SFENCE_VMA:
-			sbi_ipi_sfence_vma(sbi_tlb_info_ptr(scratch));
-			break;
 		case SBI_IPI_EVENT_SFENCE_VMA_ASID:
-			sbi_ipi_sfence_vma_asid(sbi_tlb_info_ptr(scratch));
+			while(!sbi_fifo_dequeue(ipi_tlb_fifo, &tinfo)) {
+				if (tinfo.type == SBI_TLB_FLUSH_VMA)
+					sbi_ipi_sfence_vma(&tinfo);
+				else if (tinfo.type == SBI_TLB_FLUSH_VMA_ASID)
+					sbi_ipi_sfence_vma_asid(&tinfo);
+				memset(&tinfo, 0, SBI_TLB_INFO_SIZE);
+			}
 			break;
 		case SBI_IPI_EVENT_HALT:
 			sbi_hart_hang();
@@ -166,10 +181,11 @@ void sbi_ipi_process(struct sbi_scratch *scratch)
 
 int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
 {
+	struct sbi_fifo *tlb_info_q = sbi_tlb_fifo_head_ptr(scratch);
+
 	sbi_ipi_data_ptr(scratch)->ipi_type = 0x00;
-	sbi_tlb_info_ptr(scratch)->start = 0x00;
-	sbi_tlb_info_ptr(scratch)->size = 0x00;
-	sbi_tlb_info_ptr(scratch)->asid = 0x00;
+	tlb_info_q->queue = sbi_tlb_fifo_mem_ptr(scratch);
+	sbi_fifo_init(tlb_info_q, SBI_TLB_FIFO_NUM_ENTRIES, SBI_TLB_INFO_SIZE);
 
 	/* Enable software interrupts */
 	csr_set(CSR_MIE, MIP_MSIP);

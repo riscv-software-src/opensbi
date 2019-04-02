@@ -18,6 +18,7 @@
 #define SBI_IPI_EVENT_SFENCE_VMA_ASID		0x8
 #define SBI_IPI_EVENT_HALT			0x10
 
+#define SBI_TLB_FIFO_NUM_ENTRIES 4
 enum sbi_tlb_info_types {
 	SBI_TLB_FLUSH_VMA,
 	SBI_TLB_FLUSH_VMA_ASID,
@@ -36,6 +37,8 @@ struct sbi_tlb_info {
 	unsigned long asid;
 	unsigned long type;
 };
+
+#define SBI_TLB_INFO_SIZE sizeof(struct sbi_tlb_info)
 
 int sbi_ipi_send_many(struct sbi_scratch *scratch,
 		      ulong *pmask, u32 event, void *data);
