@@ -18,6 +18,12 @@
 #define SBI_IPI_EVENT_SFENCE_VMA_ASID		0x8
 #define SBI_IPI_EVENT_HALT			0x10
 
+enum sbi_tlb_info_types {
+	SBI_TLB_FLUSH_VMA,
+	SBI_TLB_FLUSH_VMA_ASID,
+	SBI_TLB_FLUSH_VMA_VMID
+};
+
 struct sbi_scratch;
 
 struct sbi_ipi_data {
@@ -28,6 +34,7 @@ struct sbi_tlb_info {
 	unsigned long start;
 	unsigned long size;
 	unsigned long asid;
+	unsigned long type;
 };
 
 int sbi_ipi_send_many(struct sbi_scratch *scratch,
