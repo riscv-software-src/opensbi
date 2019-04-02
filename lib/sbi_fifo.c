@@ -42,6 +42,7 @@ int sbi_fifo_enqueue(struct sbi_fifo *fifo, void *data)
 {
 	if (!fifo || !data)
 		return -1;
+
 	spin_lock(&fifo->qlock);
 	if (sbi_fifo_is_full(fifo)) {
 		spin_unlock(&fifo->qlock);

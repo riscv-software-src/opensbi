@@ -69,6 +69,7 @@ int sbi_ecall_handler(u32 hartid, ulong mcause,
 	case SBI_ECALL_REMOTE_SFENCE_VMA:
 		tlb_info.start = (unsigned long)regs->a1;
 		tlb_info.size = (unsigned long)regs->a2;
+		tlb_info.type = SBI_TLB_FLUSH_VMA;
 
 		ret = sbi_ipi_send_many(scratch, (ulong *)regs->a0,
 					SBI_IPI_EVENT_SFENCE_VMA, &tlb_info);
@@ -77,6 +78,7 @@ int sbi_ecall_handler(u32 hartid, ulong mcause,
 		tlb_info.start = (unsigned long)regs->a1;
 		tlb_info.size = (unsigned long)regs->a2;
 		tlb_info.asid = (unsigned long)regs->a3;
+		tlb_info.type = SBI_TLB_FLUSH_VMA_ASID;
 
 		ret = sbi_ipi_send_many(scratch, (ulong *)regs->a0,
 					SBI_IPI_EVENT_SFENCE_VMA_ASID, &tlb_info);
