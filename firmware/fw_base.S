@@ -119,7 +119,7 @@ _prev_arg1_override_done:
 	 */
 	beqz	a1, _fdt_reloc_done
 	/* Mask values in a3 and a4 */
-	li	a3, ~0xf
+	li	a3, ~(__SIZEOF_POINTER__ - 1)
 	li	a4, 0xff
 	/* t1 = destination FDT start address */
 	add	s0, a0, zero
