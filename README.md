@@ -1,3 +1,5 @@
+Copyright (c) 2019 Western Digital Corporation or its affiliates.
+
 RISC-V Open Source Supervisor Binary Interface (OpenSBI)
 ========================================================
 
@@ -152,6 +154,12 @@ files where the reused code is present.
    (GPL-2.0+ OR BSD-2-Clause). Some of this project code is used in OpenSBI
    under the terms of the BSD 2-Clause license. Any contributions to this
    code must be made under the terms of both licenses.
+2. Some source file for the Kendryte/k210 platform code are based on code from
+   the Kendryte [standalone SDK] available on github. These files retain the
+   original copyright and license of the Kendryte standalone SDK project and
+   are licensed under the terms of the Apache License, Version 2.0. 
+
+See also the [third party notices] file for more information.
 
 Contributing to OpenSBI
 -----------------------
@@ -223,4 +231,6 @@ make I=<install_directory> install_docs
 [Platform Documentation]: docs/platform/platform.md
 [Firmware Documentation]: docs/firmware/fw.md
 [Doxygen manual]: http://www.stack.nl/~dimitri/doxygen/manual.html
+[standalone SDK]: https://github.com/kendryte/kendryte-standalone-sdk
+[third party notices]: ThirdPartyNotices.md
 
