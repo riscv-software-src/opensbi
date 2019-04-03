@@ -13,13 +13,13 @@
 #include <plat/string.h>
 
 void sbi_fifo_init(struct sbi_fifo *fifo, void *queue_mem,
-		   unsigned long entries, unsigned long entry_size)
+		   u16 entries, u16 entry_size)
 {
 	fifo->queue = queue_mem;
 	fifo->num_entries = entries;
 	fifo->entry_size = entry_size;
 	SPIN_LOCK_INIT(&fifo->qlock);
-	fifo->avail = fifo->head = fifo->tail = 0;
+	fifo->avail = fifo->tail = 0;
 	memset(fifo->queue, 0, entries * entry_size);
 }
 
@@ -59,6 +59,8 @@ bool sbi_fifo_is_empty(struct sbi_fifo *fifo)
 
 int sbi_fifo_enqueue(struct sbi_fifo *fifo, void *data)
 {
+	u32 head;
+
 	if (!fifo || !data)
 		return SBI_EINVAL;
 
@@ -69,13 +71,13 @@ int sbi_fifo_enqueue(struct sbi_fifo *fifo, void *data)
 		return SBI_ENOSPC;
 	}
 
-	memcpy(fifo->queue + fifo->head * fifo->entry_size, data,
-	       fifo->entry_size);
+	head = (u32)fifo->tail + fifo->avail;
+	if (head >= fifo->num_entries)
+		head = head - fifo->num_entries;
+
+	memcpy(fifo->queue + head * fifo->entry_size, data, fifo->entry_size);
 
 	fifo->avail++;
-	fifo->head++;
-	if (fifo->head >= fifo->num_entries)
-		fifo->head = 0;
 
 	spin_unlock(&fifo->qlock);
 
@@ -94,7 +96,7 @@ int sbi_fifo_dequeue(struct sbi_fifo *fifo, void *data)
 		return SBI_ENOENT;
 	}
 
-	memcpy(data, fifo->queue + fifo->tail * fifo->entry_size,
+	memcpy(data, fifo->queue + (u32)fifo->tail * fifo->entry_size,
 	       fifo->entry_size);
 
 	fifo->avail--;
