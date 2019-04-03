@@ -21,5 +21,6 @@
 #define SBI_ETIMEDOUT	-8
 #define SBI_EIO		-9
 #define SBI_EILL	-10
+#define SBI_ENOSPC	-11
 
 #endif

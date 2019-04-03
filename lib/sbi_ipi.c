@@ -184,8 +184,8 @@ int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
 	struct sbi_fifo *tlb_info_q = sbi_tlb_fifo_head_ptr(scratch);
 
 	sbi_ipi_data_ptr(scratch)->ipi_type = 0x00;
-	tlb_info_q->queue = sbi_tlb_fifo_mem_ptr(scratch);
-	sbi_fifo_init(tlb_info_q, SBI_TLB_FIFO_NUM_ENTRIES, SBI_TLB_INFO_SIZE);
+	sbi_fifo_init(tlb_info_q, sbi_tlb_fifo_mem_ptr(scratch),
+		      SBI_TLB_FIFO_NUM_ENTRIES, SBI_TLB_INFO_SIZE);
 
 	/* Enable software interrupts */
 	csr_set(CSR_MIE, MIP_MSIP);
