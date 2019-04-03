@@ -1,8 +1,16 @@
 OpenSBI Contribution Guideline
 ==============================
 
-All contributions to OpenSBI should be sent as GitHub Pull Requests (PRs) to
-[OpenSBI main repository].
+All contributions to OpenSBI can be sent in following ways:
+1. Email patches to OpenSBI mailing list `opensbi@lists.infradead.org`
+2. GitHub Pull Requests (PRs) to [OpenSBI main repository]
+
+To join OpenSBI mailing list, please visit [OpenSBI infradead page].
+
+OpenSBI maintainers prefer patches via OpenSBI mailing list (option1 above)
+so that they are visible to wider audience. All accepted patches on the
+OpenSBI mailing list will be taken by any of the OpenSBI maintainers and
+merged into [OpenSBI main repository] using GitHub PRs.
 
 All contributed work must follow the following rules:
 1. OpenSBI code should be written in accordance to [Linux coding style].
@@ -69,6 +77,6 @@ By making a contribution to this project, I certify that:
 -----------------------------------------------------------------------
 
 [OpenSBI main repository]: https://github.com/riscv/opensbi
+[OpenSBI infradead page]: http://lists.infradead.org/mailman/listinfo/opensbi
 [Linux coding style]: https://www.kernel.org/doc/html/v4.10/process/coding-style.html
 [Developer Certificate of Origin (DCO)]: http://developercertificate.org/
-
