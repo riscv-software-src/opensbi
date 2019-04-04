@@ -7,5 +7,5 @@
 #   Anup Patel <anup.patel@wdc.com>
 #
 
-$(build_dir)/$(platform_subdir)/firmware/fw_payload.o: $(FW_PAYLOAD_PATH_FINAL)
-$(build_dir)/$(platform_subdir)/firmware/fw_payload.o: $(FW_PAYLOAD_FDT_PATH)
+$(platform_build_dir)/firmware/fw_payload.o: $(FW_PAYLOAD_PATH_FINAL)
+$(platform_build_dir)/firmware/fw_payload.o: $(FW_PAYLOAD_FDT_PATH)

@@ -13,4 +13,4 @@ $(foreach file, $(libfdt_files), \
         $(eval CFLAGS_$(file) = -I$(src)/../../common/libfdt))
 
 platform-common-objs-$(PLATFORM_INCLUDE_LIBFDT) += $(addprefix libfdt/,$(libfdt_files))
-platform-common-genflags-$(PLATFORM_INCLUDE_LIBFDT) += -I$(platform_common_dir)/libfdt/
+platform-common-genflags-$(PLATFORM_INCLUDE_LIBFDT) += -I$(platform_common_src_dir)/libfdt/
