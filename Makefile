@@ -33,6 +33,17 @@ endif
 ifeq ($(install_dir),$(build_dir))
 $(error Install directory is same as build directory.)
 endif
+ifdef PLATFORM_DIR
+  platform_dir_path=$(shell readlink -f $(PLATFORM_DIR))
+  ifdef PLATFORM
+    platform_parent_dir=$(platform_dir_path)
+  else
+    PLATFORM=$(shell basename $(platform_dir_path))
+    platform_parent_dir=$(subst $(PLATFORM),,$(platform_dir_path))
+  endif
+else
+ platform_parent_dir=$(src_dir)/platform
+endif
 
 # Check if verbosity is ON for build process
 CMD_PREFIX_DEFAULT := @
@@ -43,9 +54,10 @@ else
 endif
 
 # Setup path of directories
-export platform_subdir=platform/$(PLATFORM)
-export platform_dir=$(CURDIR)/$(platform_subdir)
-export platform_common_dir=$(CURDIR)/platform/common
+export platform_subdir=$(PLATFORM)
+export platform_src_dir=$(platform_parent_dir)/$(platform_subdir)
+export platform_build_dir=$(build_dir)/platform/$(platform_subdir)
+export platform_common_src_dir=$(src_dir)/platform/common
 export include_dir=$(CURDIR)/include
 export lib_dir=$(CURDIR)/lib
 export firmware_dir=$(CURDIR)/firmware
@@ -85,15 +97,15 @@ endif
 
 # Setup list of objects.mk files
 ifdef PLATFORM
-platform-object-mks=$(shell if [ -d $(platform_dir) ]; then find $(platform_dir) -iname "objects.mk" | sort -r; fi)
-platform-common-object-mks=$(shell if [ -d $(platform_common_dir) ]; then find $(platform_common_dir) -iname "objects.mk" | sort -r; fi)
+platform-object-mks=$(shell if [ -d $(platform_src_dir)/ ]; then find $(platform_src_dir) -iname "objects.mk" | sort -r; fi)
+platform-common-object-mks=$(shell if [ -d $(platform_common_src_dir) ]; then find $(platform_common_src_dir) -iname "objects.mk" | sort -r; fi)
 endif
 lib-object-mks=$(shell if [ -d $(lib_dir) ]; then find $(lib_dir) -iname "objects.mk" | sort -r; fi)
 firmware-object-mks=$(shell if [ -d $(firmware_dir) ]; then find $(firmware_dir) -iname "objects.mk" | sort -r; fi)
 
 # Include platform specifig config.mk
 ifdef PLATFORM
-include $(platform_dir)/config.mk
+include $(platform_src_dir)/config.mk
 endif
 
 # Include all object.mk files
@@ -107,10 +119,10 @@ include $(firmware-object-mks)
 # Setup list of objects
 lib-objs-path-y=$(foreach obj,$(lib-objs-y),$(build_dir)/lib/$(obj))
 ifdef PLATFORM
-platform-objs-path-y=$(foreach obj,$(platform-objs-y),$(build_dir)/$(platform_subdir)/$(obj))
-platform-dtb-path-y=$(foreach obj,$(platform-dtb-y),$(build_dir)/$(platform_subdir)/$(obj))
+platform-objs-path-y=$(foreach obj,$(platform-objs-y),$(platform_build_dir)/$(obj))
+platform-dtb-path-y=$(foreach obj,$(platform-dtb-y),$(platform_build_dir)/$(obj))
 platform-common-objs-path-y=$(foreach obj,$(platform-common-objs-y),$(build_dir)/platform/common/$(obj))
-firmware-bins-path-y=$(foreach bin,$(firmware-bins-y),$(build_dir)/$(platform_subdir)/firmware/$(bin))
+firmware-bins-path-y=$(foreach bin,$(firmware-bins-y),$(platform_build_dir)/firmware/$(bin))
 endif
 firmware-elfs-path-y=$(firmware-bins-path-y:.bin=.elf)
 firmware-objs-path-y=$(firmware-bins-path-y:.bin=.o)
@@ -137,8 +149,8 @@ ifndef PLATFORM_RISCV_CODE_MODEL
 endif
 
 # Setup compilation commands flags
-GENFLAGS	=	-I$(platform_dir)/include
-GENFLAGS	+=	-I$(platform_common_dir)/include
+GENFLAGS	=	-I$(platform_src_dir)/include
+GENFLAGS	+=	-I$(platform_common_src_dir)/include
 GENFLAGS	+=	-I$(include_dir)
 GENFLAGS	+=	$(platform-common-genflags-y)
 GENFLAGS	+=	$(platform-genflags-y)
@@ -242,7 +254,7 @@ compile_dts = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 
 targets-y  = $(build_dir)/lib/libsbi.a
 ifdef PLATFORM
-targets-y += $(build_dir)/$(platform_subdir)/lib/libplatsbi.a
+targets-y += $(platform_build_dir)/lib/libplatsbi.a
 targets-y += $(platform-dtb-path-y)
 endif
 targets-y += $(firmware-bins-path-y)
@@ -257,16 +269,16 @@ all: $(targets-y)
 $(build_dir)/%.bin: $(build_dir)/%.elf
 	$(call compile_objcopy,$@,$<)
 
-$(build_dir)/%.elf: $(build_dir)/%.o $(build_dir)/%.elf.ld $(build_dir)/$(platform_subdir)/lib/libplatsbi.a
-	$(call compile_elf,$@,$@.ld,$< $(build_dir)/$(platform_subdir)/lib/libplatsbi.a)
+$(build_dir)/%.elf: $(build_dir)/%.o $(build_dir)/%.elf.ld $(platform_build_dir)/lib/libplatsbi.a
+	$(call compile_elf,$@,$@.ld,$< $(platform_build_dir)/lib/libplatsbi.a)
 
-$(build_dir)/$(platform_subdir)/%.ld: $(src_dir)/%.ldS
+$(platform_build_dir)/%.ld: $(src_dir)/%.ldS
 	$(call compile_cpp,$@,$<)
 
 $(build_dir)/lib/libsbi.a: $(lib-objs-path-y)
 	$(call compile_ar,$@,$^)
 
-$(build_dir)/$(platform_subdir)/lib/libplatsbi.a: $(lib-objs-path-y) $(platform-common-objs-path-y) $(platform-objs-path-y)
+$(platform_build_dir)/lib/libplatsbi.a: $(lib-objs-path-y) $(platform-common-objs-path-y) $(platform-objs-path-y)
 	$(call compile_ar,$@,$^)
 
 $(build_dir)/%.dep: $(src_dir)/%.c
@@ -281,16 +293,28 @@ $(build_dir)/%.dep: $(src_dir)/%.S
 $(build_dir)/%.o: $(src_dir)/%.S
 	$(call compile_as,$@,$<)
 
-$(build_dir)/$(platform_subdir)/%.dep: $(src_dir)/%.c
+$(platform_build_dir)/%.dep: $(platform_src_dir)/%.c
 	$(call compile_cc_dep,$@,$<)
 
-$(build_dir)/$(platform_subdir)/%.o: $(src_dir)/%.c
+$(platform_build_dir)/%.o: $(platform_src_dir)/%.c
 	$(call compile_cc,$@,$<)
 
-$(build_dir)/$(platform_subdir)/%.dep: $(src_dir)/%.S
+$(platform_build_dir)/%.dep: $(platform_src_dir)/%.S
 	$(call compile_as_dep,$@,$<)
 
-$(build_dir)/$(platform_subdir)/%.o: $(src_dir)/%.S
+$(platform_build_dir)/%.o: $(platform_src_dir)/%.S
+	$(call compile_as,$@,$<)
+
+$(platform_build_dir)/%.dep: $(src_dir)/%.c
+	$(call compile_cc_dep,$@,$<)
+
+$(platform_build_dir)/%.o: $(src_dir)/%.c
+	$(call compile_cc,$@,$<)
+
+$(platform_build_dir)/%.dep: $(src_dir)/%.S
+	$(call compile_as_dep,$@,$<)
+
+$(platform_build_dir)/%.o: $(src_dir)/%.S
 	$(call compile_as,$@,$<)
 
 $(build_dir)/%.dtb: $(src_dir)/%.dts
@@ -349,13 +373,13 @@ install_libsbi: $(build_dir)/lib/libsbi.a
 	$(call inst_file,$(install_dir)/lib/libsbi.a,$(build_dir)/lib/libsbi.a)
 
 .PHONY: install_libplatsbi
-install_libplatsbi: $(build_dir)/$(platform_subdir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a
-	$(call inst_file,$(install_dir)/$(platform_subdir)/lib/libplatsbi.a,$(build_dir)/$(platform_subdir)/lib/libplatsbi.a)
+install_libplatsbi: $(platform_build_dir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a
+	$(call inst_file,$(install_dir)/platform/$(platform_subdir)/lib/libplatsbi.a,$(platform_build_dir)/lib/libplatsbi.a)
 
 .PHONY: install_firmwares
-install_firmwares: $(build_dir)/$(platform_subdir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a $(firmware-bins-path-y)
-	$(call inst_file_list,$(install_dir),$(build_dir),$(platform_subdir)/firmware,$(firmware-elfs-path-y))
-	$(call inst_file_list,$(install_dir),$(build_dir),$(platform_subdir)/firmware,$(firmware-bins-path-y))
+install_firmwares: $(platform_build_dir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a $(firmware-bins-path-y)
+	$(call inst_file_list,$(install_dir),$(build_dir),platform/$(platform_subdir)/firmware,$(firmware-elfs-path-y))
+	$(call inst_file_list,$(install_dir),$(build_dir),platform/$(platform_subdir)/firmware,$(firmware-bins-path-y))
 
 .PHONY: install_docs
 install_docs: $(build_dir)/docs/latex/refman.pdf
