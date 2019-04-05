@@ -29,6 +29,20 @@ static inline bool __sbi_fifo_is_full(struct sbi_fifo *fifo)
 	return (fifo->avail == fifo->num_entries) ? TRUE : FALSE;
 }
 
+u16 sbi_fifo_avail(struct sbi_fifo *fifo)
+{
+	u16 ret;
+
+	if (!fifo)
+		return 0;
+
+	spin_lock(&fifo->qlock);
+	ret = fifo->avail;
+	spin_unlock(&fifo->qlock);
+
+	return ret;
+}
+
 bool sbi_fifo_is_full(struct sbi_fifo *fifo)
 {
 	bool ret;
@@ -52,6 +66,66 @@ bool sbi_fifo_is_empty(struct sbi_fifo *fifo)
 
 	spin_lock(&fifo->qlock);
 	ret = __sbi_fifo_is_empty(fifo);
+	spin_unlock(&fifo->qlock);
+
+	return ret;
+}
+
+/* Note: must be called with fifo->qlock held */
+static inline void __sbi_fifo_reset(struct sbi_fifo *fifo)
+{
+	fifo->avail = 0;
+	fifo->tail = 0;
+	memset(fifo->queue, 0, fifo->num_entries * fifo->entry_size);
+}
+
+bool sbi_fifo_reset(struct sbi_fifo *fifo)
+{
+	if (!fifo)
+		return FALSE;
+
+	spin_lock(&fifo->qlock);
+	__sbi_fifo_reset(fifo);
+	spin_unlock(&fifo->qlock);
+
+	return TRUE;
+}
+
+/**
+ * Provide a helper function to do inplace update to the fifo.
+ * Note: The callback function is called with lock being held.
+ *
+ * **Do not** invoke any other fifo function from callback. Otherwise, it will
+ * lead to deadlock.
+ */
+int sbi_fifo_inplace_update(struct sbi_fifo *fifo, void *in,
+			      int (*fptr)(void *in, void *data))
+{
+	int i, index = 0;
+	int ret = SBI_FIFO_UNCHANGED;
+	void *entry;
+
+	if (!fifo || !in )
+		return ret;
+	spin_lock(&fifo->qlock);
+	if (__sbi_fifo_is_empty(fifo)) {
+		spin_unlock(&fifo->qlock);
+		return ret;
+	}
+
+	for (i = 0; i < fifo->avail; i ++) {
+		index = fifo->tail + i;
+		if (index >= fifo->num_entries)
+			index = index - fifo->num_entries;
+		entry = (void *)fifo->queue + (u32) index * fifo->entry_size;
+		ret = fptr(in, entry);
+		if (ret == SBI_FIFO_SKIP || ret == SBI_FIFO_UPDATED) {
+			break;
+		} else if (ret == SBI_FIFO_RESET) {
+			__sbi_fifo_reset(fifo);
+			break;
+		}
+	}
 	spin_unlock(&fifo->qlock);
 
 	return ret;
