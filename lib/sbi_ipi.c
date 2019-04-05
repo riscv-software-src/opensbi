@@ -20,12 +20,79 @@
 #include <sbi/sbi_timer.h>
 #include <plat/string.h>
 
+static inline int __sbi_tlb_fifo_range_check(struct sbi_tlb_info *curr,
+					     struct sbi_tlb_info *next)
+{
+	int curr_end;
+	int next_end;
+	int ret = SBI_FIFO_UNCHANGED;
+
+	if (!curr || !next)
+		return ret;
+
+	next_end = next->start + next->size;
+	curr_end = curr->start + curr->size;
+	if (next->start <= curr->start && next_end > curr_end) {
+		curr->start = next->start;
+		curr->size = next->size;
+		ret = SBI_FIFO_UPDATED;
+	} else if (next->start >= curr->start &&
+		   next_end <= curr_end) {
+		ret = SBI_FIFO_SKIP;
+	}
+
+	return ret;
+}
+
+/**
+ * Call back to decide if an inplace fifo update is required or next entry can
+ * can be skipped. Here are the different cases that are being handled.
+ *
+ * Case1:
+ *	if next flush request range lies within one of the existing entry, skip
+ *	the next entry.
+ * Case2:
+ *	if flush request range in current fifo entry lies within next flush
+ *	request, update the current entry.
+ * Case3:
+	if a complete vma flush is requested, then all entries can be deleted
+	and new request can be enqueued. This will not be done for ASID case
+	as that means we have to iterate again in the fifo to figure out which
+	entries belong to that ASID.
+ */
+int sbi_tlb_fifo_update_cb(void *in, void *data)
+{
+	struct sbi_tlb_info *curr;
+	struct sbi_tlb_info *next;
+	int ret = SBI_FIFO_UNCHANGED;
+
+	if (!in && !!data)
+		return ret;
+
+	curr = (struct sbi_tlb_info *) data;
+	next = (struct sbi_tlb_info *) in;
+	if (next->type == SBI_TLB_FLUSH_VMA_ASID &&
+	    curr->type == SBI_TLB_FLUSH_VMA_ASID) {
+		if (next->asid == curr->asid)
+			ret = __sbi_tlb_fifo_range_check(curr, next);
+	} else if (next->type == SBI_TLB_FLUSH_VMA &&
+		   curr->type == SBI_TLB_FLUSH_VMA) {
+		if (next->size == SBI_TLB_FLUSH_ALL)
+			ret = SBI_FIFO_RESET;
+		else
+			ret = __sbi_tlb_fifo_range_check(curr, next);
+	}
+
+	return ret;
+}
+
 static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid,
 			u32 event, void *data)
 {
 	struct sbi_scratch *remote_scratch = NULL;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	struct sbi_fifo *ipi_tlb_fifo;
+	int ret = SBI_FIFO_UNCHANGED;
 
 	if (sbi_platform_hart_disabled(plat, hartid))
 		return -1;
@@ -37,6 +104,11 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid,
 	if (event == SBI_IPI_EVENT_SFENCE_VMA ||
 	    event == SBI_IPI_EVENT_SFENCE_VMA_ASID) {
 		ipi_tlb_fifo = sbi_tlb_fifo_head_ptr(remote_scratch);
+		ret = sbi_fifo_inplace_update(ipi_tlb_fifo, data,
+					   sbi_tlb_fifo_update_cb);
+		if (ret == SBI_FIFO_SKIP || ret == SBI_FIFO_UPDATED) {
+			goto done;
+		}
 		while(sbi_fifo_enqueue(ipi_tlb_fifo, data) < 0) {
 			/**
 			 * For now, Busy loop until there is space in the fifo.
@@ -55,6 +127,7 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid,
 	sbi_platform_ipi_send(plat, hartid);
 	if (event != SBI_IPI_EVENT_SOFT)
 		sbi_platform_ipi_sync(plat, hartid);
+done:
 
 	return 0;
 }
