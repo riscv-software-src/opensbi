@@ -102,7 +102,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_wake_coldboot_harts(scratch, hartid);
 	sbi_hart_mark_available(hartid);
 	sbi_hart_switch_mode(hartid, scratch->next_arg1, scratch->next_addr,
-			     scratch->next_mode);
+			     scratch->next_mode, FALSE);
 }
 
 static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
@@ -147,7 +147,8 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 	else
 		sbi_hart_switch_mode(hartid, scratch->next_arg1,
-				     scratch->next_addr, scratch->next_mode);
+				     scratch->next_addr,
+				     scratch->next_mode, FALSE);
 }
 
 static atomic_t coldboot_lottery = ATOMIC_INITIALIZER(0);

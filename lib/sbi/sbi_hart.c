@@ -241,9 +241,14 @@ void __attribute__((noreturn)) sbi_hart_hang(void)
 
 void __attribute__((noreturn))
 sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
-		     unsigned long next_addr, unsigned long next_mode)
+		     unsigned long next_addr, unsigned long next_mode,
+		     bool next_virt)
 {
+#if __riscv_xlen == 32
+	unsigned long val, valH;
+#else
 	unsigned long val;
+#endif
 
 	switch (next_mode) {
 	case PRV_M:
@@ -263,7 +268,25 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 	val = csr_read(CSR_MSTATUS);
 	val = INSERT_FIELD(val, MSTATUS_MPP, next_mode);
 	val = INSERT_FIELD(val, MSTATUS_MPIE, 0);
-
+#if __riscv_xlen == 32
+	if (misa_extension('H')) {
+		valH = csr_read(CSR_MSTATUSH);
+		valH = INSERT_FIELD(valH, MSTATUSH_MTL, 0);
+		if (next_virt)
+			valH = INSERT_FIELD(valH, MSTATUSH_MPV, 1);
+		else
+			valH = INSERT_FIELD(valH, MSTATUSH_MPV, 0);
+		csr_write(CSR_MSTATUSH, valH);
+	}
+#else
+	if (misa_extension('H')) {
+		val = INSERT_FIELD(val, MSTATUS_MTL, 0);
+		if (next_virt)
+			val = INSERT_FIELD(val, MSTATUS_MPV, 1);
+		else
+			val = INSERT_FIELD(val, MSTATUS_MPV, 0);
+	}
+#endif
 	csr_write(CSR_MSTATUS, val);
 	csr_write(CSR_MEPC, next_addr);
 
