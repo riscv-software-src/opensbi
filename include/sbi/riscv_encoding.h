@@ -544,6 +544,9 @@
 #define INSN_MATCH_C_FSWSP		0xe002
 #define INSN_MASK_C_FSWSP		0xe003
 
+#define INSN_MASK_WFI			0xffffff00
+#define INSN_MATCH_WFI			0x10500000
+
 #define INSN_LEN(insn)			((((insn) & 0x3) < 0x3) ? 2 : 4)
 
 #if __riscv_xlen == 64

@@ -36,9 +36,23 @@ static int system_opcode_insn(ulong insn, u32 hartid, ulong mcause,
 	int csr_num   = (u32)insn >> 20;
 	ulong csr_val, new_csr_val;
 
-	if (sbi_emulate_csr_read(csr_num, hartid, regs->mstatus, scratch,
-				 &csr_val))
-		return truly_illegal_insn(insn, hartid, mcause, regs, scratch);
+	/*
+	 * WFI always traps as illegal instruction when executed from
+	 * VS/VU mode so we just forward it to HS-mode.
+	 */
+#if __riscv_xlen == 32
+	if ((regs->mstatusH & MSTATUSH_MPV) &&
+#else
+	if ((regs->mstatus & MSTATUS_MPV) &&
+#endif
+	    (insn & INSN_MASK_WFI) == INSN_MATCH_WFI)
+		return sbi_trap_redirect(regs, scratch,
+					 regs->mepc, mcause, insn);
+
+	if (sbi_emulate_csr_read(csr_num, hartid, regs->mstatus,
+				 scratch, &csr_val))
+		return truly_illegal_insn(insn, hartid, mcause,
+					  regs, scratch);
 
 	do_write = rs1_num;
 	switch (GET_RM(insn)) {
