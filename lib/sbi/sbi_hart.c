@@ -87,6 +87,14 @@ static int delegate_traps(struct sbi_scratch *scratch, u32 hartid)
 			      (1U << CAUSE_LOAD_PAGE_FAULT) |
 			      (1U << CAUSE_STORE_PAGE_FAULT);
 
+	/*
+	 * If hypervisor extension available then we only handle
+	 * hypervisor calls (i.e. ecalls from HS-mode) and we let
+	 * HS-mode handle supervisor calls (i.e. ecalls from VS-mode)
+	 */
+	if (misa_extension('H'))
+		exceptions |= (1U << CAUSE_SUPERVISOR_ECALL);
+
 	csr_write(CSR_MIDELEG, interrupts);
 	csr_write(CSR_MEDELEG, exceptions);
 
