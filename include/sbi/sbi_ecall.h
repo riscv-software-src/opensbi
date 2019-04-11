@@ -19,8 +19,7 @@ u16 sbi_ecall_version_major(void);
 
 u16 sbi_ecall_version_minor(void);
 
-int sbi_ecall_handler(u32 hartid, ulong mcause,
-		      struct sbi_trap_regs *regs,
+int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 		      struct sbi_scratch *scratch);
 
 #endif

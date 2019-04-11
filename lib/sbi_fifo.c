@@ -12,12 +12,12 @@
 #include <sbi/sbi_fifo.h>
 #include <plat/string.h>
 
-void sbi_fifo_init(struct sbi_fifo *fifo, void *queue_mem,
-		   u16 entries, u16 entry_size)
+void sbi_fifo_init(struct sbi_fifo *fifo, void *queue_mem, u16 entries,
+		   u16 entry_size)
 {
-	fifo->queue = queue_mem;
+	fifo->queue	  = queue_mem;
 	fifo->num_entries = entries;
-	fifo->entry_size = entry_size;
+	fifo->entry_size  = entry_size;
 	SPIN_LOCK_INIT(&fifo->qlock);
 	fifo->avail = fifo->tail = 0;
 	memset(fifo->queue, 0, entries * entry_size);
@@ -75,7 +75,7 @@ bool sbi_fifo_is_empty(struct sbi_fifo *fifo)
 static inline void __sbi_fifo_reset(struct sbi_fifo *fifo)
 {
 	fifo->avail = 0;
-	fifo->tail = 0;
+	fifo->tail  = 0;
 	memset(fifo->queue, 0, fifo->num_entries * fifo->entry_size);
 }
 
@@ -99,13 +99,13 @@ bool sbi_fifo_reset(struct sbi_fifo *fifo)
  * lead to deadlock.
  */
 int sbi_fifo_inplace_update(struct sbi_fifo *fifo, void *in,
-			      int (*fptr)(void *in, void *data))
+			    int (*fptr)(void *in, void *data))
 {
 	int i, index = 0;
 	int ret = SBI_FIFO_UNCHANGED;
 	void *entry;
 
-	if (!fifo || !in )
+	if (!fifo || !in)
 		return ret;
 	spin_lock(&fifo->qlock);
 	if (__sbi_fifo_is_empty(fifo)) {
@@ -113,12 +113,12 @@ int sbi_fifo_inplace_update(struct sbi_fifo *fifo, void *in,
 		return ret;
 	}
 
-	for (i = 0; i < fifo->avail; i ++) {
+	for (i = 0; i < fifo->avail; i++) {
 		index = fifo->tail + i;
 		if (index >= fifo->num_entries)
 			index = index - fifo->num_entries;
-		entry = (void *)fifo->queue + (u32) index * fifo->entry_size;
-		ret = fptr(in, entry);
+		entry = (void *)fifo->queue + (u32)index * fifo->entry_size;
+		ret   = fptr(in, entry);
 		if (ret == SBI_FIFO_SKIP || ret == SBI_FIFO_UPDATED) {
 			break;
 		} else if (ret == SBI_FIFO_RESET) {

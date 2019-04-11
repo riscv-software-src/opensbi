@@ -14,11 +14,12 @@ typedef struct {
 	volatile long counter;
 } atomic_t;
 
-#define ATOMIC_INIT(_lptr, val)		\
-	(_lptr)->counter = (val)
+#define ATOMIC_INIT(_lptr, val) (_lptr)->counter = (val)
 
-#define ATOMIC_INITIALIZER(val)		\
-	{ .counter = (val), }
+#define ATOMIC_INITIALIZER(val)   \
+	{                         \
+		.counter = (val), \
+	}
 
 long atomic_read(atomic_t *atom);
 

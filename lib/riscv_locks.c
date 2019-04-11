@@ -19,11 +19,10 @@ int spin_trylock(spinlock_t *lock)
 {
 	int tmp = 1, busy;
 
-	__asm__ __volatile__ (
-		"	amoswap.w %0, %2, %1\n"
-		RISCV_ACQUIRE_BARRIER
-		: "=r" (busy), "+A" (lock->lock)
-		: "r" (tmp)
+	__asm__ __volatile__(
+		"	amoswap.w %0, %2, %1\n" RISCV_ACQUIRE_BARRIER
+		: "=r"(busy), "+A"(lock->lock)
+		: "r"(tmp)
 		: "memory");
 
 	return !busy;

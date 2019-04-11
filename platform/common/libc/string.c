@@ -17,7 +17,8 @@
 int strcmp(const char *a, const char *b)
 {
 	/* search first diff or end of string */
-	for (; *a == *b && *a != '\0'; a++, b++);
+	for (; *a == *b && *a != '\0'; a++, b++)
+		;
 
 	return *a - *b;
 }
@@ -51,7 +52,7 @@ char *strcpy(char *dest, const char *src)
 {
 	char *ret = dest;
 
-	while(*src != '\0') {
+	while (*src != '\0') {
 		*dest++ = *src++;
 	}
 
@@ -62,7 +63,7 @@ char *strncpy(char *dest, const char *src, size_t count)
 {
 	char *ret = dest;
 
-	while(count-- && *src != '\0') {
+	while (count-- && *src != '\0') {
 		*dest++ = *src++;
 	}
 
@@ -71,7 +72,7 @@ char *strncpy(char *dest, const char *src, size_t count)
 
 char *strchr(const char *s, int c)
 {
-	while(*s != '\0' && *s != (char)c)
+	while (*s != '\0' && *s != (char)c)
 		s++;
 
 	if (*s == '\0')
@@ -96,7 +97,7 @@ void *memset(void *s, int c, size_t count)
 {
 	char *temp = s;
 
-	while(count > 0 ){
+	while (count > 0) {
 		count--;
 		*temp++ = c;
 	}
@@ -106,7 +107,7 @@ void *memset(void *s, int c, size_t count)
 
 void *memcpy(void *dest, const void *src, size_t count)
 {
-	char *temp1 = dest;
+	char *temp1	  = dest;
 	const char *temp2 = src;
 
 	while (count > 0) {
@@ -119,14 +120,14 @@ void *memcpy(void *dest, const void *src, size_t count)
 
 void *memmove(void *dest, const void *src, size_t count)
 {
-	char *temp1 = (char *)dest;
+	char *temp1	  = (char *)dest;
 	const char *temp2 = (char *)src;
 
 	if (src == dest)
 		return dest;
 
 	if (dest < src) {
-		while(count > 0) {
+		while (count > 0) {
 			*temp1++ = *temp2++;
 			count--;
 		}
@@ -134,7 +135,7 @@ void *memmove(void *dest, const void *src, size_t count)
 		temp1 = dest + count - 1;
 		temp2 = src + count - 1;
 
-		while(count > 0) {
+		while (count > 0) {
 			*temp1-- = *temp2--;
 			count--;
 		}
@@ -165,7 +166,7 @@ void *memchr(const void *s, int c, size_t count)
 
 	while (count > 0) {
 		if ((unsigned char)c == *temp++) {
-			return (void *)(temp-1);
+			return (void *)(temp - 1);
 		}
 		count--;
 	}

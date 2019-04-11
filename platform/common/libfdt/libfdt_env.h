@@ -52,8 +52,8 @@
  *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sbi/sbi_types.h>
 #include <plat/string.h>
+#include <sbi/sbi_types.h>
 
 #define INT_MAX		((int)(~0U >> 1))
 #define UINT_MAX	((unsigned int)~0U)

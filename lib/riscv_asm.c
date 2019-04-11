@@ -163,28 +163,26 @@ static unsigned long ctz(unsigned long x)
 	return ret;
 }
 
-int pmp_set(unsigned int n, unsigned long prot,
-	    unsigned long addr, unsigned long log2len)
+int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
+	    unsigned long log2len)
 {
 	int pmpcfg_csr, pmpcfg_shift, pmpaddr_csr;
 	unsigned long cfgmask, pmpcfg;
 	unsigned long addrmask, pmpaddr;
 
 	/* check parameters */
-	if (n >= PMP_COUNT ||
-	    log2len > __riscv_xlen ||
-	    log2len < PMP_SHIFT)
+	if (n >= PMP_COUNT || log2len > __riscv_xlen || log2len < PMP_SHIFT)
 		return SBI_EINVAL;
 
-	/* calculate PMP register and offset */
+		/* calculate PMP register and offset */
 #if __riscv_xlen == 32
-	pmpcfg_csr = CSR_PMPCFG0 + (n >> 2);
+	pmpcfg_csr   = CSR_PMPCFG0 + (n >> 2);
 	pmpcfg_shift = (n & 3) << 3;
 #elif __riscv_xlen == 64
-	pmpcfg_csr = (CSR_PMPCFG0 + (n >> 2)) & ~1;
+	pmpcfg_csr   = (CSR_PMPCFG0 + (n >> 2)) & ~1;
 	pmpcfg_shift = (n & 7) << 3;
 #else
-	pmpcfg_csr = -1;
+	pmpcfg_csr   = -1;
 	pmpcfg_shift = -1;
 #endif
 	pmpaddr_csr = CSR_PMPADDR0 + n;
@@ -194,7 +192,7 @@ int pmp_set(unsigned int n, unsigned long prot,
 	/* encode PMP config */
 	prot |= (log2len == PMP_SHIFT) ? PMP_A_NA4 : PMP_A_NAPOT;
 	cfgmask = ~(0xff << pmpcfg_shift);
-	pmpcfg = (csr_read_num(pmpcfg_csr) & cfgmask);
+	pmpcfg	= (csr_read_num(pmpcfg_csr) & cfgmask);
 	pmpcfg |= ((prot << pmpcfg_shift) & ~cfgmask);
 
 	/* encode PMP address */
@@ -205,7 +203,7 @@ int pmp_set(unsigned int n, unsigned long prot,
 			pmpaddr = -1UL;
 		} else {
 			addrmask = (1UL << (log2len - PMP_SHIFT)) - 1;
-			pmpaddr = ((addr >> PMP_SHIFT) & ~addrmask);
+			pmpaddr	 = ((addr >> PMP_SHIFT) & ~addrmask);
 			pmpaddr |= (addrmask >> 1);
 		}
 	}
@@ -217,28 +215,27 @@ int pmp_set(unsigned int n, unsigned long prot,
 	return 0;
 }
 
-int pmp_get(unsigned int n, unsigned long *prot_out,
-	    unsigned long *addr_out, unsigned long *log2len_out)
+int pmp_get(unsigned int n, unsigned long *prot_out, unsigned long *addr_out,
+	    unsigned long *log2len_out)
 {
 	int pmpcfg_csr, pmpcfg_shift, pmpaddr_csr;
 	unsigned long cfgmask, pmpcfg, prot;
 	unsigned long t1, addr, log2len;
 
 	/* check parameters */
-	if (n >= PMP_COUNT || !prot_out ||
-	    !addr_out || !log2len_out)
+	if (n >= PMP_COUNT || !prot_out || !addr_out || !log2len_out)
 		return SBI_EINVAL;
 	*prot_out = *addr_out = *log2len_out = 0;
 
 	/* calculate PMP register and offset */
 #if __riscv_xlen == 32
-	pmpcfg_csr = CSR_PMPCFG0 + (n >> 2);
+	pmpcfg_csr   = CSR_PMPCFG0 + (n >> 2);
 	pmpcfg_shift = (n & 3) << 3;
 #elif __riscv_xlen == 64
-	pmpcfg_csr = (CSR_PMPCFG0 + (n >> 2)) & ~1;
+	pmpcfg_csr   = (CSR_PMPCFG0 + (n >> 2)) & ~1;
 	pmpcfg_shift = (n & 7) << 3;
 #else
-	pmpcfg_csr = -1;
+	pmpcfg_csr   = -1;
 	pmpcfg_shift = -1;
 #endif
 	pmpaddr_csr = CSR_PMPADDR0 + n;
@@ -247,28 +244,28 @@ int pmp_get(unsigned int n, unsigned long *prot_out,
 
 	/* decode PMP config */
 	cfgmask = (0xff << pmpcfg_shift);
-	pmpcfg = csr_read_num(pmpcfg_csr) & cfgmask;
-	prot = pmpcfg >> pmpcfg_shift;
+	pmpcfg	= csr_read_num(pmpcfg_csr) & cfgmask;
+	prot	= pmpcfg >> pmpcfg_shift;
 
 	/* decode PMP address */
 	if ((prot & PMP_A) == PMP_A_NAPOT) {
 		addr = csr_read_num(pmpaddr_csr);
 		if (addr == -1UL) {
-			addr = 0;
+			addr	= 0;
 			log2len = __riscv_xlen;
 		} else {
-			t1 = ctz(~addr);
-			addr = (addr & ~((1UL << t1) - 1)) << PMP_SHIFT;
+			t1	= ctz(~addr);
+			addr	= (addr & ~((1UL << t1) - 1)) << PMP_SHIFT;
 			log2len = (t1 + PMP_SHIFT + 1);
 		}
 	} else {
-		addr = csr_read_num(pmpaddr_csr) << PMP_SHIFT;
+		addr	= csr_read_num(pmpaddr_csr) << PMP_SHIFT;
 		log2len = PMP_SHIFT;
 	}
 
 	/* return details */
-	*prot_out = prot;
-	*addr_out = addr;
+	*prot_out    = prot;
+	*addr_out    = addr;
 	*log2len_out = log2len;
 
 	return 0;

@@ -15,10 +15,8 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_timer.h>
 
-int sbi_emulate_csr_read(int csr_num,
-			 u32 hartid, ulong mstatus,
-			 struct sbi_scratch *scratch,
-			 ulong *csr_val)
+int sbi_emulate_csr_read(int csr_num, u32 hartid, ulong mstatus,
+			 struct sbi_scratch *scratch, ulong *csr_val)
 {
 	ulong cen = -1UL;
 
@@ -85,18 +83,16 @@ int sbi_emulate_csr_read(int csr_num,
 		*csr_val = csr_read(CSR_MHPMEVENT4);
 		break;
 	default:
-		sbi_printf("%s: hartid%d: invalid csr_num=0x%x\n",
-			   __func__, hartid, csr_num);
+		sbi_printf("%s: hartid%d: invalid csr_num=0x%x\n", __func__,
+			   hartid, csr_num);
 		return SBI_ENOTSUPP;
 	};
 
 	return 0;
 }
 
-int sbi_emulate_csr_write(int csr_num,
-			  u32 hartid, ulong mstatus,
-			  struct sbi_scratch *scratch,
-			  ulong csr_val)
+int sbi_emulate_csr_write(int csr_num, u32 hartid, ulong mstatus,
+			  struct sbi_scratch *scratch, ulong csr_val)
 {
 	switch (csr_num) {
 	case CSR_CYCLE:
@@ -132,8 +128,8 @@ int sbi_emulate_csr_write(int csr_num,
 		csr_write(CSR_MHPMEVENT4, csr_val);
 		break;
 	default:
-		sbi_printf("%s: hartid%d: invalid csr_num=0x%x\n",
-			   __func__, hartid, csr_num);
+		sbi_printf("%s: hartid%d: invalid csr_num=0x%x\n", __func__,
+			   hartid, csr_num);
 		return SBI_ENOTSUPP;
 	};
 

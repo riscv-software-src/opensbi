@@ -20,10 +20,9 @@ void sbi_hart_pmp_dump(struct sbi_scratch *scratch);
 
 void __attribute__((noreturn)) sbi_hart_hang(void);
 
-void __attribute__((noreturn)) sbi_hart_switch_mode(unsigned long arg0,
-						    unsigned long arg1,
-						    unsigned long next_addr,
-						    unsigned long next_mode);
+void __attribute__((noreturn))
+sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
+		     unsigned long next_addr, unsigned long next_mode);
 
 void sbi_hart_mark_available(u32 hartid);
 

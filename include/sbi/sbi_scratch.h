@@ -79,28 +79,28 @@ struct sbi_scratch {
 /** Possible options for OpenSBI library */
 enum sbi_scratch_options {
 	/** Disable prints during boot */
-	SBI_SCRATCH_NO_BOOT_PRINTS		= (1 << 0),
+	SBI_SCRATCH_NO_BOOT_PRINTS = (1 << 0),
 };
 
 /** Get pointer to sbi_scratch for current HART */
-#define sbi_scratch_thishart_ptr()	\
-((struct sbi_scratch *)csr_read(CSR_MSCRATCH))
+#define sbi_scratch_thishart_ptr() \
+	((struct sbi_scratch *)csr_read(CSR_MSCRATCH))
 
 /** Get Arg1 of next booting stage for current HART */
-#define sbi_scratch_thishart_arg1_ptr()	\
-((void *)(sbi_scratch_thishart_ptr()->next_arg1))
+#define sbi_scratch_thishart_arg1_ptr() \
+	((void *)(sbi_scratch_thishart_ptr()->next_arg1))
 
 /** Get pointer to sbi_ipi_data from sbi_scratch */
-#define sbi_ipi_data_ptr(scratch)      \
-((struct sbi_ipi_data *)(void*)scratch + SBI_IPI_DATA_IPI_TYPE_OFFSET)
+#define sbi_ipi_data_ptr(scratch) \
+	((struct sbi_ipi_data *)(void *)scratch + SBI_IPI_DATA_IPI_TYPE_OFFSET)
 
 /** Get pointer to tlb flush info fifo header from sbi_scratch */
-#define sbi_tlb_fifo_head_ptr(scratch)      \
-((struct sbi_fifo *)(void*)scratch + SBI_SCRATCH_TLB_QUEUE_HEAD_OFFSET)
+#define sbi_tlb_fifo_head_ptr(scratch) \
+	((struct sbi_fifo *)(void *)scratch + SBI_SCRATCH_TLB_QUEUE_HEAD_OFFSET)
 
 /** Get pointer to tlb flush info fifo queue address from sbi_scratch */
-#define sbi_tlb_fifo_mem_ptr(scratch)      \
-(void *)((void*)scratch + SBI_SCRATCH_TLB_QUEUE_MEM_OFFSET)
+#define sbi_tlb_fifo_mem_ptr(scratch) \
+	(void *)((void *)scratch + SBI_SCRATCH_TLB_QUEUE_MEM_OFFSET)
 
 #endif
 

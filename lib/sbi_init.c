@@ -18,14 +18,14 @@
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_version.h>
 
-#define BANNER \
-	"   ____                    _____ ____ _____\n" \
-	"  / __ \\                  / ____|  _ \\_   _|\n" \
-	" | |  | |_ __   ___ _ __ | (___ | |_) || |\n" \
+#define BANNER                                              \
+	"   ____                    _____ ____ _____\n"     \
+	"  / __ \\                  / ____|  _ \\_   _|\n"  \
+	" | |  | |_ __   ___ _ __ | (___ | |_) || |\n"      \
 	" | |  | | '_ \\ / _ \\ '_ \\ \\___ \\|  _ < | |\n" \
-	" | |__| | |_) |  __/ | | |____) | |_) || |_\n" \
-	"  \\____/| .__/ \\___|_| |_|_____/|____/_____|\n" \
-	"        | |\n" \
+	" | |__| | |_) |  __/ | | |____) | |_) || |_\n"     \
+	"  \\____/| .__/ \\___|_| |_|_____/|____/_____|\n"  \
+	"        | |\n"                                     \
 	"        |_|\n\n"
 
 static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
@@ -34,9 +34,8 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	misa_string(str, sizeof(str));
-	sbi_printf("\nOpenSBI v%d.%d (%s %s)\n",
-		   OPENSBI_VERSION_MAJOR, OPENSBI_VERSION_MINOR,
-		   __DATE__, __TIME__);
+	sbi_printf("\nOpenSBI v%d.%d (%s %s)\n", OPENSBI_VERSION_MAJOR,
+		   OPENSBI_VERSION_MINOR, __DATE__, __TIME__);
 
 	sbi_printf(BANNER);
 
@@ -97,8 +96,8 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (!sbi_platform_has_hart_hotplug(plat))
 		sbi_hart_wake_coldboot_harts(scratch, hartid);
 	sbi_hart_mark_available(hartid);
-	sbi_hart_switch_mode(hartid, scratch->next_arg1,
-			     scratch->next_addr, scratch->next_mode);
+	sbi_hart_switch_mode(hartid, scratch->next_arg1, scratch->next_addr,
+			     scratch->next_mode);
 }
 
 static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
@@ -162,13 +161,13 @@ static atomic_t coldboot_lottery = ATOMIC_INITIALIZER(0);
  */
 void __noreturn sbi_init(struct sbi_scratch *scratch)
 {
-	bool coldboot = FALSE;
-	u32 hartid = sbi_current_hartid();
+	bool coldboot			= FALSE;
+	u32 hartid			= sbi_current_hartid();
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if (sbi_platform_hart_disabled(plat, hartid))
 		sbi_hart_hang();
-		
+
 	if (atomic_add_return(&coldboot_lottery, 1) == 1)
 		coldboot = TRUE;
 

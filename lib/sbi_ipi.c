@@ -34,10 +34,9 @@ static inline int __sbi_tlb_fifo_range_check(struct sbi_tlb_info *curr,
 	curr_end = curr->start + curr->size;
 	if (next->start <= curr->start && next_end > curr_end) {
 		curr->start = next->start;
-		curr->size = next->size;
-		ret = SBI_FIFO_UPDATED;
-	} else if (next->start >= curr->start &&
-		   next_end <= curr_end) {
+		curr->size  = next->size;
+		ret	    = SBI_FIFO_UPDATED;
+	} else if (next->start >= curr->start && next_end <= curr_end) {
 		ret = SBI_FIFO_SKIP;
 	}
 
@@ -69,8 +68,8 @@ int sbi_tlb_fifo_update_cb(void *in, void *data)
 	if (!in && !!data)
 		return ret;
 
-	curr = (struct sbi_tlb_info *) data;
-	next = (struct sbi_tlb_info *) in;
+	curr = (struct sbi_tlb_info *)data;
+	next = (struct sbi_tlb_info *)in;
 	if (next->type == SBI_TLB_FLUSH_VMA_ASID &&
 	    curr->type == SBI_TLB_FLUSH_VMA_ASID) {
 		if (next->asid == curr->asid)
@@ -86,11 +85,11 @@ int sbi_tlb_fifo_update_cb(void *in, void *data)
 	return ret;
 }
 
-static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid,
-			u32 event, void *data)
+static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid, u32 event,
+			void *data)
 {
 	struct sbi_scratch *remote_scratch = NULL;
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	const struct sbi_platform *plat	   = sbi_platform_ptr(scratch);
 	struct sbi_fifo *ipi_tlb_fifo;
 	int ret = SBI_FIFO_UNCHANGED;
 
@@ -104,12 +103,12 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid,
 	if (event == SBI_IPI_EVENT_SFENCE_VMA ||
 	    event == SBI_IPI_EVENT_SFENCE_VMA_ASID) {
 		ipi_tlb_fifo = sbi_tlb_fifo_head_ptr(remote_scratch);
-		ret = sbi_fifo_inplace_update(ipi_tlb_fifo, data,
-					   sbi_tlb_fifo_update_cb);
+		ret	     = sbi_fifo_inplace_update(ipi_tlb_fifo, data,
+					       sbi_tlb_fifo_update_cb);
 		if (ret == SBI_FIFO_SKIP || ret == SBI_FIFO_UPDATED) {
 			goto done;
 		}
-		while(sbi_fifo_enqueue(ipi_tlb_fifo, data) < 0) {
+		while (sbi_fifo_enqueue(ipi_tlb_fifo, data) < 0) {
 			/**
 			 * For now, Busy loop until there is space in the fifo.
 			 * There may be case where target hart is also
@@ -132,8 +131,8 @@ done:
 	return 0;
 }
 
-int sbi_ipi_send_many(struct sbi_scratch *scratch,
-		      ulong *pmask, u32 event, void *data)
+int sbi_ipi_send_many(struct sbi_scratch *scratch, ulong *pmask, u32 event,
+		      void *data)
 {
 	ulong i, m;
 	ulong mask = sbi_hart_available_mask();
@@ -153,7 +152,6 @@ int sbi_ipi_send_many(struct sbi_scratch *scratch,
 	if (mask & (1UL << hartid))
 		sbi_ipi_send(scratch, hartid, event, data);
 
-
 	return 0;
 }
 
@@ -170,7 +168,7 @@ static void sbi_ipi_tlb_flush_all()
 static void sbi_ipi_sfence_vma(struct sbi_tlb_info *tinfo)
 {
 	unsigned long start = tinfo->start;
-	unsigned long size = tinfo->size;
+	unsigned long size  = tinfo->size;
 	unsigned long i;
 
 	if ((start == 0 && size == 0) || (size == SBI_TLB_FLUSH_ALL)) {
@@ -179,17 +177,18 @@ static void sbi_ipi_sfence_vma(struct sbi_tlb_info *tinfo)
 	}
 
 	for (i = 0; i < size; i += PAGE_SIZE) {
-		__asm__ __volatile__ ("sfence.vma %0"
-				      : : "r" (start + i)
-				      : "memory");
+		__asm__ __volatile__("sfence.vma %0"
+				     :
+				     : "r"(start + i)
+				     : "memory");
 	}
 }
 
 static void sbi_ipi_sfence_vma_asid(struct sbi_tlb_info *tinfo)
 {
 	unsigned long start = tinfo->start;
-	unsigned long size = tinfo->size;
-	unsigned long asid = tinfo->asid;
+	unsigned long size  = tinfo->size;
+	unsigned long asid  = tinfo->asid;
 	unsigned long i;
 
 	if (start == 0 && size == 0) {
@@ -199,16 +198,18 @@ static void sbi_ipi_sfence_vma_asid(struct sbi_tlb_info *tinfo)
 
 	/* Flush entire MM context for a given ASID */
 	if (size == SBI_TLB_FLUSH_ALL) {
-		__asm__ __volatile__ ("sfence.vma x0, %0"
-				       : : "r" (asid)
-				       : "memory");
+		__asm__ __volatile__("sfence.vma x0, %0"
+				     :
+				     : "r"(asid)
+				     : "memory");
 		return;
 	}
 
 	for (i = 0; i < size; i += PAGE_SIZE) {
-		__asm__ __volatile__ ("sfence.vma %0, %1"
-				      : : "r" (start + i), "r" (asid)
-				      : "memory");
+		__asm__ __volatile__("sfence.vma %0, %1"
+				     :
+				     : "r"(start + i), "r"(asid)
+				     : "memory");
 	}
 }
 
@@ -218,7 +219,7 @@ void sbi_ipi_process(struct sbi_scratch *scratch)
 	struct sbi_tlb_info tinfo;
 	unsigned int ipi_event;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
-	struct sbi_fifo *ipi_tlb_fifo = sbi_tlb_fifo_head_ptr(scratch);
+	struct sbi_fifo *ipi_tlb_fifo	= sbi_tlb_fifo_head_ptr(scratch);
 
 	u32 hartid = sbi_current_hartid();
 	sbi_platform_ipi_clear(plat, hartid);
@@ -236,7 +237,7 @@ void sbi_ipi_process(struct sbi_scratch *scratch)
 			break;
 		case SBI_IPI_EVENT_SFENCE_VMA:
 		case SBI_IPI_EVENT_SFENCE_VMA_ASID:
-			while(!sbi_fifo_dequeue(ipi_tlb_fifo, &tinfo)) {
+			while (!sbi_fifo_dequeue(ipi_tlb_fifo, &tinfo)) {
 				if (tinfo.type == SBI_TLB_FLUSH_VMA)
 					sbi_ipi_sfence_vma(&tinfo);
 				else if (tinfo.type == SBI_TLB_FLUSH_VMA_ASID)
@@ -248,8 +249,9 @@ void sbi_ipi_process(struct sbi_scratch *scratch)
 			sbi_hart_hang();
 			break;
 		};
-		ipi_type = atomic_raw_clear_bit(ipi_event, &sbi_ipi_data_ptr(scratch)->ipi_type);
-	} while(ipi_type > 0);
+		ipi_type = atomic_raw_clear_bit(
+			ipi_event, &sbi_ipi_data_ptr(scratch)->ipi_type);
+	} while (ipi_type > 0);
 }
 
 int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
@@ -263,6 +265,5 @@ int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
 	/* Enable software interrupts */
 	csr_set(CSR_MIE, MIP_MSIP);
 
-	return sbi_platform_ipi_init(sbi_platform_ptr(scratch),
-				     cold_boot);
+	return sbi_platform_ipi_init(sbi_platform_ptr(scratch), cold_boot);
 }

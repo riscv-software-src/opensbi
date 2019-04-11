@@ -588,7 +588,7 @@ typedef struct _sysctl_clk_th6 {
 typedef struct _sysctl_misc {
 	u32 debug_sel : 6;
 	u32 reserved0 : 4;
-	u32 spi_dvp_data_enable: 1;
+	u32 spi_dvp_data_enable : 1;
 	u32 reserved1 : 21;
 } __attribute__((packed, aligned(4))) sysctl_misc_t;
 
