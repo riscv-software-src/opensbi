@@ -23,13 +23,8 @@ This will let the board boot only hart1 instead of default 1-4.
 Building SiFive Fu540 Platform
 -----------------------------
 
-As of this writing, the required Linux kernel and U-Boot patches are not
-accepted in mainline. Please follow the below instructions to cherry-pick
-them into your repository.
-
-[U-Boot patches](../firmware/payload_uboot.md)
-
-[Linux kernel patches](../firmware/payload_linux.md)
+In order to boot SMP Linux in U-Boot, Linux kernel higher than v.5.1-rc1 and
+latest U-Boot(at least HEAD should ffb269ab30db or after) should be used.
 
 **Linux Kernel Payload**
 
@@ -54,6 +49,13 @@ Without SMP support enabled in U-Boot:
 make PLATFORM=sifive/fu540 FW_PAYLOAD_PATH=<u-boot_build_dir>/u-boot.bin FU540_ENABLED_HART_MASK=0x02
 ```
 
+Generate the uImage from Linux Image.
+```
+mkimage -A riscv -O linux -T kernel -C none -a 0x80200000 -e 0x80200000 -n Linux -d \
+		<linux_build_directory>/arch/riscv/boot/Image \
+		<linux_build_directory>/arch/riscv/boot/uImage
+```
+
 **U-Boot & Linux Kernel as a single payload**
 
 A single monolithic image containing both U-Boot & Linux can also be used if network boot setup is
@@ -62,7 +64,7 @@ not available.
 1. Generate the uImage from Linux Image.
 ```
 mkimage -A riscv -O linux -T kernel -C none -a 0x80200000 -e 0x80200000 -n Linux -d \
-		<linux_build_directory>arch/riscv/boot/Image \
+		<linux_build_directory>/arch/riscv/boot/Image \
 		<linux_build_directory>/arch/riscv/boot/uImage
 ```
 
@@ -148,7 +150,7 @@ setenv gatewayip <ipaddress of the network gateway>
 5. Load the Linux kernel image from the tftp server.
 
 ```
-tftpboot ${kernel_addr_r} /sifive/fu540/uImage
+tftpboot ${kernel_addr_r} <uImage path in tftpboot directory>
 ```
 
 6. Load the ramdisk image from the tftp server. This is only required if ramdisk
@@ -156,7 +158,7 @@ tftpboot ${kernel_addr_r} /sifive/fu540/uImage
    of the kernel or loaded from an external storage by kernel.
 
 ```
-tftpboot ${ramdisk_addr_r} /sifive/fu540/uRamdisk
+tftpboot ${ramdisk_addr_r} <ramdisk path in tftpboot directory>
 ```
 7. Set the boot command-line arguments.
 
