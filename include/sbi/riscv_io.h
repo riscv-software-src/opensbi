@@ -70,6 +70,9 @@ static inline u64 __raw_readq(const volatile void *addr)
 #endif
 
 /* FIXME: These are now the same as asm-generic */
+
+/* clang-format off */
+
 #define __io_rbr()		do {} while (0)
 #define __io_rar()		do {} while (0)
 #define __io_rbw()		do {} while (0)
@@ -105,5 +108,7 @@ static inline u64 __raw_readq(const volatile void *addr)
 #define readq(c)	({ u64 __v; __io_br(); __v = __raw_readq(c); __io_ar(); __v; })
 #define writeq(v,c)	({ __io_bw(); __raw_writeq((v),(c)); __io_aw(); })
 #endif
+
+/* clang-format on */
 
 #endif

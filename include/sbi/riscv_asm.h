@@ -12,6 +12,8 @@
 
 #include <sbi/riscv_encoding.h>
 
+/* clang-format off */
+
 #ifdef __ASSEMBLY__
 #define __ASM_STR(x)	x
 #else
@@ -77,6 +79,8 @@
 #else
 #error "Unexpected __SIZEOF_SHORT__"
 #endif
+
+/* clang-format on */
 
 #ifndef __ASSEMBLY__
 

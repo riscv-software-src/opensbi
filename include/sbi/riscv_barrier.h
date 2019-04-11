@@ -10,6 +10,8 @@
 #ifndef __RISCV_BARRIER_H__
 #define __RISCV_BARRIER_H__
 
+/* clang-format off */
+
 #define RISCV_ACQUIRE_BARRIER		"\tfence r , rw\n"
 #define RISCV_RELEASE_BARRIER		"\tfence rw,  w\n"
 
@@ -36,6 +38,8 @@
 
 /* CPU relax for busy loop */
 #define cpu_relax()		asm volatile ("" : : : "memory")
+
+/* clang-format on */
 
 #define __smp_store_release(p, v)				\
 do {								\

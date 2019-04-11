@@ -22,6 +22,8 @@
 
 #include <sbi/riscv_asm.h>
 
+/* clang-format off */
+
 #define K210_HART_COUNT		2
 #define K210_HART_STACK_SIZE	4096
 
@@ -171,5 +173,6 @@ enum plic_irq {
 #define PLIC_NUM_SOURCES    (IRQN_MAX - 1)
 #define PLIC_NUM_PRIORITIES (7)
 
-#endif /* _PLATFORM_H_ */
+/* clang-format on */
 
+#endif /* _PLATFORM_H_ */

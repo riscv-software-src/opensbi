@@ -11,6 +11,8 @@
 #include <sbi/sbi_console.h>
 #include <plat/serial/sifive-uart.h>
 
+/* clang-format off */
+
 #define UART_REG_TXFIFO		0
 #define UART_REG_RXFIFO		1
 #define UART_REG_TXCTRL		2
@@ -24,6 +26,8 @@
 #define UART_RXFIFO_DATA	0x000000ff
 #define UART_TXCTRL_TXEN	0x1
 #define UART_RXCTRL_RXEN	0x1
+
+/* clang-format on */
 
 static volatile void *uart_base;
 static u32 uart_in_freq;

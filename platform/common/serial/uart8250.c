@@ -10,6 +10,8 @@
 #include <sbi/riscv_io.h>
 #include <plat/serial/uart8250.h>
 
+/* clang-format off */
+
 #define UART_RBR_OFFSET		0	/* In:  Recieve Buffer Register */
 #define UART_THR_OFFSET		0	/* Out: Transmitter Holding Register */
 #define UART_DLL_OFFSET		0	/* Out: Divisor Latch Low */
@@ -33,6 +35,8 @@
 #define UART_LSR_OE		0x02    /* Overrun error indicator */
 #define UART_LSR_DR		0x01    /* Receiver data ready */
 #define UART_LSR_BRK_ERROR_BITS	0x1E    /* BI, FE, PE, OE bits */
+
+/* clang-format on */
 
 static volatile void *uart8250_base;
 static u32 uart8250_in_freq;

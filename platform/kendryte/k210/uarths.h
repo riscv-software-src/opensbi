@@ -50,6 +50,8 @@
 
 #include <sbi/sbi_types.h>
 
+/* clang-format off */
+
 /* Base register address */
 #define UARTHS_BASE_ADDR	(0x38000000U)
 
@@ -73,6 +75,8 @@
 /* IP register */
 #define UARTHS_IP_TXWM		0x01
 #define UARTHS_IP_RXWM		0x02
+
+/* clang-format on */
 
 struct uarths_txdata {
 	/* Bits [7:0] is data */
