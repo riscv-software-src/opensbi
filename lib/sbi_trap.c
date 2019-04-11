@@ -19,49 +19,47 @@
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_trap.h>
 
-static void __noreturn sbi_trap_error(const char *msg,
-				      int rc, u32 hartid,
+static void __noreturn sbi_trap_error(const char *msg, int rc, u32 hartid,
 				      ulong mcause, ulong mtval,
 				      struct sbi_trap_regs *regs)
 {
-	sbi_printf("%s: hart%d: %s (error %d)\n",
-		   __func__, hartid, msg, rc);
-	sbi_printf("%s: hart%d: mcause=0x%"PRILX" mtval=0x%"PRILX"\n",
+	sbi_printf("%s: hart%d: %s (error %d)\n", __func__, hartid, msg, rc);
+	sbi_printf("%s: hart%d: mcause=0x%" PRILX " mtval=0x%" PRILX "\n",
 		   __func__, hartid, mcause, mtval);
-	sbi_printf("%s: hart%d: mepc=0x%"PRILX" mstatus=0x%"PRILX"\n",
+	sbi_printf("%s: hart%d: mepc=0x%" PRILX " mstatus=0x%" PRILX "\n",
 		   __func__, hartid, regs->mepc, regs->mstatus);
-	sbi_printf("%s: hart%d: %s=0x%"PRILX" %s=0x%"PRILX"\n",
-		   __func__, hartid, "ra", regs->ra, "sp", regs->sp);
-	sbi_printf("%s: hart%d: %s=0x%"PRILX" %s=0x%"PRILX"\n",
-		   __func__, hartid, "gp", regs->gp, "tp", regs->tp);
-	sbi_printf("%s: hart%d: %s=0x%"PRILX" %s=0x%"PRILX"\n",
-		   __func__, hartid, "s0", regs->s0, "s1", regs->s1);
-	sbi_printf("%s: hart%d: %s=0x%"PRILX" %s=0x%"PRILX"\n",
-		   __func__, hartid, "a0", regs->a0, "a1", regs->a1);
-	sbi_printf("%s: hart%d: %s=0x%"PRILX" %s=0x%"PRILX"\n",
-		   __func__, hartid, "a2", regs->a2, "a3", regs->a3);
-	sbi_printf("%s: hart%d: %s=0x%"PRILX" %s=0x%"PRILX"\n",
-		   __func__, hartid, "a4", regs->a4, "a5", regs->a5);
-	sbi_printf("%s: hart%d: %s=0x%"PRILX" %s=0x%"PRILX"\n",
-		   __func__, hartid, "a6", regs->a6, "a7", regs->a7);
-	sbi_printf("%s: hart%d: %s=0x%"PRILX" %s=0x%"PRILX"\n",
-		   __func__, hartid, "s2", regs->s2, "s3", regs->s3);
-	sbi_printf("%s: hart%d: %s=0x%"PRILX" %s=0x%"PRILX"\n",
-		   __func__, hartid, "s4", regs->s4, "s5", regs->s5);
-	sbi_printf("%s: hart%d: %s=0x%"PRILX" %s=0x%"PRILX"\n",
-		   __func__, hartid, "s6", regs->s6, "s7", regs->s7);
-	sbi_printf("%s: hart%d: %s=0x%"PRILX" %s=0x%"PRILX"\n",
-		   __func__, hartid, "s8", regs->s8, "s9", regs->s9);
-	sbi_printf("%s: hart%d: %s=0x%"PRILX" %s=0x%"PRILX"\n",
-		   __func__, hartid, "s10", regs->s10, "s11", regs->s11);
-	sbi_printf("%s: hart%d: %s=0x%"PRILX" %s=0x%"PRILX"\n",
-		   __func__, hartid, "t0", regs->t0, "t1", regs->t1);
-	sbi_printf("%s: hart%d: %s=0x%"PRILX" %s=0x%"PRILX"\n",
-		   __func__, hartid, "t2", regs->t2, "t3", regs->t3);
-	sbi_printf("%s: hart%d: %s=0x%"PRILX" %s=0x%"PRILX"\n",
-		   __func__, hartid, "t4", regs->t4, "t5", regs->t5);
-	sbi_printf("%s: hart%d: %s=0x%"PRILX"\n",
-		   __func__, hartid, "t6", regs->t6);
+	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
+		   hartid, "ra", regs->ra, "sp", regs->sp);
+	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
+		   hartid, "gp", regs->gp, "tp", regs->tp);
+	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
+		   hartid, "s0", regs->s0, "s1", regs->s1);
+	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
+		   hartid, "a0", regs->a0, "a1", regs->a1);
+	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
+		   hartid, "a2", regs->a2, "a3", regs->a3);
+	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
+		   hartid, "a4", regs->a4, "a5", regs->a5);
+	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
+		   hartid, "a6", regs->a6, "a7", regs->a7);
+	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
+		   hartid, "s2", regs->s2, "s3", regs->s3);
+	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
+		   hartid, "s4", regs->s4, "s5", regs->s5);
+	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
+		   hartid, "s6", regs->s6, "s7", regs->s7);
+	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
+		   hartid, "s8", regs->s8, "s9", regs->s9);
+	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
+		   hartid, "s10", regs->s10, "s11", regs->s11);
+	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
+		   hartid, "t0", regs->t0, "t1", regs->t1);
+	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
+		   hartid, "t2", regs->t2, "t3", regs->t3);
+	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
+		   hartid, "t4", regs->t4, "t5", regs->t5);
+	sbi_printf("%s: hart%d: %s=0x%" PRILX "\n", __func__, hartid, "t6",
+		   regs->t6);
 
 	sbi_hart_hang();
 }
@@ -77,8 +75,7 @@ static void __noreturn sbi_trap_error(const char *msg,
  *
  * @return 0 on success and negative error code on failure
  */
-int sbi_trap_redirect(struct sbi_trap_regs *regs,
-		      struct sbi_scratch *scratch,
+int sbi_trap_redirect(struct sbi_trap_regs *regs, struct sbi_scratch *scratch,
 		      ulong epc, ulong cause, ulong tval)
 {
 	ulong new_mstatus, prev_mode;
@@ -100,8 +97,8 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 	new_mstatus = regs->mstatus;
 
 	/* Clear MPP, SPP, SPIE, and SIE */
-	new_mstatus &= ~(MSTATUS_MPP |
-			 MSTATUS_SPP | MSTATUS_SPIE | MSTATUS_SIE);
+	new_mstatus &=
+		~(MSTATUS_MPP | MSTATUS_SPP | MSTATUS_SPIE | MSTATUS_SIE);
 
 	/* Set SPP */
 	if (prev_mode == PRV_S)
@@ -135,10 +132,9 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
  * @param regs pointer to register state
  * @param scratch pointer to sbi_scratch of current HART
  */
-void sbi_trap_handler(struct sbi_trap_regs *regs,
-		      struct sbi_scratch *scratch)
+void sbi_trap_handler(struct sbi_trap_regs *regs, struct sbi_scratch *scratch)
 {
-	int rc = SBI_ENOTSUPP;
+	int rc		= SBI_ENOTSUPP;
 	const char *msg = "trap handler failed";
 	u32 hartid = sbi_current_hartid();
 	ulong mcause = csr_read(CSR_MCAUSE);
@@ -162,7 +158,7 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 
 	switch (mcause) {
 	case CAUSE_ILLEGAL_INSTRUCTION:
-		rc = sbi_illegal_insn_handler(hartid, mcause, regs, scratch);
+		rc  = sbi_illegal_insn_handler(hartid, mcause, regs, scratch);
 		msg = "illegal instruction handler failed";
 		break;
 	case CAUSE_MISALIGNED_LOAD:
@@ -170,12 +166,13 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 		msg = "misaligned load handler failed";
 		break;
 	case CAUSE_MISALIGNED_STORE:
-		rc = sbi_misaligned_store_handler(hartid, mcause, regs, scratch);
+		rc  = sbi_misaligned_store_handler(hartid, mcause, regs,
+						   scratch);
 		msg = "misaligned store handler failed";
 		break;
 	case CAUSE_SUPERVISOR_ECALL:
 	case CAUSE_HYPERVISOR_ECALL:
-		rc = sbi_ecall_handler(hartid, mcause, regs, scratch);
+		rc  = sbi_ecall_handler(hartid, mcause, regs, scratch);
 		msg = "ecall handler failed";
 		break;
 	default:
@@ -186,6 +183,7 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 
 trap_error:
 	if (rc) {
-		sbi_trap_error(msg, rc, hartid, mcause, csr_read(CSR_MTVAL), regs);
+		sbi_trap_error(msg, rc, hartid, mcause, csr_read(CSR_MTVAL),
+			       regs);
 	}
 }

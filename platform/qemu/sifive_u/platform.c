@@ -52,15 +52,15 @@ static u32 sifive_u_pmp_region_count(u32 hartid)
 	return 1;
 }
 
-static int sifive_u_pmp_region_info(u32 hartid, u32 index,
-				    ulong *prot, ulong *addr, ulong *log2size)
+static int sifive_u_pmp_region_info(u32 hartid, u32 index, ulong *prot,
+				    ulong *addr, ulong *log2size)
 {
 	int ret = 0;
 
 	switch (index) {
 	case 0:
-		*prot = PMP_R | PMP_W | PMP_X;
-		*addr = 0;
+		*prot	  = PMP_R | PMP_W | PMP_X;
+		*addr	  = 0;
 		*log2size = __riscv_xlen;
 		break;
 	default:
@@ -73,8 +73,8 @@ static int sifive_u_pmp_region_info(u32 hartid, u32 index,
 
 static int sifive_u_console_init(void)
 {
-	return sifive_uart_init(SIFIVE_U_UART0_ADDR,
-				SIFIVE_U_PERIPH_CLK, 115200);
+	return sifive_uart_init(SIFIVE_U_UART0_ADDR, SIFIVE_U_PERIPH_CLK,
+				115200);
 }
 
 static int sifive_u_irqchip_init(bool cold_boot)
@@ -90,9 +90,7 @@ static int sifive_u_irqchip_init(bool cold_boot)
 			return rc;
 	}
 
-	return plic_warm_irqchip_init(hartid,
-				      (2 * hartid),
-				      (2 * hartid + 1));
+	return plic_warm_irqchip_init(hartid, (2 * hartid), (2 * hartid + 1));
 }
 
 static int sifive_u_ipi_init(bool cold_boot)
@@ -130,26 +128,26 @@ static int sifive_u_system_down(u32 type)
 }
 
 const struct sbi_platform platform = {
-	.name = "QEMU SiFive Unleashed",
-	.features = SBI_PLATFORM_DEFAULT_FEATURES,
-	.hart_count = SIFIVE_U_HART_COUNT,
-	.hart_stack_size = SIFIVE_U_HART_STACK_SIZE,
+	.name		    = "QEMU SiFive Unleashed",
+	.features	    = SBI_PLATFORM_DEFAULT_FEATURES,
+	.hart_count	    = SIFIVE_U_HART_COUNT,
+	.hart_stack_size    = SIFIVE_U_HART_STACK_SIZE,
 	.disabled_hart_mask = 0,
-	.pmp_region_count = sifive_u_pmp_region_count,
-	.pmp_region_info = sifive_u_pmp_region_info,
-	.final_init = sifive_u_final_init,
-	.console_putc = sifive_uart_putc,
-	.console_getc = sifive_uart_getc,
-	.console_init = sifive_u_console_init,
-	.irqchip_init = sifive_u_irqchip_init,
-	.ipi_send = clint_ipi_send,
-	.ipi_sync = clint_ipi_sync,
-	.ipi_clear = clint_ipi_clear,
-	.ipi_init = sifive_u_ipi_init,
-	.timer_value = clint_timer_value,
-	.timer_event_stop = clint_timer_event_stop,
-	.timer_event_start = clint_timer_event_start,
-	.timer_init = sifive_u_timer_init,
-	.system_reboot = sifive_u_system_down,
-	.system_shutdown = sifive_u_system_down
+	.pmp_region_count   = sifive_u_pmp_region_count,
+	.pmp_region_info    = sifive_u_pmp_region_info,
+	.final_init	    = sifive_u_final_init,
+	.console_putc	    = sifive_uart_putc,
+	.console_getc	    = sifive_uart_getc,
+	.console_init	    = sifive_u_console_init,
+	.irqchip_init	    = sifive_u_irqchip_init,
+	.ipi_send	    = clint_ipi_send,
+	.ipi_sync	    = clint_ipi_sync,
+	.ipi_clear	    = clint_ipi_clear,
+	.ipi_init	    = sifive_u_ipi_init,
+	.timer_value	    = clint_timer_value,
+	.timer_event_stop   = clint_timer_event_stop,
+	.timer_event_start  = clint_timer_event_start,
+	.timer_init	    = sifive_u_timer_init,
+	.system_reboot	    = sifive_u_system_down,
+	.system_shutdown    = sifive_u_system_down
 };

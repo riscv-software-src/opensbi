@@ -12,7 +12,7 @@
 
 #include <sbi/sbi_types.h>
 
-#define __printf(a, b)		__attribute__((format(printf, a, b)))
+#define __printf(a, b) __attribute__((format(printf, a, b)))
 
 bool sbi_isprintable(char ch);
 
@@ -26,8 +26,7 @@ void sbi_gets(char *s, int maxwidth, char endchar);
 
 int __printf(2, 3) sbi_sprintf(char *out, const char *format, ...);
 
-int __printf(3, 4) sbi_snprintf(char *out, u32 out_sz,
-				const char *format, ...);
+int __printf(3, 4) sbi_snprintf(char *out, u32 out_sz, const char *format, ...);
 
 int __printf(1, 2) sbi_printf(const char *format, ...);
 

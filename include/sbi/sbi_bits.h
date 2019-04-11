@@ -13,19 +13,20 @@
 #define likely(x) __builtin_expect((x), 1)
 #define unlikely(x) __builtin_expect((x), 0)
 
-#define ROUNDUP(a, b) ((((a)-1)/(b)+1)*(b))
-#define ROUNDDOWN(a, b) ((a)/(b)*(b))
+#define ROUNDUP(a, b) ((((a)-1) / (b) + 1) * (b))
+#define ROUNDDOWN(a, b) ((a) / (b) * (b))
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define CLAMP(a, lo, hi) MIN(MAX(a, lo), hi)
 
 #define EXTRACT_FIELD(val, which) (((val) & (which)) / ((which) & ~((which)-1)))
-#define INSERT_FIELD(val, which, fieldval) (((val) & ~(which)) | ((fieldval) * ((which) & ~((which)-1))))
+#define INSERT_FIELD(val, which, fieldval) \
+	(((val) & ~(which)) | ((fieldval) * ((which) & ~((which)-1))))
 
 #define STR(x) XSTR(x)
 #define XSTR(x) #x
 
-#define BIT_MASK(nr)            (1UL << ((nr) % BITS_PER_LONG))
-#define BIT_WORD(nr)            ((nr) / BITS_PER_LONG)
+#define BIT_MASK(nr) (1UL << ((nr) % BITS_PER_LONG))
+#define BIT_WORD(nr) ((nr) / BITS_PER_LONG)
 #endif

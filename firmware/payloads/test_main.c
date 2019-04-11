@@ -9,10 +9,10 @@
 
 #include <sbi/sbi_ecall_interface.h>
 
-#define wfi()						\
-do {							\
-	__asm__ __volatile__ ("wfi" ::: "memory");	\
-} while (0)
+#define wfi()                                             \
+	do {                                              \
+		__asm__ __volatile__("wfi" ::: "memory"); \
+	} while (0)
 
 void test_main(unsigned long a0, unsigned long a1)
 {

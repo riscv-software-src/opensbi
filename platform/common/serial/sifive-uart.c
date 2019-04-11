@@ -68,7 +68,8 @@ static void set_reg(u32 num, u32 val)
 
 void sifive_uart_putc(char ch)
 {
-	while (get_reg(UART_REG_TXFIFO) & UART_TXFIFO_FULL);
+	while (get_reg(UART_REG_TXFIFO) & UART_TXFIFO_FULL)
+		;
 
 	set_reg(UART_REG_TXFIFO, ch);
 }
@@ -81,11 +82,10 @@ int sifive_uart_getc(void)
 	return -1;
 }
 
-int sifive_uart_init(unsigned long base,
-		     u32 in_freq, u32 baudrate)
+int sifive_uart_init(unsigned long base, u32 in_freq, u32 baudrate)
 {
-	uart_base = (volatile void *)base;
-	uart_in_freq = in_freq;
+	uart_base     = (volatile void *)base;
+	uart_in_freq  = in_freq;
 	uart_baudrate = baudrate;
 
 	/* Configure baudrate */

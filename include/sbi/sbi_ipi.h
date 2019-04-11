@@ -44,8 +44,8 @@ struct sbi_tlb_info {
 
 #define SBI_TLB_INFO_SIZE sizeof(struct sbi_tlb_info)
 
-int sbi_ipi_send_many(struct sbi_scratch *scratch,
-		      ulong *pmask, u32 event, void *data);
+int sbi_ipi_send_many(struct sbi_scratch *scratch, ulong *pmask, u32 event,
+		      void *data);
 
 void sbi_ipi_clear_smode(struct sbi_scratch *scratch);
 

@@ -38,33 +38,27 @@ ulong fdt_strlen(const char *str);
 int fdt_strcmp(const char *a, const char *b);
 
 /* Find index of matching string from a list of strings */
-int fdt_prop_string_index(const struct fdt_prop *prop,
-			      const char *str);
+int fdt_prop_string_index(const struct fdt_prop *prop, const char *str);
 
 /* Iterate over each property of matching node */
 int fdt_match_node_prop(void *fdt,
 			int (*match)(const struct fdt_node *node,
-				     const struct fdt_prop *prop,
-				     void *priv),
+				     const struct fdt_prop *prop, void *priv),
 			void *match_priv,
 			void (*fn)(const struct fdt_node *node,
-				   const struct fdt_prop *prop,
-				   void *priv),
+				   const struct fdt_prop *prop, void *priv),
 			void *fn_priv);
 
 /* Iterate over each property of compatible node */
-int fdt_compat_node_prop(void *fdt,
-			 const char *compat,
+int fdt_compat_node_prop(void *fdt, const char *compat,
 			 void (*fn)(const struct fdt_node *node,
-				    const struct fdt_prop *prop,
-				    void *priv),
+				    const struct fdt_prop *prop, void *priv),
 			 void *fn_priv);
 
 /* Iterate over each node and property */
 int fdt_walk(void *fdt,
 	     void (*fn)(const struct fdt_node *node,
-		 	const struct fdt_prop *prop,
-			void *priv),
+			const struct fdt_prop *prop, void *priv),
 	     void *fn_priv);
 
 /* Get size of FDT */

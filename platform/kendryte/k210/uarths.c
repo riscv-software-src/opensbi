@@ -26,19 +26,19 @@ static volatile struct uarths *const uarths =
 void uarths_init(u32 baud_rate, enum uarths_stopbit stopbit)
 {
 	u32 freq = sysctl_get_cpu_freq();
-	u16 div = freq / baud_rate - 1;
+	u16 div	 = freq / baud_rate - 1;
 
 	/* Set UART registers */
-	uarths->div.div = div;
+	uarths->div.div	     = div;
 	uarths->txctrl.nstop = stopbit;
-	uarths->txctrl.txen = 1;
-	uarths->rxctrl.rxen = 1;
+	uarths->txctrl.txen  = 1;
+	uarths->rxctrl.rxen  = 1;
 	uarths->txctrl.txcnt = 0;
 	uarths->rxctrl.rxcnt = 0;
-	uarths->ip.txwm = 1;
-	uarths->ip.rxwm = 0;
-	uarths->ie.txwm = 1;
-	uarths->ie.rxwm = 0;
+	uarths->ip.txwm	     = 1;
+	uarths->ip.rxwm	     = 0;
+	uarths->ie.txwm	     = 1;
+	uarths->ie.rxwm	     = 0;
 
 	/* Clear input */
 	if (!uarths->rxdata.empty)
@@ -47,7 +47,8 @@ void uarths_init(u32 baud_rate, enum uarths_stopbit stopbit)
 
 void uarths_putc(char c)
 {
-	while (uarths->txdata.full);
+	while (uarths->txdata.full)
+		;
 
 	uarths->txdata.data = (u8)c;
 }
@@ -61,4 +62,3 @@ int uarths_getc(void)
 
 	return rx.data;
 }
-

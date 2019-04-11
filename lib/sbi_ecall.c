@@ -16,8 +16,8 @@
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_trap.h>
 
-#define SBI_ECALL_VERSION_MAJOR			0
-#define SBI_ECALL_VERSION_MINOR			1
+#define SBI_ECALL_VERSION_MAJOR 0
+#define SBI_ECALL_VERSION_MINOR 1
 
 u16 sbi_ecall_version_major(void)
 {
@@ -29,8 +29,7 @@ u16 sbi_ecall_version_minor(void)
 	return SBI_ECALL_VERSION_MINOR;
 }
 
-int sbi_ecall_handler(u32 hartid, ulong mcause,
-		      struct sbi_trap_regs *regs,
+int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 		      struct sbi_scratch *scratch)
 {
 	int ret = SBI_ENOTSUPP;
@@ -40,7 +39,7 @@ int sbi_ecall_handler(u32 hartid, ulong mcause,
 	case SBI_ECALL_SET_TIMER:
 #if __riscv_xlen == 32
 		sbi_timer_event_start(scratch,
-			(((u64)regs->a1 << 32) | (u64)regs->a0));
+				      (((u64)regs->a1 << 32) | (u64)regs->a0));
 #else
 		sbi_timer_event_start(scratch, (u64)regs->a0);
 #endif
@@ -52,7 +51,7 @@ int sbi_ecall_handler(u32 hartid, ulong mcause,
 		break;
 	case SBI_ECALL_CONSOLE_GETCHAR:
 		regs->a0 = sbi_getc();
-		ret = 0;
+		ret	 = 0;
 		break;
 	case SBI_ECALL_CLEAR_IPI:
 		sbi_ipi_clear_smode(scratch);
@@ -68,20 +67,21 @@ int sbi_ecall_handler(u32 hartid, ulong mcause,
 		break;
 	case SBI_ECALL_REMOTE_SFENCE_VMA:
 		tlb_info.start = (unsigned long)regs->a1;
-		tlb_info.size = (unsigned long)regs->a2;
-		tlb_info.type = SBI_TLB_FLUSH_VMA;
+		tlb_info.size  = (unsigned long)regs->a2;
+		tlb_info.type  = SBI_TLB_FLUSH_VMA;
 
 		ret = sbi_ipi_send_many(scratch, (ulong *)regs->a0,
 					SBI_IPI_EVENT_SFENCE_VMA, &tlb_info);
 		break;
 	case SBI_ECALL_REMOTE_SFENCE_VMA_ASID:
 		tlb_info.start = (unsigned long)regs->a1;
-		tlb_info.size = (unsigned long)regs->a2;
-		tlb_info.asid = (unsigned long)regs->a3;
-		tlb_info.type = SBI_TLB_FLUSH_VMA_ASID;
+		tlb_info.size  = (unsigned long)regs->a2;
+		tlb_info.asid  = (unsigned long)regs->a3;
+		tlb_info.type  = SBI_TLB_FLUSH_VMA_ASID;
 
 		ret = sbi_ipi_send_many(scratch, (ulong *)regs->a0,
-					SBI_IPI_EVENT_SFENCE_VMA_ASID, &tlb_info);
+					SBI_IPI_EVENT_SFENCE_VMA_ASID,
+					&tlb_info);
 		break;
 	case SBI_ECALL_SHUTDOWN:
 		sbi_system_shutdown(scratch, 0);
@@ -89,7 +89,7 @@ int sbi_ecall_handler(u32 hartid, ulong mcause,
 		break;
 	default:
 		regs->a0 = SBI_ENOTSUPP;
-		ret = 0;
+		ret	 = 0;
 		break;
 	};
 
