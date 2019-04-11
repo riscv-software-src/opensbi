@@ -14,6 +14,7 @@
 
 /* TODO: Make constants usable in assembly with _AC() macro */
 
+/* clang-format off */
 #define MSTATUS_UIE			0x00000001
 #define MSTATUS_SIE			0x00000002
 #define MSTATUS_HIE			0x00000004
@@ -560,5 +561,7 @@
 #define IMM_S(insn)			(((s32)(insn) >> 25 << 5) | \
 					 (s32)(((insn) >> 7) & 0x1f))
 #define MASK_FUNCT3			0x7000
+
+/* clang-format on */
 
 #endif

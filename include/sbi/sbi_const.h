@@ -19,6 +19,8 @@
  * leave it unchanged in asm.
  */
 
+/* clang-format off */
+
 #ifdef __ASSEMBLY__
 #define _AC(X,Y)	X
 #define _AT(T,X)	X
@@ -39,5 +41,7 @@
 
 #define	__STR(s)	#s
 #define	STRINGIFY(s)	__STR(s)
+
+/* clang-format on */
 
 #endif
