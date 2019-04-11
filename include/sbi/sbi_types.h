@@ -10,6 +10,8 @@
 #ifndef __SBI_TYPES_H__
 #define __SBI_TYPES_H__
 
+/* clang-format off */
+
 typedef char			s8;
 typedef unsigned char		u8;
 typedef unsigned char		uint8_t;
@@ -57,5 +59,7 @@ typedef unsigned long		physical_size_t;
 
 #define __packed		__attribute__((packed))
 #define __noreturn		__attribute__((noreturn))
+
+/* clang-format on */
 
 #endif

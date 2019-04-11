@@ -19,6 +19,8 @@
 #include <plat/serial/sifive-uart.h>
 #include <plat/sys/clint.h>
 
+/* clang-format off */
+
 #define FU540_HART_COUNT			5
 #define FU540_HART_STACK_SIZE			8192
 
@@ -49,6 +51,8 @@
 #define FU540_PRCI_BASE_ADDR			0x10000000
 #define FU540_PRCI_CLKMUXSTATUSREG		0x002C
 #define FU540_PRCI_CLKMUX_STATUS_TLCLKSEL	(0x1 << 1)
+
+/* clang-format on */
 
 static void fu540_modify_dt(void *fdt)
 {

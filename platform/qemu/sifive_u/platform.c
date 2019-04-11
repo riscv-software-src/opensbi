@@ -15,6 +15,8 @@
 #include <plat/serial/sifive-uart.h>
 #include <plat/sys/clint.h>
 
+/* clang-format off */
+
 #define SIFIVE_U_HART_COUNT			1
 #define SIFIVE_U_HART_STACK_SIZE		8192
 
@@ -29,6 +31,8 @@
 
 #define SIFIVE_U_UART0_ADDR			0x10013000
 #define SIFIVE_U_UART1_ADDR			0x10023000
+
+/* clang-format on */
 
 static int sifive_u_final_init(bool cold_boot)
 {

@@ -12,6 +12,8 @@
 
 #include <sbi/riscv_asm.h>
 
+/* clang-format off */
+
 /** Offset of fw_start member in sbi_scratch */
 #define SBI_SCRATCH_FW_START_OFFSET		(0 * __SIZEOF_POINTER__)
 /** Offset of fw_size member in sbi_scratch */
@@ -42,6 +44,8 @@
 
 /** Maximum size of sbi_scratch and sbi_ipi_data */
 #define SBI_SCRATCH_SIZE			(64 * __SIZEOF_POINTER__)
+
+/* clang-format on */
 
 #ifndef __ASSEMBLY__
 

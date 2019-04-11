@@ -10,6 +10,8 @@
 #ifndef __SBI_TRAP_H__
 #define __SBI_TRAP_H__
 
+/* clang-format off */
+
 /** Index of zero member in sbi_trap_regs */
 #define SBI_TRAP_REGS_zero			0
 /** Index of ra member in sbi_trap_regs */
@@ -80,6 +82,8 @@
 #define SBI_TRAP_REGS_mstatus			33
 /** Last member index in sbi_trap_regs */
 #define SBI_TRAP_REGS_last			34
+
+/* clang-format on */
 
 /** Get offset of member with name 'x' in sbi_trap_regs */
 #define SBI_TRAP_REGS_OFFSET(x)			\

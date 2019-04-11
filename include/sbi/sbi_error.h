@@ -10,6 +10,8 @@
 #ifndef __SBI_ERROR_H__
 #define __SBI_ERROR_H__
 
+/* clang-format off */
+
 #define SBI_OK		0
 #define SBI_EUNKNOWN	-1
 #define SBI_EFAIL	-2
@@ -22,5 +24,7 @@
 #define SBI_EIO		-9
 #define SBI_EILL	-10
 #define SBI_ENOSPC	-11
+
+/* clang-format on */
 
 #endif

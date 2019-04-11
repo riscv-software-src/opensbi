@@ -17,6 +17,8 @@
 #include <plat/serial/uart8250.h>
 #include <plat/sys/clint.h>
 
+/* clang-format off */
+
 #define VIRT_HART_COUNT			8
 #define VIRT_HART_STACK_SIZE		8192
 
@@ -33,6 +35,8 @@
 #define VIRT_UART16550_ADDR		0x10000000
 #define VIRT_UART_BAUDRATE		115200
 #define VIRT_UART_SHIFTREG_ADDR		1843200
+
+/* clang-format on */
 
 static int virt_final_init(bool cold_boot)
 {
