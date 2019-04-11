@@ -10,8 +10,8 @@
 #include <plat/string.h>
 #include <plat/tinyfdt.h>
 
-#define FDT_MAGIC	0xd00dfeed
-#define FDT_VERSION	17
+#define FDT_MAGIC 0xd00dfeed
+#define FDT_VERSION 17
 
 struct fdt_header {
 	u32 magic;
@@ -26,28 +26,25 @@ struct fdt_header {
 	u32 size_dt_struct;
 } __attribute__((packed));
 
-#define FDT_BEGIN_NODE	1
-#define FDT_END_NODE	2
-#define FDT_PROP	3
-#define FDT_NOP		4
-#define FDT_END		9
+#define FDT_BEGIN_NODE 1
+#define FDT_END_NODE 2
+#define FDT_PROP 3
+#define FDT_NOP 4
+#define FDT_END 9
 
 u32 fdt_rev32(u32 v)
 {
-	return ((v & 0x000000FF) << 24) |
-	       ((v & 0x0000FF00) << 8) |
-	       ((v & 0x00FF0000) >> 8) |
-	       ((v & 0xFF000000) >> 24);
+	return ((v & 0x000000FF) << 24) | ((v & 0x0000FF00) << 8) |
+	       ((v & 0x00FF0000) >> 8) | ((v & 0xFF000000) >> 24);
 }
 
-int fdt_prop_string_index(const struct fdt_prop *prop,
-			  const char *str)
+int fdt_prop_string_index(const struct fdt_prop *prop, const char *str)
 {
 	int i;
 	ulong l = 0;
 	const char *p, *end;
 
-	p = prop->value;
+	p   = prop->value;
 	end = p + prop->len;
 
 	for (i = 0; p < end; i++, p += l) {
@@ -62,14 +59,13 @@ int fdt_prop_string_index(const struct fdt_prop *prop,
 }
 
 struct recursive_iter_info {
-	void (*fn)(const struct fdt_node *node,
-		   const struct fdt_prop *prop,
+	void (*fn)(const struct fdt_node *node, const struct fdt_prop *prop,
 		   void *priv);
 	void *fn_priv;
 	const char *str;
 };
 
-#define DATA32(ptr)	fdt_rev32(*((u32*)ptr))
+#define DATA32(ptr) fdt_rev32(*((u32 *)ptr))
 
 static void recursive_iter(char **data, struct recursive_iter_info *info,
 			   const struct fdt_node *parent)
@@ -85,7 +81,7 @@ static void recursive_iter(char **data, struct recursive_iter_info *info,
 	(*data) += sizeof(u32);
 
 	node.parent = parent;
-	node.name = *data;
+	node.name   = *data;
 
 	*data += strlen(*data) + 1;
 	while ((ulong)(*data) % sizeof(u32) != 0)
@@ -95,7 +91,7 @@ static void recursive_iter(char **data, struct recursive_iter_info *info,
 
 	/* Default cell counts, as per the FDT spec */
 	node.address_cells = 2;
-	node.size_cells = 1;
+	node.size_cells	   = 1;
 
 	info->fn(&node, NULL, info->fn_priv);
 
@@ -129,19 +125,16 @@ static void recursive_iter(char **data, struct recursive_iter_info *info,
 }
 
 struct match_iter_info {
-	int (*match)(const struct fdt_node *node,
-		     const struct fdt_prop *prop,
+	int (*match)(const struct fdt_node *node, const struct fdt_prop *prop,
 		     void *priv);
 	void *match_priv;
-	void (*fn)(const struct fdt_node *node,
-		   const struct fdt_prop *prop,
+	void (*fn)(const struct fdt_node *node, const struct fdt_prop *prop,
 		   void *priv);
 	void *fn_priv;
 	const char *str;
 };
 
-static void match_iter(const struct fdt_node *node,
-		       const struct fdt_prop *prop,
+static void match_iter(const struct fdt_node *node, const struct fdt_prop *prop,
 		       void *priv)
 {
 	char *data;
@@ -185,12 +178,10 @@ static void match_iter(const struct fdt_node *node,
 
 int fdt_match_node_prop(void *fdt,
 			int (*match)(const struct fdt_node *node,
-				     const struct fdt_prop *prop,
-				     void *priv),
+				     const struct fdt_prop *prop, void *priv),
 			void *match_priv,
 			void (*fn)(const struct fdt_node *node,
-				   const struct fdt_prop *prop,
-				   void *priv),
+				   const struct fdt_prop *prop, void *priv),
 			void *fn_priv)
 {
 	char *data;
@@ -201,23 +192,23 @@ int fdt_match_node_prop(void *fdt,
 
 	if (!fdt || !match)
 		return -1;
- 
+
 	header = fdt;
 	if (fdt_rev32(header->magic) != FDT_MAGIC ||
 	    fdt_rev32(header->last_comp_version) > FDT_VERSION)
 		return -1;
 	string_offset = fdt_rev32(header->off_dt_strings);
-	data_offset = fdt_rev32(header->off_dt_struct);
+	data_offset   = fdt_rev32(header->off_dt_struct);
 
-	minfo.match = match;
+	minfo.match	 = match;
 	minfo.match_priv = match_priv;
-	minfo.fn = fn;
-	minfo.fn_priv = fn_priv;
-	minfo.str = (const char *)(fdt + string_offset);
+	minfo.fn	 = fn;
+	minfo.fn_priv	 = fn_priv;
+	minfo.str	 = (const char *)(fdt + string_offset);
 
-	rinfo.fn = match_iter;
+	rinfo.fn      = match_iter;
 	rinfo.fn_priv = &minfo;
-	rinfo.str = minfo.str;
+	rinfo.str     = minfo.str;
 
 	data = (char *)(fdt + data_offset);
 	recursive_iter(&data, &rinfo, NULL);
@@ -230,8 +221,7 @@ struct match_compat_info {
 };
 
 static int match_compat(const struct fdt_node *node,
-			const struct fdt_prop *prop,
-			void *priv)
+			const struct fdt_prop *prop, void *priv)
 {
 	struct match_compat_info *cinfo = priv;
 
@@ -247,21 +237,17 @@ static int match_compat(const struct fdt_node *node,
 	return 1;
 }
 
-int fdt_compat_node_prop(void *fdt,
-			 const char *compat,
+int fdt_compat_node_prop(void *fdt, const char *compat,
 			 void (*fn)(const struct fdt_node *node,
-				    const struct fdt_prop *prop,
-				    void *priv),
+				    const struct fdt_prop *prop, void *priv),
 			 void *fn_priv)
 {
 	struct match_compat_info cinfo = { .compat = compat };
 
-	return fdt_match_node_prop(fdt, match_compat, &cinfo,
-				       fn, fn_priv);
+	return fdt_match_node_prop(fdt, match_compat, &cinfo, fn, fn_priv);
 }
 
-static int match_walk(const struct fdt_node *node,
-		      const struct fdt_prop *prop,
+static int match_walk(const struct fdt_node *node, const struct fdt_prop *prop,
 		      void *priv)
 {
 	if (!prop)
@@ -272,12 +258,10 @@ static int match_walk(const struct fdt_node *node,
 
 int fdt_walk(void *fdt,
 	     void (*fn)(const struct fdt_node *node,
-			const struct fdt_prop *prop,
-			void *priv),
+			const struct fdt_prop *prop, void *priv),
 	     void *fn_priv)
 {
-	return fdt_match_node_prop(fdt, match_walk, NULL,
-				       fn, fn_priv);
+	return fdt_match_node_prop(fdt, match_walk, NULL, fn, fn_priv);
 }
 
 u32 fdt_size(void *fdt)

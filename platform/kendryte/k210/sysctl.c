@@ -28,9 +28,9 @@ static u32 sysctl_pll0_get_freq(void)
 	u32 freq_in, nr, nf, od;
 
 	freq_in = SYSCTRL_CLOCK_FREQ_IN0;
-	nr      = sysctl->pll0.clkr0 + 1;
-	nf      = sysctl->pll0.clkf0 + 1;
-	od      = sysctl->pll0.clkod0 + 1;
+	nr	= sysctl->pll0.clkr0 + 1;
+	nf	= sysctl->pll0.clkf0 + 1;
+	od	= sysctl->pll0.clkod0 + 1;
 
 	/*
 	 * Get final PLL output freq
@@ -50,9 +50,8 @@ u32 sysctl_get_cpu_freq(void)
 		return SYSCTRL_CLOCK_FREQ_IN0;
 	case 1:
 		return sysctl_pll0_get_freq() /
-			(2ULL << (int)sysctl->clk_sel0.aclk_divider_sel);
+		       (2ULL << (int)sysctl->clk_sel0.aclk_divider_sel);
 	default:
 		return 0;
 	}
 }
-

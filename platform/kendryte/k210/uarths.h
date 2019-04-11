@@ -162,10 +162,7 @@ struct uarths {
 	struct uarths_div div;
 } __attribute__((packed, aligned(4)));
 
-enum uarths_stopbit {
-	UARTHS_STOP_1,
-	UARTHS_STOP_2
-};
+enum uarths_stopbit { UARTHS_STOP_1, UARTHS_STOP_2 };
 
 void uarths_init(u32 baud_rate, enum uarths_stopbit stopbit);
 void uarths_putc(char c);

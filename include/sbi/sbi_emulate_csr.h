@@ -14,14 +14,10 @@
 
 struct sbi_scratch;
 
-int sbi_emulate_csr_read(int csr_num,
-			 u32 hartid, ulong mstatus,
-			 struct sbi_scratch *scratch,
-			 ulong *csr_val);
+int sbi_emulate_csr_read(int csr_num, u32 hartid, ulong mstatus,
+			 struct sbi_scratch *scratch, ulong *csr_val);
 
-int sbi_emulate_csr_write(int csr_num,
-			  u32 hartid, ulong mstatus,
-			  struct sbi_scratch *scratch,
-			  ulong csr_val);
+int sbi_emulate_csr_write(int csr_num, u32 hartid, ulong mstatus,
+			  struct sbi_scratch *scratch, ulong csr_val);
 
 #endif

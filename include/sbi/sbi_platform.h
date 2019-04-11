@@ -11,13 +11,13 @@
 #define __SBI_PLATFORM_H__
 
 /** Offset of name in struct sbi_platform */
-#define SBI_PLATFORM_NAME_OFFSET		(0x0)
+#define SBI_PLATFORM_NAME_OFFSET (0x0)
 /** Offset of features in struct sbi_platform */
-#define SBI_PLATFORM_FEATURES_OFFSET		(0x40)
+#define SBI_PLATFORM_FEATURES_OFFSET (0x40)
 /** Offset of hart_count in struct sbi_platform */
-#define SBI_PLATFORM_HART_COUNT_OFFSET		(0x48)
+#define SBI_PLATFORM_HART_COUNT_OFFSET (0x48)
 /** Offset of hart_stack_size in struct sbi_platform */
-#define SBI_PLATFORM_HART_STACK_SIZE_OFFSET	(0x4c)
+#define SBI_PLATFORM_HART_STACK_SIZE_OFFSET (0x4c)
 
 #ifndef __ASSEMBLY__
 
@@ -26,25 +26,23 @@
 /** Possible feature flags of a platform */
 enum sbi_platform_features {
 	/** Platform has timer value */
-	SBI_PLATFORM_HAS_TIMER_VALUE		= (1 << 0),
+	SBI_PLATFORM_HAS_TIMER_VALUE = (1 << 0),
 	/** Platform has HART hotplug support */
-	SBI_PLATFORM_HAS_HART_HOTPLUG		= (1 << 1),
+	SBI_PLATFORM_HAS_HART_HOTPLUG = (1 << 1),
 	/** Platform has PMP support */
-	SBI_PLATFORM_HAS_PMP			= (1 << 2),
+	SBI_PLATFORM_HAS_PMP = (1 << 2),
 	/** Platform has S-mode counter enable */
-	SBI_PLATFORM_HAS_SCOUNTEREN		= (1 << 3),
+	SBI_PLATFORM_HAS_SCOUNTEREN = (1 << 3),
 	/** Platform has M-mode counter enable */
-	SBI_PLATFORM_HAS_MCOUNTEREN		= (1 << 4),
+	SBI_PLATFORM_HAS_MCOUNTEREN = (1 << 4),
 	/** Platform has fault delegation support */
-	SBI_PLATFORM_HAS_MFAULTS_DELEGATION	= (1 << 5),
+	SBI_PLATFORM_HAS_MFAULTS_DELEGATION = (1 << 5),
 };
 
 /** Default feature set for a platform */
-#define SBI_PLATFORM_DEFAULT_FEATURES	\
-	(SBI_PLATFORM_HAS_TIMER_VALUE | \
-	 SBI_PLATFORM_HAS_PMP | \
-	 SBI_PLATFORM_HAS_SCOUNTEREN | \
-	 SBI_PLATFORM_HAS_MCOUNTEREN | \
+#define SBI_PLATFORM_DEFAULT_FEATURES                                \
+	(SBI_PLATFORM_HAS_TIMER_VALUE | SBI_PLATFORM_HAS_PMP |       \
+	 SBI_PLATFORM_HAS_SCOUNTEREN | SBI_PLATFORM_HAS_MCOUNTEREN | \
 	 SBI_PLATFORM_HAS_MFAULTS_DELEGATION)
 
 /** Representation of a platform */
@@ -71,8 +69,8 @@ struct sbi_platform {
 	 * Get PMP regions details (namely: protection, base address,
 	 * and size) for given HART
 	 */
-	int (*pmp_region_info)(u32 hartid, u32 index,
-			       ulong *prot, ulong *addr, ulong *log2size);
+	int (*pmp_region_info)(u32 hartid, u32 index, ulong *prot, ulong *addr,
+			       ulong *log2size);
 
 	/** Write a character to the platform console output */
 	void (*console_putc)(char ch);
@@ -109,28 +107,28 @@ struct sbi_platform {
 } __packed;
 
 /** Get pointer to sbi_platform for sbi_scratch pointer */
-#define sbi_platform_ptr(__s)	\
+#define sbi_platform_ptr(__s) \
 	((const struct sbi_platform *)((__s)->platform_addr))
 /** Get pointer to sbi_platform for current HART */
-#define sbi_platform_thishart_ptr()	\
-	((const struct sbi_platform *)(sbi_scratch_thishart_ptr()->platform_addr))
+#define sbi_platform_thishart_ptr()                               \
+	((const struct sbi_platform *)(sbi_scratch_thishart_ptr() \
+					       ->platform_addr))
 /** Check whether the platform supports timer value */
-#define sbi_platform_has_timer_value(__p)	\
+#define sbi_platform_has_timer_value(__p) \
 	((__p)->features & SBI_PLATFORM_HAS_TIMER_VALUE)
 /** Check whether the platform supports HART hotplug */
-#define sbi_platform_has_hart_hotplug(__p)	\
+#define sbi_platform_has_hart_hotplug(__p) \
 	((__p)->features & SBI_PLATFORM_HAS_HART_HOTPLUG)
 /** Check whether the platform has PMP support */
-#define sbi_platform_has_pmp(__p)	\
-	((__p)->features & SBI_PLATFORM_HAS_PMP)
+#define sbi_platform_has_pmp(__p) ((__p)->features & SBI_PLATFORM_HAS_PMP)
 /** Check whether the platform supports scounteren CSR */
-#define sbi_platform_has_scounteren(__p)	\
+#define sbi_platform_has_scounteren(__p) \
 	((__p)->features & SBI_PLATFORM_HAS_SCOUNTEREN)
 /** Check whether the platform supports mcounteren CSR */
-#define sbi_platform_has_mcounteren(__p)	\
+#define sbi_platform_has_mcounteren(__p) \
 	((__p)->features & SBI_PLATFORM_HAS_MCOUNTEREN)
 /** Check whether the platform supports fault delegation */
-#define sbi_platform_has_mfaults_delegation(__p)	\
+#define sbi_platform_has_mfaults_delegation(__p) \
 	((__p)->features & SBI_PLATFORM_HAS_MFAULTS_DELEGATION)
 
 /**
@@ -258,8 +256,8 @@ static inline int sbi_platform_pmp_region_info(const struct sbi_platform *plat,
 					       ulong *log2size)
 {
 	if (plat && plat->pmp_region_info)
-		return plat->pmp_region_info(hartid, index,
-					     prot, addr, log2size);
+		return plat->pmp_region_info(hartid, index, prot, addr,
+					     log2size);
 	return 0;
 }
 
@@ -395,9 +393,8 @@ static inline u64 sbi_platform_timer_value(const struct sbi_platform *plat)
  * @param plat pointer to struct struct sbi_platform
  * @param next_event timer value when timer event will happen
  */
-static inline void sbi_platform_timer_event_start(
-					const struct sbi_platform *plat,
-					u64 next_event)
+static inline void
+sbi_platform_timer_event_start(const struct sbi_platform *plat, u64 next_event)
 {
 	if (plat && plat->timer_event_start)
 		plat->timer_event_start(next_event);
@@ -408,8 +405,8 @@ static inline void sbi_platform_timer_event_start(
  *
  * @param plat pointer to struct sbi_platform
  */
-static inline void sbi_platform_timer_event_stop(
-					const struct sbi_platform *plat)
+static inline void
+sbi_platform_timer_event_stop(const struct sbi_platform *plat)
 {
 	if (plat && plat->timer_event_stop)
 		plat->timer_event_stop();

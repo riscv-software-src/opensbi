@@ -70,7 +70,8 @@ static void set_reg(u32 num, u32 val)
 
 void uart8250_putc(char ch)
 {
-	while ((get_reg(UART_LSR_OFFSET) & UART_LSR_THRE) == 0);
+	while ((get_reg(UART_LSR_OFFSET) & UART_LSR_THRE) == 0)
+		;
 
 	set_reg(UART_THR_OFFSET, ch);
 }
@@ -82,17 +83,16 @@ int uart8250_getc(void)
 	return -1;
 }
 
-int uart8250_init(unsigned long base,
-		  u32 in_freq, u32 baudrate,
-		  u32 reg_shift, u32 reg_width)
+int uart8250_init(unsigned long base, u32 in_freq, u32 baudrate, u32 reg_shift,
+		  u32 reg_width)
 {
 	u16 bdiv;
 
-	uart8250_base = (volatile void *)base;
+	uart8250_base	   = (volatile void *)base;
 	uart8250_reg_shift = reg_shift;
 	uart8250_reg_width = reg_width;
-	uart8250_in_freq = in_freq;
-	uart8250_baudrate = baudrate;
+	uart8250_in_freq   = in_freq;
+	uart8250_baudrate  = baudrate;
 
 	bdiv = uart8250_in_freq / (16 * uart8250_baudrate);
 

@@ -74,8 +74,8 @@ int clint_cold_ipi_init(unsigned long base, u32 hart_count)
 {
 	/* Figure-out CLINT IPI register address */
 	clint_ipi_hart_count = hart_count;
-	clint_ipi_base = (void *)base;
-	clint_ipi = (u32 *)clint_ipi_base;
+	clint_ipi_base	     = (void *)base;
+	clint_ipi	     = (u32 *)clint_ipi_base;
 
 	return 0;
 }
@@ -105,7 +105,7 @@ void clint_timer_event_stop(void)
 	if (clint_time_hart_count <= target_hart)
 		return;
 
-	/* Clear CLINT Time Compare */
+		/* Clear CLINT Time Compare */
 #if __riscv_xlen == 64
 	writeq_relaxed(-1ULL, &clint_time_cmp[target_hart]);
 #else
@@ -121,13 +121,14 @@ void clint_timer_event_start(u64 next_event)
 	if (clint_time_hart_count <= target_hart)
 		return;
 
-	/* Program CLINT Time Compare */
+		/* Program CLINT Time Compare */
 #if __riscv_xlen == 64
 	writeq_relaxed(next_event, &clint_time_cmp[target_hart]);
 #else
 	u32 mask = -1UL;
 	writel_relaxed(next_event & mask, &clint_time_cmp[target_hart]);
-	writel_relaxed(next_event >> 32, (void *)(&clint_time_cmp[target_hart]) + 0x04);
+	writel_relaxed(next_event >> 32,
+		       (void *)(&clint_time_cmp[target_hart]) + 0x04);
 #endif
 }
 
@@ -135,11 +136,10 @@ int clint_warm_timer_init(void)
 {
 	u32 target_hart = sbi_current_hartid();
 
-	if (clint_time_hart_count <= target_hart ||
-	    !clint_time_base)
+	if (clint_time_hart_count <= target_hart || !clint_time_base)
 		return -1;
 
-	/* Clear CLINT Time Compare */
+		/* Clear CLINT Time Compare */
 #if __riscv_xlen == 64
 	writeq_relaxed(-1ULL, &clint_time_cmp[target_hart]);
 #else
@@ -154,9 +154,9 @@ int clint_cold_timer_init(unsigned long base, u32 hart_count)
 {
 	/* Figure-out CLINT Time register address */
 	clint_time_hart_count = hart_count;
-	clint_time_base = (void *)base;
-	clint_time_val = (u64 *)(clint_time_base + 0xbff8);
-	clint_time_cmp = (u64 *)(clint_time_base + 0x4000);
+	clint_time_base	      = (void *)base;
+	clint_time_val	      = (u64 *)(clint_time_base + 0xbff8);
+	clint_time_cmp	      = (u64 *)(clint_time_base + 0x4000);
 
 	return 0;
 }

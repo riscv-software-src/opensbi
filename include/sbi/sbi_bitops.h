@@ -93,6 +93,6 @@ static inline int __ffs(unsigned long word)
  *
  * Undefined if no zero exists, so code should check against ~0UL first.
  */
-#define ffz(x)  __ffs(~(x))
+#define ffz(x) __ffs(~(x))
 
 #endif

@@ -35,8 +35,7 @@ static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
 		csr_write(CSR_MSTATUS, MSTATUS_FS);
 
 	/* Enable user/supervisor use of perf counters */
-	if (misa_extension('S') &&
-	     sbi_platform_has_scounteren(plat))
+	if (misa_extension('S') && sbi_platform_has_scounteren(plat))
 		csr_write(CSR_SCOUNTEREN, -1);
 	if (sbi_platform_has_mcounteren(plat))
 		csr_write(CSR_MCOUNTEREN, -1);
@@ -88,8 +87,7 @@ static int delegate_traps(struct sbi_scratch *scratch, u32 hartid)
 
 	/* Send M-mode interrupts and most exceptions to S-mode */
 	interrupts = MIP_SSIP | MIP_STIP | MIP_SEIP;
-	exceptions = (1U << CAUSE_MISALIGNED_FETCH) |
-		     (1U << CAUSE_BREAKPOINT) |
+	exceptions = (1U << CAUSE_MISALIGNED_FETCH) | (1U << CAUSE_BREAKPOINT) |
 		     (1U << CAUSE_USER_ECALL);
 	if (sbi_platform_has_mfaults_delegation(plat))
 		exceptions |= (1U << CAUSE_FETCH_PAGE_FAULT) |
@@ -166,7 +164,7 @@ static int pmp_init(struct sbi_scratch *scratch, u32 hartid)
 		return 0;
 
 	fw_size_log2 = log2roundup(scratch->fw_size);
-	fw_start = scratch->fw_start & ~((1UL << fw_size_log2) - 1UL);
+	fw_start     = scratch->fw_start & ~((1UL << fw_size_log2) - 1UL);
 
 	pmp_set(0, 0, fw_start, fw_size_log2);
 
@@ -175,8 +173,8 @@ static int pmp_init(struct sbi_scratch *scratch, u32 hartid)
 		count = (PMP_COUNT - 1);
 
 	for (i = 0; i < count; i++) {
-		if (sbi_platform_pmp_region_info(plat, hartid, i,
-						 &prot, &addr, &log2size))
+		if (sbi_platform_pmp_region_info(plat, hartid, i, &prot, &addr,
+						 &log2size))
 			continue;
 		pmp_set(i + 1, prot, addr, log2size);
 	}
@@ -208,10 +206,9 @@ void __attribute__((noreturn)) sbi_hart_hang(void)
 	__builtin_unreachable();
 }
 
-void __attribute__((noreturn)) sbi_hart_switch_mode(unsigned long arg0,
-						    unsigned long arg1,
-						    unsigned long next_addr,
-						    unsigned long next_mode)
+void __attribute__((noreturn))
+sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
+		     unsigned long next_addr, unsigned long next_mode)
 {
 	unsigned long val;
 
@@ -248,13 +245,13 @@ void __attribute__((noreturn)) sbi_hart_switch_mode(unsigned long arg0,
 		csr_write(CSR_UIE, 0);
 	}
 
-	register unsigned long a0 asm ("a0") = arg0;
-	register unsigned long a1 asm ("a1") = arg1;
-	__asm__ __volatile__ ("mret" : : "r" (a0), "r" (a1));
+	register unsigned long a0 asm("a0") = arg0;
+	register unsigned long a1 asm("a1") = arg1;
+	__asm__ __volatile__("mret" : : "r"(a0), "r"(a1));
 	__builtin_unreachable();
 }
 
-static spinlock_t avail_hart_mask_lock = SPIN_LOCK_INITIALIZER;
+static spinlock_t avail_hart_mask_lock	      = SPIN_LOCK_INITIALIZER;
 static volatile unsigned long avail_hart_mask = 0;
 
 void sbi_hart_mark_available(u32 hartid)
@@ -290,9 +287,9 @@ struct sbi_scratch *sbi_hart_id_to_scratch(struct sbi_scratch *scratch,
 	return ((h2s)scratch->hartid_to_scratch)(hartid);
 }
 
-#define COLDBOOT_WAIT_BITMAP_SIZE	__riscv_xlen
+#define COLDBOOT_WAIT_BITMAP_SIZE __riscv_xlen
 static spinlock_t coldboot_wait_bitmap_lock = SPIN_LOCK_INITIALIZER;
-static unsigned long coldboot_wait_bitmap = 0;
+static unsigned long coldboot_wait_bitmap   = 0;
 
 void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 {
@@ -302,7 +299,7 @@ void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if ((sbi_platform_hart_count(plat) <= hartid) ||
 	    (COLDBOOT_WAIT_BITMAP_SIZE <= hartid))
 		sbi_hart_hang();
-	
+
 	/* Set MSIE bit to receive IPI */
 	csr_set(CSR_MIE, MIP_MSIP);
 
@@ -325,9 +322,9 @@ void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 void sbi_hart_wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 {
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
-	int max_hart = sbi_platform_hart_count(plat);
+	int max_hart			= sbi_platform_hart_count(plat);
 
-	for(int i = 0; i < max_hart ; i++) {
+	for (int i = 0; i < max_hart; i++) {
 		/* send an IPI to every other hart */
 		spin_lock(&coldboot_wait_bitmap_lock);
 		if ((i != hartid) && (coldboot_wait_bitmap & (1UL << i)))

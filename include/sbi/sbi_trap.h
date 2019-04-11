@@ -86,10 +86,9 @@
 /* clang-format on */
 
 /** Get offset of member with name 'x' in sbi_trap_regs */
-#define SBI_TRAP_REGS_OFFSET(x)			\
-				((SBI_TRAP_REGS_##x) * __SIZEOF_POINTER__)
+#define SBI_TRAP_REGS_OFFSET(x) ((SBI_TRAP_REGS_##x) * __SIZEOF_POINTER__)
 /** Size (in bytes) of sbi_trap_regs */
-#define SBI_TRAP_REGS_SIZE			SBI_TRAP_REGS_OFFSET(last)
+#define SBI_TRAP_REGS_SIZE SBI_TRAP_REGS_OFFSET(last)
 
 #ifndef __ASSEMBLY__
 
@@ -169,12 +168,10 @@ struct sbi_trap_regs {
 
 struct sbi_scratch;
 
-int sbi_trap_redirect(struct sbi_trap_regs *regs,
-		      struct sbi_scratch *scratch,
+int sbi_trap_redirect(struct sbi_trap_regs *regs, struct sbi_scratch *scratch,
 		      ulong epc, ulong cause, ulong tval);
 
-void sbi_trap_handler(struct sbi_trap_regs *regs,
-		      struct sbi_scratch *scratch);
+void sbi_trap_handler(struct sbi_trap_regs *regs, struct sbi_scratch *scratch);
 
 #endif
 
