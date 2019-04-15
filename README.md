@@ -157,7 +157,7 @@ files where the reused code is present.
 2. Some source file for the Kendryte/k210 platform code are based on code from
    the Kendryte [standalone SDK] available on github. These files retain the
    original copyright and license of the Kendryte standalone SDK project and
-   are licensed under the terms of the Apache License, Version 2.0. 
+   are licensed under the terms of the Apache License, Version 2.0.
 
 See also the [third party notices] file for more information.
 
@@ -167,6 +167,9 @@ Contributing to OpenSBI
 The OpenSBI project encourages and welcomes contributions. Contributions should
 follow the rules described in OpenSBI [Contribution Guideline] document.
 In particular, all patches sent should contain a Signed-off-by tag.
+
+The [Contributors List] document provides a list of individuals and
+organizations actively contributing to the OpenSBI project.
 
 Documentation
 -------------
@@ -226,6 +229,7 @@ make I=<install_directory> install_docs
 [COPYING.BSD]: COPYING.BSD
 [SPDX]: http://spdx.org/licenses/
 [Contribution Guideline]: docs/contributing.md
+[Contributors List]: CONTRIBUTORS.md
 [Library Usage]: docs/library_usage.md
 [Platform Support Guide]: docs/platform_guide.md
 [Platform Documentation]: docs/platform/platform.md
@@ -233,4 +237,3 @@ make I=<install_directory> install_docs
 [Doxygen manual]: http://www.stack.nl/~dimitri/doxygen/manual.html
 [standalone SDK]: https://github.com/kendryte/kendryte-standalone-sdk
 [third party notices]: ThirdPartyNotices.md
-
