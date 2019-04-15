@@ -79,41 +79,119 @@ static void __noreturn sbi_trap_error(const char *msg, int rc, u32 hartid,
 int sbi_trap_redirect(struct sbi_trap_regs *regs, struct sbi_scratch *scratch,
 		      ulong epc, ulong cause, ulong tval)
 {
-	ulong new_mstatus, prev_mode;
+	ulong hstatus, vsstatus, prev_mode;
+#if __riscv_xlen == 32
+	bool prev_virt = (regs->mstatusH & MSTATUSH_MPV) ? TRUE : FALSE;
+	bool prev_stage2 = (regs->mstatusH & MSTATUSH_MTL) ? TRUE : FALSE;
+#else
+	bool prev_virt = (regs->mstatus & MSTATUS_MPV) ? TRUE : FALSE;
+	bool prev_stage2 = (regs->mstatus & MSTATUS_MTL) ? TRUE : FALSE;
+#endif
+	/* By default, we redirect to HS-mode */
+	bool next_virt = FALSE;
 
 	/* Sanity check on previous mode */
 	prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
 	if (prev_mode != PRV_S && prev_mode != PRV_U)
 		return SBI_ENOTSUPP;
 
-	/* Update S-mode exception info */
-	csr_write(CSR_STVAL, tval);
-	csr_write(CSR_SEPC, epc);
-	csr_write(CSR_SCAUSE, cause);
+	/* For certain exceptions from VS/VU-mode we redirect to VS-mode */
+	if (misa_extension('H') && prev_virt && !prev_stage2) {
+		switch (cause) {
+		case CAUSE_FETCH_PAGE_FAULT:
+		case CAUSE_LOAD_PAGE_FAULT:
+		case CAUSE_STORE_PAGE_FAULT:
+			next_virt = TRUE;
+			break;
+		default:
+			break;
+		};
+	}
 
-	/* Set MEPC to S-mode exception vector base */
-	regs->mepc = csr_read(CSR_STVEC);
+	/* Update MSTATUS MPV and MTL bits */
+#if __riscv_xlen == 32
+	regs->mstatusH &= ~MSTATUSH_MPV;
+	regs->mstatusH |= (next_virt) ? MSTATUSH_MPV : 0UL;
+	regs->mstatusH &= ~MSTATUSH_MTL;
+#else
+	regs->mstatus &= ~MSTATUS_MPV;
+	regs->mstatus |= (next_virt) ? MSTATUS_MPV : 0UL;
+	regs->mstatus &= ~MSTATUS_MTL;
+#endif
 
-	/* Initial value of new MSTATUS */
-	new_mstatus = regs->mstatus;
+	/* Update HSTATUS for VS/VU-mode to HS-mode transition */
+	if (misa_extension('H') && prev_virt && !next_virt) {
+		/* Update HSTATUS SP2P, SP2V, SPV, and STL bits */
+		hstatus = csr_read(CSR_HSTATUS);
+		hstatus &= ~HSTATUS_SP2P;
+		hstatus |= (regs->mstatus & MSTATUS_SPP) ? HSTATUS_SP2P : 0;
+		hstatus &= ~HSTATUS_SP2V;
+		hstatus |= (hstatus & HSTATUS_SPV) ? HSTATUS_SP2V : 0;
+		hstatus &= ~HSTATUS_SPV;
+		hstatus |= (prev_virt) ? HSTATUS_SPV : 0;
+		hstatus &= ~HSTATUS_STL;
+		hstatus |= (prev_stage2) ? HSTATUS_STL : 0;
+		csr_write(CSR_HSTATUS, hstatus);
+	}
 
-	/* Clear MPP, SPP, SPIE, and SIE */
-	new_mstatus &=
-		~(MSTATUS_MPP | MSTATUS_SPP | MSTATUS_SPIE | MSTATUS_SIE);
+	/* Update exception related CSRs */
+	if (next_virt) {
+		/* Update VS-mode exception info */
+		csr_write(CSR_VSTVAL, tval);
+		csr_write(CSR_VSEPC, epc);
+		csr_write(CSR_VSCAUSE, cause);
 
-	/* Set SPP */
-	if (prev_mode == PRV_S)
-		new_mstatus |= (1UL << MSTATUS_SPP_SHIFT);
+		/* Set MEPC to VS-mode exception vector base */
+		regs->mepc = csr_read(CSR_VSTVEC);
 
-	/* Set SPIE */
-	if (regs->mstatus & MSTATUS_SIE)
-		new_mstatus |= (1UL << MSTATUS_SPIE_SHIFT);
+		/* Set MPP to VS-mode */
+		regs->mstatus &= ~MSTATUS_MPP;
+		regs->mstatus |= (PRV_S << MSTATUS_MPP_SHIFT);
 
-	/* Set MPP */
-	new_mstatus |= (PRV_S << MSTATUS_MPP_SHIFT);
+		/* Get VS-mode SSTATUS CSR */
+		vsstatus = csr_read(CSR_VSSTATUS);
 
-	/* Set new value in MSTATUS */
-	regs->mstatus = new_mstatus;
+		/* Set SPP for VS-mode */
+		vsstatus &= ~SSTATUS_SPP;
+		if (prev_mode == PRV_S)
+			vsstatus |= (1UL << SSTATUS_SPP_SHIFT);
+
+		/* Set SPIE for VS-mode */
+		vsstatus &= ~SSTATUS_SPIE;
+		if (vsstatus & SSTATUS_SIE)
+			vsstatus |= (1UL << SSTATUS_SPIE_SHIFT);
+
+		/* Clear SIE for VS-mode */
+		vsstatus &= ~SSTATUS_SIE;
+
+		/* Update VS-mode SSTATUS CSR */
+		csr_write(CSR_VSSTATUS, vsstatus);
+	} else {
+		/* Update S-mode exception info */
+		csr_write(CSR_STVAL, tval);
+		csr_write(CSR_SEPC, epc);
+		csr_write(CSR_SCAUSE, cause);
+
+		/* Set MEPC to S-mode exception vector base */
+		regs->mepc = csr_read(CSR_STVEC);
+
+		/* Set MPP to S-mode */
+		regs->mstatus &= ~MSTATUS_MPP;
+		regs->mstatus |= (PRV_S << MSTATUS_MPP_SHIFT);
+
+		/* Set SPP for S-mode*/
+		regs->mstatus &= ~MSTATUS_SPP;
+		if (prev_mode == PRV_S)
+			regs->mstatus |= (1UL << MSTATUS_SPP_SHIFT);
+
+		/* Set SPIE for S-mode */
+		regs->mstatus &= ~MSTATUS_SPIE;
+		if (regs->mstatus & MSTATUS_SIE)
+			regs->mstatus |= (1UL << MSTATUS_SPIE_SHIFT);
+
+		/* Clear SIE for S-mode */
+		regs->mstatus &= ~MSTATUS_SIE;
+	}
 
 	return 0;
 }
@@ -195,7 +273,8 @@ void sbi_trap_handler(struct sbi_trap_regs *regs, struct sbi_scratch *scratch)
 		break;
 	default:
 		/* If the trap came from S or U mode, redirect it there */
-		rc = sbi_trap_redirect(regs, scratch, regs->mepc, mcause, mtval);
+		rc = sbi_trap_redirect(regs, scratch, regs->mepc,
+				       mcause, mtval);
 		break;
 	};
 

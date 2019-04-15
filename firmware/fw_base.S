@@ -486,6 +486,16 @@ _trap_handler_all_mode:
 	REG_S	t0, SBI_TRAP_REGS_OFFSET(mepc)(sp)
 	csrr	t0, CSR_MSTATUS
 	REG_S	t0, SBI_TRAP_REGS_OFFSET(mstatus)(sp)
+	REG_S	zero, SBI_TRAP_REGS_OFFSET(mstatusH)(sp)
+#if __riscv_xlen == 32
+	csrr	t0, CSR_MISA
+	srli	t0, t0, ('H' - 'A')
+	andi	t0, t0, 0x1
+	beq	t0, zero, _skip_mstatush_save
+	csrr	t0, CSR_MSTATUSH
+	REG_S	t0, SBI_TRAP_REGS_OFFSET(mstatusH)(sp)
+_skip_mstatush_save:
+#endif
 
 	/* Save all general regisers except SP and T0 */
 	REG_S	zero, SBI_TRAP_REGS_OFFSET(zero)(sp)
@@ -560,6 +570,15 @@ _trap_handler_all_mode:
 	csrw	CSR_MEPC, t0
 	REG_L	t0, SBI_TRAP_REGS_OFFSET(mstatus)(sp)
 	csrw	CSR_MSTATUS, t0
+#if __riscv_xlen == 32
+	csrr	t0, CSR_MISA
+	srli	t0, t0, ('H' - 'A')
+	andi	t0, t0, 0x1
+	beq	t0, zero, _skip_mstatush_restore
+	REG_L	t0, SBI_TRAP_REGS_OFFSET(mstatusH)(sp)
+	csrw	CSR_MSTATUSH, t0
+_skip_mstatush_restore:
+#endif
 
 	/* Restore T0 */
 	REG_L	t0, SBI_TRAP_REGS_OFFSET(t0)(sp)

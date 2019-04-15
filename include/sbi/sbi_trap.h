@@ -80,8 +80,10 @@
 #define SBI_TRAP_REGS_mepc			32
 /** Index of mstatus member in sbi_trap_regs */
 #define SBI_TRAP_REGS_mstatus			33
+/** Index of mstatusH member in sbi_trap_regs */
+#define SBI_TRAP_REGS_mstatusH			34
 /** Last member index in sbi_trap_regs */
-#define SBI_TRAP_REGS_last			34
+#define SBI_TRAP_REGS_last			35
 
 /* clang-format on */
 
@@ -164,6 +166,8 @@ struct sbi_trap_regs {
 	unsigned long mepc;
 	/** mstatus register state */
 	unsigned long mstatus;
+	/** mstatusH register state (only for 32-bit) */
+	unsigned long mstatusH;
 } __packed;
 
 struct sbi_scratch;
