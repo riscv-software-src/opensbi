@@ -142,6 +142,7 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 	const char *msg = "trap handler failed";
 	u32 hartid = sbi_current_hartid();
 	ulong mcause = csr_read(CSR_MCAUSE);
+	ulong mtval = csr_read(CSR_MTVAL);
 
 	if (mcause & (1UL << (__riscv_xlen - 1))) {
 		mcause &= ~(1UL << (__riscv_xlen - 1));
@@ -178,6 +179,8 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 		msg = "ecall handler failed";
 		break;
 	default:
+		/* If the trap came from S or U mode, redirect it there */
+		rc = sbi_trap_redirect(regs, scratch, regs->mepc, mcause, mtval);
 		break;
 	};
 
