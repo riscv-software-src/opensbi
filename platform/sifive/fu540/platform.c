@@ -86,9 +86,14 @@ static void fu540_modify_dt(void *fdt)
 	plic_fdt_fixup(fdt, "riscv,plic0");
 }
 
+
+extern void update_next_addr(bool coolboot);
+
 static int fu540_final_init(bool cold_boot)
 {
 	void *fdt;
+
+	update_next_addr(cold_boot);
 
 	if (!cold_boot)
 		return 0;

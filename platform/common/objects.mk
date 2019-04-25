@@ -8,3 +8,4 @@
 #
 
 platform-common-objs-y += tinyfdt.o
+platform-common-objs-y += next_addr.o
