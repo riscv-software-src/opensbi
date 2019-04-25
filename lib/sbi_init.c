@@ -11,6 +11,7 @@
 #include <sbi/riscv_atomic.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_ecall.h>
+#include <sbi/sbi_fdt.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_platform.h>
@@ -90,6 +91,10 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
+	rc = sbi_fdt_update_next_addr(scratch, TRUE);
+	if (rc)
+		sbi_hart_hang();
+
 	if (!(scratch->options & SBI_SCRATCH_NO_BOOT_PRINTS))
 		sbi_boot_prints(scratch, hartid);
 
@@ -132,6 +137,10 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 
 	rc = sbi_system_final_init(scratch, FALSE);
+	if (rc)
+		sbi_hart_hang();
+
+	rc = sbi_fdt_update_next_addr(scratch, FALSE);
 	if (rc)
 		sbi_hart_hang();
 

@@ -48,12 +48,8 @@
  *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "libfdt_env.h"
-
-#include <fdt.h>
-#include <libfdt.h>
-
-#include "libfdt_internal.h"
+#include <libfdt/libfdt.h>
+#include <libfdt/libfdt_internal.h>
 
 static int fdt_nodename_eq_(const void *fdt, int offset,
 			    const char *s, int len)

@@ -48,12 +48,8 @@
  *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "libfdt_env.h"
-
-#include <fdt.h>
-#include <libfdt.h>
-
-#include "libfdt_internal.h"
+#include <libfdt/libfdt.h>
+#include <libfdt/libfdt_internal.h>
 
 int fdt_setprop_inplace_namelen_partial(void *fdt, int nodeoffset,
 					const char *name, int namelen,

@@ -7,8 +7,7 @@
  *   Atish Patra <atish.patra@wdc.com>
  */
 
-#include <libfdt.h>
-#include <fdt.h>
+#include <libfdt/libfdt.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_const.h>
 #include <sbi/sbi_hart.h>

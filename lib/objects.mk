@@ -15,6 +15,7 @@ lib-objs-y += riscv_locks.o
 lib-objs-y += sbi_console.o
 lib-objs-y += sbi_ecall.o
 lib-objs-y += sbi_emulate_csr.o
+lib-objs-y += sbi_fdt.o
 lib-objs-y += sbi_fifo.o
 lib-objs-y += sbi_hart.o
 lib-objs-y += sbi_illegal_insn.o
