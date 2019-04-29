@@ -13,6 +13,20 @@
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_trap.h>
 
+.macro	MOV_3R __d0, __s0, __d1, __s1, __d2, __s2
+	add	\__d0, \__s0, zero
+	add	\__d1, \__s1, zero
+	add	\__d2, \__s2, zero
+.endm
+
+.macro	MOV_5R __d0, __s0, __d1, __s1, __d2, __s2, __d3, __s3, __d4, __s4
+	add	\__d0, \__s0, zero
+	add	\__d1, \__s1, zero
+	add	\__d2, \__s2, zero
+	add	\__d3, \__s3, zero
+	add	\__d4, \__s4, zero
+.endm
+
 	.align 3
 	.section .entry, "ax", %progbits
 	.globl _start
@@ -25,8 +39,14 @@ _start:
 	csrr	a6, CSR_MHARTID
 	blt	zero, a6, _wait_for_boot_hart
 
+	/* Reset all registers for boot HART */
 	li	ra, 0
 	call	_reset_regs
+
+	/* Allow main firmware to save info */
+	MOV_5R	s0, a0, s1, a1, s2, a2, s3, a3, s4, a4
+	call	fw_save_info
+	MOV_5R	a0, s0, a1, s1, a2, s2, a3, s3, a4, s4
 
 	/* Preload HART details
 	 * s7 -> HART Count
@@ -59,6 +79,7 @@ _scratch_init:
 	sub	tp, tp, a5
 
 	/* Initialize scratch space */
+	/* Store fw_start and fw_size in scratch space */
 	la	a4, _fw_start
 	la	a5, _fw_end
 	mul	t0, s7, s8
@@ -66,27 +87,44 @@ _scratch_init:
 	sub	a5, a5, a4
 	REG_S	a4, SBI_SCRATCH_FW_START_OFFSET(tp)
 	REG_S	a5, SBI_SCRATCH_FW_SIZE_OFFSET(tp)
-	/* Note: fw_next_arg1() uses a0, a1, and ra */
+	/* Store next arg1 in scratch space */
+	MOV_3R	s0, a0, s1, a1, s2, a2
 	call	fw_next_arg1
 	REG_S	a0, SBI_SCRATCH_NEXT_ARG1_OFFSET(tp)
-	/* Note: fw_next_addr() uses a0, a1, and ra */
+	MOV_3R	a0, s0, a1, s1, a2, s2
+	/* Store next address in scratch space */
+	MOV_3R	s0, a0, s1, a1, s2, a2
 	call	fw_next_addr
 	REG_S	a0, SBI_SCRATCH_NEXT_ADDR_OFFSET(tp)
-	li	a4, PRV_S
-	REG_S	a4, SBI_SCRATCH_NEXT_MODE_OFFSET(tp)
+	MOV_3R	a0, s0, a1, s1, a2, s2
+	/* Store next mode in scratch space */
+	MOV_3R	s0, a0, s1, a1, s2, a2
+	call	fw_next_mode
+	REG_S	a0, SBI_SCRATCH_NEXT_MODE_OFFSET(tp)
+	MOV_3R	a0, s0, a1, s1, a2, s2
+	/* Store warm_boot address in scratch space */
 	la	a4, _start_warm
 	REG_S	a4, SBI_SCRATCH_WARMBOOT_ADDR_OFFSET(tp)
+	/* Store platform address in scratch space */
 	la	a4, platform
 	REG_S	a4, SBI_SCRATCH_PLATFORM_ADDR_OFFSET(tp)
+	/* Store hartid-to-scratch function address in scratch space */
 	la	a4, _hartid_to_scratch
 	REG_S	a4, SBI_SCRATCH_HARTID_TO_SCRATCH_OFFSET(tp)
+	/* Clear tmp0 in scratch space */
 	REG_S	zero, SBI_SCRATCH_TMP0_OFFSET(tp)
+	/* Store firmware options in scratch space */
+	MOV_3R	s0, a0, s1, a1, s2, a2
 #ifdef FW_OPTIONS
 	li	a4, FW_OPTIONS
-	REG_S	a4, SBI_SCRATCH_OPTIONS_OFFSET(tp)
 #else
-	REG_S	zero, SBI_SCRATCH_OPTIONS_OFFSET(tp)
+	add	a4, zero, zero
 #endif
+	call	fw_options
+	or	a4, a4, a0
+	REG_S	a4, SBI_SCRATCH_OPTIONS_OFFSET(tp)
+	MOV_3R	a0, s0, a1, s1, a2, s2
+	/* Move to next scratch space */
 	add	t1, t1, t2
 	blt	t1, s7, _scratch_init
 
@@ -99,12 +137,10 @@ _bss_zero:
 	blt	a4, a5, _bss_zero
 
 	/* Override pervious arg1 */
-	add	s0, a0, zero
-	add	s1, a1, zero
+	MOV_3R	s0, a0, s1, a1, s2, a2
 	call	fw_prev_arg1
 	add	t1, a0, zero
-	add	a0, s0, zero
-	add	a1, s1, zero
+	MOV_3R	a0, s0, a1, s1, a2, s2
 	beqz	t1, _prev_arg1_override_done
 	add	a1, t1, zero
 _prev_arg1_override_done:
@@ -122,13 +158,12 @@ _prev_arg1_override_done:
 	li	a3, ~(__SIZEOF_POINTER__ - 1)
 	li	a4, 0xff
 	/* t1 = destination FDT start address */
-	add	s0, a0, zero
-	add	s1, a1, zero
+	MOV_3R	s0, a0, s1, a1, s2, a2
 	call	fw_next_arg1
 	add	t1, a0, zero
-	add	a0, s0, zero
-	add	a1, s1, zero
+	MOV_3R	a0, s0, a1, s1, a2, s2
 	beqz	t1, _fdt_reloc_done
+	beq	t1, a1, _fdt_reloc_done
 	and	t1, t1, a3
 	/* t0 = source FDT start address */
 	add	t0, a1, zero
@@ -188,6 +223,7 @@ _wait_for_boot_hart:
 	beqz	a5, _wait_for_boot_hart
 
 _start_warm:
+	/* Reset all registers for non-boot HARTs */
 	li	ra, 0
 	call	_reset_regs
 
@@ -430,7 +466,7 @@ _reset_regs:
 
 	/* flush the instruction cache */
 	fence.i
-	/* Reset all registers except ra, a0,a1 */
+	/* Reset all registers except ra, a0, a1 and a2 */
 	li sp, 0
 	li gp, 0
 	li tp, 0
@@ -439,7 +475,6 @@ _reset_regs:
 	li t2, 0
 	li s0, 0
 	li s1, 0
-	li a2, 0
 	li a3, 0
 	li a4, 0
 	li a5, 0
