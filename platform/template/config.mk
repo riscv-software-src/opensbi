@@ -46,6 +46,13 @@ platform-ldflags-y =
 FW_TEXT_START=0x80000000
 
 #
+# Dynamic firmware configuration.
+# Optional parameters are commented out. Uncomment and define these parameters
+# as needed.
+#
+FW_DYNAMIC=<y|n>
+
+#
 # Jump firmware configuration.
 # Optional parameters are commented out. Uncomment and define these parameters
 # as needed.
@@ -83,4 +90,3 @@ endif
 # Allow linking against static libc for standard functions (memset, memcpy, etc)
 #
 # PLATFORM_INCLUDE_LIBC=y
-

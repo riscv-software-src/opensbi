@@ -24,6 +24,7 @@ PLATFORM_SYS_CLINT=y
 
 # Blobs to build
 FW_TEXT_START=0x80000000
+FW_DYNAMIC=y
 FW_JUMP=y
 ifeq ($(PLATFORM_RISCV_XLEN), 32)
   # This needs to be 4MB alligned for 32-bit system
