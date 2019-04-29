@@ -9,12 +9,22 @@ OpenSBI generic library code. The supported firmwares type will differ in how
 the arguments passed by the platform early boot stage are handled, as well as
 how the boot stage following the firmware will be handled and executed.
 
-OpenSBI currently supports two different types of firmwares.
+OpenSBI currently supports three different types of firmwares.
+
+Firmware with Dynamic Information (*FW_DYNAMIC*)
+------------------------------------------------
+
+The *FW_DYNAMIC* firmware gets information about the next booting stage entry,
+e.g. a bootloader or an OS kernel, from previous booting stage at runtime.
+
+A *FW_DYNAMIC* firmware is particularly useful when the booting stage executed
+prior to OpenSBI firmware is capable of loading both the OpenSBI firmware
+and the booting stage binary to follow OpenSBI firmware.
 
 Firmware with Jump Address (*FW_JUMP*)
 --------------------------------------
 
-The *FW_JUMP* firmware only handles the address of the next booting stage
+The *FW_JUMP* firmware assumes a fixed address of the next booting stage
 entry, e.g. a bootloader or an OS kernel, without directly including the
 binary code for this next stage.
 
@@ -48,14 +58,17 @@ configuration parameter.
   loads OpenSBI firmware.
 
 Additionally, each firmware type as a set of type specific configuration
-parameters. Detailed information for each firmware type can be found in the 
+parameters. Detailed information for each firmware type can be found in the
 following documents.
 
+* *[FW_DYNAMIC]*: The *Firmware with Dynamic Information (FW_DYNAMIC)* is
+  described in more details in the file *fw_dynamic.md*.
 * *[FW_JUMP]*: The *Firmware with Jump Address (FW_JUMP)* is described in more
   details in the file *fw_jump.md*.
 * *[FW_PAYLOAD]*: The *Firmware with Payload (FW_PAYLOAD)* is described in more
   details in the file *fw_payload.md*.
 
+[FW_DYNAMIC]: fw_dynamic.md
 [FW_JUMP]: fw_jump.md
 [FW_PAYLOAD]: fw_payload.md
 
