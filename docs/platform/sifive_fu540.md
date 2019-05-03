@@ -110,7 +110,7 @@ tables as described here.
 sgdisk --clear                                                               \
        --new=1:2048:67583  --change-name=1:bootloader --typecode=1:2E54B353-1271-4842-806F-E436D6AF6985   \
        --new=2:264192:     --change-name=2:root       --typecode=2:0FC63DAF-8483-4772-8E79-3D69D8477DE4 \
-       $(DISK)
+       ${DISK}
 ```
 
 Booting SiFive Fu540 Platform
