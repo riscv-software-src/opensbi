@@ -1,15 +1,15 @@
 OpenSBI Platform Support Guideline
 ==================================
 
-OpenSBI platform support allows an implementation to define a set of platform
-specific hooks (hardware manipulation functions) in the form of a
+The OpenSBI platform support allows an implementation to define a set of
+platform-specific hooks (hardware manipulation functions) in the form of a
 *struct sbi_platform* data structure instance. This instance is required by
-platform independent *libsbi.a* to execute platform specific operations.
+the platform-independent *libsbi.a* to execute platform-specific operations.
 
-Each of the reference platform support provided by OpenSBI define an instance
+Each of the reference platform supports provided by OpenSBI defines an instance
 of the *struct sbi_platform* data structure. For each supported platform,
-*libplatsbi.a* integrates this instance with *libsbi.a* to create a platform
-specific OpenSBI static library. This library is installed
+*libplatsbi.a* integrates this instance with *libsbi.a* to create a
+platform-specific OpenSBI static library. This library is installed
 in *<install_directory>/platform/<platform_subdir>/lib/libplatsbi.a*
 
 OpenSBI also provides implementation examples of bootable runtime firmwares for
@@ -22,21 +22,21 @@ for the legacy *riskv-pk* boot loader (BBL).
 A complete doxygen-style documentation of *struct sbi_platform* and related
 APIs is available in the file *include/sbi/sbi_platform.h*.
 
-Adding a new platform support
------------------------------
+Adding support for a new platform
+---------------------------------
 
 Support for a new platform named *<xyz>* can be added as follows:
 
-1. Create a directory named *<xyz>* under *platform/* directory
-2. Create a platform configuration file named *config.mk* under
+1. Create a directory named *<xyz>* under the *platform/* directory.
+2. Create a platform configuration file named *config.mk* under the
    *platform/<xyz>/* directory. This configuration file will provide
-   compiler flags, select common drivers, and select firmware options
-3. Create *platform/<xyz>/objects.mk* file for listing the platform
-   specific object files to be compiled
-4. Create *platform/<xyz>/platform.c* file providing a *struct sbi_platform*
-   instance
+   compiler flags, select common drivers, and select firmware options.
+3. Create a *platform/<xyz>/objects.mk* file for listing the
+   platform-specific object files to be compiled.
+4. Create a *platform/<xyz>/platform.c* file providing a *struct sbi_platform*
+   instance.
 
-A template platform support code is available under the *platform/template*
+A platform support code template is available under the *platform/template*
 directory. Copying this directory and its content as a new directory named
 *<xyz>* under the *platform/* directory will create all the files mentioned
 above.

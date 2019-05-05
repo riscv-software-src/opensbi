@@ -1,19 +1,20 @@
 OpenSBI Contribution Guideline
 ==============================
 
-All contributions to OpenSBI can be sent in following ways:
-1. Email patches to OpenSBI mailing list `opensbi@lists.infradead.org`
-2. GitHub Pull Requests (PRs) to [OpenSBI main repository]
+All contributions to OpenSBI can be sent in the following ways:
+1. Email patches to the OpenSBI mailing list at `opensbi@lists.infradead.org`
+2. GitHub Pull Requests (PRs) to the [OpenSBI main repository]
 
-To join OpenSBI mailing list, please visit [OpenSBI infradead page].
+To join the OpenSBI mailing list, please visit the [OpenSBI infradead page].
 
-OpenSBI maintainers prefer patches via OpenSBI mailing list (option1 above)
-so that they are visible to wider audience. All accepted patches on the
-OpenSBI mailing list will be taken by any of the OpenSBI maintainers and
-merged into [OpenSBI main repository] using GitHub PRs.
+The OpenSBI maintainers prefer patches via the OpenSBI mailing list
+(option 1 above) so that they are visible to a wider audience. All
+accepted patches on the OpenSBI mailing list will be taken by any of
+the OpenSBI maintainers and merged into the [OpenSBI main repository]
+using GitHub PRs.
 
 All contributed work must follow the following rules:
-1. OpenSBI code should be written in accordance to [Linux coding style].
+1. OpenSBI code should be written in accordance to the [Linux coding style].
 2. This project embraces the [Developer Certificate of Origin (DCO)] for
 contributions. This means that you must agree to the following prior to
 submitting patches: if you agree with this developer certificate you
@@ -27,9 +28,9 @@ prefixes are for example "lib:", "platform:", "firmware:", "docs:" and "top:".
 5. Maintainers should use "Rebase and Merge" when using GitHub to merge pull
 requests to avoid creating unnecessary merge commits.
 6. Maintainers should avoid creating branches directly in the main
-riscv/opensbi repository. Instead prefer using a fork of riscv/opensbi main
+riscv/opensbi repository. Instead prefer using a fork of the riscv/opensbi main
 repository and branches within that fork to create pull requests.
-7. A maintainer cannot merge his own pull requests in riscv/opensbi main
+7. A maintainer cannot merge his own pull requests in the riscv/opensbi main
 repository.
 8. A pull request must get at least one review from a maintainer.
 9. A pull request must spend at least 24 hours in review to allow for other

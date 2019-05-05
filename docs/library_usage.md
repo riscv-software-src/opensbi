@@ -3,46 +3,46 @@ OpenSBI Library Usage
 
 OpenSBI provides two types of static libraries:
 
-1. *libsbi.a* - A platform independent generic static library implementing the
-   interface defined by the SBI specifications. Platform specific processing
+1. *libsbi.a* - A platform-independent generic static library implementing the
+   interface defined by the SBI specifications. Platform-specific processing
    hooks for the execution of this interface must be provided by the firmware or
    bootloader linking with this library. This library is installed as
    *<install_directory>/lib/libsbi.a*
-2. *libplatsbi.a* - An example platform specific static library integrating 
-   *libsbi.a* with platform specific hooks. This library is available only for
+2. *libplatsbi.a* - An example platform-specific static library integrating
+   *libsbi.a* with platform-specific hooks. This library is available only for
    the platforms supported by OpenSBI. This library is installed as
    *<install_directory>/platform/<platform_subdir>/lib/libplatsbi.a*
 
 Implementations may choose either *libsbi.a* or *libplatsbi.a* to link with
-their firmware or bootloader. In the case of *libsbi.a*, platform specific
-hooks in the form of a *struct sbi_platform* instance needs to be provided.
+their firmware or bootloader. In the case of *libsbi.a*, platform-specific
+hooks in the form of a *struct sbi_platform* instance need to be provided.
 
-The platform specific example firmwares provided by OpenSBI are not mandatory.
-An implementation may choose to link OpenSBI generic static library together
-with an M-mode firmware or bootloader providing hardware specific hooks. Since
-OpenSBI is a statically linked library, users must ensure that the license of
-these external components is compatible with OpenSBI license.
+The platform-specific example firmwares provided by OpenSBI are not mandatory.
+An implementation may choose to link the OpenSBI generic static library together
+with an M-mode firmware or bootloader providing the hardware-specific hooks.
+Since OpenSBI is a statically linked library, users must ensure that the
+license of these external components is compatible with the OpenSBI license.
 
 Constraints on OpenSBI usage from external firmware
 ---------------------------------------------------
 
 Users have to ensure that an external firmware or bootloader linking against
-OpenSBI static libraries (*libsbi.a* or *libplatsbi.a*) are compiled with the
+OpenSBI static libraries (*libsbi.a* or *libplatsbi.a*) is compiled with the
 same GCC target options *-mabi*, *-march*, and *-mcmodel*.
 
 There are only two constraints on calling any OpenSBI library function from an
 external M-mode firmware or bootloader:
 
 1. The RISC-V *MSCRATCH* CSR must point to a valid OpenSBI scratch space
-   (i.e. *struct sbi_scratch* instance)
-2. The RISC-V *SP* register (i.e. stack pointer) must be set per-HART
-   pointing to distinct non-overlapping stacks
+   (i.e. a *struct sbi_scratch* instance).
+2. The RISC-V *SP* register (i.e. the stack pointer) must be set per-HART
+   pointing to distinct non-overlapping stacks.
 
 The most important functions from an external firmware or bootloader
 perspective are *sbi_init()* and *sbi_trap_handler()*.
 
 In addition to the above constraints, the external firmware or bootloader must
-ensure that interrupts are disabled in *MSTATUS* and *MIE* CSRs when calling
+ensure that interrupts are disabled in the *MSTATUS* and *MIE* CSRs when calling
 the functions *sbi_init()* and *sbi_trap_handler()*.
 
 The *sbi_init()* function should be called by the external firmware or
@@ -62,4 +62,3 @@ bootloader to service the following interrupts and traps:
 
 **Note:** external firmwares or bootloaders can be more conservative by
 forwarding all traps and interrupts to *sbi_trap_handler()*.
-

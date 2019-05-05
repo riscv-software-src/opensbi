@@ -1,4 +1,5 @@
-Copyright (c) 2019 Western Digital Corporation or its affiliates.
+Copyright (c) 2019 Western Digital Corporation or its affiliates
+and other contributors.
 
 RISC-V Open Source Supervisor Binary Interface (OpenSBI)
 ========================================================
@@ -6,53 +7,55 @@ RISC-V Open Source Supervisor Binary Interface (OpenSBI)
 The **RISC-V Supervisor Binary Interface (SBI)** is the recommended interface
 between:
 
-1. A platform specific firmware running in M-mode and bootloader, hypervisor or
-   a general purpose OS executing in S-mode or HS-mode.
-2. A hypervisor running in HS-mode and a bootloader or a general purpose OS
+1. A platform-specific firmware running in M-mode and a bootloader, a
+   hypervisor or a general-purpose OS executing in S-mode or HS-mode.
+2. A hypervisor running in HS-mode and a bootloader or a general-purpose OS
    executing in VS-mode.
 
 The *RISC-V SBI specification* is maintained as an independent project by the
-RISC-V Foundation in [Github].
+RISC-V Foundation on [Github] (https://github.com/riscv/riscv-sbi-doc).
 
 The goal of the OpenSBI project is to provide an open-source reference
-implementation of the RISC-V SBI specifications for platform specific firmwares
-executing in M-mode (case 1 mentioned above). OpenSBI implementation can be
+implementation of the RISC-V SBI specifications for platform-specific firmwares
+executing in M-mode (case 1 mentioned above). An OpenSBI implementation can be
 easily extended by RISC-V platform and system-on-chip vendors to fit a
 particular hardware configuration.
 
-The main component of OpenSBI is provided in the form of a platform independent
+The main component of OpenSBI is provided in the form of a platform-independent
 static library **libsbi.a** implementing the SBI interface. A firmware or
 bootloader implementation can link against this library to ensure conformance
 with the SBI interface specifications. *libsbi.a* also defines an interface for
-integrating with platform specific operations provided by the platform firmware
-implementation (e.g. console access functions, inter-processor interrupts
+integrating with platform-specific operations provided by the platform firmware
+implementation (e.g. console access functions, inter-processor interrupt
 control, etc).
 
-To illustrate the use of *libsbi.a* library, OpenSBI also provides a set of
-platform specific support examples. For each example, a platform
-specific static library *libplatsbi.a* can be compiled. This library implements
-SBI calls processing by integrating *libsbi.a* with necessary platform dependent
-hardware manipulation functions. For all supported platforms, OpenSBI also
-provides several runtime firmware examples built using the platform
+To illustrate the use of the *libsbi.a* library, OpenSBI also provides a set of
+platform-specific support examples. For each example, a platform-specific
+static library *libplatsbi.a* can be compiled. This library implements
+SBI call processing by integrating *libsbi.a* with the necessary
+platform-dependent hardware manipulation functions. For all supported platforms,
+OpenSBI also provides several runtime firmware examples built using the platform
 *libplatsbi.a*. These example firmwares can be used to replace the legacy
-*riskv-pk* bootloader (aka BBL) and enable the use of well known bootloaders
-such as [U-Boot].
+*riscv-pk* bootloader (aka BBL) and enable the use of well-known bootloaders
+such as [U-Boot] (https://git.denx.de/u-boot.git).
 
 Required Toolchain
 ------------------
 
 OpenSBI can be compiled natively or cross-compiled on a x86 host. For
-cross-compilation, you can build your tool chain or just download from
-the [bootlin] (https://toolchains.bootlin.com/).
+cross-compilation, you can build your own toolchain or just download
+a prebuilt one from the
+[Bootlin toolchain repository] (https://toolchains.bootlin.com/).
 
-Please note that only 64bit version of toolchain is available in bootlin
-for now.
+Please note that only a 64bit version of the toolchain is available in
+the Bootlin toolchain repository for now.
 
-Building and Installing OpenSBI Platform Independent Library
-------------------------------------------------------------
+Building and Installing the OpenSBI Platform-Independent Library
+----------------------------------------------------------------
 
-OpenSBI platform independent static library *libsbi.a* can be natively compiled
-or cross-compiled on a host with a different base architecture than RISC-V.
+The OpenSBI platform-independent static library *libsbi.a* can be compiled
+natively or it can be cross-compiled on a host with a different base
+architecture than RISC-V.
 
 For cross-compiling, the environment variable *CROSS_COMPILE* must be defined
 to specify the name prefix of the RISC-V compiler toolchain executables, e.g.
@@ -63,8 +66,8 @@ To build *libsbi.a* simply execute:
 make
 ```
 
-All compiled binaries as well as the result *libsbi.a* static library file will
-be placed in the *build/lib* directory. To specify an alternate build root
+All compiled binaries as well as the resulting *libsbi.a* static library file
+will be placed in the *build/lib* directory. To specify an alternate build root
 directory path, run:
 ```
 make O=<build_directory>
@@ -76,38 +79,38 @@ make install
 ```
 
 This will create the *install* directory with all necessary include files
-copied under the *install/include* directory and library file copied in the
-*install/lib* directory. To specify an alternate installation root directory
-path, run:
+copied under the *install/include* directory and the library file copied into
+the *install/lib* directory. To specify an alternate installation root
+directory path, run:
 ```
 make I=<install_directory> install
 ```
 
-Building and Installing a Reference Platform Static Library and Firmwares
--------------------------------------------------------------------------
+Building and Installing a Reference Platform Static Library and Firmware
+------------------------------------------------------------------------
 
 When the *PLATFORM=<platform_subdir>* argument is specified on the make command
-line, the platform specific static library *libplatsbi.a* and firmware examples
+line, the platform-specific static library *libplatsbi.a* and firmware examples
 are built for the platform *<platform_subdir>* present in the directory
-*platform* in OpenSBI top directory. For example, to compile the platform
-library and firmware examples for QEMU RISC-V *virt* machine,
+*platform* in the OpenSBI top directory. For example, to compile the platform
+library and the firmware examples for the QEMU RISC-V *virt* machine,
 *<platform_subdir>* should be *qemu/virt*.
 
-To build *libsbi.a*, *libplatsbi.a* and the firmwares for one of the supported
-platform, run:
+To build *libsbi.a*, *libplatsbi.a* and the firmware for one of the supported
+platforms, run:
 ```
 make PLATFORM=<platform_subdir>
 ```
 
-An alternate build directory path can also be specified.
+An alternate build directory path can also be specified:
 ```
 make PLATFORM=<platform_subdir> O=<build_directory>
 ```
 
-The platform specific library *libplatsbi.a* will be generated in the
+The platform-specific library *libplatsbi.a* will be generated in the
 *build/platform/<platform_subdir>/lib* directory. The platform firmware files
 will be under the *build/platform/<platform_subdir>/firmware* directory.
-The compiled firmwares will be available in two different format: an ELF file
+The compiled firmwares will be available in two different formats: an ELF file
 and an expanded image file.
 
 To install *libsbi.a*, *libplatsbi.a*, and the compiled firmwares, run:
@@ -115,16 +118,16 @@ To install *libsbi.a*, *libplatsbi.a*, and the compiled firmwares, run:
 make PLATFORM=<platform_subdir> install
 ```
 
-This will copy the compiled platform specific libraries and firmware files
+This will copy the compiled platform-specific libraries and firmware files
 under the *install/platform/<platform_subdir>/* directory. An alternate
-install root directory path can be specified as follows.
+install root directory path can be specified as follows:
 ```
 make PLATFORM=<platform_subdir> I=<install_directory> install
 ```
 
-In addition, platform specific configuration options can be specified with the
+In addition, platform-specific configuration options can be specified with the
 top-level make command line. These options, such as *PLATFORM_<xyz>* or
-*FW_<abc>*, are platform specific and described in more details in the
+*FW_<abc>*, are platform-specific and described in more details in the
 *docs/platform/<platform_name>.md* files and
 *docs/firmware/<firmware_name>.md* files.
 
@@ -155,7 +158,7 @@ files where the reused code is present.
    under the terms of the BSD 2-Clause license. Any contributions to this
    code must be made under the terms of both licenses.
 2. Some source file for the Kendryte/k210 platform code are based on code from
-   the Kendryte [standalone SDK] available on github. These files retain the
+   the [Kendryte standalone SDK] available on github. These files retain the
    original copyright and license of the Kendryte standalone SDK project and
    are licensed under the terms of the Apache License, Version 2.0.
 
@@ -165,7 +168,7 @@ Contributing to OpenSBI
 -----------------------
 
 The OpenSBI project encourages and welcomes contributions. Contributions should
-follow the rules described in OpenSBI [Contribution Guideline] document.
+follow the rules described in the OpenSBI [Contribution Guideline] document.
 In particular, all patches sent should contain a Signed-off-by tag.
 
 The [Contributors List] document provides a list of individuals and
@@ -185,7 +188,7 @@ Detailed documentation of various aspects of OpenSBI can be found under the
   examples build supported by OpenSBI.
 
 OpenSBI source code is also well documented. For source level documentation,
-doxygen style is used. Please refer to [Doxygen manual] for details on this
+doxygen style is used. Please refer to the [Doxygen manual] for details on this
 format.
 
 Doxygen can be installed on Linux distributions using *.deb* packages using
@@ -234,6 +237,6 @@ make I=<install_directory> install_docs
 [Platform Support Guide]: docs/platform_guide.md
 [Platform Documentation]: docs/platform/platform.md
 [Firmware Documentation]: docs/firmware/fw.md
-[Doxygen manual]: http://www.stack.nl/~dimitri/doxygen/manual.html
-[standalone SDK]: https://github.com/kendryte/kendryte-standalone-sdk
+[Doxygen manual]: http://www.doxygen.nl/manual/index.html
+[Kendryte standalone SDK]: https://github.com/kendryte/kendryte-standalone-sdk
 [third party notices]: ThirdPartyNotices.md

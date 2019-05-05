@@ -2,22 +2,22 @@ OpenSBI Firmware with Payload *FW_PAYLOAD*
 ==========================================
 
 OpenSBI **firmware with Payload (FW_PAYLOAD)** is a firmware which directly
-includes the binary for the booting stage to follow OpenSBI firmware execution.
-Typically, this payload will be a bootloader or an OS kernel.
+includes the binary for the booting stage to follow the OpenSBI firmware
+execution. Typically, this payload will be a bootloader or an OS kernel.
 
 A *FW_PAYLOAD* firmware is particularly useful when the booting stage executed
-prior to OpenSBI firmware is not capable of loading both OpenSBI firmware and
-the booting stage to follow OpenSBI firmware.
+prior to the OpenSBI firmware is not capable of loading both the OpenSBI
+firmware and the booting stage to follow OpenSBI firmware.
 
 A *FW_PAYLOAD* firmware is also useful for cases where the booting stage prior
-to OpenSBI firmware does not pass a *flattened device tree (FDT file)*. In such
-case, a *FW_PAYLOAD* firmware allows embedding a flattened device tree in the
-.text section of the final firmware.
+to the OpenSBI firmware does not pass a *flattened device tree (FDT file)*. In
+such a case, a *FW_PAYLOAD* firmware allows embedding a flattened device tree
+in the .text section of the final firmware.
 
 Enabling *FW_PAYLOAD* compilation
 ---------------------------------
 
-The *FW_PAYLOAD* firmware can be enabled by any of the following methods.
+The *FW_PAYLOAD* firmware can be enabled by any of the following methods:
 
 1. Specifying `FW_PAYLOAD=y` on the top level `make` command line.
 2. Specifying `FW_PAYLOAD=y` in the target platform *config.mk* configuration
@@ -25,7 +25,7 @@ The *FW_PAYLOAD* firmware can be enabled by any of the following methods.
 
 The compiled *FW_PAYLOAD* firmware ELF file is named *fw_jump.elf*. Its
 expanded image file is *fw_payload.bin*. Both files are created in the
-platform specific build directory under the
+platform-specific build directory under the
 *build/platform/<platform_subdir>/firmware* directory.
 
 Configuration Options
@@ -34,7 +34,7 @@ Configuration Options
 A *FW_PAYLOAD* firmware is built according to configuration parameters and
 options. These configuration parameters can be defined using either the top
 level `make` command line or the target platform *config.mk* configuration
-file. The parameters currently defined are as   follows.
+file. The parameters currently defined are as follows:
 
 * **FW_PAYLOAD_OFFSET** - Offset from *FW_TEXT_BASE* where the payload binary
   will be linked in the final *FW_PAYLOAD* firmware binary image. This
@@ -47,8 +47,8 @@ file. The parameters currently defined are as   follows.
   will be linked after the end of the base firmware binary in the final
   *FW_PAYLOAD* firmware binary image. This configuration parameter is mandatory
   if *FW_PAYLOAD_OFFSET* is not defined. If both *FW_PAYLOAD_OFFSET* and
-  *FW_PAYLOAD_ALIGN* are defined, *FW_PAYLOAD_OFFSET* is used and 
-  *FW_PAYLOAD_ALIGN* ignored.
+  *FW_PAYLOAD_ALIGN* are defined, *FW_PAYLOAD_OFFSET* is used and
+  *FW_PAYLOAD_ALIGN* is ignored.
 
 * **FW_PAYLOAD_PATH** - Path to the image file of the next booting stage
   binary.  If this option is not provided then a simple test payload is
@@ -78,13 +78,12 @@ file. The parameters currently defined are as   follows.
 *FW_PAYLOAD* Example
 --------------------
 
-The *[qemu/virt]* and *[qemu/sifive_u]* platforms illustrates how to configure
+The *[qemu/virt]* and *[qemu/sifive_u]* platforms illustrate how to configure
 and use a *FW_PAYLOAD* firmware. Detailed information regarding these platforms
-can be found in the platforms documentation files.
+can be found in the platform documentation files.
 
-The *kendryte/k210* platform also enables build of a *FW_PAYLOAD* using an
+The *kendryte/k210* platform also enables a build of a *FW_PAYLOAD* using an
 internally defined device tree file (*FW_PAYLOAD_FDT*).
 
 [qemu/virt]: ../platform/qemu_virt.md
 [qemu/sifive_u]: ../platform/qemu_sifive_u.md
-
