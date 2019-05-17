@@ -17,7 +17,7 @@
 
 /* clang-format off */
 
-#define SIFIVE_U_HART_COUNT			1
+#define SIFIVE_U_HART_COUNT			4
 #define SIFIVE_U_HART_STACK_SIZE		8192
 
 #define SIFIVE_U_SYS_CLK			1000000000
