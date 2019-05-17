@@ -20,7 +20,7 @@ Executing on QEMU RISC-V 64bit
 
 Build:
 ```
-make PLATFORM=qemu/virt
+make PLATFORM=qemu/sifive_u
 ```
 
 Run:
@@ -32,11 +32,11 @@ qemu-system-riscv64 -M sifive_u -m 256M -display none -serial stdio \
 **U-Boot as a Payload**
 
 Note: the command line examples here assume that U-Boot was compiled using
-the `qemu-riscv64_smode_defconfig` configuration.
+the `sifive_fu540_defconfig` configuration.
 
 Build:
 ```
-make PLATFORM=qemu/virt FW_PAYLOAD_PATH=<uboot_build_directory>/u-boot.bin
+make PLATFORM=qemu/sifive_u FW_PAYLOAD_PATH=<uboot_build_directory>/u-boot.bin
 ```
 
 Run:
