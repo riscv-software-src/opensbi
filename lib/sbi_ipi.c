@@ -23,8 +23,8 @@
 static inline int __sbi_tlb_fifo_range_check(struct sbi_tlb_info *curr,
 					     struct sbi_tlb_info *next)
 {
-	int curr_end;
-	int next_end;
+	unsigned long curr_end;
+	unsigned long next_end;
 	int ret = SBI_FIFO_UNCHANGED;
 
 	if (!curr || !next)
@@ -91,17 +91,29 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid, u32 event,
 	struct sbi_scratch *remote_scratch = NULL;
 	const struct sbi_platform *plat	   = sbi_platform_ptr(scratch);
 	struct sbi_fifo *ipi_tlb_fifo;
+	struct sbi_tlb_info *tinfo = data;
 	int ret = SBI_FIFO_UNCHANGED;
 
 	if (sbi_platform_hart_disabled(plat, hartid))
 		return -1;
 
-	/* Set IPI type on remote hart's scratch area and
+	/*
+	 * Set IPI type on remote hart's scratch area and
 	 * trigger the interrupt
 	 */
 	remote_scratch = sbi_hart_id_to_scratch(scratch, hartid);
 	if (event == SBI_IPI_EVENT_SFENCE_VMA ||
 	    event == SBI_IPI_EVENT_SFENCE_VMA_ASID) {
+		/*
+		 * If address range to flush is too big then simply
+		 * upgrade it to flush all because we can only flush
+		 * 4KB at a time.
+		 */
+		if (tinfo->size >= SBI_TLB_FLUSH_MAX_SIZE) {
+			tinfo->start = 0;
+			tinfo->size = SBI_TLB_FLUSH_ALL;
+		}
+
 		ipi_tlb_fifo = sbi_tlb_fifo_head_ptr(remote_scratch);
 		ret	     = sbi_fifo_inplace_update(ipi_tlb_fifo, data,
 					       sbi_tlb_fifo_update_cb);
