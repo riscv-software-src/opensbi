@@ -12,6 +12,7 @@
 #include <sbi/riscv_barrier.h>
 #include <sbi/riscv_atomic.h>
 #include <sbi/riscv_unpriv.h>
+#include <sbi/sbi_error.h>
 #include <sbi/sbi_fifo.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_bitops.h>
@@ -19,6 +20,10 @@
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_timer.h>
 #include <plat/string.h>
+
+static unsigned long ipi_data_off;
+static unsigned long ipi_tlb_fifo_off;
+static unsigned long ipi_tlb_fifo_mem_off;
 
 static inline int __sbi_tlb_fifo_range_check(struct sbi_tlb_info *curr,
 					     struct sbi_tlb_info *next)
@@ -89,7 +94,8 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid, u32 event,
 			void *data)
 {
 	struct sbi_scratch *remote_scratch = NULL;
-	const struct sbi_platform *plat	   = sbi_platform_ptr(scratch);
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	struct sbi_ipi_data *ipi_data;
 	struct sbi_fifo *ipi_tlb_fifo;
 	struct sbi_tlb_info *tinfo = data;
 	int ret = SBI_FIFO_UNCHANGED;
@@ -102,6 +108,9 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid, u32 event,
 	 * trigger the interrupt
 	 */
 	remote_scratch = sbi_hart_id_to_scratch(scratch, hartid);
+	ipi_data = sbi_scratch_offset_ptr(remote_scratch, ipi_data_off);
+	ipi_tlb_fifo = sbi_scratch_offset_ptr(remote_scratch,
+					      ipi_tlb_fifo_off);
 	if (event == SBI_IPI_EVENT_SFENCE_VMA ||
 	    event == SBI_IPI_EVENT_SFENCE_VMA_ASID) {
 		/*
@@ -114,9 +123,8 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid, u32 event,
 			tinfo->size = SBI_TLB_FLUSH_ALL;
 		}
 
-		ipi_tlb_fifo = sbi_tlb_fifo_head_ptr(remote_scratch);
-		ret	     = sbi_fifo_inplace_update(ipi_tlb_fifo, data,
-					       sbi_tlb_fifo_update_cb);
+		ret = sbi_fifo_inplace_update(ipi_tlb_fifo, data,
+					      sbi_tlb_fifo_update_cb);
 		if (ret == SBI_FIFO_SKIP || ret == SBI_FIFO_UPDATED) {
 			goto done;
 		}
@@ -133,7 +141,7 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid, u32 event,
 			__asm__ __volatile("nop");
 		}
 	}
-	atomic_raw_set_bit(event, &sbi_ipi_data_ptr(remote_scratch)->ipi_type);
+	atomic_raw_set_bit(event, &ipi_data->ipi_type);
 	mb();
 	sbi_platform_ipi_send(plat, hartid);
 	if (event != SBI_IPI_EVENT_SOFT)
@@ -231,13 +239,16 @@ void sbi_ipi_process(struct sbi_scratch *scratch)
 	struct sbi_tlb_info tinfo;
 	unsigned int ipi_event;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
-	struct sbi_fifo *ipi_tlb_fifo	= sbi_tlb_fifo_head_ptr(scratch);
+	struct sbi_ipi_data *ipi_data =
+			sbi_scratch_offset_ptr(scratch, ipi_data_off);
+	struct sbi_fifo *ipi_tlb_fifo =
+			sbi_scratch_offset_ptr(scratch, ipi_tlb_fifo_off);
 
 	u32 hartid = sbi_current_hartid();
 	sbi_platform_ipi_clear(plat, hartid);
 
 	do {
-		ipi_type = sbi_ipi_data_ptr(scratch)->ipi_type;
+		ipi_type = ipi_data->ipi_type;
 		rmb();
 		ipi_event = __ffs(ipi_type);
 		switch (ipi_event) {
@@ -261,17 +272,48 @@ void sbi_ipi_process(struct sbi_scratch *scratch)
 			sbi_hart_hang();
 			break;
 		};
-		ipi_type = atomic_raw_clear_bit(
-			ipi_event, &sbi_ipi_data_ptr(scratch)->ipi_type);
+		ipi_type = atomic_raw_clear_bit(ipi_event, &ipi_data->ipi_type);
 	} while (ipi_type > 0);
 }
 
 int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
 {
-	struct sbi_fifo *tlb_info_q = sbi_tlb_fifo_head_ptr(scratch);
+	void *ipi_tlb_mem;
+	struct sbi_fifo *ipi_tlb_q;
+	struct sbi_ipi_data *ipi_data;
 
-	sbi_ipi_data_ptr(scratch)->ipi_type = 0x00;
-	sbi_fifo_init(tlb_info_q, sbi_tlb_fifo_mem_ptr(scratch),
+	if (cold_boot) {
+		ipi_data_off = sbi_scratch_alloc_offset(sizeof(*ipi_data),
+							"IPI_DATA");
+		if (!ipi_data_off)
+			return SBI_ENOMEM;
+		ipi_tlb_fifo_off = sbi_scratch_alloc_offset(sizeof(*ipi_tlb_q),
+							    "IPI_TLB_FIFO");
+		if (!ipi_tlb_fifo_off) {
+			sbi_scratch_free_offset(ipi_data_off);
+			return SBI_ENOMEM;
+		}
+		ipi_tlb_fifo_mem_off = sbi_scratch_alloc_offset(
+				SBI_TLB_FIFO_NUM_ENTRIES * SBI_TLB_INFO_SIZE,
+				"IPI_TLB_FIFO_MEM");
+		if (!ipi_tlb_fifo_mem_off) {
+			sbi_scratch_free_offset(ipi_tlb_fifo_off);
+			sbi_scratch_free_offset(ipi_data_off);
+			return SBI_ENOMEM;
+		}
+	} else {
+		if (!ipi_data_off ||
+		    !ipi_tlb_fifo_off ||
+		    !ipi_tlb_fifo_mem_off)
+			return SBI_ENOMEM;
+	}
+
+	ipi_data = sbi_scratch_offset_ptr(scratch, ipi_data_off);
+	ipi_tlb_q = sbi_scratch_offset_ptr(scratch, ipi_tlb_fifo_off);
+	ipi_tlb_mem = sbi_scratch_offset_ptr(scratch, ipi_tlb_fifo_mem_off);
+
+	ipi_data->ipi_type = 0x00;
+	sbi_fifo_init(ipi_tlb_q, ipi_tlb_mem,
 		      SBI_TLB_FIFO_NUM_ENTRIES, SBI_TLB_INFO_SIZE);
 
 	/* Enable software interrupts */

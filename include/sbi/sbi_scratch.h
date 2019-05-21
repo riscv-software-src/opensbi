@@ -34,14 +34,8 @@
 #define SBI_SCRATCH_TMP0_OFFSET			(8 * __SIZEOF_POINTER__)
 /** Offset of options member in sbi_scratch */
 #define SBI_SCRATCH_OPTIONS_OFFSET		(9 * __SIZEOF_POINTER__)
-
-/** sbi_ipi_data is located behind sbi_scratch. This struct is not packed. */
-/** Offset of ipi_type in sbi_ipi_data */
-#define SBI_IPI_DATA_IPI_TYPE_OFFSET		(15 * __SIZEOF_POINTER__)
-
-#define SBI_SCRATCH_TLB_QUEUE_HEAD_OFFSET	(16 * __SIZEOF_POINTER__)
-#define SBI_SCRATCH_TLB_QUEUE_MEM_OFFSET	(SBI_SCRATCH_TLB_QUEUE_HEAD_OFFSET + SBI_TLB_INFO_SIZE)
-
+/** Offset of extra space in sbi_scratch */
+#define SBI_SCRATCH_EXTRA_SPACE_OFFSET		(10 * __SIZEOF_POINTER__)
 /** Maximum size of sbi_scratch and sbi_ipi_data */
 #define SBI_SCRATCH_SIZE			(64 * __SIZEOF_POINTER__)
 
@@ -90,17 +84,22 @@ enum sbi_scratch_options {
 #define sbi_scratch_thishart_arg1_ptr() \
 	((void *)(sbi_scratch_thishart_ptr()->next_arg1))
 
-/** Get pointer to sbi_ipi_data from sbi_scratch */
-#define sbi_ipi_data_ptr(scratch) \
-	((struct sbi_ipi_data *)(void *)scratch + SBI_IPI_DATA_IPI_TYPE_OFFSET)
+/** Allocate from extra space in sbi_scratch
+ *
+ * @return zero on failure and non-zero (>= SBI_SCRATCH_EXTRA_SPACE_OFFSET)
+ * on success
+ */
+unsigned long sbi_scratch_alloc_offset(unsigned long size, const char *owner);
 
-/** Get pointer to tlb flush info fifo header from sbi_scratch */
-#define sbi_tlb_fifo_head_ptr(scratch) \
-	((struct sbi_fifo *)(void *)scratch + SBI_SCRATCH_TLB_QUEUE_HEAD_OFFSET)
+/** Free-up extra space in sbi_scratch */
+void sbi_scratch_free_offset(unsigned long offset);
 
-/** Get pointer to tlb flush info fifo queue address from sbi_scratch */
-#define sbi_tlb_fifo_mem_ptr(scratch) \
-	(void *)((void *)scratch + SBI_SCRATCH_TLB_QUEUE_MEM_OFFSET)
+/** Get pointer from offset in sbi_scratch */
+#define sbi_scratch_offset_ptr(scratch, offset)	((void *)scratch + (offset))
+
+/** Get pointer from offset in sbi_scratch for current HART */
+#define sbi_scratch_thishart_offset_ptr(offset)	\
+	((void *)sbi_scratch_thishart_ptr() + (offset))
 
 #endif
 

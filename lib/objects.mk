@@ -21,6 +21,7 @@ lib-objs-y += sbi_illegal_insn.o
 lib-objs-y += sbi_init.o
 lib-objs-y += sbi_ipi.o
 lib-objs-y += sbi_misaligned_ldst.o
+lib-objs-y += sbi_scratch.o
 lib-objs-y += sbi_system.o
 lib-objs-y += sbi_timer.o
 lib-objs-y += sbi_trap.o
