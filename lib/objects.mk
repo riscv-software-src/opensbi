@@ -11,6 +11,7 @@ lib-objs-y += riscv_asm.o
 lib-objs-y += riscv_atomic.o
 lib-objs-y += riscv_hardfp.o
 lib-objs-y += riscv_locks.o
+lib-objs-y += riscv_unpriv.o
 
 lib-objs-y += sbi_console.o
 lib-objs-y += sbi_ecall.o
