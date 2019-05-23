@@ -12,11 +12,23 @@
 
 #include <sbi/sbi_types.h>
 
-#define DECLARE_UNPRIVILEGED_LOAD_FUNCTION(type) \
-	type load_##type(const type *addr);
+struct sbi_scratch;
 
-#define DECLARE_UNPRIVILEGED_STORE_FUNCTION(type) \
-	void store_##type(type *addr, type val);
+struct unpriv_trap {
+	unsigned long ilen;
+	unsigned long cause;
+	unsigned long tval;
+};
+
+#define DECLARE_UNPRIVILEGED_LOAD_FUNCTION(type)       \
+	type load_##type(const type *addr,             \
+			 struct sbi_scratch *scratch,  \
+			 struct unpriv_trap *trap);
+
+#define DECLARE_UNPRIVILEGED_STORE_FUNCTION(type)      \
+	void store_##type(type *addr, type val,        \
+			  struct sbi_scratch *scratch, \
+			  struct unpriv_trap *trap);
 
 DECLARE_UNPRIVILEGED_LOAD_FUNCTION(u8)
 DECLARE_UNPRIVILEGED_LOAD_FUNCTION(u16)

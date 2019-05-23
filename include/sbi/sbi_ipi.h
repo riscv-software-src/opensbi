@@ -10,6 +10,7 @@
 #ifndef __SBI_IPI_H__
 #define __SBI_IPI_H__
 
+#include <sbi/riscv_unpriv.h>
 #include <sbi/sbi_types.h>
 
 /* clang-format off */
@@ -28,8 +29,8 @@ struct sbi_ipi_data {
 	unsigned long ipi_type;
 };
 
-int sbi_ipi_send_many(struct sbi_scratch *scratch, ulong *pmask, u32 event,
-		      void *data);
+int sbi_ipi_send_many(struct sbi_scratch *scratch, struct unpriv_trap *uptrap,
+		      ulong *pmask, u32 event, void *data);
 
 void sbi_ipi_clear_smode(struct sbi_scratch *scratch);
 

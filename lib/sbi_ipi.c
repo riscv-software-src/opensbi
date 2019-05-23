@@ -58,15 +58,18 @@ done:
 	return 0;
 }
 
-int sbi_ipi_send_many(struct sbi_scratch *scratch, ulong *pmask, u32 event,
-		      void *data)
+int sbi_ipi_send_many(struct sbi_scratch *scratch, struct unpriv_trap *uptrap,
+		      ulong *pmask, u32 event, void *data)
 {
 	ulong i, m;
 	ulong mask = sbi_hart_available_mask();
 	u32 hartid = sbi_current_hartid();
 
-	if (pmask)
-		mask &= load_ulong(pmask);
+	if (pmask) {
+		mask &= load_ulong(pmask, scratch, uptrap);
+		if (uptrap->cause)
+			return SBI_ETRAP;
+	}
 
 	/* send IPIs to every other hart on the set */
 	for (i = 0, m = mask; m; i++, m >>= 1)
