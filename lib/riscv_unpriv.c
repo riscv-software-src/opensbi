@@ -10,59 +10,90 @@
 #include <sbi/riscv_encoding.h>
 #include <sbi/riscv_unpriv.h>
 #include <sbi/sbi_bits.h>
+#include <sbi/sbi_hart.h>
+#include <sbi/sbi_scratch.h>
 
-#define DEFINE_UNPRIVILEGED_LOAD_FUNCTION(type, insn)                         \
-	type load_##type(const type *addr)                                    \
+#define DEFINE_UNPRIVILEGED_LOAD_FUNCTION(type, insn, insnlen)                \
+	type load_##type(const type *addr,                                    \
+			struct sbi_scratch *scratch,                          \
+			struct unpriv_trap *trap)                             \
 	{                                                                     \
 		register ulong __mstatus asm("a2");                           \
-		type val;                                                     \
+		type val = 0;                                                 \
+		trap->ilen = insnlen;                                         \
+		trap->cause = 0;                                              \
+		trap->tval = 0;                                               \
+		sbi_hart_set_trap_info(scratch, trap);                        \
 		asm volatile(                                                 \
 			"csrrs %0, " STR(CSR_MSTATUS) ", %3\n"                \
 			#insn " %1, %2\n"                                     \
 			"csrw " STR(CSR_MSTATUS) ", %0"                       \
 		    : "+&r"(__mstatus), "=&r"(val)                            \
 		    : "m"(*addr), "r"(MSTATUS_MPRV));                         \
+		sbi_hart_set_trap_info(scratch, NULL);                        \
 		return val;                                                   \
 	}
 
-#define DEFINE_UNPRIVILEGED_STORE_FUNCTION(type, insn)                        \
-	void store_##type(type *addr, type val)                               \
+#define DEFINE_UNPRIVILEGED_STORE_FUNCTION(type, insn, insnlen)               \
+	void store_##type(type *addr, type val,                               \
+			struct sbi_scratch *scratch,                          \
+			struct unpriv_trap *trap)                             \
 	{                                                                     \
 		register ulong __mstatus asm("a3");                           \
+		trap->ilen = insnlen;                                         \
+		trap->cause = 0;                                              \
+		trap->tval = 0;                                               \
+		sbi_hart_set_trap_info(scratch, trap);                        \
 		asm volatile(                                                 \
 			"csrrs %0, " STR(CSR_MSTATUS) ", %3\n"                \
 			#insn " %1, %2\n"                                     \
 			"csrw " STR(CSR_MSTATUS) ", %0"                       \
 			: "+&r"(__mstatus)                                    \
 			: "r"(val), "m"(*addr), "r"(MSTATUS_MPRV));           \
+		sbi_hart_set_trap_info(scratch, NULL);                        \
 	}
 
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u8, lbu)
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u16, lhu)
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(s8, lb)
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(s16, lh)
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(s32, lw)
-DEFINE_UNPRIVILEGED_STORE_FUNCTION(u8, sb)
-DEFINE_UNPRIVILEGED_STORE_FUNCTION(u16, sh)
-DEFINE_UNPRIVILEGED_STORE_FUNCTION(u32, sw)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u8, lbu, 4)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u16, lhu, 4)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(s8, lb, 4)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(s16, lh, 4)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(s32, lw, 2)
+DEFINE_UNPRIVILEGED_STORE_FUNCTION(u8, sb, 4)
+DEFINE_UNPRIVILEGED_STORE_FUNCTION(u16, sh, 4)
+DEFINE_UNPRIVILEGED_STORE_FUNCTION(u32, sw, 2)
 #if __riscv_xlen == 64
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u32, lwu)
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u64, ld)
-DEFINE_UNPRIVILEGED_STORE_FUNCTION(u64, sd)
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(ulong, ld)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u32, lwu, 4)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u64, ld, 2)
+DEFINE_UNPRIVILEGED_STORE_FUNCTION(u64, sd, 2)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(ulong, ld, 2)
 #else
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u32, lw)
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(ulong, lw)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u32, lw, 2)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(ulong, lw, 2)
 
-u64 load_u64(const u64 *addr)
+u64 load_u64(const u64 *addr,
+	     struct sbi_scratch *scratch, struct unpriv_trap *trap)
 {
-	return load_u32((u32 *)addr) + ((u64)load_u32((u32 *)addr + 1) << 32);
+	u64 ret = load_u32((u32 *)addr, scratch, trap);
+
+	if (trap->cause)
+		return 0;
+	ret |= ((u64)load_u32((u32 *)addr + 1, scratch, trap) << 32);
+	if (trap->cause)
+		return 0;
+
+	return ret;
 }
 
-void store_u64(u64 *addr, u64 val)
+void store_u64(u64 *addr, u64 val,
+	       struct sbi_scratch *scratch, struct unpriv_trap *trap)
 {
-	store_u32((u32 *)addr, val);
-	store_u32((u32 *)addr + 1, val >> 32);
+	store_u32((u32 *)addr, val, scratch, trap);
+	if (trap->cause)
+		return;
+
+	store_u32((u32 *)addr + 1, val >> 32, scratch, trap);
+	if (trap->cause)
+		return;
 }
 #endif
 

@@ -9,6 +9,7 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
+#include <sbi/riscv_unpriv.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_error.h>
@@ -134,11 +135,12 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs, struct sbi_scratch *scratch,
  */
 void sbi_trap_handler(struct sbi_trap_regs *regs, struct sbi_scratch *scratch)
 {
-	int rc		= SBI_ENOTSUPP;
+	int rc = SBI_ENOTSUPP;
 	const char *msg = "trap handler failed";
 	u32 hartid = sbi_current_hartid();
 	ulong mcause = csr_read(CSR_MCAUSE);
 	ulong mtval = csr_read(CSR_MTVAL);
+	struct unpriv_trap *uptrap;
 
 	if (mcause & (1UL << (__riscv_xlen - 1))) {
 		mcause &= ~(1UL << (__riscv_xlen - 1));
@@ -174,6 +176,22 @@ void sbi_trap_handler(struct sbi_trap_regs *regs, struct sbi_scratch *scratch)
 	case CAUSE_HYPERVISOR_ECALL:
 		rc  = sbi_ecall_handler(hartid, mcause, regs, scratch);
 		msg = "ecall handler failed";
+		break;
+	case CAUSE_LOAD_ACCESS:
+	case CAUSE_STORE_ACCESS:
+	case CAUSE_LOAD_PAGE_FAULT:
+	case CAUSE_STORE_PAGE_FAULT:
+		uptrap = sbi_hart_get_trap_info(scratch);
+		if ((regs->mstatus & MSTATUS_MPRV) && uptrap) {
+			rc = 0;
+			regs->mepc += uptrap->ilen;
+			uptrap->cause = mcause;
+			uptrap->tval = mtval;
+		} else {
+			rc = sbi_trap_redirect(regs, scratch, regs->mepc,
+					       mcause, mtval);
+		}
+		msg = "page/access fault handler failed";
 		break;
 	default:
 		/* If the trap came from S or U mode, redirect it there */

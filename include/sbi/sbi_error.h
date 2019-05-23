@@ -25,6 +25,7 @@
 #define SBI_EILL	-10
 #define SBI_ENOSPC	-11
 #define SBI_ENOMEM	-12
+#define SBI_ETRAP	-13
 
 /* clang-format on */
 

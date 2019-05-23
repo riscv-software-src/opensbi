@@ -34,6 +34,7 @@ int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 		      struct sbi_scratch *scratch)
 {
 	int ret = SBI_ENOTSUPP;
+	struct unpriv_trap uptrap;
 	struct sbi_tlb_info tlb_info;
 
 	switch (regs->a7) {
@@ -59,11 +60,11 @@ int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 		ret = 0;
 		break;
 	case SBI_ECALL_SEND_IPI:
-		ret = sbi_ipi_send_many(scratch, (ulong *)regs->a0,
+		ret = sbi_ipi_send_many(scratch, &uptrap, (ulong *)regs->a0,
 					SBI_IPI_EVENT_SOFT, NULL);
 		break;
 	case SBI_ECALL_REMOTE_FENCE_I:
-		ret = sbi_ipi_send_many(scratch, (ulong *)regs->a0,
+		ret = sbi_ipi_send_many(scratch, &uptrap, (ulong *)regs->a0,
 					SBI_IPI_EVENT_FENCE_I, NULL);
 		break;
 	case SBI_ECALL_REMOTE_SFENCE_VMA:
@@ -71,7 +72,7 @@ int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 		tlb_info.size  = (unsigned long)regs->a2;
 		tlb_info.type  = SBI_TLB_FLUSH_VMA;
 
-		ret = sbi_ipi_send_many(scratch, (ulong *)regs->a0,
+		ret = sbi_ipi_send_many(scratch, &uptrap, (ulong *)regs->a0,
 					SBI_IPI_EVENT_SFENCE_VMA, &tlb_info);
 		break;
 	case SBI_ECALL_REMOTE_SFENCE_VMA_ASID:
@@ -80,7 +81,7 @@ int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 		tlb_info.asid  = (unsigned long)regs->a3;
 		tlb_info.type  = SBI_TLB_FLUSH_VMA_ASID;
 
-		ret = sbi_ipi_send_many(scratch, (ulong *)regs->a0,
+		ret = sbi_ipi_send_many(scratch, &uptrap, (ulong *)regs->a0,
 					SBI_IPI_EVENT_SFENCE_VMA_ASID,
 					&tlb_info);
 		break;
@@ -96,6 +97,10 @@ int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 
 	if (!ret) {
 		regs->mepc += 4;
+	} else if (ret == SBI_ETRAP) {
+		ret = 0;
+		sbi_trap_redirect(regs, scratch, regs->mepc,
+				  uptrap.cause, uptrap.tval);
 	}
 
 	return ret;
