@@ -32,9 +32,6 @@
 #define PAGE_SIZE       (_AC(1, UL) << PAGE_SHIFT)
 #define PAGE_MASK       (~(PAGE_SIZE - 1))
 
-#define SBI_TLB_FLUSH_ALL	((unsigned long)-1)
-#define SBI_TLB_FLUSH_MAX_SIZE	(1UL << 30)
-
 #define REG_L		__REG_SEL(ld, lw)
 #define REG_S		__REG_SEL(sd, sw)
 #define SZREG		__REG_SEL(8, 4)

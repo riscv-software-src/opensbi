@@ -22,27 +22,11 @@
 
 /* clang-format on */
 
-#define SBI_TLB_FIFO_NUM_ENTRIES 4
-enum sbi_tlb_info_types {
-	SBI_TLB_FLUSH_VMA,
-	SBI_TLB_FLUSH_VMA_ASID,
-	SBI_TLB_FLUSH_VMA_VMID
-};
-
 struct sbi_scratch;
 
 struct sbi_ipi_data {
 	unsigned long ipi_type;
 };
-
-struct sbi_tlb_info {
-	unsigned long start;
-	unsigned long size;
-	unsigned long asid;
-	unsigned long type;
-};
-
-#define SBI_TLB_INFO_SIZE sizeof(struct sbi_tlb_info)
 
 int sbi_ipi_send_many(struct sbi_scratch *scratch, ulong *pmask, u32 event,
 		      void *data);

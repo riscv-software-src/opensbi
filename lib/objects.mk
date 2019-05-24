@@ -24,6 +24,7 @@ lib-objs-y += sbi_misaligned_ldst.o
 lib-objs-y += sbi_scratch.o
 lib-objs-y += sbi_system.o
 lib-objs-y += sbi_timer.o
+lib-objs-y += sbi_tlb.o
 lib-objs-y += sbi_trap.o
 
 # External Libraries to include
