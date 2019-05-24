@@ -14,6 +14,7 @@
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_timer.h>
+#include <sbi/sbi_tlb.h>
 #include <sbi/sbi_trap.h>
 
 #define SBI_ECALL_VERSION_MAJOR 0
