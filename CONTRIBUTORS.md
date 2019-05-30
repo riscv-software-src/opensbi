@@ -8,6 +8,8 @@ List of OpenSBI Contributors (Alphabetically sorted)
 
 * Alistair Francis <alistair@alistair23.me>
 
+* Andreas Schwab <schwab@suse.de>
+
 * Anup Patel <anup.patel@wdc.com>
 
 * Atish Patra <atish.patra@wdc.com>
