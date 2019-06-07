@@ -27,4 +27,6 @@ SECTIONS
 		. = ALIGN(8);
 		PROVIDE(_payload_end = .);
 	}
+
+	PROVIDE(_fw_reloc_end = .);
 }

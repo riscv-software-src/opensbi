@@ -39,6 +39,33 @@ _start:
 	csrr	a6, CSR_MHARTID
 	blt	zero, a6, _wait_for_boot_hart
 
+	/* Save load address */
+	la	t0, _load_start
+	la	t1, _start
+	REG_S	t1, 0(t0)
+
+	/* Relocate if load address != link address */
+	la	t0, _link_start
+	REG_L	t0, 0(t0)
+	la	t1, _link_end
+	REG_L	t1, 0(t1)
+	la	t2, _load_start
+	REG_L	t2, 0(t2)
+	beq	t0, t2, _relocate_done
+	la	t4, _relocate_done
+	sub	t4, t4, t2
+	add	t4, t4, t0
+_relocate_copy:
+	REG_L	t3, 0(t2)
+	REG_S	t3, 0(t0)
+	add	t0, t0, __SIZEOF_POINTER__
+	add	t2, t2, __SIZEOF_POINTER__
+	blt	t0, t1, _relocate_copy
+	jr	t4
+_relocate_done:
+
+	/* At this point we are running from link address */
+
 	/* Reset all registers for boot HART */
 	li	ra, 0
 	call	_reset_regs
@@ -209,18 +236,29 @@ _fdt_reloc_done:
 
 	/* Update boot hart flag */
 	la	a4, _boot_hart_done
-	li	a5, 1
+	la	a5, _start_warm
 	REG_S	a5, (a4)
+	fence	rw, rw
+	la	t0, _link_start
+	REG_L	t0, 0(t0)
+	sub	a4, a4, t0
+	la	t0, _load_start
+	REG_L	t0, 0(t0)
+	add	a4, a4, t0
+	REG_S	a5, (a4)
+	fence	rw, rw
+	j	_start_warm
 
 	/* Wait for boot hart */
 _wait_for_boot_hart:
 	la	a4, _boot_hart_done
-	REG_L	a5, (a4)
+	REG_L	a5, 0(a4)
 	/* Reduce the bus traffic so that boot hart may proceed faster */
 	nop
 	nop
 	nop
 	beqz	a5, _wait_for_boot_hart
+	jr	a5
 
 _start_warm:
 	/* Reset all registers for non-boot HARTs */
@@ -263,10 +301,8 @@ _start_warm:
 	la	a4, _trap_handler
 	csrw	CSR_MTVEC, a4
 	/* Make sure that mtvec is updated */
-	1:
-	csrr	a5, CSR_MTVEC
+1:	csrr	a5, CSR_MTVEC
 	bne	a4, a5, 1b
-
 
 	/* Initialize SBI runtime */
 	csrr	a0, CSR_MSCRATCH
@@ -276,9 +312,14 @@ _start_warm:
 	j	_start_hang
 
 	.align 3
-	.section .data, "aw"
 _boot_hart_done:
 	RISCV_PTR	0
+_load_start:
+	RISCV_PTR	_fw_start
+_link_start:
+	RISCV_PTR	_fw_start
+_link_end:
+	RISCV_PTR	_fw_reloc_end
 
 	.align 3
 	.section .entry, "ax", %progbits

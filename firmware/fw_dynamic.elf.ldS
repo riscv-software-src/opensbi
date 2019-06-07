@@ -13,4 +13,6 @@ ENTRY(_start)
 SECTIONS
 {
 	#include "fw_base.ldS"
+
+	PROVIDE(_fw_reloc_end = .);
 }
