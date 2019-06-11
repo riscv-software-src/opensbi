@@ -50,6 +50,8 @@
 	{
 		PROVIDE(_data_start = .);
 
+		*(.sdata)
+		*(.sdata.*)
 		*(.data)
 		*(.data.*)
 		*(.readmostly.data)
@@ -64,6 +66,8 @@
 	.bss :
 	{
 		PROVIDE(_bss_start = .);
+		*(.sbss)
+		*(.sbss.*)
 		*(.bss)
 		*(.bss.*)
 		. = ALIGN(8);
