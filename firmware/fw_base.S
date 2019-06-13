@@ -27,6 +27,17 @@
 	add	\__d4, \__s4, zero
 .endm
 
+/*
+ * If __start_reg <= __check_reg and __check_reg < __end_reg then
+ *   jump to __pass
+ */
+.macro BRANGE __start_reg, __end_reg, __check_reg, __jump_lable
+	blt	\__check_reg, \__start_reg, 999f
+	bge	\__check_reg, \__end_reg, 999f
+	j	\__jump_lable
+999:
+.endm
+
 	.align 3
 	.section .entry, "ax", %progbits
 	.globl _start
@@ -45,22 +56,51 @@ _start:
 	REG_S	t1, 0(t0)
 
 	/* Relocate if load address != link address */
+_relocate:
 	la	t0, _link_start
 	REG_L	t0, 0(t0)
 	la	t1, _link_end
 	REG_L	t1, 0(t1)
 	la	t2, _load_start
 	REG_L	t2, 0(t2)
+	sub	t3, t1, t0
+	add	t3, t3, t2
 	beq	t0, t2, _relocate_done
 	la	t4, _relocate_done
 	sub	t4, t4, t2
 	add	t4, t4, t0
-_relocate_copy:
+	blt	t2, t0, _relocate_copy_to_upper
+_relocate_copy_to_lower:
+	ble	t1, t2, _relocate_copy_to_lower_loop
+	la	t3, _boot_hart_done
+	BRANGE	t2, t1, t3, _start_hang
+	la	t3, _relocate
+	la	t5, _relocate_done
+	BRANGE	t2, t1, t3, _start_hang
+	BRANGE	t2, t1, t5, _start_hang
+	BRANGE  t3, t5, t2, _start_hang
+_relocate_copy_to_lower_loop:
 	REG_L	t3, 0(t2)
 	REG_S	t3, 0(t0)
 	add	t0, t0, __SIZEOF_POINTER__
 	add	t2, t2, __SIZEOF_POINTER__
-	blt	t0, t1, _relocate_copy
+	blt	t0, t1, _relocate_copy_to_lower_loop
+	jr	t4
+_relocate_copy_to_upper:
+	ble	t3, t0, _relocate_copy_to_upper_loop
+	la	t2, _boot_hart_done
+	BRANGE	t0, t3, t2, _start_hang
+	la	t2, _relocate
+	la	t5, _relocate_done
+	BRANGE	t0, t3, t2, _start_hang
+	BRANGE	t0, t3, t5, _start_hang
+	BRANGE	t2, t5, t0, _start_hang
+_relocate_copy_to_upper_loop:
+	add	t3, t3, -__SIZEOF_POINTER__
+	add	t1, t1, -__SIZEOF_POINTER__
+	REG_L	t2, 0(t3)
+	REG_S	t2, 0(t1)
+	blt	t0, t1, _relocate_copy_to_upper_loop
 	jr	t4
 _relocate_done:
 
