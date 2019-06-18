@@ -7,5 +7,5 @@
 #   Anup Patel <anup.patel@wdc.com>
 #
 
-libsbiutils-objs-$(PLATFORM_SERIAL_UART8250) += serial/uart8250.o
-libsbiutils-objs-$(PLATFORM_SERIAL_SIFIVE_UART) += serial/sifive-uart.o
+libsbiutils-objs-y += serial/uart8250.o
+libsbiutils-objs-y += serial/sifive-uart.o

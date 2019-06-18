@@ -17,11 +17,6 @@ platform-ldflags-y =
 platform-runcmd = qemu-system-riscv$(PLATFORM_RISCV_XLEN) -M sifive_u -m 256M \
   -nographic -kernel $(build_dir)/platform/qemu/sifive_u/firmware/fw_payload.elf
 
-# Common drivers to enable
-PLATFORM_IRQCHIP_PLIC=y
-PLATFORM_SERIAL_SIFIVE_UART=y
-PLATFORM_SYS_CLINT=y
-
 # Blobs to build
 FW_TEXT_START=0x80000000
 FW_DYNAMIC=y
@@ -43,6 +38,3 @@ else
   FW_PAYLOAD_OFFSET=0x200000
 endif
 FW_PAYLOAD_FDT_ADDR=0x82200000
-
-# External Libraries to include
-PLATFORM_INCLUDE_LIBC=y

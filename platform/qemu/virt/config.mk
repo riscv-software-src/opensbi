@@ -43,6 +43,3 @@ else
   FW_PAYLOAD_OFFSET=0x200000
 endif
 FW_PAYLOAD_FDT_ADDR=0x82200000
-
-# External Libraries to include
-PLATFORM_INCLUDE_LIBC=y

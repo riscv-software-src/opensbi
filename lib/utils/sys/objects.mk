@@ -7,4 +7,4 @@
 #   Anup Patel <anup.patel@wdc.com>
 #
 
-libsbiutils-objs-$(PLATFORM_SYS_CLINT) += sys/clint.o
+libsbiutils-objs-y += sys/clint.o

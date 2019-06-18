@@ -12,5 +12,5 @@ libfdt_files = fdt.o fdt_ro.o fdt_wip.o fdt_rw.o fdt_sw.o fdt_strerror.o \
 $(foreach file, $(libfdt_files), \
         $(eval CFLAGS_$(file) = -I$(src)/../../utils/libfdt))
 
-libsbiutils-objs-$(PLATFORM_INCLUDE_LIBFDT) += $(addprefix libfdt/,$(libfdt_files))
-libsbiutils-genflags-$(PLATFORM_INCLUDE_LIBFDT)  += -I$(libsbiutils_dir)/libfdt/
+libsbiutils-objs-y += $(addprefix libfdt/,$(libfdt_files))
+libsbiutils-genflags-y  += -I$(libsbiutils_dir)/libfdt/

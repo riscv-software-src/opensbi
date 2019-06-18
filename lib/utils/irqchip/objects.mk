@@ -7,4 +7,4 @@
 #   Anup Patel <anup.patel@wdc.com>
 #
 
-libsbiutils-objs-$(PLATFORM_IRQCHIP_PLIC) += irqchip/plic.o
+libsbiutils-objs-y += irqchip/plic.o

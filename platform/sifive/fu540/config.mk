@@ -13,11 +13,6 @@ platform-cflags-y =
 platform-asflags-y =
 platform-ldflags-y =
 
-# Common drivers to enable
-PLATFORM_IRQCHIP_PLIC=y
-PLATFORM_SERIAL_SIFIVE_UART=y
-PLATFORM_SYS_CLINT=y
-
 # Blobs to build
 FW_TEXT_START=0x80000000
 FW_DYNAMIC=y
@@ -27,7 +22,3 @@ FW_JUMP_FDT_ADDR=0x82200000
 FW_PAYLOAD=y
 FW_PAYLOAD_OFFSET=0x200000
 FW_PAYLOAD_FDT_ADDR=0x82200000
-
-# External Libraries to include
-PLATFORM_INCLUDE_LIBFDT=y
-PLATFORM_INCLUDE_LIBC=y
