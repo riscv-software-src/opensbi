@@ -30,7 +30,7 @@ Support for a new platform named *<xyz>* can be added as follows:
 1. Create a directory named *<xyz>* under the *platform/* directory.
 2. Create a platform configuration file named *config.mk* under the
    *platform/<xyz>/* directory. This configuration file will provide
-   compiler flags, select common drivers, and select firmware options.
+   compiler flags, and select firmware options.
 3. Create a *platform/<xyz>/objects.mk* file for listing the
    platform-specific object files to be compiled.
 4. Create a *platform/<xyz>/platform.c* file providing a *struct sbi_platform*

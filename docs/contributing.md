@@ -24,7 +24,8 @@ Every submitted patch must have this tag.
 followed by a description of the patch content. A blank line and the author
 Signed-off-by tag must follow this description.
 4. A commit subject line must start with a prefix followed by a ":". Common
-prefixes are for example "lib:", "platform:", "firmware:", "docs:" and "top:".
+prefixes are for example "lib:", "platform:", "firmware:", "docs:", "utils:"
+and "top:".
 5. Maintainers should use "Rebase and Merge" when using GitHub to merge pull
 requests to avoid creating unnecessary merge commits.
 6. Maintainers should avoid creating branches directly in the main
