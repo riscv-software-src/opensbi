@@ -11,8 +11,9 @@
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_string.h>
-#include <sbi_utils/tinyfdt.h>
 #include <sbi_utils/irqchip/plic.h>
+#include <libfdt.h>
+#include <fdt.h>
 
 #define PLIC_PRIORITY_BASE 0x0
 #define PLIC_PENDING_BASE 0x1000
@@ -46,32 +47,29 @@ static void plic_set_ie(u32 cntxid, u32 word_index, u32 val)
 	writel(val, plic_ie + word_index * 4);
 }
 
-static void plic_fdt_fixup_prop(const struct fdt_node *node,
-				const struct fdt_prop *prop, void *priv)
+void plic_fdt_fixup(void *fdt, const char *compat)
 {
 	u32 *cells;
-	u32 i, cells_count;
+	int i, cells_count;
+	u32 plic_off;
 
-	if (!prop)
+	plic_off = fdt_node_offset_by_compatible(fdt, 0, compat);
+	if (plic_off < 0)
 		return;
-	if (sbi_strcmp(prop->name, "interrupts-extended"))
+
+	cells = (u32 *)fdt_getprop(fdt, plic_off,
+				   "interrupts-extended", &cells_count);
+	if (!cells)
 		return;
 
-	cells	    = prop->value;
-	cells_count = prop->len / sizeof(u32);
-
+	cells_count = cells_count / sizeof(u32);
 	if (!cells_count)
 		return;
 
 	for (i = 0; i < (cells_count / 2); i++) {
-		if (fdt_rev32(cells[2 * i + 1]) == IRQ_M_EXT)
-			cells[2 * i + 1] = fdt_rev32(0xffffffff);
+		if (fdt32_to_cpu(cells[2 * i + 1]) == IRQ_M_EXT)
+			cells[2 * i + 1] = fdt32_to_cpu(0xffffffff);
 	}
-}
-
-void plic_fdt_fixup(void *fdt, const char *compat)
-{
-	fdt_compat_node_prop(fdt, compat, plic_fdt_fixup_prop, NULL);
 }
 
 int plic_warm_irqchip_init(u32 target_hart, int m_cntx_id, int s_cntx_id)
