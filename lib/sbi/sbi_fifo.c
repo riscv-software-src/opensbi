@@ -10,7 +10,7 @@
 #include <sbi/riscv_locks.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_fifo.h>
-#include <plat/string.h>
+#include <sbi/string.h>
 
 void sbi_fifo_init(struct sbi_fifo *fifo, void *queue_mem, u16 entries,
 		   u16 entry_size)

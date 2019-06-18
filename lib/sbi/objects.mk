@@ -27,6 +27,3 @@ libsbi-objs-y += sbi_system.o
 libsbi-objs-y += sbi_timer.o
 libsbi-objs-y += sbi_tlb.o
 libsbi-objs-y += sbi_trap.o
-
-# External Libraries to include
-PLATFORM_INCLUDE_LIBC=y

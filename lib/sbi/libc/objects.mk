@@ -10,6 +10,6 @@
 libc_files = string.o
 
 $(foreach file, $(libc_files), \
-	$(eval CFLAGS_$(file) = -I$(src)/../../common/libc))
+	$(eval CFLAGS_$(file) = -I$(src)/../../sbi/libc))
 
-platform-common-objs-$(PLATFORM_INCLUDE_LIBC) += $(addprefix libc/,$(libc_files))
+libsbi-objs-y += $(addprefix libc/,$(libc_files))

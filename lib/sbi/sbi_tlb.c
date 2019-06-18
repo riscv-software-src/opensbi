@@ -16,7 +16,7 @@
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_tlb.h>
-#include <plat/string.h>
+#include <sbi/string.h>
 
 static unsigned long ipi_tlb_fifo_off;
 static unsigned long ipi_tlb_fifo_mem_off;

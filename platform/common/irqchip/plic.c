@@ -10,7 +10,7 @@
 #include <sbi/riscv_io.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_console.h>
-#include <plat/string.h>
+#include <sbi/string.h>
 #include <plat/tinyfdt.h>
 #include <plat/irqchip/plic.h>
 

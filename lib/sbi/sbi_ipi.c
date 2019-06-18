@@ -19,7 +19,7 @@
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_tlb.h>
-#include <plat/string.h>
+#include <sbi/string.h>
 
 static unsigned long ipi_data_off;
 

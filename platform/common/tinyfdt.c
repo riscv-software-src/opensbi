@@ -7,7 +7,7 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
-#include <plat/string.h>
+#include <sbi/string.h>
 #include <plat/tinyfdt.h>
 
 #define FDT_MAGIC 0xd00dfeed

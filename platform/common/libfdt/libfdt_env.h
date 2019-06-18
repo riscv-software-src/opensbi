@@ -52,7 +52,7 @@
  *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <plat/string.h>
+#include <sbi/string.h>
 #include <sbi/sbi_types.h>
 
 #define INT_MAX		((int)(~0U >> 1))

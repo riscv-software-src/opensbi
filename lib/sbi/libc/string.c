@@ -12,7 +12,7 @@
  * bugs as well. Use any optimized routines from newlib or glibc if required.
  */
 
-#include <plat/string.h>
+#include <sbi/string.h>
 
 int strcmp(const char *a, const char *b)
 {
