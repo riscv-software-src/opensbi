@@ -59,7 +59,7 @@ export platform_src_dir=$(platform_parent_dir)/$(platform_subdir)
 export platform_build_dir=$(build_dir)/platform/$(platform_subdir)
 export platform_common_src_dir=$(src_dir)/platform/common
 export include_dir=$(CURDIR)/include
-export lib_dir=$(CURDIR)/lib
+export libsbi_dir=$(CURDIR)/lib/sbi
 export firmware_dir=$(CURDIR)/firmware
 
 # Find library version
@@ -100,7 +100,7 @@ ifdef PLATFORM
 platform-object-mks=$(shell if [ -d $(platform_src_dir)/ ]; then find $(platform_src_dir) -iname "objects.mk" | sort -r; fi)
 platform-common-object-mks=$(shell if [ -d $(platform_common_src_dir) ]; then find $(platform_common_src_dir) -iname "objects.mk" | sort -r; fi)
 endif
-lib-object-mks=$(shell if [ -d $(lib_dir) ]; then find $(lib_dir) -iname "objects.mk" | sort -r; fi)
+libsbi-object-mks=$(shell if [ -d $(libsbi_dir) ]; then find $(libsbi_dir) -iname "objects.mk" | sort -r; fi)
 firmware-object-mks=$(shell if [ -d $(firmware_dir) ]; then find $(firmware_dir) -iname "objects.mk" | sort -r; fi)
 
 # Include platform specifig config.mk
@@ -113,11 +113,11 @@ ifdef PLATFORM
 include $(platform-object-mks)
 include $(platform-common-object-mks)
 endif
-include $(lib-object-mks)
+include $(libsbi-object-mks)
 include $(firmware-object-mks)
 
 # Setup list of objects
-lib-objs-path-y=$(foreach obj,$(lib-objs-y),$(build_dir)/lib/$(obj))
+libsbi-objs-path-y=$(foreach obj,$(libsbi-objs-y),$(build_dir)/lib/sbi/$(obj))
 ifdef PLATFORM
 platform-objs-path-y=$(foreach obj,$(platform-objs-y),$(platform_build_dir)/$(obj))
 platform-dtb-path-y=$(foreach obj,$(platform-dtb-y),$(platform_build_dir)/$(obj))
@@ -130,7 +130,7 @@ firmware-objs-path-y=$(firmware-bins-path-y:.bin=.o)
 # Setup list of deps files for objects
 deps-y=$(platform-objs-path-y:.o=.dep)
 deps-y+=$(platform-common-objs-path-y:.o=.dep)
-deps-y+=$(lib-objs-path-y:.o=.dep)
+deps-y+=$(libsbi-objs-path-y:.o=.dep)
 deps-y+=$(firmware-objs-path-y:.o=.dep)
 
 # Setup platform ABI, ISA and Code Model
@@ -276,10 +276,10 @@ $(build_dir)/%.elf: $(build_dir)/%.o $(build_dir)/%.elf.ld $(platform_build_dir)
 $(platform_build_dir)/%.ld: $(src_dir)/%.ldS
 	$(call compile_cpp,$@,$<)
 
-$(build_dir)/lib/libsbi.a: $(lib-objs-path-y)
+$(build_dir)/lib/libsbi.a: $(libsbi-objs-path-y)
 	$(call compile_ar,$@,$^)
 
-$(platform_build_dir)/lib/libplatsbi.a: $(lib-objs-path-y) $(platform-common-objs-path-y) $(platform-objs-path-y)
+$(platform_build_dir)/lib/libplatsbi.a: $(libsbi-objs-path-y) $(platform-common-objs-path-y) $(platform-objs-path-y)
 	$(call compile_ar,$@,$^)
 
 $(build_dir)/%.dep: $(src_dir)/%.c
