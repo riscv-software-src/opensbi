@@ -52,7 +52,7 @@
  *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sbi/string.h>
+#include <sbi/sbi_string.h>
 #include <sbi/sbi_types.h>
 
 #define INT_MAX		((int)(~0U >> 1))
@@ -65,6 +65,18 @@
 #define FDT_FORCE
 #define FDT_BITWISE
 #endif
+
+#define memmove		sbi_memmove
+#define memcpy		sbi_memcpy
+#define memcmp		sbi_memcmp
+#define memchr		sbi_memchr
+#define memset		sbi_memset
+#define strchr		sbi_strchr
+#define strrchr		sbi_strrchr
+#define strcpy		sbi_strcpy
+#define strcmp		sbi_strcmp
+#define strlen		sbi_strlen
+#define strnlen		sbi_strnlen
 
 typedef uint16_t FDT_BITWISE fdt16_t;
 typedef uint32_t FDT_BITWISE fdt32_t;

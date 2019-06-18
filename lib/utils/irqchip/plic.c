@@ -10,7 +10,7 @@
 #include <sbi/riscv_io.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_console.h>
-#include <sbi/string.h>
+#include <sbi/sbi_string.h>
 #include <sbi_utils/tinyfdt.h>
 #include <sbi_utils/irqchip/plic.h>
 
@@ -54,7 +54,7 @@ static void plic_fdt_fixup_prop(const struct fdt_node *node,
 
 	if (!prop)
 		return;
-	if (strcmp(prop->name, "interrupts-extended"))
+	if (sbi_strcmp(prop->name, "interrupts-extended"))
 		return;
 
 	cells	    = prop->value;

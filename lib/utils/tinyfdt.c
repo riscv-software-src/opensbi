@@ -7,7 +7,7 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
-#include <sbi/string.h>
+#include <sbi/sbi_string.h>
 #include <sbi_utils/tinyfdt.h>
 
 #define FDT_MAGIC 0xd00dfeed
@@ -48,10 +48,10 @@ int fdt_prop_string_index(const struct fdt_prop *prop, const char *str)
 	end = p + prop->len;
 
 	for (i = 0; p < end; i++, p += l) {
-		l = strlen(p) + 1;
+		l = sbi_strlen(p) + 1;
 		if (p + l > end)
 			return -1;
-		if (strcmp(str, p) == 0)
+		if (sbi_strcmp(str, p) == 0)
 			return i; /* Found it; return index */
 	}
 
@@ -83,7 +83,7 @@ static void recursive_iter(char **data, struct recursive_iter_info *info,
 	node.parent = parent;
 	node.name   = *data;
 
-	*data += strlen(*data) + 1;
+	*data += sbi_strlen(*data) + 1;
 	while ((ulong)(*data) % sizeof(u32) != 0)
 		(*data)++;
 
@@ -154,7 +154,7 @@ static void match_iter(const struct fdt_node *node, const struct fdt_prop *prop,
 	data += sizeof(u32);
 
 	/* Skip node name */
-	data += strlen(data) + 1;
+	data += sbi_strlen(data) + 1;
 	while ((ulong)(data) % sizeof(u32) != 0)
 		data++;
 
@@ -228,7 +228,7 @@ static int match_compat(const struct fdt_node *node,
 	if (!prop)
 		return 0;
 
-	if (strcmp(prop->name, "compatible"))
+	if (sbi_strcmp(prop->name, "compatible"))
 		return 0;
 
 	if (fdt_prop_string_index(prop, cinfo->compat) < 0)

@@ -12,9 +12,9 @@
  * bugs as well. Use any optimized routines from newlib or glibc if required.
  */
 
-#include <sbi/string.h>
+#include <sbi/sbi_string.h>
 
-int strcmp(const char *a, const char *b)
+int sbi_strcmp(const char *a, const char *b)
 {
 	/* search first diff or end of string */
 	for (; *a == *b && *a != '\0'; a++, b++)
@@ -23,7 +23,7 @@ int strcmp(const char *a, const char *b)
 	return *a - *b;
 }
 
-size_t strlen(const char *str)
+size_t sbi_strlen(const char *str)
 {
 	unsigned long ret = 0;
 
@@ -35,7 +35,7 @@ size_t strlen(const char *str)
 	return ret;
 }
 
-size_t strnlen(const char *str, size_t count)
+size_t sbi_strnlen(const char *str, size_t count)
 {
 	unsigned long ret = 0;
 
@@ -48,7 +48,7 @@ size_t strnlen(const char *str, size_t count)
 	return ret;
 }
 
-char *strcpy(char *dest, const char *src)
+char *sbi_strcpy(char *dest, const char *src)
 {
 	char *ret = dest;
 
@@ -59,7 +59,7 @@ char *strcpy(char *dest, const char *src)
 	return ret;
 }
 
-char *strncpy(char *dest, const char *src, size_t count)
+char *sbi_strncpy(char *dest, const char *src, size_t count)
 {
 	char *ret = dest;
 
@@ -70,7 +70,7 @@ char *strncpy(char *dest, const char *src, size_t count)
 	return ret;
 }
 
-char *strchr(const char *s, int c)
+char *sbi_strchr(const char *s, int c)
 {
 	while (*s != '\0' && *s != (char)c)
 		s++;
@@ -81,9 +81,9 @@ char *strchr(const char *s, int c)
 		return (char *)s;
 }
 
-char *strrchr(const char *s, int c)
+char *sbi_strrchr(const char *s, int c)
 {
-	const char *last = s + strlen(s);
+	const char *last = s + sbi_strlen(s);
 
 	while (last > s && *last != (char)c)
 		last--;
@@ -93,7 +93,7 @@ char *strrchr(const char *s, int c)
 	else
 		return (char *)last;
 }
-void *memset(void *s, int c, size_t count)
+void *sbi_memset(void *s, int c, size_t count)
 {
 	char *temp = s;
 
@@ -105,7 +105,7 @@ void *memset(void *s, int c, size_t count)
 	return s;
 }
 
-void *memcpy(void *dest, const void *src, size_t count)
+void *sbi_memcpy(void *dest, const void *src, size_t count)
 {
 	char *temp1	  = dest;
 	const char *temp2 = src;
@@ -118,7 +118,7 @@ void *memcpy(void *dest, const void *src, size_t count)
 	return dest;
 }
 
-void *memmove(void *dest, const void *src, size_t count)
+void *sbi_memmove(void *dest, const void *src, size_t count)
 {
 	char *temp1	  = (char *)dest;
 	const char *temp2 = (char *)src;
@@ -144,7 +144,7 @@ void *memmove(void *dest, const void *src, size_t count)
 	return dest;
 }
 
-int memcmp(const void *s1, const void *s2, size_t count)
+int sbi_memcmp(const void *s1, const void *s2, size_t count)
 {
 	const char *temp1 = s1;
 	const char *temp2 = s2;
@@ -160,7 +160,7 @@ int memcmp(const void *s1, const void *s2, size_t count)
 		return 0;
 }
 
-void *memchr(const void *s, int c, size_t count)
+void *sbi_memchr(const void *s, int c, size_t count)
 {
 	const unsigned char *temp = s;
 

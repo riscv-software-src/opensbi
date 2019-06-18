@@ -16,7 +16,7 @@
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_tlb.h>
-#include <sbi/string.h>
+#include <sbi/sbi_string.h>
 
 static unsigned long ipi_tlb_fifo_off;
 static unsigned long ipi_tlb_fifo_mem_off;
@@ -190,7 +190,7 @@ void sbi_tlb_fifo_process(struct sbi_scratch *scratch, u32 event)
 			sbi_tlb_fifo_sfence_vma(&tinfo);
 		else if (tinfo.type == SBI_TLB_FLUSH_VMA_ASID)
 			sbi_tlb_fifo_sfence_vma_asid(&tinfo);
-		memset(&tinfo, 0, SBI_TLB_INFO_SIZE);
+		sbi_memset(&tinfo, 0, SBI_TLB_INFO_SIZE);
 	}
 }
 
