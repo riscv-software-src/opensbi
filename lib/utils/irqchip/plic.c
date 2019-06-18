@@ -11,8 +11,8 @@
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_console.h>
 #include <sbi/string.h>
-#include <plat/tinyfdt.h>
-#include <plat/irqchip/plic.h>
+#include <sbi_utils/tinyfdt.h>
+#include <sbi_utils/irqchip/plic.h>
 
 #define PLIC_PRIORITY_BASE 0x0
 #define PLIC_PENDING_BASE 0x1000

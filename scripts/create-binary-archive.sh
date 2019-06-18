@@ -103,10 +103,13 @@ esac
 # Ensure output directory is present
 mkdir -p "${BUILD_OUTPUT_PATH}"
 
+# Do a clean build first
+make distclean
+
 # Build and install generic library
 echo "Build and install generic library XLEN=${BUILD_RISCV_XLEN}"
 echo ""
-make -C "${BUILD_OPENSBI_SOURCE_PATH}" O="${BUILD_OUTPUT_PATH}" I="${BUILD_OUTPUT_PATH}/${BUILD_ARCHIVE_NAME}" PLATFORM_RISCV_XLEN="${BUILD_RISCV_XLEN}" install_libsbi -j "${BUILD_NUM_THREADS}"
+make -C "${BUILD_OPENSBI_SOURCE_PATH}" O="${BUILD_OUTPUT_PATH}" I="${BUILD_OUTPUT_PATH}/${BUILD_ARCHIVE_NAME}" PLATFORM_RISCV_XLEN="${BUILD_RISCV_XLEN}" install_libsbi install_libsbiutils -j "${BUILD_NUM_THREADS}"
 echo ""
 
 # Build and install relevant platforms

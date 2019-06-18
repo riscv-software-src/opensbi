@@ -8,7 +8,7 @@
  */
 
 #include <sbi/riscv_io.h>
-#include <plat/serial/uart8250.h>
+#include <sbi_utils/serial/uart8250.h>
 
 /* clang-format off */
 

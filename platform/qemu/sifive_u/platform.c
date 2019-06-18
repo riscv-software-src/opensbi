@@ -11,9 +11,9 @@
 #include <sbi/sbi_const.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
-#include <plat/irqchip/plic.h>
-#include <plat/serial/sifive-uart.h>
-#include <plat/sys/clint.h>
+#include <sbi_utils/irqchip/plic.h>
+#include <sbi_utils/serial/sifive-uart.h>
+#include <sbi_utils/sys/clint.h>
 
 /* clang-format off */
 

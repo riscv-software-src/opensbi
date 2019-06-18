@@ -10,7 +10,7 @@
 #include <sbi/riscv_io.h>
 #include <sbi/riscv_atomic.h>
 #include <sbi/sbi_hart.h>
-#include <plat/sys/clint.h>
+#include <sbi_utils/sys/clint.h>
 
 static u32 clint_ipi_hart_count;
 static volatile void *clint_ipi_base;

@@ -8,7 +8,7 @@
  */
 
 #include <sbi/string.h>
-#include <plat/tinyfdt.h>
+#include <sbi_utils/tinyfdt.h>
 
 #define FDT_MAGIC 0xd00dfeed
 #define FDT_VERSION 17

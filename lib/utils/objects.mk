@@ -7,4 +7,4 @@
 #   Anup Patel <anup.patel@wdc.com>
 #
 
-platform-common-objs-y += tinyfdt.o
+libsbiutils-objs-y += tinyfdt.o

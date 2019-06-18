@@ -58,8 +58,6 @@
 #define INT_MAX		((int)(~0U >> 1))
 #define UINT_MAX	((unsigned int)~0U)
 
-#include <stddef.h>
-
 #ifdef __CHECKER__
 #define FDT_FORCE __attribute__((force))
 #define FDT_BITWISE __attribute__((bitwise))

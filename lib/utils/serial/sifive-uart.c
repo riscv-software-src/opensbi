@@ -9,7 +9,7 @@
 
 #include <sbi/riscv_io.h>
 #include <sbi/sbi_console.h>
-#include <plat/serial/sifive-uart.h>
+#include <sbi_utils/serial/sifive-uart.h>
 
 /* clang-format off */
 

@@ -7,4 +7,4 @@
 #   Anup Patel <anup.patel@wdc.com>
 #
 
-platform-common-objs-$(PLATFORM_IRQCHIP_PLIC) += irqchip/plic.o
+libsbiutils-objs-$(PLATFORM_SYS_CLINT) += sys/clint.o
