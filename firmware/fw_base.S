@@ -48,7 +48,7 @@ _start:
 	 * that is, for mhartid != 0
 	 */
 	csrr	a6, CSR_MHARTID
-	blt	zero, a6, _wait_for_boot_hart
+	blt	zero, a6, _wait_relocate_copy_done
 
 	/* Save load address */
 	la	t0, _load_start
@@ -72,7 +72,7 @@ _relocate:
 	blt	t2, t0, _relocate_copy_to_upper
 _relocate_copy_to_lower:
 	ble	t1, t2, _relocate_copy_to_lower_loop
-	la	t3, _boot_hart_done
+	la	t3, _boot_status
 	BRANGE	t2, t1, t3, _start_hang
 	la	t3, _relocate
 	la	t5, _relocate_done
@@ -88,7 +88,7 @@ _relocate_copy_to_lower_loop:
 	jr	t4
 _relocate_copy_to_upper:
 	ble	t3, t0, _relocate_copy_to_upper_loop
-	la	t2, _boot_hart_done
+	la	t2, _boot_status
 	BRANGE	t0, t3, t2, _start_hang
 	la	t2, _relocate
 	la	t5, _relocate_done
@@ -102,7 +102,33 @@ _relocate_copy_to_upper_loop:
 	REG_S	t2, 0(t1)
 	blt	t0, t1, _relocate_copy_to_upper_loop
 	jr	t4
+_wait_relocate_copy_done:
+	la	t0, _start
+	la	t1, _link_start
+	REG_L	t1, 0(t1)
+	la	t2, _boot_status
+	sub	t2, t2, t0
+	add	t2, t2, t1
+	la	t3, _wait_for_boot_hart
+	sub	t3, t3, t0
+	add	t3, t3, t1
+1:
+	/* waitting for relocate copy done (_boot_status == 1) */
+	li	t4, 1
+	REG_L	t5, 0(t2)
+	/* Reduce the bus traffic so that boot hart may proceed faster */
+	nop
+	nop
+	nop
+	bne	t4, t5, 1b
+	jr	t3
 _relocate_done:
+
+	/* mark relocate copy done */
+	la	t0, _boot_status
+	li	t1, 1
+	REG_S	t1, 0(t0)
+	fence	rw, rw
 
 	/* At this point we are running from link address */
 
@@ -274,31 +300,23 @@ _fdt_reloc_again:
 	blt	t1, t2, _fdt_reloc_again
 _fdt_reloc_done:
 
-	/* Update boot hart flag */
-	la	a4, _boot_hart_done
-	la	a5, _start_warm
-	REG_S	a5, (a4)
-	fence	rw, rw
-	la	t0, _link_start
-	REG_L	t0, 0(t0)
-	sub	a4, a4, t0
-	la	t0, _load_start
-	REG_L	t0, 0(t0)
-	add	a4, a4, t0
-	REG_S	a5, (a4)
+	/* mark boot hart done */
+	li	t0, 2
+	la	t1, _boot_status
+	REG_S	t0, 0(t1)
 	fence	rw, rw
 	j	_start_warm
 
-	/* Wait for boot hart */
+	/* waitting for boot hart done (_boot_status == 2) */
 _wait_for_boot_hart:
-	la	a4, _boot_hart_done
-	REG_L	a5, 0(a4)
+	li	t0, 2
+	la	t1, _boot_status
+	REG_L	t1, 0(t1)
 	/* Reduce the bus traffic so that boot hart may proceed faster */
 	nop
 	nop
 	nop
-	beqz	a5, _wait_for_boot_hart
-	jr	a5
+	bne	t0, t1, _wait_for_boot_hart
 
 _start_warm:
 	/* Reset all registers for non-boot HARTs */
@@ -352,7 +370,7 @@ _start_warm:
 	j	_start_hang
 
 	.align 3
-_boot_hart_done:
+_boot_status:
 	RISCV_PTR	0
 _load_start:
 	RISCV_PTR	_fw_start
