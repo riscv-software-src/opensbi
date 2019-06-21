@@ -33,14 +33,14 @@ static void plic_set_priority(u32 source, u32 val)
 	writel(val, plic_priority);
 }
 
-static void plic_set_thresh(u32 cntxid, u32 val)
+void plic_set_thresh(u32 cntxid, u32 val)
 {
 	volatile void *plic_thresh =
 		plic_base + PLIC_CONTEXT_BASE + PLIC_CONTEXT_STRIDE * cntxid;
 	writel(val, plic_thresh);
 }
 
-static void plic_set_ie(u32 cntxid, u32 word_index, u32 val)
+void plic_set_ie(u32 cntxid, u32 word_index, u32 val)
 {
 	volatile void *plic_ie =
 		plic_base + PLIC_ENABLE_BASE + PLIC_ENABLE_STRIDE * cntxid;
