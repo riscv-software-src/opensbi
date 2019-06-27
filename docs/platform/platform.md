@@ -21,6 +21,9 @@ OpenSBI currently supports the following virtual and hardware platforms:
 * **Kendryte K210 SoC**: Platform support for the Kendryte K210 SoC used on
   boards such as the Kendryte KD233 or the Sipeed MAIX Dock.
 
+* **Ariane FPGA SoC**: Platform support for the Ariane FPGA SoC used on
+  Genesys 2 board.
+
 The code for these supported platforms can be used as example to implement
 support for other platforms. The *platform/template* directory also provides
 template files for implementing support for a new platform. The *object.mk*,
@@ -30,3 +33,4 @@ facilitate the implementation.
 [qemu_virt.md]: qemu_virt.md
 [qemu_sifive_u.md]: qemu_sifive_u.md
 [sifive_fu540.md]: sifive_fu540.md
+[ariane-fpga.md]: ariane-fpga.md
