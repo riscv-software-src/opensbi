@@ -227,6 +227,8 @@ const struct sbi_platform_operations platform_ops = {
 	.system_shutdown	= platform_system_down
 };
 const struct sbi_platform platform = {
+	.opensbi_version	= OPENSBI_VERSION,
+	.platform_version	= SBI_PLATFORM_VERSION(0x0, 0x00),
 	.name			= "platform-name",
 	.features		= SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count		= 1,

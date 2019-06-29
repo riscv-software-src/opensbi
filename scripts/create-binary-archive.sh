@@ -74,8 +74,8 @@ if [ -z "${BUILD_ARCHIVE_SUFFIX}" ]; then
 fi
 
 # Get version of OpenSBI
-BUILD_VERSION_MAJOR=$(grep MAJOR "${BUILD_OPENSBI_SOURCE_PATH}/include/sbi/sbi_version.h" | sed 's/.*MAJOR.*\([0-9][0-9]*\)/\1/')
-BUILD_VERSION_MINOR=$(grep MINOR "${BUILD_OPENSBI_SOURCE_PATH}/include/sbi/sbi_version.h" | sed 's/.*MINOR.*\([0-9][0-9]*\)/\1/')
+BUILD_VERSION_MAJOR=$(grep "define OPENSBI_VERSION_MAJOR" "${BUILD_OPENSBI_SOURCE_PATH}/include/sbi/sbi_version.h" | sed 's/.*MAJOR.*\([0-9][0-9]*\)/\1/')
+BUILD_VERSION_MINOR=$(grep "define OPENSBI_VERSION_MINOR" "${BUILD_OPENSBI_SOURCE_PATH}/include/sbi/sbi_version.h" | sed 's/.*MINOR.*\([0-9][0-9]*\)/\1/')
 
 # Setup archive name
 BUILD_ARCHIVE_NAME="opensbi-${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR}-rv${BUILD_RISCV_XLEN}-${BUILD_ARCHIVE_SUFFIX}"

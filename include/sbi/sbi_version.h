@@ -13,4 +13,12 @@
 #define OPENSBI_VERSION_MAJOR 0
 #define OPENSBI_VERSION_MINOR 3
 
+/**
+ *  OpenSBI 32-bit version with:
+ *  1. upper 16-bits as major number
+ *  2. lower 16-bits as minor number
+ */
+#define OPENSBI_VERSION ((OPENSBI_VERSION_MAJOR << 16) | \
+			 (OPENSBI_VERSION_MINOR))
+
 #endif

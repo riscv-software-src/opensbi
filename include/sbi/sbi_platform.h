@@ -10,21 +10,32 @@
 #ifndef __SBI_PLATFORM_H__
 #define __SBI_PLATFORM_H__
 
+/** OpenSBI 32-bit platform version with:
+ *  1. upper 16-bits as major number
+ *  2. lower 16-bits as minor number
+ */
+#define SBI_PLATFORM_VERSION(Major, Minor) ((Major << 16) | Minor)
+
+/** Offset of opensbi_version in struct sbi_platform */
+#define SBI_PLATFORM_OPENSBI_VERSION_OFFSET (0x00)
+/** Offset of platform_version in struct sbi_platform */
+#define SBI_PLATFORM_VERSION_OFFSET (0x04)
 /** Offset of name in struct sbi_platform */
-#define SBI_PLATFORM_NAME_OFFSET (0x0)
+#define SBI_PLATFORM_NAME_OFFSET (0x08)
 /** Offset of features in struct sbi_platform */
-#define SBI_PLATFORM_FEATURES_OFFSET (0x40)
+#define SBI_PLATFORM_FEATURES_OFFSET (0x48)
 /** Offset of hart_count in struct sbi_platform */
-#define SBI_PLATFORM_HART_COUNT_OFFSET (0x48)
+#define SBI_PLATFORM_HART_COUNT_OFFSET (0x50)
 /** Offset of hart_stack_size in struct sbi_platform */
-#define SBI_PLATFORM_HART_STACK_SIZE_OFFSET (0x4c)
+#define SBI_PLATFORM_HART_STACK_SIZE_OFFSET (0x54)
 /** Offset of disabled_hart_mask in struct sbi_platform */
-#define SBI_PLATFORM_DISABLED_HART_OFFSET (0x50)
+#define SBI_PLATFORM_DISABLED_HART_OFFSET (0x58)
 /** Offset of platform_ops_addr in struct sbi_platform */
-#define SBI_PLATFORM_OPS_OFFSET (0x58)
+#define SBI_PLATFORM_OPS_OFFSET (0x60)
 
 #ifndef __ASSEMBLY__
 
+#include <sbi/sbi_version.h>
 #include <sbi/sbi_scratch.h>
 
 /** Possible feature flags of a platform */
@@ -101,6 +112,18 @@ struct sbi_platform_operations {
 
 /** Representation of a platform */
 struct sbi_platform {
+	/**
+	 * OpenSBI version this sbi_platform is based on.
+	 * It's a 32-bit value where upper 16-bits are major number
+	 * and lower 16-bits are minor number
+	 */
+	u32 opensbi_version;
+	/**
+	 * OpenSBI platform version released by vendor.
+	 * It's a 32-bit value where upper 16-bits are major number
+	 * and lower 16-bits are minor number
+	 */
+	u32 platform_version;
 	/** Name of the platform */
 	char name[64];
 	/** Supported features */
@@ -119,9 +142,8 @@ struct sbi_platform {
 #define sbi_platform_ptr(__s) \
 	((const struct sbi_platform *)((__s)->platform_addr))
 /** Get pointer to sbi_platform for current HART */
-#define sbi_platform_thishart_ptr()                               \
-	((const struct sbi_platform *)(sbi_scratch_thishart_ptr() \
-						>platform_addr))
+#define sbi_platform_thishart_ptr() ((const struct sbi_platform *) \
+	(sbi_scratch_thishart_ptr()->platform_addr))
 /** Get pointer to platform_ops_addr from platform pointer **/
 #define sbi_platform_ops(__p) \
 	((const struct sbi_platform_operations *)(__p)->platform_ops_addr)

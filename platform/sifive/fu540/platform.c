@@ -209,6 +209,8 @@ const struct sbi_platform_operations platform_ops = {
 };
 
 const struct sbi_platform platform = {
+	.opensbi_version	= OPENSBI_VERSION,
+	.platform_version	= SBI_PLATFORM_VERSION(0x0, 0x01),
 	.name			= "SiFive Freedom U540",
 	.features		= SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count		= FU540_HART_COUNT,

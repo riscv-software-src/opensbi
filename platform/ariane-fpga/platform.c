@@ -196,6 +196,8 @@ const struct sbi_platform_operations platform_ops = {
 };
 
 const struct sbi_platform platform = {
+	.opensbi_version = OPENSBI_VERSION,
+	.platform_version = SBI_PLATFORM_VERSION(0x0, 0x01),
 	.name = "ARIANE RISC-V",
 	.features = SBI_ARIANE_FEATURES,
 	.hart_count = ARIANE_HART_COUNT,
