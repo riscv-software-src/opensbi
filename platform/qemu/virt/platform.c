@@ -132,27 +132,31 @@ static int virt_system_down(u32 type)
 	return 0;
 }
 
+const struct sbi_platform_operations platform_ops = {
+	.pmp_region_count	= virt_pmp_region_count,
+	.pmp_region_info	= virt_pmp_region_info,
+	.final_init		= virt_final_init,
+	.console_putc		= uart8250_putc,
+	.console_getc		= uart8250_getc,
+	.console_init		= virt_console_init,
+	.irqchip_init		= virt_irqchip_init,
+	.ipi_send		= clint_ipi_send,
+	.ipi_sync		= clint_ipi_sync,
+	.ipi_clear		= clint_ipi_clear,
+	.ipi_init		= virt_ipi_init,
+	.timer_value		= clint_timer_value,
+	.timer_event_stop	= clint_timer_event_stop,
+	.timer_event_start	= clint_timer_event_start,
+	.timer_init		= virt_timer_init,
+	.system_reboot		= virt_system_down,
+	.system_shutdown	= virt_system_down
+};
+
 const struct sbi_platform platform = {
-	.name		    = "QEMU Virt Machine",
-	.features	    = SBI_PLATFORM_DEFAULT_FEATURES,
-	.hart_count	    = VIRT_HART_COUNT,
-	.hart_stack_size    = VIRT_HART_STACK_SIZE,
-	.disabled_hart_mask = 0,
-	.pmp_region_count   = virt_pmp_region_count,
-	.pmp_region_info    = virt_pmp_region_info,
-	.final_init	    = virt_final_init,
-	.console_putc	    = uart8250_putc,
-	.console_getc	    = uart8250_getc,
-	.console_init	    = virt_console_init,
-	.irqchip_init	    = virt_irqchip_init,
-	.ipi_send	    = clint_ipi_send,
-	.ipi_sync	    = clint_ipi_sync,
-	.ipi_clear	    = clint_ipi_clear,
-	.ipi_init	    = virt_ipi_init,
-	.timer_value	    = clint_timer_value,
-	.timer_event_stop   = clint_timer_event_stop,
-	.timer_event_start  = clint_timer_event_start,
-	.timer_init	    = virt_timer_init,
-	.system_reboot	    = virt_system_down,
-	.system_shutdown    = virt_system_down
+	.name			= "QEMU Virt Machine",
+	.features		= SBI_PLATFORM_DEFAULT_FEATURES,
+	.hart_count		= VIRT_HART_COUNT,
+	.hart_stack_size	= VIRT_HART_STACK_SIZE,
+	.disabled_hart_mask	= 0,
+	.platform_ops_addr	= (unsigned long)&platform_ops
 };

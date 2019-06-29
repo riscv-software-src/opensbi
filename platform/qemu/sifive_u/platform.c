@@ -127,27 +127,31 @@ static int sifive_u_system_down(u32 type)
 	return 0;
 }
 
+const struct sbi_platform_operations platform_ops = {
+	.pmp_region_count	= sifive_u_pmp_region_count,
+	.pmp_region_info	= sifive_u_pmp_region_info,
+	.final_init		= sifive_u_final_init,
+	.console_putc		= sifive_uart_putc,
+	.console_getc		= sifive_uart_getc,
+	.console_init		= sifive_u_console_init,
+	.irqchip_init		= sifive_u_irqchip_init,
+	.ipi_send		= clint_ipi_send,
+	.ipi_sync		= clint_ipi_sync,
+	.ipi_clear		= clint_ipi_clear,
+	.ipi_init		= sifive_u_ipi_init,
+	.timer_value		= clint_timer_value,
+	.timer_event_stop	= clint_timer_event_stop,
+	.timer_event_start	= clint_timer_event_start,
+	.timer_init		= sifive_u_timer_init,
+	.system_reboot		= sifive_u_system_down,
+	.system_shutdown	= sifive_u_system_down
+};
+
 const struct sbi_platform platform = {
-	.name		    = "QEMU SiFive Unleashed",
-	.features	    = SBI_PLATFORM_DEFAULT_FEATURES,
-	.hart_count	    = SIFIVE_U_HART_COUNT,
-	.hart_stack_size    = SIFIVE_U_HART_STACK_SIZE,
-	.disabled_hart_mask = 0,
-	.pmp_region_count   = sifive_u_pmp_region_count,
-	.pmp_region_info    = sifive_u_pmp_region_info,
-	.final_init	    = sifive_u_final_init,
-	.console_putc	    = sifive_uart_putc,
-	.console_getc	    = sifive_uart_getc,
-	.console_init	    = sifive_u_console_init,
-	.irqchip_init	    = sifive_u_irqchip_init,
-	.ipi_send	    = clint_ipi_send,
-	.ipi_sync	    = clint_ipi_sync,
-	.ipi_clear	    = clint_ipi_clear,
-	.ipi_init	    = sifive_u_ipi_init,
-	.timer_value	    = clint_timer_value,
-	.timer_event_stop   = clint_timer_event_stop,
-	.timer_event_start  = clint_timer_event_start,
-	.timer_init	    = sifive_u_timer_init,
-	.system_reboot	    = sifive_u_system_down,
-	.system_shutdown    = sifive_u_system_down
+	.name			= "QEMU SiFive Unleashed",
+	.features		= SBI_PLATFORM_DEFAULT_FEATURES,
+	.hart_count		= SIFIVE_U_HART_COUNT,
+	.hart_stack_size	= SIFIVE_U_HART_STACK_SIZE,
+	.disabled_hart_mask	= 0,
+	.platform_ops_addr	= (unsigned long)&platform_ops
 };

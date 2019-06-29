@@ -93,18 +93,10 @@ static int k210_system_shutdown(u32 type)
 	return 0;
 }
 
-const struct sbi_platform platform = {
-
-	.name	  = "Kendryte K210",
-	.features = SBI_PLATFORM_HAS_TIMER_VALUE,
-
-	.hart_count	    = K210_HART_COUNT,
-	.hart_stack_size    = K210_HART_STACK_SIZE,
-	.disabled_hart_mask = 0,
-
-	.console_init = k210_console_init,
-	.console_putc = k210_console_putc,
-	.console_getc = k210_console_getc,
+const struct sbi_platform_operations platform_ops = {
+	.console_init	= k210_console_init,
+	.console_putc	= k210_console_putc,
+	.console_getc	= k210_console_getc,
 
 	.irqchip_init = k210_irqchip_init,
 
@@ -120,4 +112,13 @@ const struct sbi_platform platform = {
 
 	.system_reboot	 = k210_system_reboot,
 	.system_shutdown = k210_system_shutdown
+};
+
+const struct sbi_platform platform = {
+	.name			= "Kendryte K210",
+	.features		= SBI_PLATFORM_HAS_TIMER_VALUE,
+	.hart_count		= K210_HART_COUNT,
+	.hart_stack_size	= K210_HART_STACK_SIZE,
+	.disabled_hart_mask	= 0,
+	.platform_ops_addr	= (unsigned long)&platform_ops
 };

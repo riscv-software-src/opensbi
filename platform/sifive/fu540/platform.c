@@ -188,27 +188,31 @@ static int fu540_system_down(u32 type)
 	return 0;
 }
 
+const struct sbi_platform_operations platform_ops = {
+	.pmp_region_count	= fu540_pmp_region_count,
+	.pmp_region_info	= fu540_pmp_region_info,
+	.final_init		= fu540_final_init,
+	.console_putc		= sifive_uart_putc,
+	.console_getc		= sifive_uart_getc,
+	.console_init		= fu540_console_init,
+	.irqchip_init		= fu540_irqchip_init,
+	.ipi_send		= clint_ipi_send,
+	.ipi_sync		= clint_ipi_sync,
+	.ipi_clear		= clint_ipi_clear,
+	.ipi_init		= fu540_ipi_init,
+	.timer_value		= clint_timer_value,
+	.timer_event_stop	= clint_timer_event_stop,
+	.timer_event_start	= clint_timer_event_start,
+	.timer_init		= fu540_timer_init,
+	.system_reboot		= fu540_system_down,
+	.system_shutdown	= fu540_system_down
+};
+
 const struct sbi_platform platform = {
-	.name		    = "SiFive Freedom U540",
-	.features	    = SBI_PLATFORM_DEFAULT_FEATURES,
-	.hart_count	    = FU540_HART_COUNT,
-	.hart_stack_size    = FU540_HART_STACK_SIZE,
-	.disabled_hart_mask = FU540_HARITD_DISABLED,
-	.pmp_region_count   = fu540_pmp_region_count,
-	.pmp_region_info    = fu540_pmp_region_info,
-	.final_init	    = fu540_final_init,
-	.console_putc	    = sifive_uart_putc,
-	.console_getc	    = sifive_uart_getc,
-	.console_init	    = fu540_console_init,
-	.irqchip_init	    = fu540_irqchip_init,
-	.ipi_send	    = clint_ipi_send,
-	.ipi_sync	    = clint_ipi_sync,
-	.ipi_clear	    = clint_ipi_clear,
-	.ipi_init	    = fu540_ipi_init,
-	.timer_value	    = clint_timer_value,
-	.timer_event_stop   = clint_timer_event_stop,
-	.timer_event_start  = clint_timer_event_start,
-	.timer_init	    = fu540_timer_init,
-	.system_reboot	    = fu540_system_down,
-	.system_shutdown    = fu540_system_down
+	.name			= "SiFive Freedom U540",
+	.features		= SBI_PLATFORM_DEFAULT_FEATURES,
+	.hart_count		= FU540_HART_COUNT,
+	.hart_stack_size	= FU540_HART_STACK_SIZE,
+	.disabled_hart_mask	= FU540_HARITD_DISABLED,
+	.platform_ops_addr	= (unsigned long)&platform_ops
 };

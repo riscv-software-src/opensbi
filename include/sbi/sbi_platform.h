@@ -18,6 +18,10 @@
 #define SBI_PLATFORM_HART_COUNT_OFFSET (0x48)
 /** Offset of hart_stack_size in struct sbi_platform */
 #define SBI_PLATFORM_HART_STACK_SIZE_OFFSET (0x4c)
+/** Offset of disabled_hart_mask in struct sbi_platform */
+#define SBI_PLATFORM_DISABLED_HART_OFFSET (0x50)
+/** Offset of platform_ops_addr in struct sbi_platform */
+#define SBI_PLATFORM_OPS_OFFSET (0x58)
 
 #ifndef __ASSEMBLY__
 
@@ -45,19 +49,8 @@ enum sbi_platform_features {
 	 SBI_PLATFORM_HAS_SCOUNTEREN | SBI_PLATFORM_HAS_MCOUNTEREN | \
 	 SBI_PLATFORM_HAS_MFAULTS_DELEGATION)
 
-/** Representation of a platform */
-struct sbi_platform {
-	/** Name of the platform */
-	char name[64];
-	/** Supported features */
-	u64 features;
-	/** Total number of HARTs */
-	u32 hart_count;
-	/** Per-HART stack size for exception/interrupt handling */
-	u32 hart_stack_size;
-	/** Mask representing the set of disabled HARTs */
-	u64 disabled_hart_mask;
-
+/** Platform functions */
+struct sbi_platform_operations {
 	/** Platform early initialization */
 	int (*early_init)(bool cold_boot);
 	/** Platform final initialization */
@@ -106,13 +99,33 @@ struct sbi_platform {
 	int (*system_shutdown)(u32 type);
 } __packed;
 
+/** Representation of a platform */
+struct sbi_platform {
+	/** Name of the platform */
+	char name[64];
+	/** Supported features */
+	u64 features;
+	/** Total number of HARTs */
+	u32 hart_count;
+	/** Per-HART stack size for exception/interrupt handling */
+	u32 hart_stack_size;
+	/** Mask representing the set of disabled HARTs */
+	u64 disabled_hart_mask;
+	/** Pointer to sbi platform operations */
+	unsigned long platform_ops_addr;
+} __packed;
+
 /** Get pointer to sbi_platform for sbi_scratch pointer */
 #define sbi_platform_ptr(__s) \
 	((const struct sbi_platform *)((__s)->platform_addr))
 /** Get pointer to sbi_platform for current HART */
 #define sbi_platform_thishart_ptr()                               \
 	((const struct sbi_platform *)(sbi_scratch_thishart_ptr() \
-					       ->platform_addr))
+						>platform_addr))
+/** Get pointer to platform_ops_addr from platform pointer **/
+#define sbi_platform_ops(__p) \
+	((const struct sbi_platform_operations *)(__p)->platform_ops_addr)
+
 /** Check whether the platform supports timer value */
 #define sbi_platform_has_timer_value(__p) \
 	((__p)->features & SBI_PLATFORM_HAS_TIMER_VALUE)
@@ -200,8 +213,8 @@ static inline u32 sbi_platform_hart_stack_size(const struct sbi_platform *plat)
 static inline int sbi_platform_early_init(const struct sbi_platform *plat,
 					  bool cold_boot)
 {
-	if (plat && plat->early_init)
-		return plat->early_init(cold_boot);
+	if (plat && sbi_platform_ops(plat)->early_init)
+		return sbi_platform_ops(plat)->early_init(cold_boot);
 	return 0;
 }
 
@@ -216,8 +229,8 @@ static inline int sbi_platform_early_init(const struct sbi_platform *plat,
 static inline int sbi_platform_final_init(const struct sbi_platform *plat,
 					  bool cold_boot)
 {
-	if (plat && plat->final_init)
-		return plat->final_init(cold_boot);
+	if (plat && sbi_platform_ops(plat)->final_init)
+		return sbi_platform_ops(plat)->final_init(cold_boot);
 	return 0;
 }
 
@@ -232,8 +245,8 @@ static inline int sbi_platform_final_init(const struct sbi_platform *plat,
 static inline u32 sbi_platform_pmp_region_count(const struct sbi_platform *plat,
 						u32 hartid)
 {
-	if (plat && plat->pmp_region_count)
-		return plat->pmp_region_count(hartid);
+	if (plat && sbi_platform_ops(plat)->pmp_region_count)
+		return sbi_platform_ops(plat)->pmp_region_count(hartid);
 	return 0;
 }
 
@@ -251,13 +264,13 @@ static inline u32 sbi_platform_pmp_region_count(const struct sbi_platform *plat,
  * @return 0 on success and negative error code on failure
  */
 static inline int sbi_platform_pmp_region_info(const struct sbi_platform *plat,
-					       u32 hartid, u32 index,
-					       ulong *prot, ulong *addr,
-					       ulong *log2size)
+						u32 hartid, u32 index,
+						ulong *prot, ulong *addr,
+						ulong *log2size)
 {
-	if (plat && plat->pmp_region_info)
-		return plat->pmp_region_info(hartid, index, prot, addr,
-					     log2size);
+	if (plat && sbi_platform_ops(plat)->pmp_region_info)
+		return sbi_platform_ops(plat)->pmp_region_info(hartid, index, prot, addr,
+                                                                              log2size);
 	return 0;
 }
 
@@ -268,10 +281,10 @@ static inline int sbi_platform_pmp_region_info(const struct sbi_platform *plat,
  * @param ch character to write
  */
 static inline void sbi_platform_console_putc(const struct sbi_platform *plat,
-					     char ch)
+						char ch)
 {
-	if (plat && plat->console_putc)
-		plat->console_putc(ch);
+	if (plat && sbi_platform_ops(plat)->console_putc)
+		sbi_platform_ops(plat)->console_putc(ch);
 }
 
 /**
@@ -283,8 +296,8 @@ static inline void sbi_platform_console_putc(const struct sbi_platform *plat,
  */
 static inline int sbi_platform_console_getc(const struct sbi_platform *plat)
 {
-	if (plat && plat->console_getc)
-		return plat->console_getc();
+	if (plat && sbi_platform_ops(plat)->console_getc)
+		return sbi_platform_ops(plat)->console_getc();
 	return -1;
 }
 
@@ -297,8 +310,8 @@ static inline int sbi_platform_console_getc(const struct sbi_platform *plat)
  */
 static inline int sbi_platform_console_init(const struct sbi_platform *plat)
 {
-	if (plat && plat->console_init)
-		return plat->console_init();
+	if (plat && sbi_platform_ops(plat)->console_init)
+		return sbi_platform_ops(plat)->console_init();
 	return 0;
 }
 
@@ -313,8 +326,8 @@ static inline int sbi_platform_console_init(const struct sbi_platform *plat)
 static inline int sbi_platform_irqchip_init(const struct sbi_platform *plat,
 					    bool cold_boot)
 {
-	if (plat && plat->irqchip_init)
-		return plat->irqchip_init(cold_boot);
+	if (plat && sbi_platform_ops(plat)->irqchip_init)
+		return sbi_platform_ops(plat)->irqchip_init(cold_boot);
 	return 0;
 }
 
@@ -327,8 +340,8 @@ static inline int sbi_platform_irqchip_init(const struct sbi_platform *plat,
 static inline void sbi_platform_ipi_send(const struct sbi_platform *plat,
 					 u32 target_hart)
 {
-	if (plat && plat->ipi_send)
-		plat->ipi_send(target_hart);
+	if (plat && sbi_platform_ops(plat)->ipi_send)
+		sbi_platform_ops(plat)->ipi_send(target_hart);
 }
 
 /**
@@ -340,8 +353,8 @@ static inline void sbi_platform_ipi_send(const struct sbi_platform *plat,
 static inline void sbi_platform_ipi_sync(const struct sbi_platform *plat,
 					 u32 target_hart)
 {
-	if (plat && plat->ipi_sync)
-		plat->ipi_sync(target_hart);
+	if (plat && sbi_platform_ops(plat)->ipi_sync)
+		sbi_platform_ops(plat)->ipi_sync(target_hart);
 }
 
 /**
@@ -353,8 +366,8 @@ static inline void sbi_platform_ipi_sync(const struct sbi_platform *plat,
 static inline void sbi_platform_ipi_clear(const struct sbi_platform *plat,
 					  u32 target_hart)
 {
-	if (plat && plat->ipi_clear)
-		plat->ipi_clear(target_hart);
+	if (plat && sbi_platform_ops(plat)->ipi_clear)
+		sbi_platform_ops(plat)->ipi_clear(target_hart);
 }
 
 /**
@@ -368,8 +381,8 @@ static inline void sbi_platform_ipi_clear(const struct sbi_platform *plat,
 static inline int sbi_platform_ipi_init(const struct sbi_platform *plat,
 					bool cold_boot)
 {
-	if (plat && plat->ipi_init)
-		return plat->ipi_init(cold_boot);
+	if (plat && sbi_platform_ops(plat)->ipi_init)
+		return sbi_platform_ops(plat)->ipi_init(cold_boot);
 	return 0;
 }
 
@@ -382,8 +395,8 @@ static inline int sbi_platform_ipi_init(const struct sbi_platform *plat,
  */
 static inline u64 sbi_platform_timer_value(const struct sbi_platform *plat)
 {
-	if (plat && plat->timer_value)
-		return plat->timer_value();
+	if (plat && sbi_platform_ops(plat)->timer_value)
+		return sbi_platform_ops(plat)->timer_value();
 	return 0;
 }
 
@@ -396,8 +409,8 @@ static inline u64 sbi_platform_timer_value(const struct sbi_platform *plat)
 static inline void
 sbi_platform_timer_event_start(const struct sbi_platform *plat, u64 next_event)
 {
-	if (plat && plat->timer_event_start)
-		plat->timer_event_start(next_event);
+	if (plat && sbi_platform_ops(plat)->timer_event_start)
+		sbi_platform_ops(plat)->timer_event_start(next_event);
 }
 
 /**
@@ -408,8 +421,8 @@ sbi_platform_timer_event_start(const struct sbi_platform *plat, u64 next_event)
 static inline void
 sbi_platform_timer_event_stop(const struct sbi_platform *plat)
 {
-	if (plat && plat->timer_event_stop)
-		plat->timer_event_stop();
+	if (plat && sbi_platform_ops(plat)->timer_event_stop)
+		sbi_platform_ops(plat)->timer_event_stop();
 }
 
 /**
@@ -423,8 +436,8 @@ sbi_platform_timer_event_stop(const struct sbi_platform *plat)
 static inline int sbi_platform_timer_init(const struct sbi_platform *plat,
 					  bool cold_boot)
 {
-	if (plat && plat->timer_init)
-		return plat->timer_init(cold_boot);
+	if (plat && sbi_platform_ops(plat)->timer_init)
+		return sbi_platform_ops(plat)->timer_init(cold_boot);
 	return 0;
 }
 
@@ -439,8 +452,8 @@ static inline int sbi_platform_timer_init(const struct sbi_platform *plat,
 static inline int sbi_platform_system_reboot(const struct sbi_platform *plat,
 					     u32 type)
 {
-	if (plat && plat->system_reboot)
-		return plat->system_reboot(type);
+	if (plat && sbi_platform_ops(plat)->system_reboot)
+		return sbi_platform_ops(plat)->system_reboot(type);
 	return 0;
 }
 
@@ -455,8 +468,8 @@ static inline int sbi_platform_system_reboot(const struct sbi_platform *plat,
 static inline int sbi_platform_system_shutdown(const struct sbi_platform *plat,
 					       u32 type)
 {
-	if (plat && plat->system_shutdown)
-		return plat->system_shutdown(type);
+	if (plat && sbi_platform_ops(plat)->system_shutdown)
+		return sbi_platform_ops(plat)->system_shutdown(type);
 	return 0;
 }
 

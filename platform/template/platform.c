@@ -12,9 +12,9 @@
  * Include these files as needed.
  * See config.mk PLATFORM_xxx configuration parameters.
  */
-#include <plat/irqchip/plic.h>
-#include <plat/serial/uart8250.h>
-#include <plat/sys/clint.h>
+#include <sbi_utils/irqchip/plic.h>
+#include <sbi_utils/serial/uart8250.h>
+#include <sbi_utils/sys/clint.h>
 
 /*
  * Platform early initialization.
@@ -206,35 +206,31 @@ static int platform_system_shutdown(u32 type)
 /*
  * Platform descriptor.
  */
+const struct sbi_platform_operations platform_ops = {
+	.early_init		= platform_early_init,
+	.final_init		= platform_final_init,
+	.pmp_region_count	= platform_pmp_region_count,
+	.pmp_region_info	= platform_pmp_region_info,
+	.console_putc		= platform_console_putc,
+	.console_getc		= platform_console_getc,
+	.console_init		= platform_console_init,
+	.irqchip_init		= platform_irqchip_init,
+	.ipi_send		= platform_ipi_send,
+	.ipi_sync		= platform_ipi_sync,
+	.ipi_clear		= platform_ipi_clear,
+	.ipi_init		= platform_ipi_init,
+	.timer_value		= platform_timer_value,
+	.timer_event_stop	= platform_timer_event_stop,
+	.timer_event_start	= platform_timer_event_start,
+	.timer_init		= platform_timer_init,
+	.system_reboot		= platform_system_down,
+	.system_shutdown	= platform_system_down
+};
 const struct sbi_platform platform = {
-
-	.name		    = "platform-name",
-	.features	    = SBI_PLATFORM_DEFAULT_FEATURES,
-	.hart_count	    = 1,
-	.hart_stack_size    = 4096,
-	.disabled_hart_mask = 0,
-
-	.early_init = platform_early_init,
-	.final_init = platform_final_init,
-
-	.pmp_region_count = platform_pmp_region_count,
-	.pmp_region_info  = platform_pmp_region_info,
-
-	.console_init = platform_console_init,
-	.console_putc = platform_console_putc,
-	.console_getc = platform_console_getc,
-
-	.irqchip_init = platform_irqchip_init,
-	.ipi_init     = platform_ipi_init,
-	.ipi_send     = platform_ipi_send,
-	.ipi_sync     = platform_ipi_sync,
-	.ipi_clear    = platform_ipi_clear,
-
-	.timer_init	   = platform_timer_init,
-	.timer_value	   = platform_timer_value,
-	.timer_event_start = platform_timer_event_start,
-	.timer_event_stop  = platform_timer_event_stop,
-
-	.system_reboot	 = platform_system_reboot,
-	.system_shutdown = platform_system_shutdown
+	.name			= "platform-name",
+	.features		= SBI_PLATFORM_DEFAULT_FEATURES,
+	.hart_count		= 1,
+	.hart_stack_size	= 4096,
+	.disabled_hart_mask	= 0,
+	.platform_ops_addr	= (unsigned long)&platform_ops
 };

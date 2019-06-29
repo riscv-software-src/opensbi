@@ -176,12 +176,7 @@ static int ariane_system_shutdown(u32 type)
 /*
  * Platform descriptor.
  */
-const struct sbi_platform platform = {
-	.name = "ARIANE RISC-V",
-	.features = SBI_ARIANE_FEATURES,
-	.hart_count = ARIANE_HART_COUNT,
-	.hart_stack_size = 4096,
-	.disabled_hart_mask = 0,
+const struct sbi_platform_operations platform_ops = {
 	.early_init = ariane_early_init,
 	.final_init = ariane_final_init,
 	.console_init = ariane_console_init,
@@ -198,4 +193,13 @@ const struct sbi_platform platform = {
 	.timer_event_stop = clint_timer_event_stop,
 	.system_reboot = ariane_system_reboot,
 	.system_shutdown = ariane_system_shutdown
+};
+
+const struct sbi_platform platform = {
+	.name = "ARIANE RISC-V",
+	.features = SBI_ARIANE_FEATURES,
+	.hart_count = ARIANE_HART_COUNT,
+	.hart_stack_size = 4096,
+	.disabled_hart_mask = 0,
+	.platform_ops_addr = (unsigned long)&platform_ops
 };
