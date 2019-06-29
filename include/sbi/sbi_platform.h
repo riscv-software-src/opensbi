@@ -32,6 +32,8 @@
 #define SBI_PLATFORM_DISABLED_HART_OFFSET (0x58)
 /** Offset of platform_ops_addr in struct sbi_platform */
 #define SBI_PLATFORM_OPS_OFFSET (0x60)
+/** Offset of firmware_context in struct sbi_platform */
+#define SBI_PLATFORM_FIRMWARE_CONTEXT_OFFSET (0x60 + __SIZEOF_POINTER__)
 
 #ifndef __ASSEMBLY__
 
@@ -136,6 +138,8 @@ struct sbi_platform {
 	u64 disabled_hart_mask;
 	/** Pointer to sbi platform operations */
 	unsigned long platform_ops_addr;
+	/** Pointer to system firmware specific context */
+	unsigned long firmware_context;
 } __packed;
 
 /** Get pointer to sbi_platform for sbi_scratch pointer */
