@@ -106,6 +106,7 @@ _wait_relocate_copy_done:
 	la	t0, _start
 	la	t1, _link_start
 	REG_L	t1, 0(t1)
+	beq	t0, t1, _wait_for_boot_hart
 	la	t2, _boot_status
 	sub	t2, t2, t0
 	add	t2, t2, t1
