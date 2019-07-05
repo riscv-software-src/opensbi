@@ -70,7 +70,8 @@ static void fu540_modify_dt(void *fdt)
 				 !strcmp(mmu_type, "riscv,sv48")))
 			continue;
 		else
-			fdt_setprop_string(fdt, cpu_offset, "status", "masked");
+			fdt_setprop_string(fdt, cpu_offset, "status",
+					   "disabled");
 		memset(cpu_node, 0, sizeof(cpu_node));
 	}
 	size = fdt_totalsize(fdt);
