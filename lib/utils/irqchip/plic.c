@@ -68,7 +68,7 @@ void plic_fdt_fixup(void *fdt, const char *compat)
 
 	for (i = 0; i < (cells_count / 2); i++) {
 		if (fdt32_to_cpu(cells[2 * i + 1]) == IRQ_M_EXT)
-			cells[2 * i + 1] = fdt32_to_cpu(0xffffffff);
+			cells[2 * i + 1] = cpu_to_fdt32(0xffffffff);
 	}
 }
 
