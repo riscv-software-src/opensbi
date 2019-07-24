@@ -83,12 +83,12 @@ BUILD_ARCHIVE_NAME="opensbi-${BUILD_VERSION_MAJOR}.${BUILD_VERSION_MINOR}-rv${BU
 # Setup platform list
 case "${BUILD_RISCV_XLEN}" in
 32)
-	# Setup 32bit platform list
+	# Setup 32-bit platform list
 	BUILD_PLATFORM_SUBDIR=("qemu/virt")
 	BUILD_PLATFORM_SUBDIR+=("qemu/sifive_u")
 	;;
 64)
-	# Setup 64bit platform list
+	# Setup 64-bit platform list
 	BUILD_PLATFORM_SUBDIR=("qemu/virt")
 	BUILD_PLATFORM_SUBDIR+=("qemu/sifive_u")
 	BUILD_PLATFORM_SUBDIR+=("sifive/fu540")

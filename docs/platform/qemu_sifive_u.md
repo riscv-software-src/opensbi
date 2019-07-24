@@ -13,8 +13,8 @@ Platform Options
 The *QEMU SiFive Unleashed Machine* platform does not have any platform specific
 options.
 
-Executing on QEMU RISC-V 64bit
-------------------------------
+Executing on QEMU RISC-V 64-bit
+-------------------------------
 
 **No Payload Case**
 

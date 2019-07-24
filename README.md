@@ -47,7 +47,7 @@ cross-compilation, you can build your own toolchain or just download
 a prebuilt one from the
 [Bootlin toolchain repository] (https://toolchains.bootlin.com/).
 
-Please note that only a 64bit version of the toolchain is available in
+Please note that only a 64-bit version of the toolchain is available in
 the Bootlin toolchain repository for now.
 
 Building and Installing the OpenSBI Platform-Independent Library

@@ -37,7 +37,7 @@
 /* Under TileLink */
 #define GPIOHS_BASE_ADDR	(0x38001000U)
 
-/* Under AXI 64 bit */
+/* Under AXI 64-bit */
 #define RAM_BASE_ADDR		(0x80000000U)
 #define RAM_SIZE		(6 * 1024 * 1024U)
 
@@ -59,10 +59,10 @@
 #define ROM_BASE_ADDR		(0x88000000U)
 #define ROM_SIZE		(128 * 1024U)
 
-/* Under AHB 32 bit */
+/* Under AHB 32-bit */
 #define DMAC_BASE_ADDR		(0x50000000U)
 
-/* Under APB1 32 bit */
+/* Under APB1 32-bit */
 #define GPIO_BASE_ADDR		(0x50200000U)
 #define UART1_BASE_ADDR		(0x50210000U)
 #define UART2_BASE_ADDR		(0x50220000U)
@@ -80,7 +80,7 @@
 #define TIMER1_BASE_ADDR	(0x502E0000U)
 #define TIMER2_BASE_ADDR	(0x502F0000U)
 
-/* Under APB2 32 bit */
+/* Under APB2 32-bit */
 #define WDT0_BASE_ADDR		(0x50400000U)
 #define WDT1_BASE_ADDR		(0x50410000U)
 #define OTP_BASE_ADDR		(0x50420000U)
@@ -89,7 +89,7 @@
 #define AES_BASE_ADDR		(0x50450000U)
 #define RTC_BASE_ADDR		(0x50460000U)
 
-/* Under APB3 32 bit */
+/* Under APB3 32-bit */
 #define SPI0_BASE_ADDR		(0x52000000U)
 #define SPI1_BASE_ADDR		(0x53000000U)
 #define SPI3_BASE_ADDR		(0x54000000U)

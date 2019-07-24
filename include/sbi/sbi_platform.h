@@ -417,7 +417,7 @@ static inline int sbi_platform_ipi_init(const struct sbi_platform *plat,
  *
  * @param plat pointer to struct sbi_platform
  *
- * @return 64bit timer value
+ * @return 64-bit timer value
  */
 static inline u64 sbi_platform_timer_value(const struct sbi_platform *plat)
 {
