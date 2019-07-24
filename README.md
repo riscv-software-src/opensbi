@@ -131,6 +131,25 @@ top-level make command line. These options, such as *PLATFORM_<xyz>* or
 *docs/platform/<platform_name>.md* files and
 *docs/firmware/<firmware_name>.md* files.
 
+Building 32-bit / 64-bit OpenSBI Images
+---------------------------------------
+By default, building OpenSBI generates 32-bit or 64-bit images based on the
+supplied RISC-V cross-compile toolchain. For example if *CROSS_COMPILE* is set
+to *riscv64-unknown-elf-*, 64-bit OpenSBI images will be generated. If building
+32-bit OpenSBI images, *CROSS_COMPILE* should be set to a toolchain that is
+pre-configured to generate 32-bit RISC-V codes, like *riscv32-unknown-elf-*.
+
+However it's possible to explicitly specify the image bits we want to build with
+a given RISC-V toolchain. This can be done by setting the environment variable
+*PLATFORM_RISCV_XLEN* to the desired width, for example:
+
+```
+export CROSS_COMPILE=riscv64-unknown-elf-
+export PLATFORM_RISCV_XLEN=32
+```
+
+will generate 32-bit OpenSBI images. And vice vesa.
+
 License
 -------
 
