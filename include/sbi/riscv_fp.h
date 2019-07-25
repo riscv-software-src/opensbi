@@ -73,10 +73,6 @@
 
 #define SET_FS_DIRTY() ((void)0)
 
-#else
-#error "Floating point emulation not supported.\n"
-#endif
-
 #define GET_F32_RS1(insn, regs) (GET_F32_REG(insn, 15, regs))
 #define GET_F32_RS2(insn, regs) (GET_F32_REG(insn, 20, regs))
 #define GET_F32_RS3(insn, regs) (GET_F32_REG(insn, 27, regs))
@@ -92,5 +88,7 @@
 #define GET_F32_RS2S(insn, regs) (GET_F32_REG(RVC_RS2S(insn), 0, regs))
 #define GET_F64_RS2C(insn, regs) (GET_F64_REG(insn, 2, regs))
 #define GET_F64_RS2S(insn, regs) (GET_F64_REG(RVC_RS2S(insn), 0, regs))
+
+#endif
 
 #endif

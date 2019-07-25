@@ -52,8 +52,6 @@ static int fp_init(u32 hartid)
 {
 #ifdef __riscv_flen
 	int i;
-#else
-	unsigned long fd_mask;
 #endif
 
 	if (!misa_extension('D') && !misa_extension('F'))
@@ -66,11 +64,6 @@ static int fp_init(u32 hartid)
 	for (i = 0; i < 32; i++)
 		init_fp_reg(i);
 	csr_write(CSR_FCSR, 0);
-#else
-	fd_mask = (1 << ('F' - 'A')) | (1 << ('D' - 'A'));
-	csr_clear(CSR_MISA, fd_mask);
-	if (csr_read(CSR_MISA) & fd_mask)
-		return SBI_ENOTSUPP;
 #endif
 
 	return 0;
