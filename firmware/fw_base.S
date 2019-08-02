@@ -121,7 +121,7 @@ _wait_relocate_copy_done:
 	nop
 	nop
 	nop
-	bne	t4, t5, 1b
+	bgt     t4, t5, 1b
 	jr	t3
 _relocate_done:
 
