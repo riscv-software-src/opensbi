@@ -375,6 +375,19 @@ int sbi_printf(const char *format, ...)
 	return retval;
 }
 
+int sbi_dprintf(struct sbi_scratch *scratch, const char *format, ...)
+{
+	va_list args;
+	int retval = 0;
+
+	va_start(args, format);
+	if (scratch->options & SBI_SCRATCH_DEBUG_PRINTS)
+		retval = print(NULL, NULL, format, args);
+	va_end(args);
+
+	return retval;
+}
+
 int sbi_console_init(struct sbi_scratch *scratch)
 {
 	console_plat = sbi_platform_ptr(scratch);

@@ -74,6 +74,8 @@ struct sbi_scratch {
 enum sbi_scratch_options {
 	/** Disable prints during boot */
 	SBI_SCRATCH_NO_BOOT_PRINTS = (1 << 0),
+	/** Enable runtime debug prints */
+	SBI_SCRATCH_DEBUG_PRINTS = (1 << 1),
 };
 
 /** Get pointer to sbi_scratch for current HART */
