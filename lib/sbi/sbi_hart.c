@@ -339,7 +339,7 @@ void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		spin_lock(&coldboot_wait_bitmap_lock);
 		coldboot_wait_bitmap &= ~(1UL << hartid);
 		spin_unlock(&coldboot_wait_bitmap_lock);
-	} while (!(mipval && MIP_MSIP));
+	} while (!(mipval & MIP_MSIP));
 
 	csr_clear(CSR_MIP, MIP_MSIP);
 }
