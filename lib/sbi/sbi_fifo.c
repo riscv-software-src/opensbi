@@ -20,7 +20,7 @@ void sbi_fifo_init(struct sbi_fifo *fifo, void *queue_mem, u16 entries,
 	fifo->entry_size  = entry_size;
 	SPIN_LOCK_INIT(&fifo->qlock);
 	fifo->avail = fifo->tail = 0;
-	sbi_memset(fifo->queue, 0, entries * entry_size);
+	sbi_memset(fifo->queue, 0, (size_t)entries * entry_size);
 }
 
 /* Note: must be called with fifo->qlock held */
@@ -74,9 +74,11 @@ bool sbi_fifo_is_empty(struct sbi_fifo *fifo)
 /* Note: must be called with fifo->qlock held */
 static inline void __sbi_fifo_reset(struct sbi_fifo *fifo)
 {
+	size_t size = (size_t)fifo->num_entries * fifo->entry_size;
+
 	fifo->avail = 0;
 	fifo->tail  = 0;
-	sbi_memset(fifo->queue, 0, fifo->num_entries * fifo->entry_size);
+	sbi_memset(fifo->queue, 0, size);
 }
 
 bool sbi_fifo_reset(struct sbi_fifo *fifo)
