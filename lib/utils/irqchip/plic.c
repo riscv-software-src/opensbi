@@ -51,7 +51,7 @@ void plic_fdt_fixup(void *fdt, const char *compat)
 {
 	u32 *cells;
 	int i, cells_count;
-	u32 plic_off;
+	int plic_off;
 
 	plic_off = fdt_node_offset_by_compatible(fdt, 0, compat);
 	if (plic_off < 0)
