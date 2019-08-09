@@ -66,7 +66,7 @@ static int sbi_tlb_fifo_update_cb(void *in, void *data)
 	struct sbi_tlb_info *next;
 	int ret = SBI_FIFO_UNCHANGED;
 
-	if (!in && !!data)
+	if (!in || !data)
 		return ret;
 
 	curr = (struct sbi_tlb_info *)data;
