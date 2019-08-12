@@ -111,8 +111,6 @@ _wait_relocate_copy_done:
 	REG_L	t1, 0(t1)
 	beq	t0, t1, _wait_for_boot_hart
 	la	t2, _boot_status
-	sub	t2, t2, t0
-	add	t2, t2, t1
 	la	t3, _wait_for_boot_hart
 	sub	t3, t3, t0
 	add	t3, t3, t1
@@ -128,8 +126,17 @@ _wait_relocate_copy_done:
 	jr	t3
 _relocate_done:
 
-	/* mark relocate copy done */
+	/*
+	 * Mark relocate copy done
+	 * Use _boot_status copy relative to the load address
+	 */
 	la	t0, _boot_status
+	la	t1, _link_start
+	REG_L	t1, 0(t1)
+	la	t2, _load_start
+	REG_L	t2, 0(t2)
+	sub	t0, t0, t1
+	add	t0, t0, t2
 	li	t1, BOOT_STATUS_RELOCATE_DONE
 	REG_S	t1, 0(t0)
 	fence	rw, rw
