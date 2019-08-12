@@ -97,11 +97,20 @@ void store_u64(u64 *addr, u64 val,
 }
 #endif
 
-ulong get_insn(ulong mepc, ulong *mstatus)
+ulong get_insn(ulong mepc, struct sbi_scratch *scratch,
+	       struct unpriv_trap *trap)
 {
-	register ulong __mepc asm("a2") = mepc;
-	register ulong __mstatus asm("a3");
-	ulong val;
+	ulong __mstatus = 0, val = 0;
+#ifdef __riscv_compressed
+	ulong rvc_mask = 3, tmp;
+#endif
+
+	if (trap) {
+		trap->ilen = 4;
+		trap->cause = 0;
+		trap->tval = 0;
+		sbi_hart_set_trap_info(scratch, trap);
+	}
 #ifndef __riscv_compressed
 	asm("csrrs %[mstatus], " STR(CSR_MSTATUS) ", %[mprv]\n"
 #if __riscv_xlen == 64
@@ -109,37 +118,37 @@ ulong get_insn(ulong mepc, ulong *mstatus)
 #else
 	    STR(LW) " %[insn], (%[addr])\n"
 #endif
-		     "csrw " STR(CSR_MSTATUS) ", %[mstatus]"
+	    "csrw " STR(CSR_MSTATUS) ", %[mstatus]"
 	    : [mstatus] "+&r"(__mstatus), [insn] "=&r"(val)
-	    : [mprv] "r"(MSTATUS_MPRV | MSTATUS_MXR), [addr] "r"(__mepc));
+	    : [mprv] "r"(MSTATUS_MPRV | MSTATUS_MXR), [addr] "r"(mepc));
 #else
-	ulong rvc_mask = 3, tmp;
 	asm("csrrs %[mstatus], " STR(CSR_MSTATUS) ", %[mprv]\n"
-						  "and %[tmp], %[addr], 2\n"
-						  "bnez %[tmp], 1f\n"
-#if __riscv_xlen == 64
-	    STR(LWU) " %[insn], (%[addr])\n"
-#else
-	    STR(LW) " %[insn], (%[addr])\n"
-#endif
-		     "and %[tmp], %[insn], %[rvc_mask]\n"
-		     "beq %[tmp], %[rvc_mask], 2f\n"
-		     "sll %[insn], %[insn], %[xlen_minus_16]\n"
-		     "srl %[insn], %[insn], %[xlen_minus_16]\n"
-		     "j 2f\n"
-		     "1:\n"
-		     "lhu %[insn], (%[addr])\n"
-		     "and %[tmp], %[insn], %[rvc_mask]\n"
-		     "bne %[tmp], %[rvc_mask], 2f\n"
-		     "lhu %[tmp], 2(%[addr])\n"
-		     "sll %[tmp], %[tmp], 16\n"
-		     "add %[insn], %[insn], %[tmp]\n"
-		     "2: csrw " STR(CSR_MSTATUS) ", %[mstatus]"
+	    "lhu %[insn], (%[addr])\n"
+	    "and %[tmp], %[insn], %[rvc_mask]\n"
+	    "bne %[tmp], %[rvc_mask], 2f\n"
+	    "lhu %[tmp], 2(%[addr])\n"
+	    "sll %[tmp], %[tmp], 16\n"
+	    "add %[insn], %[insn], %[tmp]\n"
+	    "2: csrw " STR(CSR_MSTATUS) ", %[mstatus]"
 	    : [mstatus] "+&r"(__mstatus), [insn] "=&r"(val), [tmp] "=&r"(tmp)
-	    : [mprv] "r"(MSTATUS_MPRV | MSTATUS_MXR), [addr] "r"(__mepc),
-	      [rvc_mask] "r"(rvc_mask), [xlen_minus_16] "i"(__riscv_xlen - 16));
+	    : [mprv] "r"(MSTATUS_MPRV | MSTATUS_MXR), [addr] "r"(mepc),
+	      [rvc_mask] "r"(rvc_mask));
 #endif
-	if (mstatus)
-		*mstatus = __mstatus;
+	if (trap) {
+		sbi_hart_set_trap_info(scratch, NULL);
+		switch (trap->cause) {
+		case CAUSE_LOAD_ACCESS:
+			trap->cause = CAUSE_FETCH_ACCESS;
+			trap->tval = mepc;
+			break;
+		case CAUSE_LOAD_PAGE_FAULT:
+			trap->cause = CAUSE_FETCH_PAGE_FAULT;
+			trap->tval = mepc;
+			break;
+		default:
+			break;
+		};
+	}
+
 	return val;
 }

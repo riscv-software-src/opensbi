@@ -27,9 +27,13 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 {
 	union reg_data val;
 	struct unpriv_trap uptrap;
-	ulong insn = get_insn(regs->mepc, NULL);
+	ulong insn = get_insn(regs->mepc, scratch, &uptrap);
 	ulong addr = csr_read(CSR_MTVAL);
 	int i, fp = 0, shift = 0, len = 0;
+
+	if (uptrap.cause)
+		return sbi_trap_redirect(regs, scratch, regs->mepc,
+					 uptrap.cause, uptrap.tval);
 
 	if ((insn & INSN_MASK_LW) == INSN_MATCH_LW) {
 		len   = 4;
@@ -100,11 +104,9 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 	for (i = 0; i < len; i++) {
 		val.data_bytes[i] = load_u8((void *)(addr + i),
 					    scratch, &uptrap);
-		if (uptrap.cause) {
-			sbi_trap_redirect(regs, scratch, regs->mepc,
-					  uptrap.cause, uptrap.tval);
-			return 0;
-		}
+		if (uptrap.cause)
+			return sbi_trap_redirect(regs, scratch, regs->mepc,
+						 uptrap.cause, uptrap.tval);
 	}
 
 	if (!fp)
@@ -127,9 +129,13 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 {
 	union reg_data val;
 	struct unpriv_trap uptrap;
-	ulong insn = get_insn(regs->mepc, NULL);
+	ulong insn = get_insn(regs->mepc, scratch, &uptrap);
 	ulong addr = csr_read(CSR_MTVAL);
 	int i, len = 0;
+
+	if (uptrap.cause)
+		return sbi_trap_redirect(regs, scratch, regs->mepc,
+					 uptrap.cause, uptrap.tval);
 
 	val.data_ulong = GET_RS2(insn, regs);
 
@@ -190,11 +196,9 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 	for (i = 0; i < len; i++) {
 		store_u8((void *)(addr + i), val.data_bytes[i],
 			 scratch, &uptrap);
-		if (uptrap.cause) {
-			sbi_trap_redirect(regs, scratch, regs->mepc,
-					  uptrap.cause, uptrap.tval);
-			return 0;
-		}
+		if (uptrap.cause)
+			return sbi_trap_redirect(regs, scratch, regs->mepc,
+						 uptrap.cause, uptrap.tval);
 	}
 
 	regs->mepc += INSN_LEN(insn);
