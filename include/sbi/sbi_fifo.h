@@ -26,7 +26,6 @@ struct sbi_fifo {
 enum sbi_fifo_inplace_update_types {
 	SBI_FIFO_SKIP,
 	SBI_FIFO_UPDATED,
-	SBI_FIFO_RESET,
 	SBI_FIFO_UNCHANGED,
 };
 
