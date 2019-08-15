@@ -35,6 +35,9 @@ long arch_atomic_xchg(atomic_t *atom, long newval);
 
 unsigned int atomic_raw_xchg_uint(volatile unsigned int *ptr,
 				  unsigned int newval);
+
+unsigned long atomic_raw_xchg_ulong(volatile unsigned long *ptr,
+				    unsigned long newval);
 /**
  * Set a bit in an atomic variable and return the new value.
  * @nr : Bit to set.

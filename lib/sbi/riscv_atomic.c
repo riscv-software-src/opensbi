@@ -175,6 +175,22 @@ unsigned int atomic_raw_xchg_uint(volatile unsigned int *ptr,
 #endif
 }
 
+unsigned long atomic_raw_xchg_ulong(volatile unsigned long *ptr,
+				    unsigned long newval)
+{
+	/* Atomically set new value and return old value. */
+#ifdef __riscv_atomic
+	/*
+	 * The name of GCC built-in macro __sync_lock_test_and_set()
+	 * is misleading. A more appropriate name for GCC built-in
+	 * macro would be __sync_val_exchange().
+	 */
+	return __sync_lock_test_and_set(ptr, newval);
+#else
+	return xchg(ptr, newval);
+#endif
+}
+
 #if (BITS_PER_LONG == 64)
 #define __AMO(op) "amo" #op ".d"
 #elif (BITS_PER_LONG == 32)
