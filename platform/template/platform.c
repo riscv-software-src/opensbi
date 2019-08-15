@@ -125,15 +125,6 @@ static void platform_ipi_send(u32 target_hart)
 }
 
 /*
- * Wait for target HART to acknowledge IPI.
- */
-static void platform_ipi_sync(u32 target_hart)
-{
-	/* Example if the generic CLINT driver is used */
-	clint_ipi_sync(target_hart);
-}
-
-/*
  * Clear IPI for a target HART.
  */
 static void platform_ipi_clear(u32 target_hart)
@@ -216,7 +207,6 @@ const struct sbi_platform_operations platform_ops = {
 	.console_init		= platform_console_init,
 	.irqchip_init		= platform_irqchip_init,
 	.ipi_send		= platform_ipi_send,
-	.ipi_sync		= platform_ipi_sync,
 	.ipi_clear		= platform_ipi_clear,
 	.ipi_init		= platform_ipi_init,
 	.timer_value		= platform_timer_value,

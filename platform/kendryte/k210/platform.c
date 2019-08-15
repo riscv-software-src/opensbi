@@ -102,7 +102,6 @@ const struct sbi_platform_operations platform_ops = {
 
 	.ipi_init  = k210_ipi_init,
 	.ipi_send  = clint_ipi_send,
-	.ipi_sync  = clint_ipi_sync,
 	.ipi_clear = clint_ipi_clear,
 
 	.timer_init	   = k210_timer_init,

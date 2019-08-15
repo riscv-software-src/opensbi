@@ -25,29 +25,6 @@ void clint_ipi_send(u32 target_hart)
 	writel(1, &clint_ipi[target_hart]);
 }
 
-void clint_ipi_sync(u32 target_hart)
-{
-	u32 target_ipi, incoming_ipi;
-	u32 source_hart = sbi_current_hartid();
-
-	if (clint_ipi_hart_count <= target_hart)
-		return;
-
-	/* Wait until target HART has handled IPI */
-	incoming_ipi = 0;
-	while (1) {
-		target_ipi = readl(&clint_ipi[target_hart]);
-		if (!target_ipi)
-			break;
-
-		incoming_ipi |=
-			atomic_raw_xchg_uint(&clint_ipi[source_hart], 0);
-	}
-
-	if (incoming_ipi)
-		writel(incoming_ipi, &clint_ipi[source_hart]);
-}
-
 void clint_ipi_clear(u32 target_hart)
 {
 	if (clint_ipi_hart_count <= target_hart)

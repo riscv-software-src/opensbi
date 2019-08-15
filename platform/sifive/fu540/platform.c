@@ -199,7 +199,6 @@ const struct sbi_platform_operations platform_ops = {
 	.console_init		= fu540_console_init,
 	.irqchip_init		= fu540_irqchip_init,
 	.ipi_send		= clint_ipi_send,
-	.ipi_sync		= clint_ipi_sync,
 	.ipi_clear		= clint_ipi_clear,
 	.ipi_init		= fu540_ipi_init,
 	.timer_value		= clint_timer_value,

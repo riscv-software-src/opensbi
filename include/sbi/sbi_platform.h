@@ -90,8 +90,6 @@ struct sbi_platform_operations {
 
 	/** Send IPI to a target HART */
 	void (*ipi_send)(u32 target_hart);
-	/** Wait for target HART to acknowledge IPI */
-	void (*ipi_sync)(u32 target_hart);
 	/** Clear IPI for a target HART */
 	void (*ipi_clear)(u32 target_hart);
 	/** Initialize IPI for current HART */
@@ -368,19 +366,6 @@ static inline void sbi_platform_ipi_send(const struct sbi_platform *plat,
 {
 	if (plat && sbi_platform_ops(plat)->ipi_send)
 		sbi_platform_ops(plat)->ipi_send(target_hart);
-}
-
-/**
- * Wait for target HART to acknowledge IPI
- *
- * @param plat pointer to struct sbi_platform
- * @param target_hart HART ID of IPI target
- */
-static inline void sbi_platform_ipi_sync(const struct sbi_platform *plat,
-					 u32 target_hart)
-{
-	if (plat && sbi_platform_ops(plat)->ipi_sync)
-		sbi_platform_ops(plat)->ipi_sync(target_hart);
 }
 
 /**

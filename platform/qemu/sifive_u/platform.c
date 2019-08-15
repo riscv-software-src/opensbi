@@ -136,7 +136,6 @@ const struct sbi_platform_operations platform_ops = {
 	.console_init		= sifive_u_console_init,
 	.irqchip_init		= sifive_u_irqchip_init,
 	.ipi_send		= clint_ipi_send,
-	.ipi_sync		= clint_ipi_sync,
 	.ipi_clear		= clint_ipi_clear,
 	.ipi_init		= sifive_u_ipi_init,
 	.timer_value		= clint_timer_value,
