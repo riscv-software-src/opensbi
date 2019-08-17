@@ -43,7 +43,7 @@ DECLARE_UNPRIVILEGED_LOAD_FUNCTION(u64)
 DECLARE_UNPRIVILEGED_STORE_FUNCTION(u64)
 DECLARE_UNPRIVILEGED_LOAD_FUNCTION(ulong)
 
-ulong get_insn(ulong mepc, struct sbi_scratch *scratch,
+ulong get_insn(ulong mepc, bool virt, struct sbi_scratch *scratch,
 	       struct unpriv_trap *trap);
 
 #endif

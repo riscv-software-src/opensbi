@@ -130,12 +130,17 @@ int sbi_illegal_insn_handler(u32 hartid, ulong mcause,
 			     struct sbi_trap_regs *regs,
 			     struct sbi_scratch *scratch)
 {
-	ulong insn = csr_read(mbadaddr);
+	ulong insn = csr_read(CSR_MTVAL);
+#if __riscv_xlen == 32
+	bool virt = (regs->mstatusH & MSTATUSH_MPV) ? TRUE : FALSE;
+#else
+	bool virt = (regs->mstatus & MSTATUS_MPV) ? TRUE : FALSE;
+#endif
 	struct unpriv_trap uptrap;
 
 	if (unlikely((insn & 3) != 3)) {
 		if (insn == 0) {
-			insn = get_insn(regs->mepc, scratch, &uptrap);
+			insn = get_insn(regs->mepc, virt, scratch, &uptrap);
 			if (uptrap.cause)
 				return sbi_trap_redirect(regs, scratch,
 					regs->mepc, uptrap.cause, uptrap.tval);
