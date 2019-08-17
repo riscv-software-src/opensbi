@@ -34,8 +34,13 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	misa_string(str, sizeof(str));
+#ifdef OPENSBI_VERSION_GIT
+	sbi_printf("\nOpenSBI %s (%s %s)\n", OPENSBI_VERSION_GIT,
+		   __DATE__, __TIME__);
+#else
 	sbi_printf("\nOpenSBI v%d.%d (%s %s)\n", OPENSBI_VERSION_MAJOR,
 		   OPENSBI_VERSION_MINOR, __DATE__, __TIME__);
+#endif
 
 	sbi_printf(BANNER);
 

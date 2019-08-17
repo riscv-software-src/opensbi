@@ -65,6 +65,7 @@ export firmware_dir=$(CURDIR)/firmware
 # Find library version
 OPENSBI_VERSION_MAJOR=`grep "define OPENSBI_VERSION_MAJOR" $(include_dir)/sbi/sbi_version.h | sed 's/.*MAJOR.*\([0-9][0-9]*\)/\1/'`
 OPENSBI_VERSION_MINOR=`grep "define OPENSBI_VERSION_MINOR" $(include_dir)/sbi/sbi_version.h | sed 's/.*MINOR.*\([0-9][0-9]*\)/\1/'`
+OPENSBI_VERSION_GIT=$(shell if [ -d $(src_dir)/.git ]; then git describe; fi)
 
 # Setup compilation commands
 ifdef CROSS_COMPILE
@@ -151,6 +152,9 @@ endif
 # Setup compilation commands flags
 GENFLAGS	=	-I$(platform_src_dir)/include
 GENFLAGS	+=	-I$(include_dir)
+ifneq ($(OPENSBI_VERSION_GIT),)
+GENFLAGS	+=	-DOPENSBI_VERSION_GIT="\"$(OPENSBI_VERSION_GIT)\""
+endif
 GENFLAGS	+=	$(libsbiutils-genflags-y)
 GENFLAGS	+=	$(platform-genflags-y)
 GENFLAGS	+=	$(firmware-genflags-y)
