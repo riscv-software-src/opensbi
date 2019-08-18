@@ -9,8 +9,11 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
+#include <sbi/sbi_error.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_timer.h>
+
+static unsigned long time_delta_off;
 
 #if __riscv_xlen == 32
 u64 get_ticks(void)
@@ -44,6 +47,35 @@ u64 sbi_timer_value(struct sbi_scratch *scratch)
 		return get_ticks();
 }
 
+u64 sbi_timer_virt_value(struct sbi_scratch *scratch)
+{
+	u64 *time_delta = sbi_scratch_offset_ptr(scratch, time_delta_off);
+
+	return sbi_timer_value(scratch) + *time_delta;
+}
+
+u64 sbi_timer_get_delta(struct sbi_scratch *scratch)
+{
+	u64 *time_delta = sbi_scratch_offset_ptr(scratch, time_delta_off);
+
+	return *time_delta;
+}
+
+void sbi_timer_set_delta(struct sbi_scratch *scratch, ulong delta)
+{
+	u64 *time_delta = sbi_scratch_offset_ptr(scratch, time_delta_off);
+
+	*time_delta = (u64)delta;
+}
+
+void sbi_timer_set_delta_upper(struct sbi_scratch *scratch, ulong delta_upper)
+{
+	u64 *time_delta = sbi_scratch_offset_ptr(scratch, time_delta_off);
+
+	*time_delta &= 0xffffffffULL;
+	*time_delta |= ((u64)delta_upper << 32);
+}
+
 void sbi_timer_event_stop(struct sbi_scratch *scratch)
 {
 	sbi_platform_timer_event_stop(sbi_platform_ptr(scratch));
@@ -64,5 +96,20 @@ void sbi_timer_process(struct sbi_scratch *scratch)
 
 int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot)
 {
+	u64 *time_delta;
+
+	if (cold_boot) {
+		time_delta_off = sbi_scratch_alloc_offset(sizeof(*time_delta),
+							  "TIME_DELTA");
+		if (!time_delta_off)
+			return SBI_ENOMEM;
+	} else {
+		if (!time_delta_off)
+			return SBI_ENOMEM;
+	}
+
+	time_delta = sbi_scratch_offset_ptr(scratch, time_delta_off);
+	*time_delta = 0;
+
 	return sbi_platform_timer_init(sbi_platform_ptr(scratch), cold_boot);
 }

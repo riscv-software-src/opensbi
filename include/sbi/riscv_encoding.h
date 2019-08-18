@@ -276,7 +276,9 @@
 #define CSR_HSTATUS			0x600
 #define CSR_HEDELEG			0x602
 #define CSR_HIDELEG			0x603
-#define CSR_HCOUNTERNEN		0x606
+#define CSR_HTIMEDELTA			0x605
+#define CSR_HTIMEDELTAH			0x615
+#define CSR_HCOUNTERNEN			0x606
 #define CSR_HGATP			0x680
 
 #define CSR_VSSTATUS			0x200

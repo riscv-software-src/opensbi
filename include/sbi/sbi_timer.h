@@ -16,6 +16,14 @@ struct sbi_scratch;
 
 u64 sbi_timer_value(struct sbi_scratch *scratch);
 
+u64 sbi_timer_virt_value(struct sbi_scratch *scratch);
+
+u64 sbi_timer_get_delta(struct sbi_scratch *scratch);
+
+void sbi_timer_set_delta(struct sbi_scratch *scratch, ulong delta);
+
+void sbi_timer_set_delta_upper(struct sbi_scratch *scratch, ulong delta_upper);
+
 void sbi_timer_event_stop(struct sbi_scratch *scratch);
 
 void sbi_timer_event_start(struct sbi_scratch *scratch, u64 next_event);

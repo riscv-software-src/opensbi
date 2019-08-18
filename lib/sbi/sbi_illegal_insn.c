@@ -49,8 +49,7 @@ static int system_opcode_insn(ulong insn, u32 hartid, ulong mcause,
 		return sbi_trap_redirect(regs, scratch,
 					 regs->mepc, mcause, insn);
 
-	if (sbi_emulate_csr_read(csr_num, hartid, regs->mstatus,
-				 scratch, &csr_val))
+	if (sbi_emulate_csr_read(csr_num, hartid, regs, scratch, &csr_val))
 		return truly_illegal_insn(insn, hartid, mcause,
 					  regs, scratch);
 
@@ -80,7 +79,7 @@ static int system_opcode_insn(ulong insn, u32 hartid, ulong mcause,
 		return truly_illegal_insn(insn, hartid, mcause, regs, scratch);
 	};
 
-	if (do_write && sbi_emulate_csr_write(csr_num, hartid, regs->mstatus,
+	if (do_write && sbi_emulate_csr_write(csr_num, hartid, regs,
 					      scratch, new_csr_val))
 		return truly_illegal_insn(insn, hartid, mcause, regs, scratch);
 
