@@ -232,7 +232,7 @@ int sbi_tlb_fifo_update(struct sbi_scratch *rscratch, u32 hartid, void *data)
 	 * upgrade it to flush all because we can only flush
 	 * 4KB at a time.
 	 */
-	if (tinfo->size >= SBI_TLB_FLUSH_MAX_SIZE) {
+	if (tinfo->size > SBI_TLB_FLUSH_MAX_SIZE) {
 		tinfo->start = 0;
 		tinfo->size = SBI_TLB_FLUSH_ALL;
 	}
