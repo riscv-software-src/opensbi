@@ -50,6 +50,39 @@ long atomic_sub_return(atomic_t *atom, long value)
 	return ret - value;
 }
 
+#define __axchg(ptr, new, size)						\
+	({									\
+		__typeof__(ptr) __ptr = (ptr);					\
+		__typeof__(new) __new = (new);					\
+		__typeof__(*(ptr)) __ret;					\
+		switch (size) {							\
+		case 4:								\
+			__asm__ __volatile__ (					\
+				"	amoswap.w.aqrl %0, %2, %1\n"		\
+				: "=r" (__ret), "+A" (*__ptr)			\
+				: "r" (__new)					\
+				: "memory");					\
+			break;							\
+		case 8:								\
+			__asm__ __volatile__ (					\
+				"	amoswap.d.aqrl %0, %2, %1\n"		\
+				: "=r" (__ret), "+A" (*__ptr)			\
+				: "r" (__new)					\
+				: "memory");					\
+			break;							\
+		default:							\
+			break;						\
+		}								\
+		__ret;								\
+	})
+
+#define axchg(ptr, x)							\
+	({									\
+		__typeof__(*(ptr)) _x_ = (x);					\
+		(__typeof__(*(ptr))) __xchg((ptr), _x_, sizeof(*(ptr)));	\
+	})
+
+
 #define __xchg(ptr, new, size)                                            \
 	({                                                                \
 		__typeof__(ptr) __ptr	 = (ptr);                         \
@@ -148,12 +181,7 @@ long arch_atomic_xchg(atomic_t *atom, long newval)
 {
 	/* Atomically set new value and return old value. */
 #ifdef __riscv_atomic
-	/*
-	 * The name of GCC built-in macro __sync_lock_test_and_set()
-	 * is misleading. A more appropriate name for GCC built-in
-	 * macro would be __sync_val_exchange().
-	 */
-	return __sync_lock_test_and_set(&atom->counter, newval);
+	return axchg(&atom->counter, newval);
 #else
 	return xchg(&atom->counter, newval);
 #endif
@@ -164,12 +192,7 @@ unsigned int atomic_raw_xchg_uint(volatile unsigned int *ptr,
 {
 	/* Atomically set new value and return old value. */
 #ifdef __riscv_atomic
-	/*
-	 * The name of GCC built-in macro __sync_lock_test_and_set()
-	 * is misleading. A more appropriate name for GCC built-in
-	 * macro would be __sync_val_exchange().
-	 */
-	return __sync_lock_test_and_set(ptr, newval);
+	return axchg(ptr, newval);
 #else
 	return xchg(ptr, newval);
 #endif
@@ -180,12 +203,7 @@ unsigned long atomic_raw_xchg_ulong(volatile unsigned long *ptr,
 {
 	/* Atomically set new value and return old value. */
 #ifdef __riscv_atomic
-	/*
-	 * The name of GCC built-in macro __sync_lock_test_and_set()
-	 * is misleading. A more appropriate name for GCC built-in
-	 * macro would be __sync_val_exchange().
-	 */
-	return __sync_lock_test_and_set(ptr, newval);
+	return axchg(ptr, newval);
 #else
 	return xchg(ptr, newval);
 #endif
