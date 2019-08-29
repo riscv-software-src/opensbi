@@ -62,16 +62,24 @@ static volatile void *clint_time_base;
 static volatile u64 *clint_time_val;
 static volatile u64 *clint_time_cmp;
 
+static inline u32 clint_time_read_hi()
+{
+	return readl_relaxed((u32 *)clint_time_val + 1);
+}
+
 u64 clint_timer_value(void)
 {
 #if __riscv_xlen == 64
 	return readq_relaxed(clint_time_val);
 #else
-	u64 tmp;
-	tmp = readl_relaxed((void *)clint_time_val + 0x04);
-	tmp <<= 32;
-	tmp |= readl_relaxed(clint_time_val);
-	return tmp;
+	u32 lo, hi;
+
+	do {
+		hi = clint_time_read_hi();
+		lo = readl_relaxed(clint_time_val);
+	} while (hi != clint_time_read_hi());
+
+	return ((u64)hi << 32) | (u64)lo;
 #endif
 }
 
