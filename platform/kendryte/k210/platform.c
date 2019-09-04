@@ -16,15 +16,40 @@
 #include <sbi_utils/sys/clint.h>
 #include <sbi_utils/serial/sifive-uart.h>
 #include "platform.h"
-#include "sysctl.h"
 
-#define K210_UART_BASE_ADDR	0x38000000U
-#define K210_UART_BAUDRATE	115200
+static u32 k210_get_clk_freq(void)
+{
+	u32 clksel0, pll0;
+	u64 pll0_freq, clkr0, clkf0, clkod0, div;
+
+	/*
+	 * If the clock selector is not set, use the base frequency.
+	 * Otherwise, use PLL0 frequency with a frequency divisor.
+	 */
+	clksel0 = k210_read_sysreg(K210_CLKSEL0);
+	if (!(clksel0 & 0x1))
+		return K210_CLK0_FREQ;
+
+	/*
+	 * Get PLL0 frequency:
+	 * freq = base frequency * clkf0 / (clkr0 * clkod0)
+	 */
+	pll0 = k210_read_sysreg(K210_PLL0);
+	clkr0 = 1 + (pll0 & 0x0000000f);
+	clkf0 = 1 + ((pll0 & 0x000003f0) >> 4);
+	clkod0 = 1 + ((pll0 & 0x00003c00) >> 10);
+	pll0_freq = clkf0 * K210_CLK0_FREQ / (clkr0 * clkod0);
+
+	/* Get the frequency divisor from the clock selector */
+	div = 2ULL << ((clksel0 & 0x00000006) >> 1);
+
+	return pll0_freq / div;
+}
 
 static int k210_console_init(void)
 {
-	return sifive_uart_init(K210_UART_BASE_ADDR,
-				sysctl_get_cpu_freq(), K210_UART_BAUDRATE);
+	return sifive_uart_init(K210_UART_BASE_ADDR, k210_get_clk_freq(),
+				K210_UART_BAUDRATE);
 }
 
 static int k210_irqchip_init(bool cold_boot)
@@ -33,13 +58,14 @@ static int k210_irqchip_init(bool cold_boot)
 	u32 hartid = sbi_current_hartid();
 
 	if (cold_boot) {
-		rc = plic_cold_irqchip_init(PLIC_BASE_ADDR, PLIC_NUM_SOURCES,
+		rc = plic_cold_irqchip_init(K210_PLIC_BASE_ADDR,
+					    K210_PLIC_NUM_SOURCES,
 					    K210_HART_COUNT);
 		if (rc)
 			return rc;
 	}
 
-	return plic_warm_irqchip_init(hartid, (2 * hartid), (2 * hartid + 1));
+	return plic_warm_irqchip_init(hartid, hartid * 2, hartid * 2 + 1);
 }
 
 static int k210_ipi_init(bool cold_boot)
@@ -47,7 +73,8 @@ static int k210_ipi_init(bool cold_boot)
 	int rc;
 
 	if (cold_boot) {
-		rc = clint_cold_ipi_init(CLINT_BASE_ADDR, K210_HART_COUNT);
+		rc = clint_cold_ipi_init(K210_CLINT_BASE_ADDR,
+					 K210_HART_COUNT);
 		if (rc)
 			return rc;
 	}
@@ -60,7 +87,8 @@ static int k210_timer_init(bool cold_boot)
 	int rc;
 
 	if (cold_boot) {
-		rc = clint_cold_timer_init(CLINT_BASE_ADDR, K210_HART_COUNT);
+		rc = clint_cold_timer_init(K210_CLINT_BASE_ADDR,
+					   K210_HART_COUNT);
 		if (rc)
 			return rc;
 	}

@@ -7,5 +7,5 @@
 #   Damien Le Moal <damien.lemoal@wdc.com>
 #
 
-platform-objs-y += sysctl.o platform.o
+platform-objs-y += platform.o
 platform-dtb-y += k210.dtb
