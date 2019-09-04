@@ -14,26 +14,17 @@
 #include <sbi/sbi_console.h>
 #include <sbi_utils/irqchip/plic.h>
 #include <sbi_utils/sys/clint.h>
+#include <sbi_utils/serial/sifive-uart.h>
 #include "platform.h"
-#include "uarths.h"
+#include "sysctl.h"
 
-#define K210_UART_BAUDRATE 115200
+#define K210_UART_BASE_ADDR	0x38000000U
+#define K210_UART_BAUDRATE	115200
 
 static int k210_console_init(void)
 {
-	uarths_init(K210_UART_BAUDRATE, UARTHS_STOP_1);
-
-	return 0;
-}
-
-static void k210_console_putc(char c)
-{
-	uarths_putc(c);
-}
-
-static int k210_console_getc(void)
-{
-	return uarths_getc();
+	return sifive_uart_init(K210_UART_BASE_ADDR,
+				sysctl_get_cpu_freq(), K210_UART_BAUDRATE);
 }
 
 static int k210_irqchip_init(bool cold_boot)
@@ -95,8 +86,8 @@ static int k210_system_shutdown(u32 type)
 
 const struct sbi_platform_operations platform_ops = {
 	.console_init	= k210_console_init,
-	.console_putc	= k210_console_putc,
-	.console_getc	= k210_console_getc,
+	.console_putc	= sifive_uart_putc,
+	.console_getc	= sifive_uart_getc,
 
 	.irqchip_init = k210_irqchip_init,
 
