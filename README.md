@@ -172,14 +172,10 @@ OpenSBI source code also contains code reused from other projects as listed
 below. The original license text of these projects is included in the source
 files where the reused code is present.
 
-1. The libfdt source code is disjunctively dual licensed
-   (GPL-2.0+ OR BSD-2-Clause). Some of this project code is used in OpenSBI
-   under the terms of the BSD 2-Clause license. Any contributions to this
-   code must be made under the terms of both licenses.
-2. Some source file for the Kendryte/k210 platform code are based on code from
-   the [Kendryte standalone SDK] available on github. These files retain the
-   original copyright and license of the Kendryte standalone SDK project and
-   are licensed under the terms of the Apache License, Version 2.0.
+* The libfdt source code is disjunctively dual licensed
+  (GPL-2.0+ OR BSD-2-Clause). Some of this project code is used in OpenSBI
+  under the terms of the BSD 2-Clause license. Any contributions to this
+  code must be made under the terms of both licenses.
 
 See also the [third party notices] file for more information.
 
