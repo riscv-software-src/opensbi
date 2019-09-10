@@ -16,7 +16,7 @@
 /* clang-format off */
 
 #define SBI_TLB_FLUSH_ALL			((unsigned long)-1)
-#define SBI_TLB_FLUSH_MAX_SIZE			(1UL << 30)
+#define SBI_TLB_FLUSH_MAX_SIZE			(1UL << 12)
 
 /* clang-format on */
 
