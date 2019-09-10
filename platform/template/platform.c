@@ -224,5 +224,6 @@ const struct sbi_platform platform = {
 	.hart_count		= 1,
 	.hart_stack_size	= 4096,
 	.disabled_hart_mask	= 0,
+	.tlb_range_flush_limit	= 0,
 	.platform_ops_addr	= (unsigned long)&platform_ops
 };

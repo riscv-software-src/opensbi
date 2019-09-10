@@ -23,6 +23,7 @@
 static unsigned long tlb_sync_off;
 static unsigned long tlb_fifo_off;
 static unsigned long tlb_fifo_mem_off;
+static unsigned long tlb_range_flush_limit;
 
 static void sbi_tlb_flush_all(void)
 {
@@ -232,7 +233,7 @@ int sbi_tlb_fifo_update(struct sbi_scratch *rscratch, u32 hartid, void *data)
 	 * upgrade it to flush all because we can only flush
 	 * 4KB at a time.
 	 */
-	if (tinfo->size > SBI_TLB_FLUSH_MAX_SIZE) {
+	if (tinfo->size > tlb_range_flush_limit) {
 		tinfo->start = 0;
 		tinfo->size = SBI_TLB_FLUSH_ALL;
 	}
@@ -276,6 +277,7 @@ int sbi_tlb_fifo_init(struct sbi_scratch *scratch, bool cold_boot)
 	void *tlb_mem;
 	unsigned long *tlb_sync;
 	struct sbi_fifo *tlb_q;
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if (cold_boot) {
 		tlb_sync_off = sbi_scratch_alloc_offset(sizeof(*tlb_sync),
@@ -296,6 +298,7 @@ int sbi_tlb_fifo_init(struct sbi_scratch *scratch, bool cold_boot)
 			sbi_scratch_free_offset(tlb_sync_off);
 			return SBI_ENOMEM;
 		}
+		tlb_range_flush_limit = sbi_platform_tlbr_flush_limit(plat);
 	} else {
 		if (!tlb_sync_off ||
 		    !tlb_fifo_off ||
