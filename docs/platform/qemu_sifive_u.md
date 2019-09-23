@@ -7,6 +7,14 @@ platform.
 To build this platform specific library and firmwares, provide the
 *PLATFORM=qemu/sifive_u* parameter to the top level `make` command line.
 
+Note with QEMU v4.2 release, the QEMU *sifive_u* machine has been updated to
+closely match the SiFive HiFive Unleashed hardware and can therefore run the
+same firmware as what gets loaded onto the board, and OpenSBI's *qemu/sifive_u*
+platform should only be used with QEMU v4.1 release or before.
+
+The special *qemu/sifive_u* platform support will be dropped in the future
+OpenSBI release.
+
 Platform Options
 ----------------
 

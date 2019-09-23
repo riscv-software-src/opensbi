@@ -4,6 +4,9 @@ The FU540-C000 is the world’s first 4+1 64-bit RISC-V SoC from SiFive.
 The HiFive Unleashed development platform is based on FU540-C000 and capable
 of running Linux.
 
+With QEMU v4.2 or above release, the 'sifive_u' machine can be used to test
+OpenSBI image built for the real hardware as well.
+
 To build platform specific library and firmwares, provide the
 *PLATFORM=sifive/fu540* parameter to the top level `make` command.
 
@@ -201,3 +204,12 @@ At U-Boot prompt execute the following boot command to boot Linux.
 ```
 bootm ${kernel_addr_r} - ${fdt_addr_r}
 ```
+
+QEMU Specific Instructions
+--------------------------
+If you want to test OpenSBI with QEMU 'sifive_u' machine, please follow the
+same instructions above, with the exception of not passing FW_PAYLOAD_FDT_PATH.
+
+This is because QEMU generates a device tree blob on the fly based on the
+command line parameters and it's compatible with the one used in the upstream
+Linux kernel.
