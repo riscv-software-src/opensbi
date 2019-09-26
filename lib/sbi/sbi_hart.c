@@ -344,12 +344,12 @@ struct sbi_scratch *sbi_hart_id_to_scratch(struct sbi_scratch *scratch,
 }
 
 #define COLDBOOT_WAIT_BITMAP_SIZE __riscv_xlen
-static spinlock_t coldboot_wait_bitmap_lock = SPIN_LOCK_INITIALIZER;
-static unsigned long coldboot_wait_bitmap   = 0;
+static spinlock_t coldboot_lock = SPIN_LOCK_INITIALIZER;
+static unsigned long coldboot_done = 0;
+static unsigned long coldboot_wait_bitmap = 0;
 
 void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 {
-	unsigned long mipval;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if ((sbi_platform_hart_count(plat) <= hartid) ||
@@ -359,19 +359,26 @@ void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	/* Set MSIE bit to receive IPI */
 	csr_set(CSR_MIE, MIP_MSIP);
 
-	do {
-		spin_lock(&coldboot_wait_bitmap_lock);
-		coldboot_wait_bitmap |= (1UL << hartid);
-		spin_unlock(&coldboot_wait_bitmap_lock);
+	/* Acquire coldboot lock */
+	spin_lock(&coldboot_lock);
 
+	/* Mark current HART as waiting */
+	coldboot_wait_bitmap |= (1UL << hartid);
+
+	/* Wait for coldboot to finish using WFI */
+	while (!coldboot_done) {
+		spin_unlock(&coldboot_lock);
 		wfi();
-		mipval = csr_read(CSR_MIP);
+		spin_lock(&coldboot_lock);
+	};
 
-		spin_lock(&coldboot_wait_bitmap_lock);
-		coldboot_wait_bitmap &= ~(1UL << hartid);
-		spin_unlock(&coldboot_wait_bitmap_lock);
-	} while (!(mipval & MIP_MSIP));
+	/* Unmark current HART as waiting */
+	coldboot_wait_bitmap &= ~(1UL << hartid);
 
+	/* Release coldboot lock */
+	spin_unlock(&coldboot_lock);
+
+	/* Clear current HART IPI */
 	sbi_platform_ipi_clear(plat, hartid);
 }
 
@@ -380,11 +387,18 @@ void sbi_hart_wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	int max_hart			= sbi_platform_hart_count(plat);
 
+	/* Acquire coldboot lock */
+	spin_lock(&coldboot_lock);
+
+	/* Mark coldboot done */
+	coldboot_done = 1;
+
+	/* Send an IPI to all HARTs waiting for coldboot */
 	for (int i = 0; i < max_hart; i++) {
-		/* send an IPI to every other hart */
-		spin_lock(&coldboot_wait_bitmap_lock);
 		if ((i != hartid) && (coldboot_wait_bitmap & (1UL << i)))
 			sbi_platform_ipi_send(plat, i);
-		spin_unlock(&coldboot_wait_bitmap_lock);
 	}
+
+	/* Release coldboot lock */
+	spin_unlock(&coldboot_lock);
 }
