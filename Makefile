@@ -65,7 +65,7 @@ export firmware_dir=$(CURDIR)/firmware
 # Find library version
 OPENSBI_VERSION_MAJOR=`grep "define OPENSBI_VERSION_MAJOR" $(include_dir)/sbi/sbi_version.h | sed 's/.*MAJOR.*\([0-9][0-9]*\)/\1/'`
 OPENSBI_VERSION_MINOR=`grep "define OPENSBI_VERSION_MINOR" $(include_dir)/sbi/sbi_version.h | sed 's/.*MINOR.*\([0-9][0-9]*\)/\1/'`
-OPENSBI_VERSION_GIT=$(shell if [ -d $(src_dir)/.git ]; then git describe; fi)
+OPENSBI_VERSION_GIT=$(shell if [ -d $(src_dir)/.git ]; then git describe 2> /dev/null; fi)
 
 # Setup compilation commands
 ifdef CROSS_COMPILE
