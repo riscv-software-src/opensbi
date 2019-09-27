@@ -215,7 +215,7 @@ static inline bool sbi_platform_hart_disabled(const struct sbi_platform *plat,
  */
 static inline u64 sbi_platform_tlbr_flush_limit(const struct sbi_platform *plat)
 {
-	if (plat)
+	if (plat && plat->tlb_range_flush_limit)
 		return plat->tlb_range_flush_limit;
 	return SBI_PLATFORM_TLB_RANGE_FLUSH_LIMIT_DEFAULT;
 }
