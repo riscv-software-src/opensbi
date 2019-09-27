@@ -341,7 +341,7 @@ void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		spin_unlock(&coldboot_wait_bitmap_lock);
 	} while (!(mipval & MIP_MSIP));
 
-	csr_clear(CSR_MIP, MIP_MSIP);
+	sbi_platform_ipi_clear(plat, hartid);
 }
 
 void sbi_hart_wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
