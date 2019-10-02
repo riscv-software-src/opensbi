@@ -35,7 +35,7 @@ int sbi_ecall_0_1_handler(u32 hartid, struct sbi_trap_regs *regs,
 			     struct sbi_scratch *scratch,
 			     struct unpriv_trap *uptrap)
 {
-	int ret = SBI_ENOTSUPP;
+	int ret = 0;
 	struct sbi_tlb_info tlb_info;
 	u32 source_hart = sbi_current_hartid();
 
@@ -47,19 +47,15 @@ int sbi_ecall_0_1_handler(u32 hartid, struct sbi_trap_regs *regs,
 #else
 		sbi_timer_event_start(scratch, (u64)regs->a0);
 #endif
-		ret = 0;
 		break;
 	case SBI_EXT_0_1_CONSOLE_PUTCHAR:
 		sbi_putc(regs->a0);
-		ret = 0;
 		break;
 	case SBI_EXT_0_1_CONSOLE_GETCHAR:
 		regs->a0 = sbi_getc();
-		ret	 = 0;
 		break;
 	case SBI_EXT_0_1_CLEAR_IPI:
 		sbi_ipi_clear_smode(scratch);
-		ret = 0;
 		break;
 	case SBI_EXT_0_1_SEND_IPI:
 		ret = sbi_ipi_send_many(scratch, uptrap, (ulong *)regs->a0,
@@ -95,21 +91,18 @@ int sbi_ecall_0_1_handler(u32 hartid, struct sbi_trap_regs *regs,
 		break;
 	case SBI_EXT_0_1_SHUTDOWN:
 		sbi_system_shutdown(scratch, 0);
-		ret = 0;
 		break;
 	default:
 		regs->a0 = SBI_ENOTSUPP;
-		ret = 0;
 	};
 
 	return ret;
-
 }
 
 int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 		      struct sbi_scratch *scratch)
 {
-	int ret = SBI_ENOTSUPP;
+	int ret = 0;
 	struct unpriv_trap uptrap;
 	u32 extension_id = regs->a7;
 
@@ -118,7 +111,6 @@ int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 		ret = sbi_ecall_0_1_handler(hartid, regs, scratch, &uptrap);
 	} else {
 		regs->a0 = SBI_ENOTSUPP;
-		ret	 = 0;
 	}
 
 	if (!ret) {
