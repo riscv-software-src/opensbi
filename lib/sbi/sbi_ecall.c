@@ -12,6 +12,7 @@
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_ipi.h>
+#include <sbi/sbi_platform.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_tlb.h>
@@ -47,12 +48,28 @@ int sbi_check_extension(struct sbi_scratch *scratch, unsigned long extid,
 	 */
 
 	if ((extid >= SBI_EXT_0_1_SET_TIMER &&
-	    extid <= SBI_EXT_0_1_SHUTDOWN) || (extid == SBI_EXT_BASE))
+	    extid <= SBI_EXT_0_1_SHUTDOWN) || (extid == SBI_EXT_BASE)) {
 		*out_val = 1;
-	else
+	} else if (extid >= SBI_EXT_VENDOR_START &&
+		   extid <= SBI_EXT_VENDOR_END) {
+		*out_val = sbi_platform_vendor_ext_check(
+						sbi_platform_ptr(scratch),
+						extid);
+	} else
 		*out_val = 0;
 
 	return 0;
+}
+
+int sbi_ecall_vendor_ext_handler(struct sbi_scratch *scratch,
+				 unsigned long extid, unsigned long funcid,
+				 unsigned long *args, unsigned long *out_val,
+				 unsigned long *out_tcause,
+				 unsigned long *out_tval)
+{
+	return sbi_platform_vendor_ext_provider(sbi_platform_ptr(scratch),
+					       extid, funcid, args, out_val,
+					       out_tcause, out_tval);
 }
 
 int sbi_ecall_base_handler(struct sbi_scratch *scratch, unsigned long extid,
@@ -195,8 +212,14 @@ int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 		ret = sbi_ecall_base_handler(scratch, extension_id, func_id,
 					     args, &out_val,
 					     &out_tval, &out_tcause);
-	else
+	else if (extension_id >= SBI_EXT_VENDOR_START &&
+		extension_id <= SBI_EXT_VENDOR_END) {
+		ret = sbi_ecall_vendor_ext_handler(scratch, extension_id,
+						   func_id, args, &out_val,
+						   &out_tval, &out_tcause);
+	} else {
 		ret = SBI_ENOTSUPP;
+	}
 
 	if (ret == SBI_ETRAP) {
 		sbi_trap_redirect(regs, scratch, regs->mepc,

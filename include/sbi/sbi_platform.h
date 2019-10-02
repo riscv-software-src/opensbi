@@ -43,6 +43,8 @@
 
 #include <sbi/sbi_version.h>
 #include <sbi/sbi_scratch.h>
+#include <sbi/sbi_ecall.h>
+#include <sbi/sbi_error.h>
 
 /** Possible feature flags of a platform */
 enum sbi_platform_features {
@@ -112,6 +114,14 @@ struct sbi_platform_operations {
 	int (*system_reboot)(u32 type);
 	/** Shutdown or poweroff the platform */
 	int (*system_shutdown)(u32 type);
+
+	/** platform specific SBI extension implementation probe function */
+	int (*vendor_ext_check)(long extid);
+	/** platform specific SBI extension implementation provider */
+	int (*vendor_ext_provider)(long extid, long funcid,
+			unsigned long *args, unsigned long *out_value,
+			unsigned long *out_trap_cause,
+			unsigned long *out_trap_val);
 } __packed;
 
 /** Representation of a platform */
@@ -504,6 +514,54 @@ static inline int sbi_platform_system_shutdown(const struct sbi_platform *plat,
 	if (plat && sbi_platform_ops(plat)->system_shutdown)
 		return sbi_platform_ops(plat)->system_shutdown(type);
 	return 0;
+}
+
+/**
+ * Check if a vendor extension is implemented or not.
+ *
+ * @param plat pointer to struct sbi_platform
+ * @param extid	vendor SBI extension id
+ *
+ * @return 0 if extid is not implemented and 1 if implemented
+ */
+static inline int sbi_platform_vendor_ext_check(const struct sbi_platform *plat,
+						long extid)
+{
+	if (plat && sbi_platform_ops(plat)->vendor_ext_check)
+		return sbi_platform_ops(plat)->vendor_ext_check(extid);
+
+	return 0;
+}
+
+/**
+ * Invoke platform specific vendor SBI extension implementation.
+ *
+ * @param plat pointer to struct sbi_platform
+ * @param extid	vendor SBI extension id
+ * @param funcid SBI function id within the extension id
+ * @param args pointer to arguments passed by the caller
+ * @param out_value output value that can be filled the callee
+ * @param out_tcause trap cause that can be filled the callee
+ * @param out_tvalue possible trap value that can be filled the callee
+ *
+ * @return 0 on success and negative error code on failure
+ */
+static inline int sbi_platform_vendor_ext_provider(const struct sbi_platform *plat,
+						   long extid, long funcid,
+						   unsigned long *args,
+						   unsigned long *out_value,
+						   unsigned long *out_tcause,
+						   unsigned long *out_tval)
+{
+	if (plat && sbi_platform_ops(plat)->vendor_ext_provider) {
+		return sbi_platform_ops(plat)->vendor_ext_provider(extid,
+								   funcid, args,
+								  out_value,
+								  out_tcause,
+								  out_tval);
+	}
+
+	return SBI_ENOTSUPP;
 }
 
 #endif
