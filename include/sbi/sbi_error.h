@@ -13,11 +13,11 @@
 /* clang-format off */
 
 #define SBI_OK		0
-#define SBI_EUNKNOWN	-1
-#define SBI_EFAIL	-2
+#define SBI_EFAIL	-1
+#define SBI_ENOTSUPP	-2
 #define SBI_EINVAL	-3
-#define SBI_ENOENT	-4
-#define SBI_ENOTSUPP	-5
+#define SBI_DENIED	-4
+#define SBI_INVALID_ADDR -5
 #define SBI_ENODEV	-6
 #define SBI_ENOSYS	-7
 #define SBI_ETIMEDOUT	-8
@@ -26,6 +26,8 @@
 #define SBI_ENOSPC	-11
 #define SBI_ENOMEM	-12
 #define SBI_ETRAP	-13
+#define SBI_EUNKNOWN	-14
+#define SBI_ENOENT	-15
 
 /* clang-format on */
 
