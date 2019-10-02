@@ -26,7 +26,7 @@
 #define SBI_ECALL_1(__num, __a0) SBI_ECALL(__num, __a0, 0, 0)
 #define SBI_ECALL_2(__num, __a0, __a1) SBI_ECALL(__num, __a0, __a1, 0)
 
-#define sbi_ecall_console_putc(c) SBI_ECALL_1(SBI_ECALL_CONSOLE_PUTCHAR, (c))
+#define sbi_ecall_console_putc(c) SBI_ECALL_1(SBI_EXT_0_1_CONSOLE_PUTCHAR, (c))
 
 static inline void sbi_ecall_console_puts(const char *str)
 {
