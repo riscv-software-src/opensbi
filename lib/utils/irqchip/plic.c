@@ -15,7 +15,7 @@
 #include <libfdt.h>
 #include <fdt.h>
 
-#define PLIC_PRIORITY_BASE 0x0
+#define PLIC_PRIORITY_BASE 0x4
 #define PLIC_PENDING_BASE 0x1000
 #define PLIC_ENABLE_BASE 0x2000
 #define PLIC_ENABLE_STRIDE 0x80
@@ -111,7 +111,7 @@ int plic_cold_irqchip_init(unsigned long base, u32 num_sources, u32 hart_count)
 	plic_base	 = (void *)base;
 
 	/* Configure default priorities of all IRQs */
-	for (i = 1; i <= plic_num_sources; i++)
+	for (i = 0; i <= plic_num_sources; i++)
 		plic_set_priority(i, 1);
 
 	return 0;
