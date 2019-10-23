@@ -85,6 +85,14 @@ fw_options:
 	add	a0, zero, zero
 	ret
 
+	/*
+	 * We disable relaxation because use of ".align"
+	 * and ".balign" can potentially generate compile
+	 * errors with latest RISC-V GCC Binutils.
+	 */
+	.option push
+	.option norelax
+
 #ifdef FW_PAYLOAD_FDT_PATH
 	.align 4
 	.section .text, "ax", %progbits
@@ -103,3 +111,5 @@ payload_bin:
 #else
 	.incbin	FW_PAYLOAD_PATH
 #endif
+
+	.option pop
