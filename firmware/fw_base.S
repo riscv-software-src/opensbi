@@ -46,12 +46,11 @@
 	.globl _start
 	.globl _start_warm
 _start:
-	/*
-	 * Jump to warm-boot if this is not the first core booting,
-	 * that is, for mhartid != 0
-	 */
-	csrr	a6, CSR_MHARTID
-	blt	zero, a6, _wait_relocate_copy_done
+	/* Jump to relocation wait loop if we don't get relocation lottery */
+	la	a6, _relocate_lottery
+	li	a7, 1
+	amoadd.w a6, a7, (a6)
+	bnez	a6, _wait_relocate_copy_done
 
 	/* Save load address */
 	la	t0, _load_start
@@ -75,6 +74,8 @@ _relocate:
 	blt	t2, t0, _relocate_copy_to_upper
 _relocate_copy_to_lower:
 	ble	t1, t2, _relocate_copy_to_lower_loop
+	la	t3, _relocate_lottery
+	BRANGE	t2, t1, t3, _start_hang
 	la	t3, _boot_status
 	BRANGE	t2, t1, t3, _start_hang
 	la	t3, _relocate
@@ -91,6 +92,8 @@ _relocate_copy_to_lower_loop:
 	jr	t4
 _relocate_copy_to_upper:
 	ble	t3, t0, _relocate_copy_to_upper_loop
+	la	t2, _relocate_lottery
+	BRANGE	t0, t3, t2, _start_hang
 	la	t2, _boot_status
 	BRANGE	t0, t3, t2, _start_hang
 	la	t2, _relocate
@@ -381,6 +384,8 @@ _start_warm:
 	j	_start_hang
 
 	.align 3
+_relocate_lottery:
+	RISCV_PTR	0
 _boot_status:
 	RISCV_PTR	0
 _load_start:
