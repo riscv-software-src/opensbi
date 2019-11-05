@@ -12,43 +12,41 @@
 
 #include <sbi/sbi_const.h>
 
-/* TODO: Make constants usable in assembly with _AC() macro */
-
 /* clang-format off */
-#define MSTATUS_SIE			0x00000002
-#define MSTATUS_MIE			0x00000008
+#define MSTATUS_SIE			_UL(0x00000002)
+#define MSTATUS_MIE			_UL(0x00000008)
 #define MSTATUS_SPIE_SHIFT		5
-#define MSTATUS_SPIE			(1UL << MSTATUS_SPIE_SHIFT)
-#define MSTATUS_UBE			0x00000040
-#define MSTATUS_MPIE			0x00000080
+#define MSTATUS_SPIE			(_UL(1) << MSTATUS_SPIE_SHIFT)
+#define MSTATUS_UBE			_UL(0x00000040)
+#define MSTATUS_MPIE			_UL(0x00000080)
 #define MSTATUS_SPP_SHIFT		8
-#define MSTATUS_SPP			(1 << MSTATUS_SPP_SHIFT)
+#define MSTATUS_SPP			(_UL(1) << MSTATUS_SPP_SHIFT)
 #define MSTATUS_MPP_SHIFT		11
-#define MSTATUS_MPP			(3 << MSTATUS_MPP_SHIFT)
-#define MSTATUS_FS			0x00006000
-#define MSTATUS_XS			0x00018000
-#define MSTATUS_MPRV			0x00020000
-#define MSTATUS_SUM			0x00040000
-#define MSTATUS_MXR			0x00080000
-#define MSTATUS_TVM			0x00100000
-#define MSTATUS_TW			0x00200000
-#define MSTATUS_TSR			0x00400000
-#define MSTATUS32_SD			0x80000000
+#define MSTATUS_MPP			(_UL(3) << MSTATUS_MPP_SHIFT)
+#define MSTATUS_FS			_UL(0x00006000)
+#define MSTATUS_XS			_UL(0x00018000)
+#define MSTATUS_MPRV			_UL(0x00020000)
+#define MSTATUS_SUM			_UL(0x00040000)
+#define MSTATUS_MXR			_UL(0x00080000)
+#define MSTATUS_TVM			_UL(0x00100000)
+#define MSTATUS_TW			_UL(0x00200000)
+#define MSTATUS_TSR			_UL(0x00400000)
+#define MSTATUS32_SD			_UL(0x80000000)
 #if __riscv_xlen == 64
-#define MSTATUS_UXL			0x0000000300000000
-#define MSTATUS_SXL			0x0000000C00000000
-#define MSTATUS_SBE			0x0000001000000000
-#define MSTATUS_MBE			0x0000002000000000
-#define MSTATUS_MTL			0x0000004000000000
-#define MSTATUS_MPV			0x0000008000000000
+#define MSTATUS_UXL			_ULL(0x0000000300000000)
+#define MSTATUS_SXL			_ULL(0x0000000C00000000)
+#define MSTATUS_SBE			_ULL(0x0000001000000000)
+#define MSTATUS_MBE			_ULL(0x0000002000000000)
+#define MSTATUS_MTL			_ULL(0x0000004000000000)
+#define MSTATUS_MPV			_ULL(0x0000008000000000)
 #else
-#define MSTATUSH_SBE			0x00000010
-#define MSTATUSH_MBE			0x00000020
-#define MSTATUSH_MTL			0x00000040
-#define MSTATUSH_MPV			0x00000080
+#define MSTATUSH_SBE			_UL(0x00000010)
+#define MSTATUSH_MBE			_UL(0x00000020)
+#define MSTATUSH_MTL			_UL(0x00000040)
+#define MSTATUSH_MPV			_UL(0x00000080)
 #endif
-#define MSTATUS32_SD			0x80000000
-#define MSTATUS64_SD			0x8000000000000000
+#define MSTATUS32_SD			_UL(0x80000000)
+#define MSTATUS64_SD			_ULL(0x8000000000000000)
 
 #define SSTATUS_SIE			MSTATUS_SIE
 #define SSTATUS_SPIE_SHIFT		MSTATUS_SPIE_SHIFT
@@ -63,13 +61,13 @@
 #define SSTATUS64_UXL			MSTATUS_UXL
 #define SSTATUS64_SD			MSTATUS64_SD
 
-#define HSTATUS_VTSR			0x00400000
-#define HSTATUS_VTVM			0x00100000
-#define HSTATUS_SP2V			0x00000200
-#define HSTATUS_SP2P			0x00000100
-#define HSTATUS_SPV			0x00000080
-#define HSTATUS_STL			0x00000040
-#define HSTATUS_SPRV			0x00000001
+#define HSTATUS_VTSR			_UL(0x00400000)
+#define HSTATUS_VTVM			_UL(0x00100000)
+#define HSTATUS_SP2V			_UL(0x00000200)
+#define HSTATUS_SP2P			_UL(0x00000100)
+#define HSTATUS_SPV			_UL(0x00000080)
+#define HSTATUS_STL			_UL(0x00000040)
+#define HSTATUS_SPRV			_UL(0x00000001)
 
 #define IRQ_S_SOFT			1
 #define IRQ_VS_SOFT			2
@@ -81,59 +79,59 @@
 #define IRQ_VS_EXT			10
 #define IRQ_M_EXT			11
 
-#define MIP_SSIP			(1 << IRQ_S_SOFT)
-#define MIP_VSSIP			(1 << IRQ_VS_SOFT)
-#define MIP_MSIP			(1 << IRQ_M_SOFT)
-#define MIP_STIP			(1 << IRQ_S_TIMER)
-#define MIP_VSTIP			(1 << IRQ_VS_TIMER)
-#define MIP_MTIP			(1 << IRQ_M_TIMER)
-#define MIP_SEIP			(1 << IRQ_S_EXT)
-#define MIP_VSEIP			(1 << IRQ_VS_EXT)
-#define MIP_MEIP			(1 << IRQ_M_EXT)
+#define MIP_SSIP			(_UL(1) << IRQ_S_SOFT)
+#define MIP_VSSIP			(_UL(1) << IRQ_VS_SOFT)
+#define MIP_MSIP			(_UL(1) << IRQ_M_SOFT)
+#define MIP_STIP			(_UL(1) << IRQ_S_TIMER)
+#define MIP_VSTIP			(_UL(1) << IRQ_VS_TIMER)
+#define MIP_MTIP			(_UL(1) << IRQ_M_TIMER)
+#define MIP_SEIP			(_UL(1) << IRQ_S_EXT)
+#define MIP_VSEIP			(_UL(1) << IRQ_VS_EXT)
+#define MIP_MEIP			(_UL(1) << IRQ_M_EXT)
 
 #define SIP_SSIP			MIP_SSIP
 #define SIP_STIP			MIP_STIP
 
-#define PRV_U				0
-#define PRV_S				1
-#define PRV_M				3
+#define PRV_U				_UL(0)
+#define PRV_S				_UL(1)
+#define PRV_M				_UL(3)
 
-#define SATP32_MODE			0x80000000
-#define SATP32_ASID			0x7FC00000
-#define SATP32_PPN			0x003FFFFF
-#define SATP64_MODE			0xF000000000000000
-#define SATP64_ASID			0x0FFFF00000000000
-#define SATP64_PPN			0x00000FFFFFFFFFFF
+#define SATP32_MODE			_UL(0x80000000)
+#define SATP32_ASID			_UL(0x7FC00000)
+#define SATP32_PPN			_UL(0x003FFFFF)
+#define SATP64_MODE			_ULL(0xF000000000000000)
+#define SATP64_ASID			_ULL(0x0FFFF00000000000)
+#define SATP64_PPN			_ULL(0x00000FFFFFFFFFFF)
 
-#define SATP_MODE_OFF			0
-#define SATP_MODE_SV32			1
-#define SATP_MODE_SV39			8
-#define SATP_MODE_SV48			9
-#define SATP_MODE_SV57			10
-#define SATP_MODE_SV64			11
+#define SATP_MODE_OFF			_UL(0)
+#define SATP_MODE_SV32			_UL(1)
+#define SATP_MODE_SV39			_UL(8)
+#define SATP_MODE_SV48			_UL(9)
+#define SATP_MODE_SV57			_UL(10)
+#define SATP_MODE_SV64			_UL(11)
 
-#define PMP_R				0x01
-#define PMP_W				0x02
-#define PMP_X				0x04
-#define PMP_A				0x18
-#define PMP_A_TOR			0x08
-#define PMP_A_NA4			0x10
-#define PMP_A_NAPOT			0x18
-#define PMP_L				0x80
+#define PMP_R				_UL(0x01)
+#define PMP_W				_UL(0x02)
+#define PMP_X				_UL(0x04)
+#define PMP_A				_UL(0x18)
+#define PMP_A_TOR			_UL(0x08)
+#define PMP_A_NA4			_UL(0x10)
+#define PMP_A_NAPOT			_UL(0x18)
+#define PMP_L				_UL(0x80)
 
 #define PMP_SHIFT			2
 #define PMP_COUNT			16
 
 /* page table entry (PTE) fields */
-#define PTE_V				0x001 /* Valid */
-#define PTE_R				0x002 /* Read */
-#define PTE_W				0x004 /* Write */
-#define PTE_X				0x008 /* Execute */
-#define PTE_U				0x010 /* User */
-#define PTE_G				0x020 /* Global */
-#define PTE_A				0x040 /* Accessed */
-#define PTE_D				0x080 /* Dirty */
-#define PTE_SOFT			0x300 /* Reserved for Software */
+#define PTE_V				_UL(0x001) /* Valid */
+#define PTE_R				_UL(0x002) /* Read */
+#define PTE_W				_UL(0x004) /* Write */
+#define PTE_X				_UL(0x008) /* Execute */
+#define PTE_U				_UL(0x010) /* User */
+#define PTE_G				_UL(0x020) /* Global */
+#define PTE_A				_UL(0x040) /* Accessed */
+#define PTE_D				_UL(0x080) /* Dirty */
+#define PTE_SOFT			_UL(0x300) /* Reserved for Software */
 
 #define PTE_PPN_SHIFT			10
 
