@@ -11,6 +11,19 @@
 
 	.align 3
 	.section .entry, "ax", %progbits
+	.global fw_boot_hart
+	/*
+	 * This function is called very early even before
+	 * fw_save_info() is called.
+	 * We can only use a0, a1, and a2 registers here.
+	 * The boot HART id should be returned in 'a0'.
+	 */
+fw_boot_hart:
+	li	a0, -1
+	ret
+
+	.align 3
+	.section .entry, "ax", %progbits
 	.global fw_save_info
 	/*
 	 * We can only use a0, a1, a2, a3, and a4 registers here.
