@@ -35,11 +35,10 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 
 	misa_string(str, sizeof(str));
 #ifdef OPENSBI_VERSION_GIT
-	sbi_printf("\nOpenSBI %s (%s %s)\n", OPENSBI_VERSION_GIT,
-		   __DATE__, __TIME__);
+	sbi_printf("\nOpenSBI %s\n", OPENSBI_VERSION_GIT);
 #else
-	sbi_printf("\nOpenSBI v%d.%d (%s %s)\n", OPENSBI_VERSION_MAJOR,
-		   OPENSBI_VERSION_MINOR, __DATE__, __TIME__);
+	sbi_printf("\nOpenSBI v%d.%d\n", OPENSBI_VERSION_MAJOR,
+		   OPENSBI_VERSION_MINOR);
 #endif
 
 	sbi_printf(BANNER);
