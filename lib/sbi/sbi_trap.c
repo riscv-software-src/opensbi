@@ -262,7 +262,7 @@ void sbi_trap_handler(struct sbi_trap_regs *regs, struct sbi_scratch *scratch)
 		uptrap = sbi_hart_get_trap_info(scratch);
 		if ((regs->mstatus & MSTATUS_MPRV) && uptrap) {
 			rc = 0;
-			regs->mepc += uptrap->ilen;
+			regs->mepc += 4;
 			uptrap->cause = mcause;
 			uptrap->tval = mtval;
 		} else {

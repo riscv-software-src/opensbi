@@ -13,20 +13,22 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_scratch.h>
 
-#define DEFINE_UNPRIVILEGED_LOAD_FUNCTION(type, insn, insnlen)                \
+#define DEFINE_UNPRIVILEGED_LOAD_FUNCTION(type, insn)                         \
 	type load_##type(const type *addr,                                    \
 			struct sbi_scratch *scratch,                          \
 			struct unpriv_trap *trap)                             \
 	{                                                                     \
 		register ulong __mstatus asm("a2");                           \
 		type val = 0;                                                 \
-		trap->ilen = insnlen;                                         \
 		trap->cause = 0;                                              \
 		trap->tval = 0;                                               \
 		sbi_hart_set_trap_info(scratch, trap);                        \
 		asm volatile(                                                 \
 			"csrrs %0, " STR(CSR_MSTATUS) ", %3\n"                \
+			".option push\n"                                      \
+			".option norvc\n"                                     \
 			#insn " %1, %2\n"                                     \
+			".option pop\n"                                       \
 			"csrw " STR(CSR_MSTATUS) ", %0"                       \
 		    : "+&r"(__mstatus), "=&r"(val)                            \
 		    : "m"(*addr), "r"(MSTATUS_MPRV));                         \
@@ -34,41 +36,43 @@
 		return val;                                                   \
 	}
 
-#define DEFINE_UNPRIVILEGED_STORE_FUNCTION(type, insn, insnlen)               \
+#define DEFINE_UNPRIVILEGED_STORE_FUNCTION(type, insn)                        \
 	void store_##type(type *addr, type val,                               \
 			struct sbi_scratch *scratch,                          \
 			struct unpriv_trap *trap)                             \
 	{                                                                     \
 		register ulong __mstatus asm("a3");                           \
-		trap->ilen = insnlen;                                         \
 		trap->cause = 0;                                              \
 		trap->tval = 0;                                               \
 		sbi_hart_set_trap_info(scratch, trap);                        \
 		asm volatile(                                                 \
 			"csrrs %0, " STR(CSR_MSTATUS) ", %3\n"                \
+			".option push\n"                                      \
+			".option norvc\n"                                     \
 			#insn " %1, %2\n"                                     \
+			".option pop\n"                                       \
 			"csrw " STR(CSR_MSTATUS) ", %0"                       \
 			: "+&r"(__mstatus)                                    \
 			: "r"(val), "m"(*addr), "r"(MSTATUS_MPRV));           \
 		sbi_hart_set_trap_info(scratch, NULL);                        \
 	}
 
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u8, lbu, 4)
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u16, lhu, 4)
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(s8, lb, 4)
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(s16, lh, 4)
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(s32, lw, 2)
-DEFINE_UNPRIVILEGED_STORE_FUNCTION(u8, sb, 4)
-DEFINE_UNPRIVILEGED_STORE_FUNCTION(u16, sh, 4)
-DEFINE_UNPRIVILEGED_STORE_FUNCTION(u32, sw, 2)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u8, lbu)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u16, lhu)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(s8, lb)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(s16, lh)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(s32, lw)
+DEFINE_UNPRIVILEGED_STORE_FUNCTION(u8, sb)
+DEFINE_UNPRIVILEGED_STORE_FUNCTION(u16, sh)
+DEFINE_UNPRIVILEGED_STORE_FUNCTION(u32, sw)
 #if __riscv_xlen == 64
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u32, lwu, 4)
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u64, ld, 2)
-DEFINE_UNPRIVILEGED_STORE_FUNCTION(u64, sd, 2)
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(ulong, ld, 2)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u32, lwu)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u64, ld)
+DEFINE_UNPRIVILEGED_STORE_FUNCTION(u64, sd)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(ulong, ld)
 #else
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u32, lw, 2)
-DEFINE_UNPRIVILEGED_LOAD_FUNCTION(ulong, lw, 2)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u32, lw)
+DEFINE_UNPRIVILEGED_LOAD_FUNCTION(ulong, lw)
 
 u64 load_u64(const u64 *addr,
 	     struct sbi_scratch *scratch, struct unpriv_trap *trap)
@@ -105,7 +109,6 @@ ulong get_insn(ulong mepc, bool virt, struct sbi_scratch *scratch,
 	ulong rvc_mask = 3, tmp;
 #endif
 
-	trap->ilen = 4;
 	trap->cause = 0;
 	trap->tval = 0;
 	sbi_hart_set_trap_info(scratch, trap);
@@ -115,20 +118,29 @@ ulong get_insn(ulong mepc, bool virt, struct sbi_scratch *scratch,
 
 #ifndef __riscv_compressed
 	asm("csrrs %[mstatus], " STR(CSR_MSTATUS) ", %[mprv]\n"
+	    ".option push\n"
+	    ".option norvc\n"
 #if __riscv_xlen == 64
 	    STR(LWU) " %[insn], (%[addr])\n"
 #else
 	    STR(LW) " %[insn], (%[addr])\n"
 #endif
+	    ".option pop\n"
 	    "csrw " STR(CSR_MSTATUS) ", %[mstatus]"
 	    : [mstatus] "+&r"(__mstatus), [insn] "=&r"(val)
 	    : [mprv] "r"(MSTATUS_MPRV | MSTATUS_MXR), [addr] "r"(mepc));
 #else
 	asm("csrrs %[mstatus], " STR(CSR_MSTATUS) ", %[mprv]\n"
+	    ".option push\n"
+	    ".option norvc\n"
 	    "lhu %[insn], (%[addr])\n"
+	    ".option pop\n"
 	    "and %[tmp], %[insn], %[rvc_mask]\n"
 	    "bne %[tmp], %[rvc_mask], 2f\n"
+	    ".option push\n"
+	    ".option norvc\n"
 	    "lhu %[tmp], 2(%[addr])\n"
+	    ".option pop\n"
 	    "sll %[tmp], %[tmp], 16\n"
 	    "add %[insn], %[insn], %[tmp]\n"
 	    "2: csrw " STR(CSR_MSTATUS) ", %[mstatus]"

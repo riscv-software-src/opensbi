@@ -15,7 +15,6 @@
 struct sbi_scratch;
 
 struct unpriv_trap {
-	unsigned long ilen;
 	unsigned long cause;
 	unsigned long tval;
 };
