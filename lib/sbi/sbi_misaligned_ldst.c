@@ -29,12 +29,7 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 	struct unpriv_trap uptrap;
 	ulong addr = csr_read(CSR_MTVAL);
 	int i, fp = 0, shift = 0, len = 0;
-#if __riscv_xlen == 32
-	bool virt = (regs->mstatusH & MSTATUSH_MPV) ? TRUE : FALSE;
-#else
-	bool virt = (regs->mstatus & MSTATUS_MPV) ? TRUE : FALSE;
-#endif
-	ulong insn = get_insn(regs->mepc, virt, scratch, &uptrap);
+	ulong insn = get_insn(regs->mepc, scratch, &uptrap);
 
 	if (uptrap.cause)
 		return sbi_trap_redirect(regs, scratch, regs->mepc,
@@ -136,12 +131,7 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 	struct unpriv_trap uptrap;
 	ulong addr = csr_read(CSR_MTVAL);
 	int i, len = 0;
-#if __riscv_xlen == 32
-	bool virt = (regs->mstatusH & MSTATUSH_MPV) ? TRUE : FALSE;
-#else
-	bool virt = (regs->mstatus & MSTATUS_MPV) ? TRUE : FALSE;
-#endif
-	ulong insn = get_insn(regs->mepc, virt, scratch, &uptrap);
+	ulong insn = get_insn(regs->mepc, scratch, &uptrap);
 
 	if (uptrap.cause)
 		return sbi_trap_redirect(regs, scratch, regs->mepc,

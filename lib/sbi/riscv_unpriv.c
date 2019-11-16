@@ -101,10 +101,10 @@ void store_u64(u64 *addr, u64 val,
 }
 #endif
 
-ulong get_insn(ulong mepc, bool virt, struct sbi_scratch *scratch,
+ulong get_insn(ulong mepc, struct sbi_scratch *scratch,
 	       struct unpriv_trap *trap)
 {
-	ulong __mstatus = 0, __vsstatus = 0, val = 0;
+	ulong __mstatus = 0, val = 0;
 #ifdef __riscv_compressed
 	ulong rvc_mask = 3, tmp;
 #endif
@@ -112,9 +112,6 @@ ulong get_insn(ulong mepc, bool virt, struct sbi_scratch *scratch,
 	trap->cause = 0;
 	trap->tval = 0;
 	sbi_hart_set_trap_info(scratch, trap);
-
-	if (virt)
-		__vsstatus = csr_read_set(CSR_VSSTATUS, SSTATUS_MXR);
 
 #ifndef __riscv_compressed
 	asm("csrrs %[mstatus], " STR(CSR_MSTATUS) ", %[mprv]\n"
@@ -148,9 +145,6 @@ ulong get_insn(ulong mepc, bool virt, struct sbi_scratch *scratch,
 	    : [mprv] "r"(MSTATUS_MPRV | MSTATUS_MXR), [addr] "r"(mepc),
 	      [rvc_mask] "r"(rvc_mask));
 #endif
-
-	if (virt)
-		csr_write(CSR_VSSTATUS, __vsstatus);
 
 	sbi_hart_set_trap_info(scratch, NULL);
 	switch (trap->cause) {
