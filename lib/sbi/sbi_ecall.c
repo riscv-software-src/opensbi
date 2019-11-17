@@ -64,18 +64,17 @@ int sbi_check_extension(struct sbi_scratch *scratch, unsigned long extid,
 int sbi_ecall_vendor_ext_handler(struct sbi_scratch *scratch,
 				 unsigned long extid, unsigned long funcid,
 				 unsigned long *args, unsigned long *out_val,
-				 unsigned long *out_tcause,
-				 unsigned long *out_tval)
+				 struct sbi_trap_info *out_trap)
 {
 	return sbi_platform_vendor_ext_provider(sbi_platform_ptr(scratch),
-					       extid, funcid, args, out_val,
-					       out_tcause, out_tval);
+						extid, funcid, args,
+						out_val, out_trap);
 }
 
-int sbi_ecall_base_handler(struct sbi_scratch *scratch, unsigned long extid,
-			   unsigned long funcid, unsigned long *args,
-			   unsigned long *out_val, unsigned long *out_tcause,
-			   unsigned long *out_tval)
+int sbi_ecall_base_handler(struct sbi_scratch *scratch,
+			   unsigned long extid, unsigned long funcid,
+			   unsigned long *args, unsigned long *out_val,
+			   struct sbi_trap_info *out_trap)
 {
 	int ret = 0;
 
@@ -111,14 +110,13 @@ int sbi_ecall_base_handler(struct sbi_scratch *scratch, unsigned long extid,
 	return ret;
 }
 
-int sbi_ecall_0_1_handler(struct sbi_scratch *scratch, unsigned long extid,
-			   unsigned long *args, unsigned long *tval,
-			   unsigned long *tcause)
+int sbi_ecall_0_1_handler(struct sbi_scratch *scratch,
+			  unsigned long extid, unsigned long *args,
+			  struct sbi_trap_info *out_trap)
 {
 	int ret = 0;
 	struct sbi_tlb_info tlb_info;
 	u32 source_hart = sbi_current_hartid();
-	struct sbi_trap_info uptrap = {0};
 
 	switch (extid) {
 	case SBI_EXT_0_1_SET_TIMER:
@@ -139,7 +137,7 @@ int sbi_ecall_0_1_handler(struct sbi_scratch *scratch, unsigned long extid,
 		sbi_ipi_clear_smode(scratch);
 		break;
 	case SBI_EXT_0_1_SEND_IPI:
-		ret = sbi_ipi_send_many(scratch, &uptrap, (ulong *)args[0],
+		ret = sbi_ipi_send_many(scratch, out_trap, (ulong *)args[0],
 					SBI_IPI_EVENT_SOFT, NULL);
 		break;
 	case SBI_EXT_0_1_REMOTE_FENCE_I:
@@ -147,7 +145,7 @@ int sbi_ecall_0_1_handler(struct sbi_scratch *scratch, unsigned long extid,
 		tlb_info.size  = 0;
 		tlb_info.type  = SBI_ITLB_FLUSH;
 		tlb_info.shart_mask = 1UL << source_hart;
-		ret = sbi_ipi_send_many(scratch, &uptrap, (ulong *)args[0],
+		ret = sbi_ipi_send_many(scratch, out_trap, (ulong *)args[0],
 					SBI_IPI_EVENT_FENCE_I, &tlb_info);
 		break;
 	case SBI_EXT_0_1_REMOTE_SFENCE_VMA:
@@ -156,7 +154,7 @@ int sbi_ecall_0_1_handler(struct sbi_scratch *scratch, unsigned long extid,
 		tlb_info.type  = SBI_TLB_FLUSH_VMA;
 		tlb_info.shart_mask = 1UL << source_hart;
 
-		ret = sbi_ipi_send_many(scratch, &uptrap, (ulong *)args[0],
+		ret = sbi_ipi_send_many(scratch, out_trap, (ulong *)args[0],
 					SBI_IPI_EVENT_SFENCE_VMA, &tlb_info);
 		break;
 	case SBI_EXT_0_1_REMOTE_SFENCE_VMA_ASID:
@@ -166,7 +164,7 @@ int sbi_ecall_0_1_handler(struct sbi_scratch *scratch, unsigned long extid,
 		tlb_info.type  = SBI_TLB_FLUSH_VMA_ASID;
 		tlb_info.shart_mask = 1UL << source_hart;
 
-		ret = sbi_ipi_send_many(scratch, &uptrap, (ulong *)args[0],
+		ret = sbi_ipi_send_many(scratch, out_trap, (ulong *)args[0],
 					SBI_IPI_EVENT_SFENCE_VMA_ASID,
 					&tlb_info);
 		break;
@@ -177,10 +175,6 @@ int sbi_ecall_0_1_handler(struct sbi_scratch *scratch, unsigned long extid,
 		ret = SBI_ENOTSUPP;
 	};
 
-	if (ret == SBI_ETRAP) {
-		*tcause = uptrap.cause;
-		*tval = uptrap.tval;
-	}
 	return ret;
 }
 
@@ -204,18 +198,17 @@ int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 
 	if (extension_id >= SBI_EXT_0_1_SET_TIMER &&
 	    extension_id <= SBI_EXT_0_1_SHUTDOWN) {
-		ret = sbi_ecall_0_1_handler(scratch, extension_id, args,
-					    &trap.tval, &trap.cause);
+		ret = sbi_ecall_0_1_handler(scratch, extension_id,
+					    args, &trap);
 		is_0_1_spec = 1;
 	} else if (extension_id == SBI_EXT_BASE)
 		ret = sbi_ecall_base_handler(scratch, extension_id, func_id,
-					     args, &out_val,
-					     &trap.tval, &trap.cause);
+					     args, &out_val, &trap);
 	else if (extension_id >= SBI_EXT_VENDOR_START &&
 		extension_id <= SBI_EXT_VENDOR_END) {
 		ret = sbi_ecall_vendor_ext_handler(scratch, extension_id,
 						   func_id, args, &out_val,
-						   &trap.tval, &trap.cause);
+						   &trap);
 	} else {
 		ret = SBI_ENOTSUPP;
 	}
