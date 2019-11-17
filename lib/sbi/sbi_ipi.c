@@ -11,12 +11,13 @@
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_atomic.h>
 #include <sbi/riscv_barrier.h>
-#include <sbi/riscv_unpriv.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_tlb.h>
+#include <sbi/sbi_trap.h>
+#include <sbi/sbi_unpriv.h>
 
 static unsigned long ipi_data_off;
 
@@ -57,7 +58,8 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid, u32 event,
 	return 0;
 }
 
-int sbi_ipi_send_many(struct sbi_scratch *scratch, struct unpriv_trap *uptrap,
+int sbi_ipi_send_many(struct sbi_scratch *scratch,
+		      struct sbi_trap_info *uptrap,
 		      ulong *pmask, u32 event, void *data)
 {
 	ulong i, m;
@@ -65,7 +67,7 @@ int sbi_ipi_send_many(struct sbi_scratch *scratch, struct unpriv_trap *uptrap,
 	u32 hartid = sbi_current_hartid();
 
 	if (pmask) {
-		mask &= load_ulong(pmask, scratch, uptrap);
+		mask &= sbi_load_ulong(pmask, scratch, uptrap);
 		if (uptrap->cause)
 			return SBI_ETRAP;
 	}

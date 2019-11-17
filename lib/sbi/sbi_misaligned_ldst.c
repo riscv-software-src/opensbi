@@ -9,11 +9,11 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
-#include <sbi/riscv_unpriv.h>
 #include <sbi/riscv_fp.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_misaligned_ldst.h>
 #include <sbi/sbi_trap.h>
+#include <sbi/sbi_unpriv.h>
 
 union reg_data {
 	u8 data_bytes[8];
@@ -26,14 +26,15 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 				struct sbi_scratch *scratch)
 {
 	union reg_data val;
-	struct unpriv_trap uptrap;
+	struct sbi_trap_info uptrap;
 	ulong addr = csr_read(CSR_MTVAL);
 	int i, fp = 0, shift = 0, len = 0;
-	ulong insn = get_insn(regs->mepc, scratch, &uptrap);
+	ulong insn = sbi_get_insn(regs->mepc, scratch, &uptrap);
 
-	if (uptrap.cause)
-		return sbi_trap_redirect(regs, scratch, regs->mepc,
-					 uptrap.cause, uptrap.tval);
+	if (uptrap.cause) {
+		uptrap.epc = regs->mepc;
+		return sbi_trap_redirect(regs, &uptrap, scratch);
+	}
 
 	if ((insn & INSN_MASK_LW) == INSN_MATCH_LW) {
 		len   = 4;
@@ -96,17 +97,21 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 #endif
 #endif
 #endif
-	} else
-		return sbi_trap_redirect(regs, scratch, regs->mepc,
-					 mcause, addr);
+	} else {
+		uptrap.epc = regs->mepc;
+		uptrap.cause = mcause;
+		uptrap.tval = addr;
+		return sbi_trap_redirect(regs, &uptrap, scratch);
+	}
 
 	val.data_u64 = 0;
 	for (i = 0; i < len; i++) {
-		val.data_bytes[i] = load_u8((void *)(addr + i),
-					    scratch, &uptrap);
-		if (uptrap.cause)
-			return sbi_trap_redirect(regs, scratch, regs->mepc,
-						 uptrap.cause, uptrap.tval);
+		val.data_bytes[i] = sbi_load_u8((void *)(addr + i),
+						scratch, &uptrap);
+		if (uptrap.cause) {
+			uptrap.epc = regs->mepc;
+			return sbi_trap_redirect(regs, &uptrap, scratch);
+		}
 	}
 
 	if (!fp)
@@ -128,14 +133,15 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 				 struct sbi_scratch *scratch)
 {
 	union reg_data val;
-	struct unpriv_trap uptrap;
+	struct sbi_trap_info uptrap;
 	ulong addr = csr_read(CSR_MTVAL);
 	int i, len = 0;
-	ulong insn = get_insn(regs->mepc, scratch, &uptrap);
+	ulong insn = sbi_get_insn(regs->mepc, scratch, &uptrap);
 
-	if (uptrap.cause)
-		return sbi_trap_redirect(regs, scratch, regs->mepc,
-					 uptrap.cause, uptrap.tval);
+	if (uptrap.cause) {
+		uptrap.epc = regs->mepc;
+		return sbi_trap_redirect(regs, &uptrap, scratch);
+	}
 
 	val.data_ulong = GET_RS2(insn, regs);
 
@@ -189,16 +195,20 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 #endif
 #endif
 #endif
-	} else
-		return sbi_trap_redirect(regs, scratch, regs->mepc,
-					 mcause, addr);
+	} else {
+		uptrap.epc = regs->mepc;
+		uptrap.cause = mcause;
+		uptrap.tval = addr;
+		return sbi_trap_redirect(regs, &uptrap, scratch);
+	}
 
 	for (i = 0; i < len; i++) {
-		store_u8((void *)(addr + i), val.data_bytes[i],
-			 scratch, &uptrap);
-		if (uptrap.cause)
-			return sbi_trap_redirect(regs, scratch, regs->mepc,
-						 uptrap.cause, uptrap.tval);
+		sbi_store_u8((void *)(addr + i), val.data_bytes[i],
+			     scratch, &uptrap);
+		if (uptrap.cause) {
+			uptrap.epc = regs->mepc;
+			return sbi_trap_redirect(regs, &uptrap, scratch);
+		}
 	}
 
 	regs->mepc += INSN_LEN(insn);

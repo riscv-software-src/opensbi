@@ -11,7 +11,6 @@ libsbi-objs-y += riscv_asm.o
 libsbi-objs-y += riscv_atomic.o
 libsbi-objs-y += riscv_hardfp.o
 libsbi-objs-y += riscv_locks.o
-libsbi-objs-y += riscv_unpriv.o
 
 libsbi-objs-y += sbi_console.o
 libsbi-objs-y += sbi_ecall.o
@@ -28,3 +27,4 @@ libsbi-objs-y += sbi_timer.o
 libsbi-objs-y += sbi_tlb.o
 libsbi-objs-y += sbi_trap.o
 libsbi-objs-y += sbi_string.o
+libsbi-objs-y += sbi_unpriv.o

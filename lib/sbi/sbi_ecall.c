@@ -118,7 +118,7 @@ int sbi_ecall_0_1_handler(struct sbi_scratch *scratch, unsigned long extid,
 	int ret = 0;
 	struct sbi_tlb_info tlb_info;
 	u32 source_hart = sbi_current_hartid();
-	struct unpriv_trap uptrap = {0};
+	struct sbi_trap_info uptrap = {0};
 
 	switch (extid) {
 	case SBI_EXT_0_1_SET_TIMER:
@@ -190,9 +190,8 @@ int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 	int ret = 0;
 	unsigned long extension_id = regs->a7;
 	unsigned long func_id = regs->a6;
+	struct sbi_trap_info trap = {0};
 	unsigned long out_val;
-	unsigned long out_tval;
-	unsigned long out_tcause;
 	bool is_0_1_spec = 0;
 	unsigned long args[6];
 
@@ -206,24 +205,24 @@ int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 	if (extension_id >= SBI_EXT_0_1_SET_TIMER &&
 	    extension_id <= SBI_EXT_0_1_SHUTDOWN) {
 		ret = sbi_ecall_0_1_handler(scratch, extension_id, args,
-					    &out_tval, &out_tcause);
+					    &trap.tval, &trap.cause);
 		is_0_1_spec = 1;
 	} else if (extension_id == SBI_EXT_BASE)
 		ret = sbi_ecall_base_handler(scratch, extension_id, func_id,
 					     args, &out_val,
-					     &out_tval, &out_tcause);
+					     &trap.tval, &trap.cause);
 	else if (extension_id >= SBI_EXT_VENDOR_START &&
 		extension_id <= SBI_EXT_VENDOR_END) {
 		ret = sbi_ecall_vendor_ext_handler(scratch, extension_id,
 						   func_id, args, &out_val,
-						   &out_tval, &out_tcause);
+						   &trap.tval, &trap.cause);
 	} else {
 		ret = SBI_ENOTSUPP;
 	}
 
 	if (ret == SBI_ETRAP) {
-		sbi_trap_redirect(regs, scratch, regs->mepc,
-				  out_tcause, out_tval);
+		trap.epc = regs->mepc;
+		sbi_trap_redirect(regs, &trap, scratch);
 	} else {
 		/* This function should return non-zero value only in case of
 		 * fatal error. However, there is no good way to distinguish

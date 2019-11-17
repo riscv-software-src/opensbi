@@ -9,7 +9,6 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
-#include <sbi/riscv_unpriv.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_error.h>
@@ -69,15 +68,14 @@ static void __noreturn sbi_trap_error(const char *msg, int rc, u32 hartid,
  * Redirect trap to lower privledge mode (S-mode or U-mode)
  *
  * @param regs pointer to register state
+ * @param trap pointer to trap details
  * @param scratch pointer to sbi_scratch of current HART
- * @param epc error PC for lower privledge mode
- * @param cause exception cause for lower privledge mode
- * @param tval trap value for lower privledge mode
  *
  * @return 0 on success and negative error code on failure
  */
-int sbi_trap_redirect(struct sbi_trap_regs *regs, struct sbi_scratch *scratch,
-		      ulong epc, ulong cause, ulong tval)
+int sbi_trap_redirect(struct sbi_trap_regs *regs,
+		      struct sbi_trap_info *trap,
+		      struct sbi_scratch *scratch)
 {
 	ulong hstatus, vsstatus, prev_mode;
 #if __riscv_xlen == 32
@@ -97,7 +95,7 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs, struct sbi_scratch *scratch,
 
 	/* For certain exceptions from VS/VU-mode we redirect to VS-mode */
 	if (misa_extension('H') && prev_virt && !prev_stage2) {
-		switch (cause) {
+		switch (trap->cause) {
 		case CAUSE_FETCH_PAGE_FAULT:
 		case CAUSE_LOAD_PAGE_FAULT:
 		case CAUSE_STORE_PAGE_FAULT:
@@ -137,9 +135,9 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs, struct sbi_scratch *scratch,
 	/* Update exception related CSRs */
 	if (next_virt) {
 		/* Update VS-mode exception info */
-		csr_write(CSR_VSTVAL, tval);
-		csr_write(CSR_VSEPC, epc);
-		csr_write(CSR_VSCAUSE, cause);
+		csr_write(CSR_VSTVAL, trap->tval);
+		csr_write(CSR_VSEPC, trap->epc);
+		csr_write(CSR_VSCAUSE, trap->cause);
 
 		/* Set MEPC to VS-mode exception vector base */
 		regs->mepc = csr_read(CSR_VSTVEC);
@@ -168,9 +166,9 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs, struct sbi_scratch *scratch,
 		csr_write(CSR_VSSTATUS, vsstatus);
 	} else {
 		/* Update S-mode exception info */
-		csr_write(CSR_STVAL, tval);
-		csr_write(CSR_SEPC, epc);
-		csr_write(CSR_SCAUSE, cause);
+		csr_write(CSR_STVAL, trap->tval);
+		csr_write(CSR_SEPC, trap->epc);
+		csr_write(CSR_SCAUSE, trap->cause);
 
 		/* Set MEPC to S-mode exception vector base */
 		regs->mepc = csr_read(CSR_STVEC);
@@ -211,14 +209,15 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs, struct sbi_scratch *scratch,
  * @param regs pointer to register state
  * @param scratch pointer to sbi_scratch of current HART
  */
-void sbi_trap_handler(struct sbi_trap_regs *regs, struct sbi_scratch *scratch)
+void sbi_trap_handler(struct sbi_trap_regs *regs,
+		      struct sbi_scratch *scratch)
 {
 	int rc = SBI_ENOTSUPP;
 	const char *msg = "trap handler failed";
 	u32 hartid = sbi_current_hartid();
 	ulong mcause = csr_read(CSR_MCAUSE);
 	ulong mtval = csr_read(CSR_MTVAL);
-	struct unpriv_trap *uptrap;
+	struct sbi_trap_info trap, *uptrap;
 
 	if (mcause & (1UL << (__riscv_xlen - 1))) {
 		mcause &= ~(1UL << (__riscv_xlen - 1));
@@ -262,19 +261,24 @@ void sbi_trap_handler(struct sbi_trap_regs *regs, struct sbi_scratch *scratch)
 		uptrap = sbi_hart_get_trap_info(scratch);
 		if ((regs->mstatus & MSTATUS_MPRV) && uptrap) {
 			rc = 0;
+			uptrap->epc = regs->mepc;
 			regs->mepc += 4;
 			uptrap->cause = mcause;
 			uptrap->tval = mtval;
 		} else {
-			rc = sbi_trap_redirect(regs, scratch, regs->mepc,
-					       mcause, mtval);
+			trap.epc = regs->mepc;
+			trap.cause = mcause;
+			trap.tval = mtval;
+			rc = sbi_trap_redirect(regs, &trap, scratch);
 		}
 		msg = "page/access fault handler failed";
 		break;
 	default:
 		/* If the trap came from S or U mode, redirect it there */
-		rc = sbi_trap_redirect(regs, scratch, regs->mepc,
-				       mcause, mtval);
+		trap.epc = regs->mepc;
+		trap.cause = mcause;
+		trap.tval = mtval;
+		rc = sbi_trap_redirect(regs, &trap, scratch);
 		break;
 	};
 

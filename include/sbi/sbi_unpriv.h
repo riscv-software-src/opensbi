@@ -7,27 +7,23 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
-#ifndef __RISCV_UNPRIV_H__
-#define __RISCV_UNPRIV_H__
+#ifndef __SBI_UNPRIV_H__
+#define __SBI_UNPRIV_H__
 
 #include <sbi/sbi_types.h>
 
 struct sbi_scratch;
+struct sbi_trap_info;
 
-struct unpriv_trap {
-	unsigned long cause;
-	unsigned long tval;
-};
+#define DECLARE_UNPRIVILEGED_LOAD_FUNCTION(type)           \
+	type sbi_load_##type(const type *addr,             \
+			     struct sbi_scratch *scratch,  \
+			     struct sbi_trap_info *trap);
 
-#define DECLARE_UNPRIVILEGED_LOAD_FUNCTION(type)       \
-	type load_##type(const type *addr,             \
-			 struct sbi_scratch *scratch,  \
-			 struct unpriv_trap *trap);
-
-#define DECLARE_UNPRIVILEGED_STORE_FUNCTION(type)      \
-	void store_##type(type *addr, type val,        \
-			  struct sbi_scratch *scratch, \
-			  struct unpriv_trap *trap);
+#define DECLARE_UNPRIVILEGED_STORE_FUNCTION(type)          \
+	void sbi_store_##type(type *addr, type val,        \
+			      struct sbi_scratch *scratch, \
+			      struct sbi_trap_info *trap);
 
 DECLARE_UNPRIVILEGED_LOAD_FUNCTION(u8)
 DECLARE_UNPRIVILEGED_LOAD_FUNCTION(u16)
@@ -42,7 +38,7 @@ DECLARE_UNPRIVILEGED_LOAD_FUNCTION(u64)
 DECLARE_UNPRIVILEGED_STORE_FUNCTION(u64)
 DECLARE_UNPRIVILEGED_LOAD_FUNCTION(ulong)
 
-ulong get_insn(ulong mepc, struct sbi_scratch *scratch,
-	       struct unpriv_trap *trap);
+ulong sbi_get_insn(ulong mepc, struct sbi_scratch *scratch,
+		   struct sbi_trap_info *trap);
 
 #endif
