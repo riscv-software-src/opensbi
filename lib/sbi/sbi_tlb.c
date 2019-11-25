@@ -16,6 +16,7 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_tlb.h>
+#include <sbi/sbi_hfence.h>
 #include <sbi/sbi_string.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_platform.h>
@@ -28,6 +29,38 @@ static unsigned long tlb_range_flush_limit;
 static void sbi_tlb_flush_all(void)
 {
 	__asm__ __volatile("sfence.vma");
+}
+
+static void sbi_tlb_fifo_hfence_vvma(struct sbi_tlb_info *tinfo)
+{
+	unsigned long start = tinfo->start;
+	unsigned long size  = tinfo->size;
+	unsigned long i;
+
+	if ((start == 0 && size == 0) || (size == SBI_TLB_FLUSH_ALL)) {
+		__sbi_hfence_vvma_all();
+		return;
+	}
+
+	for (i = 0; i < size; i += PAGE_SIZE) {
+		__sbi_hfence_vvma_va(start+i);
+	}
+}
+
+static void sbi_tlb_fifo_hfence_gvma(struct sbi_tlb_info *tinfo)
+{
+	unsigned long start = tinfo->start;
+	unsigned long size  = tinfo->size;
+	unsigned long i;
+
+	if ((start == 0 && size == 0) || (size == SBI_TLB_FLUSH_ALL)) {
+		__sbi_hfence_gvma_all();
+		return;
+	}
+
+	for (i = 0; i < size; i += PAGE_SIZE) {
+		__sbi_hfence_gvma_gpa(start+i);
+	}
 }
 
 static void sbi_tlb_fifo_sfence_vma(struct sbi_tlb_info *tinfo)
@@ -46,6 +79,50 @@ static void sbi_tlb_fifo_sfence_vma(struct sbi_tlb_info *tinfo)
 				     :
 				     : "r"(start + i)
 				     : "memory");
+	}
+}
+
+static void sbi_tlb_fifo_hfence_vvma_asid(struct sbi_tlb_info *tinfo)
+{
+	unsigned long start = tinfo->start;
+	unsigned long size  = tinfo->size;
+	unsigned long asid  = tinfo->asid;
+	unsigned long i;
+
+	if (start == 0 && size == 0) {
+		__sbi_hfence_vvma_all();
+		return;
+	}
+
+	if (size == SBI_TLB_FLUSH_ALL) {
+		__sbi_hfence_vvma_asid(asid);
+		return;
+	}
+
+	for (i = 0; i < size; i += PAGE_SIZE) {
+		__sbi_hfence_vvma_asid_va(asid, start + i);
+	}
+}
+
+static void sbi_tlb_fifo_hfence_gvma_vmid(struct sbi_tlb_info *tinfo)
+{
+	unsigned long start = tinfo->start;
+	unsigned long size  = tinfo->size;
+	unsigned long vmid  = tinfo->asid;
+	unsigned long i;
+
+	if (start == 0 && size == 0) {
+		__sbi_hfence_gvma_all();
+		return;
+	}
+
+	if (size == SBI_TLB_FLUSH_ALL) {
+		__sbi_hfence_gvma_vmid(vmid);
+		return;
+	}
+
+	for (i = 0; i < size; i += PAGE_SIZE) {
+		__sbi_hfence_gvma_vmid_gpa(vmid, start+i);
 	}
 }
 
@@ -80,15 +157,32 @@ static void sbi_tlb_fifo_sfence_vma_asid(struct sbi_tlb_info *tinfo)
 
 static void sbi_tlb_local_flush(struct sbi_tlb_info *tinfo)
 {
-	if (tinfo->type == SBI_TLB_FLUSH_VMA) {
+	switch (tinfo->type) {
+	case SBI_TLB_FLUSH_VMA:
 		sbi_tlb_fifo_sfence_vma(tinfo);
-	} else if (tinfo->type == SBI_TLB_FLUSH_VMA_ASID) {
+		break;
+	case SBI_TLB_FLUSH_VMA_ASID:
 		sbi_tlb_fifo_sfence_vma_asid(tinfo);
-	} else if (tinfo->type == SBI_ITLB_FLUSH)
+		break;
+	case SBI_TLB_FLUSH_GVMA:
+		sbi_tlb_fifo_hfence_gvma(tinfo);
+		break;
+	case SBI_TLB_FLUSH_GVMA_VMID:
+		sbi_tlb_fifo_hfence_gvma_vmid(tinfo);
+		break;
+	case SBI_TLB_FLUSH_VVMA:
+		sbi_tlb_fifo_hfence_vvma(tinfo);
+		break;
+	case SBI_TLB_FLUSH_VVMA_ASID:
+		sbi_tlb_fifo_hfence_vvma_asid(tinfo);
+		break;
+	case SBI_ITLB_FLUSH:
 		__asm__ __volatile("fence.i");
-	else
+		break;
+	default:
 		sbi_printf("Invalid tlb flush request type [%lu]\n",
 			   tinfo->type);
+	}
 	return;
 }
 
