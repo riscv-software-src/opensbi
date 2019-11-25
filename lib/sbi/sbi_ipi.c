@@ -11,13 +11,13 @@
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_atomic.h>
 #include <sbi/riscv_barrier.h>
+#include <sbi/sbi_bitops.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_tlb.h>
 #include <sbi/sbi_trap.h>
-#include <sbi/sbi_unpriv.h>
 
 static unsigned long ipi_data_off;
 
@@ -53,20 +53,34 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid, u32 event,
 	return 0;
 }
 
-int sbi_ipi_send_many(struct sbi_scratch *scratch,
-		      struct sbi_trap_info *uptrap,
-		      ulong *pmask, u32 event, void *data)
+/**
+ * As this this function only handlers scalar values of hart mask, it must be
+ * set to all online harts if the intention is to send IPIs to all the harts.
+ * If hmask is zero, no IPIs will be sent.
+ */
+int sbi_ipi_send_many(struct sbi_scratch *scratch, ulong hmask, ulong hbase,
+			u32 event, void *data)
 {
 	ulong i, m;
 	ulong mask = sbi_hart_available_mask();
+	ulong tempmask;
 	u32 hartid = sbi_current_hartid();
+	unsigned long last_bit = __fls(mask);
 
-	if (pmask) {
-		mask &= sbi_load_ulong(pmask, scratch, uptrap);
-		if (uptrap->cause)
-			return SBI_ETRAP;
-	}
+	if (hbase > last_bit)
+		/* hart base is not available */
+		return SBI_EINVAL;
+	/**
+	 * FIXME: This check is valid only ULONG size. This is oka for now as
+	 * avaialble hart mask can support upto ULONG size only.
+	 */
+	tempmask = hmask << hbase;
+	tempmask = ~mask & tempmask;
+	if (tempmask)
+		/* at least one of the hart in hmask is not available */
+		return SBI_EINVAL;
 
+	mask &= (hmask << hbase);
 	/* Send IPIs to every other hart on the set */
 	for (i = 0, m = mask; m; i++, m >>= 1)
 		if ((m & 1UL) && (i != hartid))
