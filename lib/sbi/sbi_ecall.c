@@ -47,8 +47,9 @@ int sbi_check_extension(struct sbi_scratch *scratch, unsigned long extid,
 	 * TODO: Implement it.
 	 */
 
-	if ((extid >= SBI_EXT_0_1_SET_TIMER &&
-	    extid <= SBI_EXT_0_1_SHUTDOWN) || (extid == SBI_EXT_BASE)) {
+	if ((extid >= SBI_EXT_0_1_SET_TIMER && extid <= SBI_EXT_0_1_SHUTDOWN) ||
+	    (extid == SBI_EXT_BASE) ||
+	    (extid == SBI_EXT_TIME)) {
 		*out_val = 1;
 	} else if (extid >= SBI_EXT_VENDOR_START &&
 		   extid <= SBI_EXT_VENDOR_END) {
@@ -111,9 +112,26 @@ int sbi_ecall_base_handler(struct sbi_scratch *scratch,
 	return ret;
 }
 
-int sbi_ecall_0_1_handler(struct sbi_scratch *scratch,
-			  unsigned long extid, unsigned long *args,
-			  struct sbi_trap_info *out_trap)
+int sbi_ecall_time_handler(struct sbi_scratch *scratch, unsigned long funcid,
+			   unsigned long *args)
+{
+	int ret = 0;
+
+	if (funcid == SBI_EXT_TIME_SET_TIMER) {
+#if __riscv_xlen == 32
+		sbi_timer_event_start(scratch,
+				      (((u64)args[1] << 32) | (u64)args[0]));
+#else
+		sbi_timer_event_start(scratch, (u64)args[0]);
+#endif
+	} else
+		ret = SBI_ENOTSUPP;
+
+	return ret;
+}
+
+int sbi_ecall_0_1_handler(struct sbi_scratch *scratch, unsigned long extid,
+			   unsigned long *args, struct sbi_trap_info *out_trap)
 {
 	int ret = 0;
 	struct sbi_tlb_info tlb_info;
@@ -205,6 +223,8 @@ int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 	} else if (extension_id == SBI_EXT_BASE)
 		ret = sbi_ecall_base_handler(scratch, extension_id, func_id,
 					     args, &out_val, &trap);
+	else if (extension_id == SBI_EXT_TIME)
+		ret = sbi_ecall_time_handler(scratch, func_id, args);
 	else if (extension_id >= SBI_EXT_VENDOR_START &&
 		extension_id <= SBI_EXT_VENDOR_END) {
 		ret = sbi_ecall_vendor_ext_handler(scratch, extension_id,
