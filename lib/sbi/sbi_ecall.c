@@ -147,7 +147,7 @@ int sbi_ecall_0_1_handler(struct sbi_scratch *scratch,
 		tlb_info.type  = SBI_ITLB_FLUSH;
 		tlb_info.shart_mask = 1UL << source_hart;
 		ret = sbi_ipi_send_many(scratch, out_trap, (ulong *)args[0],
-					SBI_IPI_EVENT_FENCE_I, &tlb_info);
+					SBI_IPI_EVENT_FENCE, &tlb_info);
 		break;
 	case SBI_EXT_0_1_REMOTE_SFENCE_VMA:
 		tlb_info.start = (unsigned long)args[1];
@@ -156,7 +156,7 @@ int sbi_ecall_0_1_handler(struct sbi_scratch *scratch,
 		tlb_info.shart_mask = 1UL << source_hart;
 
 		ret = sbi_ipi_send_many(scratch, out_trap, (ulong *)args[0],
-					SBI_IPI_EVENT_SFENCE_VMA, &tlb_info);
+					SBI_IPI_EVENT_FENCE, &tlb_info);
 		break;
 	case SBI_EXT_0_1_REMOTE_SFENCE_VMA_ASID:
 		tlb_info.start = (unsigned long)args[1];
@@ -166,7 +166,7 @@ int sbi_ecall_0_1_handler(struct sbi_scratch *scratch,
 		tlb_info.shart_mask = 1UL << source_hart;
 
 		ret = sbi_ipi_send_many(scratch, out_trap, (ulong *)args[0],
-					SBI_IPI_EVENT_SFENCE_VMA_ASID,
+					SBI_IPI_EVENT_FENCE,
 					&tlb_info);
 		break;
 	case SBI_EXT_0_1_SHUTDOWN:

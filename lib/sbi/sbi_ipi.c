@@ -38,9 +38,7 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid, u32 event,
 	 */
 	remote_scratch = sbi_hart_id_to_scratch(scratch, hartid);
 	ipi_data = sbi_scratch_offset_ptr(remote_scratch, ipi_data_off);
-	if (event == SBI_IPI_EVENT_SFENCE_VMA ||
-	    event == SBI_IPI_EVENT_SFENCE_VMA_ASID ||
-	    event == SBI_IPI_EVENT_FENCE_I ) {
+	if (event == SBI_IPI_EVENT_FENCE) {
 		ret = sbi_tlb_fifo_update(remote_scratch, hartid, data);
 		if (ret < 0)
 			return ret;
@@ -49,11 +47,8 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid, u32 event,
 	smp_wmb();
 	sbi_platform_ipi_send(plat, hartid);
 
-	if (event == SBI_IPI_EVENT_SFENCE_VMA ||
-	    event == SBI_IPI_EVENT_SFENCE_VMA_ASID ||
-	    event == SBI_IPI_EVENT_FENCE_I ) {
+	if (event == SBI_IPI_EVENT_FENCE)
 		sbi_tlb_fifo_sync(scratch);
-	}
 
 	return 0;
 }
@@ -113,9 +108,7 @@ void sbi_ipi_process(struct sbi_scratch *scratch)
 		case SBI_IPI_EVENT_SOFT:
 			csr_set(CSR_MIP, MIP_SSIP);
 			break;
-		case SBI_IPI_EVENT_FENCE_I:
-		case SBI_IPI_EVENT_SFENCE_VMA:
-		case SBI_IPI_EVENT_SFENCE_VMA_ASID:
+		case SBI_IPI_EVENT_FENCE:
 			sbi_tlb_fifo_process(scratch);
 			break;
 		case SBI_IPI_EVENT_HALT:

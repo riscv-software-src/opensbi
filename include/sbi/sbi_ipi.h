@@ -15,9 +15,7 @@
 /* clang-format off */
 
 #define SBI_IPI_EVENT_SOFT			0x1
-#define SBI_IPI_EVENT_FENCE_I			0x2
-#define SBI_IPI_EVENT_SFENCE_VMA		0x4
-#define SBI_IPI_EVENT_SFENCE_VMA_ASID		0x8
+#define SBI_IPI_EVENT_FENCE			0x2
 #define SBI_IPI_EVENT_HALT			0x10
 
 /* clang-format on */
