@@ -103,6 +103,7 @@ int sbi_ecall_base_handler(struct sbi_scratch *scratch,
 		break;
 	case SBI_EXT_BASE_PROBE_EXT:
 		ret = sbi_check_extension(scratch, args[0], out_val);
+		break;
 	default:
 		ret = SBI_ENOTSUPP;
 	}
