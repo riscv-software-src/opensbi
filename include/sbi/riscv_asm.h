@@ -159,22 +159,18 @@ void csr_write_num(int csr_num, unsigned long val);
 		__asm__ __volatile__("wfi" ::: "memory"); \
 	} while (0)
 
-static inline int misa_extension(char ext)
-{
-	return csr_read(CSR_MISA) & (1 << (ext - 'A'));
-}
+/* Determine CPU extension, return non-zero support */
+int misa_extension(char ext);
 
-static inline int misa_xlen(void)
-{
-	return ((long)csr_read(CSR_MISA) < 0) ? 64 : 32;
-}
+/* Get MXL field of misa, return -1 on error */
+int misa_xlen(void);
 
 static inline void misa_string(char *out, unsigned int out_sz)
 {
-	unsigned long i, val = csr_read(CSR_MISA);
+	unsigned long i;
 
 	for (i = 0; i < 26; i++) {
-		if (val & (1 << i)) {
+		if (misa_extension('A' + i)) {
 			*out = 'A' + i;
 			out++;
 		}

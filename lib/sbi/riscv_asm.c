@@ -10,6 +10,38 @@
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_platform.h>
+
+int misa_extension(char ext)
+{
+	unsigned long misa = csr_read(CSR_MISA);
+
+	if (misa)
+		return misa & (1 << (ext - 'A'));
+
+	return sbi_platform_misa_extension(sbi_platform_thishart_ptr(), ext);
+}
+
+int misa_xlen(void)
+{
+	long r;
+
+	if (csr_read(CSR_MISA) == 0)
+		return sbi_platform_misa_xlen(sbi_platform_thishart_ptr());
+
+	__asm__ __volatile__(
+		"csrr   t0, misa\n\t"
+		"slti   t1, t0, 0\n\t"
+		"slli   t1, t1, 1\n\t"
+		"slli   t0, t0, 1\n\t"
+		"slti   t0, t0, 0\n\t"
+		"add    %0, t0, t1"
+		: "=r"(r)
+		:
+		: "t0", "t1");
+
+	return r ? r : -1;
+}
 
 unsigned long csr_read_num(int csr_num)
 {

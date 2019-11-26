@@ -30,10 +30,10 @@
 
 static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 {
+	int xlen;
 	char str[64];
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	misa_string(str, sizeof(str));
 #ifdef OPENSBI_VERSION_GIT
 	sbi_printf("\nOpenSBI %s\n", OPENSBI_VERSION_GIT);
 #else
@@ -43,9 +43,18 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 
 	sbi_printf(BANNER);
 
+	/* Determine MISA XLEN and MISA string */
+	xlen = misa_xlen();
+	if (xlen < 1) {
+		sbi_printf("Error %d getting MISA XLEN\n", xlen);
+		sbi_hart_hang();
+	}
+	xlen = 16 * (1 << xlen);
+	misa_string(str, sizeof(str));
+
 	/* Platform details */
 	sbi_printf("Platform Name          : %s\n", sbi_platform_name(plat));
-	sbi_printf("Platform HART Features : RV%d%s\n", misa_xlen(), str);
+	sbi_printf("Platform HART Features : RV%d%s\n", xlen, str);
 	sbi_printf("Platform Max HARTs     : %d\n",
 		   sbi_platform_hart_count(plat));
 	sbi_printf("Current Hart           : %u\n", hartid);

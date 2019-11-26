@@ -76,6 +76,16 @@ struct sbi_platform_operations {
 	/** Platform final initialization */
 	int (*final_init)(bool cold_boot);
 
+	/** For platforms that do not implement misa, non-standard
+	 * methods are needed to determine cpu extension.
+	 */
+	int (*misa_check_extension)(char ext);
+
+	/** For platforms that do not implement misa, non-standard
+	 * methods are needed to get MXL field of misa.
+	 */
+	int (*misa_get_xlen)(void);
+
 	/** Get number of PMP regions for given HART */
 	u32 (*pmp_region_count)(u32 hartid);
 	/**
@@ -289,6 +299,36 @@ static inline int sbi_platform_final_init(const struct sbi_platform *plat,
 	if (plat && sbi_platform_ops(plat)->final_init)
 		return sbi_platform_ops(plat)->final_init(cold_boot);
 	return 0;
+}
+
+/**
+ * Check CPU extension in MISA
+ *
+ * @param plat pointer to struct sbi_platform
+ * @param ext shorthand letter for CPU extensions
+ *
+ * @return zero for not-supported and non-zero for supported
+ */
+static inline int sbi_platform_misa_extension(const struct sbi_platform *plat,
+					      char ext)
+{
+	if (plat && sbi_platform_ops(plat)->misa_check_extension)
+		return sbi_platform_ops(plat)->misa_check_extension(ext);
+	return 0;
+}
+
+/**
+ * Get MXL field of MISA
+ *
+ * @param plat pointer to struct sbi_platform
+ *
+ * @return 1/2/3 on success and error code on failure
+ */
+static inline int sbi_platform_misa_xlen(const struct sbi_platform *plat)
+{
+	if (plat && sbi_platform_ops(plat)->misa_get_xlen)
+		return sbi_platform_ops(plat)->misa_get_xlen();
+	return -1;
 }
 
 /**
