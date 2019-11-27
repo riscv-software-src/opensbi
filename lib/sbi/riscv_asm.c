@@ -12,7 +12,8 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_platform.h>
 
-int misa_extension(char ext)
+/* determine CPU extension, return non-zero support */
+int misa_extension_imp(char ext)
 {
 	unsigned long misa = csr_read(CSR_MISA);
 
