@@ -200,13 +200,13 @@ struct sbi_platform {
  *
  * @param plat pointer to struct sbi_platform
  *
- * @return pointer to platform name on success and NULL on failure
+ * @return pointer to platform name on success and "Unknown" on failure
  */
 static inline const char *sbi_platform_name(const struct sbi_platform *plat)
 {
 	if (plat)
 		return plat->name;
-	return NULL;
+	return "Unknown";
 }
 
 /**
