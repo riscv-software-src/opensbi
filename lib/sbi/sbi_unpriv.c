@@ -169,6 +169,10 @@ ulong sbi_get_insn(ulong mepc, struct sbi_scratch *scratch,
 		trap->cause = CAUSE_FETCH_PAGE_FAULT;
 		trap->tval = mepc;
 		break;
+	case CAUSE_LOAD_GUEST_PAGE_FAULT:
+		trap->cause = CAUSE_FETCH_GUEST_PAGE_FAULT;
+		trap->tval = mepc;
+		break;
 	default:
 		break;
 	};
