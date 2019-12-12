@@ -178,6 +178,10 @@ struct sbi_trap_info {
 	unsigned long cause;
 	/** tval Trap value */
 	unsigned long tval;
+	/** tval2 Trap value 2 */
+	unsigned long tval2;
+	/** tinst Trap instruction */
+	unsigned long tinst;
 };
 
 struct sbi_scratch;

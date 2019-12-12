@@ -24,6 +24,8 @@
 		trap->epc = 0;                                                \
 		trap->cause = 0;                                              \
 		trap->tval = 0;                                               \
+		trap->tval2 = 0;                                              \
+		trap->tinst = 0;                                              \
 		sbi_hart_set_trap_info(scratch, trap);                        \
 		asm volatile(                                                 \
 			"csrrs %0, " STR(CSR_MSTATUS) ", %3\n"                \
@@ -47,6 +49,8 @@
 		trap->epc = 0;                                                \
 		trap->cause = 0;                                              \
 		trap->tval = 0;                                               \
+		trap->tval2 = 0;                                              \
+		trap->tinst = 0;                                              \
 		sbi_hart_set_trap_info(scratch, trap);                        \
 		asm volatile(                                                 \
 			"csrrs %0, " STR(CSR_MSTATUS) ", %3\n"                \
@@ -117,6 +121,8 @@ ulong sbi_get_insn(ulong mepc, struct sbi_scratch *scratch,
 	trap->epc = 0;
 	trap->cause = 0;
 	trap->tval = 0;
+	trap->tval2 = 0;
+	trap->tinst = 0;
 	sbi_hart_set_trap_info(scratch, trap);
 
 #ifndef __riscv_compressed
