@@ -29,6 +29,8 @@ static int truly_illegal_insn(ulong insn, u32 hartid, ulong mcause,
 	trap.epc = regs->mepc;
 	trap.cause = mcause;
 	trap.tval = insn;
+	trap.tval2 = 0;
+	trap.tinst = 0;
 
 	return sbi_trap_redirect(regs, &trap, scratch);
 }
@@ -131,11 +133,10 @@ static illegal_insn_func illegal_insn_table[32] = {
 	truly_illegal_insn  /* 31 */
 };
 
-int sbi_illegal_insn_handler(u32 hartid, ulong mcause,
+int sbi_illegal_insn_handler(u32 hartid, ulong mcause, ulong insn,
 			     struct sbi_trap_regs *regs,
 			     struct sbi_scratch *scratch)
 {
-	ulong insn = csr_read(CSR_MTVAL);
 	struct sbi_trap_info uptrap;
 
 	if (unlikely((insn & 3) != 3)) {

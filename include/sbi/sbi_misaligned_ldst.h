@@ -16,10 +16,12 @@ struct sbi_trap_regs;
 struct sbi_scratch;
 
 int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
+				ulong addr, ulong tval2, ulong tinst,
 				struct sbi_trap_regs *regs,
 				struct sbi_scratch *scratch);
 
 int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
+				 ulong addr, ulong tval2, ulong tinst,
 				 struct sbi_trap_regs *regs,
 				 struct sbi_scratch *scratch);
 

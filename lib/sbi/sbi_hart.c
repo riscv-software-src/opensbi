@@ -277,7 +277,6 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 #if __riscv_xlen == 32
 	if (misa_extension('H')) {
 		valH = csr_read(CSR_MSTATUSH);
-		valH = INSERT_FIELD(valH, MSTATUSH_MTL, 0);
 		if (next_virt)
 			valH = INSERT_FIELD(valH, MSTATUSH_MPV, 1);
 		else
@@ -286,7 +285,6 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 	}
 #else
 	if (misa_extension('H')) {
-		val = INSERT_FIELD(val, MSTATUS_MTL, 0);
 		if (next_virt)
 			val = INSERT_FIELD(val, MSTATUS_MPV, 1);
 		else
