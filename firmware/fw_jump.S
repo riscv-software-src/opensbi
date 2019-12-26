@@ -56,7 +56,7 @@ fw_next_arg1:
 #ifdef FW_JUMP_FDT_ADDR
 	li	a0, FW_JUMP_FDT_ADDR
 #else
-	add	a0, zero, zero
+	add	a0, a1, zero
 #endif
 	ret
 
