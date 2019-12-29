@@ -38,8 +38,8 @@ follows:
 * **FW_JUMP_FDT_ADDR** - Address where the *flattened device tree (FDT file)*
   passed by the prior booting stage will be placed in memory before executing
   the booting stage following the OpenSBI firmware. If this option is not
-  provided, then the OpenSBI firmware will pass zero as the FDT address to the
-  following booting stage.
+  provided, then the OpenSBI firmware will pass the FDT address passed by the
+  previous booting stage to the next booting stage.
 
 *FW_JUMP* Example
 -----------------
