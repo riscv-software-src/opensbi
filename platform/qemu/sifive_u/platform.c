@@ -113,7 +113,7 @@ static int sifive_u_timer_init(bool cold_boot)
 
 	if (cold_boot) {
 		rc = clint_cold_timer_init(SIFIVE_U_CLINT_ADDR,
-					   SIFIVE_U_HART_COUNT);
+					   SIFIVE_U_HART_COUNT, TRUE);
 		if (rc)
 			return rc;
 	}

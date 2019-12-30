@@ -145,7 +145,7 @@ static int ariane_timer_init(bool cold_boot)
 
 	if (cold_boot) {
 		ret = clint_cold_timer_init(ARIANE_CLINT_ADDR,
-							ARIANE_HART_COUNT);
+					    ARIANE_HART_COUNT, TRUE);
 		if (ret)
 			return ret;
 	}

@@ -88,7 +88,7 @@ static int k210_timer_init(bool cold_boot)
 
 	if (cold_boot) {
 		rc = clint_cold_timer_init(K210_CLINT_BASE_ADDR,
-					   K210_HART_COUNT);
+					   K210_HART_COUNT, TRUE);
 		if (rc)
 			return rc;
 	}

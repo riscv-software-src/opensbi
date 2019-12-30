@@ -143,7 +143,7 @@ static int platform_timer_init(bool cold_boot)
 	/* Example if the generic CLINT driver is used */
 	if (cold_boot) {
 		ret = clint_cold_timer_init(PLATFORM_CLINT_ADDR,
-					    PLATFORM_HART_COUNT);
+					    PLATFORM_HART_COUNT, TRUE);
 		if (ret)
 			return ret;
 	}

@@ -30,6 +30,7 @@ void clint_timer_event_start(u64 next_event);
 
 int clint_warm_timer_init(void);
 
-int clint_cold_timer_init(unsigned long base, u32 hart_count);
+int clint_cold_timer_init(unsigned long base, u32 hart_count,
+			  bool has_64bit_mmio);
 
 #endif

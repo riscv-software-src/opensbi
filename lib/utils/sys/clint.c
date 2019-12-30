@@ -62,25 +62,45 @@ static volatile void *clint_time_base;
 static volatile u64 *clint_time_val;
 static volatile u64 *clint_time_cmp;
 
-static inline u32 clint_time_read_hi()
+#if __riscv_xlen != 32
+static u64 clint_time_rd64(volatile u64 *addr)
 {
-	return readl_relaxed((u32 *)clint_time_val + 1);
+	return readq_relaxed(addr);
 }
 
-u64 clint_timer_value(void)
+static void clint_time_wr64(u64 value, volatile u64 *addr)
 {
-#if __riscv_xlen == 64
-	return readq_relaxed(clint_time_val);
-#else
+	writeq_relaxed(value, addr);
+}
+#endif
+
+static u64 clint_time_rd32(volatile u64 *addr)
+{
 	u32 lo, hi;
 
 	do {
-		hi = clint_time_read_hi();
-		lo = readl_relaxed(clint_time_val);
-	} while (hi != clint_time_read_hi());
+		hi = readl_relaxed((u32 *)addr + 1);
+		lo = readl_relaxed((u32 *)addr);
+	} while (hi != readl_relaxed((u32 *)addr + 1));
 
 	return ((u64)hi << 32) | (u64)lo;
-#endif
+}
+
+static void clint_time_wr32(u64 value, volatile u64 *addr)
+{
+	u32 mask = -1U;
+
+	writel_relaxed(value & mask, (void *)(addr));
+	writel_relaxed(value >> 32, (void *)(addr) + 0x04);
+}
+
+static u64 (*clint_time_rd)(volatile u64 *addr) = clint_time_rd32;
+static void (*clint_time_wr)(u64 value, volatile u64 *addr) = clint_time_wr32;
+
+u64 clint_timer_value(void)
+{
+	/* Read CLINT Time Value */
+	return clint_time_rd(clint_time_val);
 }
 
 void clint_timer_event_stop(void)
@@ -90,13 +110,8 @@ void clint_timer_event_stop(void)
 	if (clint_time_hart_count <= target_hart)
 		return;
 
-		/* Clear CLINT Time Compare */
-#if __riscv_xlen == 64
-	writeq_relaxed(-1ULL, &clint_time_cmp[target_hart]);
-#else
-	writel_relaxed(-1UL, &clint_time_cmp[target_hart]);
-	writel_relaxed(-1UL, (void *)(&clint_time_cmp[target_hart]) + 0x04);
-#endif
+	/* Clear CLINT Time Compare */
+	clint_time_wr(-1ULL, &clint_time_cmp[target_hart]);
 }
 
 void clint_timer_event_start(u64 next_event)
@@ -106,15 +121,8 @@ void clint_timer_event_start(u64 next_event)
 	if (clint_time_hart_count <= target_hart)
 		return;
 
-		/* Program CLINT Time Compare */
-#if __riscv_xlen == 64
-	writeq_relaxed(next_event, &clint_time_cmp[target_hart]);
-#else
-	u32 mask = -1UL;
-	writel_relaxed(next_event & mask, &clint_time_cmp[target_hart]);
-	writel_relaxed(next_event >> 32,
-		       (void *)(&clint_time_cmp[target_hart]) + 0x04);
-#endif
+	/* Program CLINT Time Compare */
+	clint_time_wr(next_event, &clint_time_cmp[target_hart]);
 }
 
 int clint_warm_timer_init(void)
@@ -124,24 +132,28 @@ int clint_warm_timer_init(void)
 	if (clint_time_hart_count <= target_hart || !clint_time_base)
 		return -1;
 
-		/* Clear CLINT Time Compare */
-#if __riscv_xlen == 64
-	writeq_relaxed(-1ULL, &clint_time_cmp[target_hart]);
-#else
-	writel_relaxed(-1UL, &clint_time_cmp[target_hart]);
-	writel_relaxed(-1UL, (void *)(&clint_time_cmp[target_hart]) + 0x04);
-#endif
+	/* Clear CLINT Time Compare */
+	clint_time_wr(-1ULL, &clint_time_cmp[target_hart]);
 
 	return 0;
 }
 
-int clint_cold_timer_init(unsigned long base, u32 hart_count)
+int clint_cold_timer_init(unsigned long base, u32 hart_count,
+			  bool has_64bit_mmio)
 {
 	/* Figure-out CLINT Time register address */
-	clint_time_hart_count = hart_count;
-	clint_time_base	      = (void *)base;
-	clint_time_val	      = (u64 *)(clint_time_base + 0xbff8);
-	clint_time_cmp	      = (u64 *)(clint_time_base + 0x4000);
+	clint_time_hart_count		= hart_count;
+	clint_time_base			= (void *)base;
+	clint_time_val			= (u64 *)(clint_time_base + 0xbff8);
+	clint_time_cmp			= (u64 *)(clint_time_base + 0x4000);
+
+	/* Override read/write accessors for 64bit MMIO */
+#if __riscv_xlen != 32
+	if (has_64bit_mmio) {
+		clint_time_rd		= clint_time_rd64;
+		clint_time_wr		= clint_time_wr64;
+	}
+#endif
 
 	return 0;
 }

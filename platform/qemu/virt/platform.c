@@ -114,7 +114,8 @@ static int virt_timer_init(bool cold_boot)
 	int rc;
 
 	if (cold_boot) {
-		rc = clint_cold_timer_init(VIRT_CLINT_ADDR, VIRT_HART_COUNT);
+		rc = clint_cold_timer_init(VIRT_CLINT_ADDR,
+					   VIRT_HART_COUNT, TRUE);
 		if (rc)
 			return rc;
 	}

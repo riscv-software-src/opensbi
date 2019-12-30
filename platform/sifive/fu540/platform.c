@@ -176,7 +176,8 @@ static int fu540_timer_init(bool cold_boot)
 	int rc;
 
 	if (cold_boot) {
-		rc = clint_cold_timer_init(FU540_CLINT_ADDR, FU540_HART_COUNT);
+		rc = clint_cold_timer_init(FU540_CLINT_ADDR,
+					   FU540_HART_COUNT, TRUE);
 		if (rc)
 			return rc;
 	}
