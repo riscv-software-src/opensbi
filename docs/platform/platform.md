@@ -26,6 +26,8 @@ OpenSBI currently supports the following virtual and hardware platforms:
 
 * **Andes AE350 SoC**: Platform support for the Andes's SoC (AE350).
 
+* **T-HEAD C910**: Platform support for the T-HEAD C910 Processor.
+
 The code for these supported platforms can be used as example to implement
 support for other platforms. The *platform/template* directory also provides
 template files for implementing support for a new platform. The *object.mk*,
@@ -37,3 +39,4 @@ facilitate the implementation.
 [sifive_fu540.md]: sifive_fu540.md
 [ariane-fpga.md]: ariane-fpga.md
 [andes_ae350.md]: andes-ae350.md
+[thead-c910.md]: thead-c910.md
