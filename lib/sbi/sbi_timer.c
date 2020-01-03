@@ -76,11 +76,6 @@ void sbi_timer_set_delta_upper(struct sbi_scratch *scratch, ulong delta_upper)
 	*time_delta |= ((u64)delta_upper << 32);
 }
 
-void sbi_timer_event_stop(struct sbi_scratch *scratch)
-{
-	sbi_platform_timer_event_stop(sbi_platform_ptr(scratch));
-}
-
 void sbi_timer_event_start(struct sbi_scratch *scratch, u64 next_event)
 {
 	sbi_platform_timer_event_start(sbi_platform_ptr(scratch), next_event);
@@ -112,4 +107,14 @@ int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot)
 	*time_delta = 0;
 
 	return sbi_platform_timer_init(sbi_platform_ptr(scratch), cold_boot);
+}
+
+void sbi_timer_exit(struct sbi_scratch *scratch)
+{
+	sbi_platform_timer_event_stop(sbi_platform_ptr(scratch));
+
+	csr_clear(CSR_MIP, MIP_STIP);
+	csr_clear(CSR_MIE, MIP_MTIP);
+
+	sbi_platform_timer_exit(sbi_platform_ptr(scratch));
 }

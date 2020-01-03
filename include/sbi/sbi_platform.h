@@ -125,6 +125,8 @@ struct sbi_platform_operations {
 	void (*timer_event_stop)(void);
 	/** Initialize platform timer for current HART */
 	int (*timer_init)(bool cold_boot);
+	/** Exit platform timer for current HART */
+	void (*timer_exit)(void);
 
 	/** Reboot the platform */
 	int (*system_reboot)(u32 type);
@@ -550,6 +552,17 @@ static inline int sbi_platform_timer_init(const struct sbi_platform *plat,
 	if (plat && sbi_platform_ops(plat)->timer_init)
 		return sbi_platform_ops(plat)->timer_init(cold_boot);
 	return 0;
+}
+
+/**
+ * Exit the platform timer for current HART
+ *
+ * @param plat pointer to struct sbi_platform
+ */
+static inline void sbi_platform_timer_exit(const struct sbi_platform *plat)
+{
+	if (plat && sbi_platform_ops(plat)->timer_exit)
+		sbi_platform_ops(plat)->timer_exit();
 }
 
 /**
