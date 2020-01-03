@@ -14,6 +14,7 @@
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_init.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_tlb.h>
@@ -126,7 +127,7 @@ void sbi_ipi_process(struct sbi_scratch *scratch)
 			sbi_tlb_fifo_process(scratch);
 			break;
 		case SBI_IPI_EVENT_HALT:
-			sbi_hart_hang();
+			sbi_exit(scratch);
 			break;
 		default:
 			break;
