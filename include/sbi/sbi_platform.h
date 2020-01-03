@@ -109,6 +109,8 @@ struct sbi_platform_operations {
 
 	/** Initialize the platform interrupt controller for current HART */
 	int (*irqchip_init)(bool cold_boot);
+	/** Exit the platform interrupt controller for current HART */
+	void (*irqchip_exit)(void);
 
 	/** Send IPI to a target HART */
 	void (*ipi_send)(u32 target_hart);
@@ -457,6 +459,17 @@ static inline int sbi_platform_irqchip_init(const struct sbi_platform *plat,
 	if (plat && sbi_platform_ops(plat)->irqchip_init)
 		return sbi_platform_ops(plat)->irqchip_init(cold_boot);
 	return 0;
+}
+
+/**
+ * Exit the platform interrupt controller for current HART
+ *
+ * @param plat pointer to struct sbi_platform
+ */
+static inline void sbi_platform_irqchip_exit(const struct sbi_platform *plat)
+{
+	if (plat && sbi_platform_ops(plat)->irqchip_exit)
+		sbi_platform_ops(plat)->irqchip_exit();
 }
 
 /**
