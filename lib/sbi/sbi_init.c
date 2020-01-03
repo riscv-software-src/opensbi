@@ -203,5 +203,9 @@ void __noreturn sbi_exit(struct sbi_scratch *scratch)
 
 	sbi_hart_unmark_available(hartid);
 
+	sbi_platform_early_exit(plat);
+
+	sbi_platform_final_exit(plat);
+
 	sbi_hart_hang();
 }

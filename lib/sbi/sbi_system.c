@@ -23,6 +23,16 @@ int sbi_system_final_init(struct sbi_scratch *scratch, bool cold_boot)
 	return sbi_platform_final_init(sbi_platform_ptr(scratch), cold_boot);
 }
 
+void sbi_system_early_exit(struct sbi_scratch *scratch)
+{
+	sbi_platform_early_exit(sbi_platform_ptr(scratch));
+}
+
+void sbi_system_final_exit(struct sbi_scratch *scratch)
+{
+	sbi_platform_final_exit(sbi_platform_ptr(scratch));
+}
+
 void __attribute__((noreturn))
 sbi_system_reboot(struct sbi_scratch *scratch, u32 type)
 

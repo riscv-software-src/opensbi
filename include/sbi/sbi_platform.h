@@ -76,6 +76,11 @@ struct sbi_platform_operations {
 	/** Platform final initialization */
 	int (*final_init)(bool cold_boot);
 
+	/** Platform early exit */
+	void (*early_exit)(void);
+	/** Platform final exit */
+	void (*final_exit)(void);
+
 	/** For platforms that do not implement misa, non-standard
 	 * methods are needed to determine cpu extension.
 	 */
@@ -299,6 +304,28 @@ static inline int sbi_platform_final_init(const struct sbi_platform *plat,
 	if (plat && sbi_platform_ops(plat)->final_init)
 		return sbi_platform_ops(plat)->final_init(cold_boot);
 	return 0;
+}
+
+/**
+ * Early exit for current HART
+ *
+ * @param plat pointer to struct sbi_platform
+ */
+static inline void sbi_platform_early_exit(const struct sbi_platform *plat)
+{
+	if (plat && sbi_platform_ops(plat)->early_exit)
+		sbi_platform_ops(plat)->early_exit();
+}
+
+/**
+ * Final exit for current HART
+ *
+ * @param plat pointer to struct sbi_platform
+ */
+static inline void sbi_platform_final_exit(const struct sbi_platform *plat)
+{
+	if (plat && sbi_platform_ops(plat)->final_exit)
+		sbi_platform_ops(plat)->final_exit();
 }
 
 /**
