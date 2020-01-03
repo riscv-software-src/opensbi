@@ -354,11 +354,15 @@ static unsigned long coldboot_wait_bitmap = 0;
 
 void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 {
+	unsigned long saved_mie;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if ((sbi_platform_hart_count(plat) <= hartid) ||
 	    (COLDBOOT_WAIT_BITMAP_SIZE <= hartid))
 		sbi_hart_hang();
+
+	/* Save MIE CSR */
+	saved_mie = csr_read(CSR_MIE);
 
 	/* Set MSIE bit to receive IPI */
 	csr_set(CSR_MIE, MIP_MSIP);
@@ -381,6 +385,9 @@ void sbi_hart_wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 
 	/* Release coldboot lock */
 	spin_unlock(&coldboot_lock);
+
+	/* Restore MIE CSR */
+	csr_write(CSR_MIE, saved_mie);
 
 	/* Clear current HART IPI */
 	sbi_platform_ipi_clear(plat, hartid);
