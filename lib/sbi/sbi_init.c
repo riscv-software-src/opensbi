@@ -70,10 +70,18 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 	sbi_hart_pmp_dump(scratch);
 }
 
+static unsigned long init_count_offset;
+
 static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 {
 	int rc;
+	unsigned long *init_count;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+
+	init_count_offset = sbi_scratch_alloc_offset(__SIZEOF_POINTER__,
+						     "INIT_COUNT");
+	if (!init_count_offset)
+		sbi_hart_hang();
 
 	rc = sbi_system_early_init(scratch, TRUE);
 	if (rc)
@@ -110,6 +118,9 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 
 	sbi_hart_mark_available(hartid);
 
+	init_count = sbi_scratch_offset_ptr(scratch, init_count_offset);
+	(*init_count)++;
+
 	sbi_hart_switch_mode(hartid, scratch->next_arg1, scratch->next_addr,
 			     scratch->next_mode, FALSE);
 }
@@ -117,9 +128,13 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 {
 	int rc;
+	unsigned long *init_count;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	sbi_hart_wait_for_coldboot(scratch, hartid);
+
+	if (!init_count_offset)
+		sbi_hart_hang();
 
 	rc = sbi_system_early_init(scratch, FALSE);
 	if (rc)
@@ -146,6 +161,9 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 
 	sbi_hart_mark_available(hartid);
+
+	init_count = sbi_scratch_offset_ptr(scratch, init_count_offset);
+	(*init_count)++;
 
 	sbi_hart_switch_mode(hartid, scratch->next_arg1,
 			     scratch->next_addr,
@@ -182,6 +200,21 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 		init_coldboot(scratch, hartid);
 	else
 		init_warmboot(scratch, hartid);
+}
+
+unsigned long sbi_init_count(u32 hartid)
+{
+	struct sbi_scratch *scratch;
+	unsigned long *init_count;
+
+	if (sbi_platform_hart_count(sbi_platform_thishart_ptr()) <= hartid ||
+	    !init_count_offset)
+		return 0;
+
+	scratch = sbi_hart_id_to_scratch(sbi_scratch_thishart_ptr(), hartid);
+	init_count = sbi_scratch_offset_ptr(scratch, init_count_offset);
+
+	return *init_count;
 }
 
 /**
