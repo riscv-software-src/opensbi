@@ -12,6 +12,7 @@
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_ipi.h>
+#include <sbi/sbi_init.h>
 
 int sbi_system_early_init(struct sbi_scratch *scratch, bool cold_boot)
 {
@@ -33,24 +34,34 @@ void sbi_system_final_exit(struct sbi_scratch *scratch)
 	sbi_platform_final_exit(sbi_platform_ptr(scratch));
 }
 
-void __attribute__((noreturn))
-sbi_system_reboot(struct sbi_scratch *scratch, u32 type)
-
+void __noreturn sbi_system_reboot(struct sbi_scratch *scratch, u32 type)
 {
+	u32 current_hartid_mask = 1UL << sbi_current_hartid();
+
+	/* Send HALT IPI to every hart other than the current hart */
+	sbi_ipi_send_many(scratch,
+			  sbi_hart_available_mask() & ~current_hartid_mask,
+			  0, SBI_IPI_EVENT_HALT, NULL);
+
+	/* Platform specific reooot */
 	sbi_platform_system_reboot(sbi_platform_ptr(scratch), type);
-	sbi_hart_hang();
+
+	/* If platform specific reboot did not work then do sbi_exit() */
+	sbi_exit(scratch);
 }
 
-void __attribute__((noreturn))
-sbi_system_shutdown(struct sbi_scratch *scratch, u32 type)
+void __noreturn sbi_system_shutdown(struct sbi_scratch *scratch, u32 type)
 {
-	/* First try the platform-specific method */
+	u32 current_hartid_mask = 1UL << sbi_current_hartid();
+
+	/* Send HALT IPI to every hart other than the current hart */
+	sbi_ipi_send_many(scratch,
+			  sbi_hart_available_mask() & ~current_hartid_mask,
+			  0, SBI_IPI_EVENT_HALT, NULL);
+
+	/* Platform specific shutdown */
 	sbi_platform_system_shutdown(sbi_platform_ptr(scratch), type);
 
-	/* If that fails (or is not implemented) send an IPI on every
-	 * hart to hang and then hang the current hart */
-	sbi_ipi_send_many(scratch, sbi_hart_available_mask(), 0,
-			  SBI_IPI_EVENT_HALT, NULL);
-
-	sbi_hart_hang();
+	/* If platform specific shutdown did not work then do sbi_exit() */
+	sbi_exit(scratch);
 }
