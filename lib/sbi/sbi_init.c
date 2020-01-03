@@ -183,3 +183,25 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 	else
 		init_warmboot(scratch, hartid);
 }
+
+/**
+ * Exit OpenSBI library for current HART and stop HART
+ *
+ * The function expects following:
+ * 1. The 'mscratch' CSR is pointing to sbi_scratch of current HART
+ * 2. Stack pointer (SP) is setup for current HART
+ *
+ * @param scratch pointer to sbi_scratch of current HART
+ */
+void __noreturn sbi_exit(struct sbi_scratch *scratch)
+{
+	u32 hartid			= sbi_current_hartid();
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+
+	if (sbi_platform_hart_disabled(plat, hartid))
+		sbi_hart_hang();
+
+	sbi_hart_unmark_available(hartid);
+
+	sbi_hart_hang();
+}
