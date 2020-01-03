@@ -106,9 +106,10 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (!(scratch->options & SBI_SCRATCH_NO_BOOT_PRINTS))
 		sbi_boot_prints(scratch, hartid);
 
-	if (!sbi_platform_has_hart_hotplug(plat))
-		sbi_hart_wake_coldboot_harts(scratch, hartid);
+	sbi_hart_wake_coldboot_harts(scratch, hartid);
+
 	sbi_hart_mark_available(hartid);
+
 	sbi_hart_switch_mode(hartid, scratch->next_arg1, scratch->next_addr,
 			     scratch->next_mode, FALSE);
 }
@@ -118,11 +119,7 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 	int rc;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	if (!sbi_platform_has_hart_hotplug(plat))
-		sbi_hart_wait_for_coldboot(scratch, hartid);
-
-	if (sbi_platform_hart_disabled(plat, hartid))
-		sbi_hart_hang();
+	sbi_hart_wait_for_coldboot(scratch, hartid);
 
 	rc = sbi_system_early_init(scratch, FALSE);
 	if (rc)
@@ -150,13 +147,9 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 
 	sbi_hart_mark_available(hartid);
 
-	if (sbi_platform_has_hart_hotplug(plat))
-		/* TODO: To be implemented in-future. */
-		sbi_hart_hang();
-	else
-		sbi_hart_switch_mode(hartid, scratch->next_arg1,
-				     scratch->next_addr,
-				     scratch->next_mode, FALSE);
+	sbi_hart_switch_mode(hartid, scratch->next_arg1,
+			     scratch->next_addr,
+			     scratch->next_mode, FALSE);
 }
 
 static atomic_t coldboot_lottery = ATOMIC_INITIALIZER(0);
