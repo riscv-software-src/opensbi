@@ -116,6 +116,8 @@ struct sbi_platform_operations {
 	void (*ipi_clear)(u32 target_hart);
 	/** Initialize IPI for current HART */
 	int (*ipi_init)(bool cold_boot);
+	/** Exit IPI for current HART */
+	void (*ipi_exit)(void);
 
 	/** Get platform timer value */
 	u64 (*timer_value)(void);
@@ -497,6 +499,17 @@ static inline int sbi_platform_ipi_init(const struct sbi_platform *plat,
 	if (plat && sbi_platform_ops(plat)->ipi_init)
 		return sbi_platform_ops(plat)->ipi_init(cold_boot);
 	return 0;
+}
+
+/**
+ * Exit the platform IPI support for current HART
+ *
+ * @param plat pointer to struct sbi_platform
+ */
+static inline void sbi_platform_ipi_exit(const struct sbi_platform *plat)
+{
+	if (plat && sbi_platform_ops(plat)->ipi_exit)
+		sbi_platform_ops(plat)->ipi_exit();
 }
 
 /**

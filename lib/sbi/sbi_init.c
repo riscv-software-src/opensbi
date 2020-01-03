@@ -207,6 +207,8 @@ void __noreturn sbi_exit(struct sbi_scratch *scratch)
 
 	sbi_timer_exit(scratch);
 
+	sbi_ipi_exit(scratch);
+
 	sbi_platform_final_exit(plat);
 
 	sbi_hart_hang();

@@ -160,8 +160,25 @@ int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
 	if (ret)
 		return ret;
 
+	/* Platform init */
+	ret = sbi_platform_ipi_init(sbi_platform_ptr(scratch), cold_boot);
+	if (ret)
+		return ret;
+
 	/* Enable software interrupts */
 	csr_set(CSR_MIE, MIP_MSIP);
 
-	return sbi_platform_ipi_init(sbi_platform_ptr(scratch), cold_boot);
+	return 0;
+}
+
+void sbi_ipi_exit(struct sbi_scratch *scratch)
+{
+	/* Disable software interrupts */
+	csr_clear(CSR_MIE, MIP_MSIP);
+
+	/* Process pending IPIs */
+	sbi_ipi_process(scratch);
+
+	/* Platform exit */
+	sbi_platform_ipi_exit(sbi_platform_ptr(scratch));
 }
