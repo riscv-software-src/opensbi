@@ -10,6 +10,8 @@
 #ifndef __SBI_TYPES_H__
 #define __SBI_TYPES_H__
 
+#ifndef OPENSBI_EXTERNAL_SBI_TYPES
+
 /* clang-format off */
 
 typedef char			s8;
@@ -60,6 +62,32 @@ typedef unsigned long		physical_size_t;
 #define __packed		__attribute__((packed))
 #define __noreturn		__attribute__((noreturn))
 
+#define likely(x) __builtin_expect((x), 1)
+#define unlikely(x) __builtin_expect((x), 0)
+
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define CLAMP(a, lo, hi) MIN(MAX(a, lo), hi)
+
+#define STR(x) XSTR(x)
+#define XSTR(x) #x
+
+#define ROUNDUP(a, b) ((((a)-1) / (b) + 1) * (b))
+#define ROUNDDOWN(a, b) ((a) / (b) * (b))
+
 /* clang-format on */
+
+#else
+/* OPENSBI_EXTERNAL_SBI_TYPES could be defined in CFLAGS for using the
+ * external definitions of data types and common macros.
+ * OPENSBI_EXTERNAL_SBI_TYPES is the file name to external header file,
+ * the external build system should address the additional include
+ * directory ccordingly.
+ */
+
+#define XSTR(x) #x
+#define STR(x) XSTR(x)
+#include STR(OPENSBI_EXTERNAL_SBI_TYPES)
+#endif
 
 #endif
