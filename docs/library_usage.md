@@ -66,3 +66,24 @@ bootloader to service the following interrupts and traps:
 
 **Note:** external firmwares or bootloaders can be more conservative by
 forwarding all traps and interrupts to *sbi_trap_handler()*.
+
+Definitions of OpenSBI Data Types for the External Firmware
+-----------------------------------------------------------
+
+OpenSBI can be built as library using external firmware build system such as EDK2
+code base (The open source of UEFI firmware implementation) and linked with external
+firmware drivers based on the external firmware architecture.
+
+**OPENSBI_EXTERNAL_SBI_TYPES** identifier is introduced to *sbi_types.h* for selecting
+external header file during the build preprocess in order to define OpensSBI data types
+based on external firmware data type binding.
+For example, *bool* is declared as *int* in sbi_types.h. However in EDK2 build system,
+*bool* is declared as *BOOLEAN* which is defined as *unsigned char* data type.
+
+External firmware can define **OPENSBI_EXTERNAL_SBI_TYPES** in CFLAGS and specify it to the
+header file maintained in its code tree. However, the external build system has to address
+the additional include directory for the external header file based on its own build system.
+For example,
+*-D***OPENSBI_EXTERNAL_SBI_TYPES***=OpensbiTypes.h*
+Above tells *sbi_types.h* to refer to *OpensbiTypes.h* instead of using original definitions of
+data types.
