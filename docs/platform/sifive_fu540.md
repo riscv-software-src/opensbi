@@ -28,7 +28,7 @@ Building SiFive Fu540 Platform
 -----------------------------
 
 In order to boot SMP Linux in U-Boot, Linux v5.1 (or higher) and latest
-U-Boot v2019.04 (or higher) should be used.
+U-Boot v2020.01 (or higher) should be used.
 
 **Linux Kernel Payload**
 
@@ -49,24 +49,12 @@ make PLATFORM=sifive/fu540 FW_PAYLOAD_PATH=<linux_build_directory>/arch/riscv/bo
 **U-Boot Payload**
 
 The command-line example here assumes that U-Boot was compiled using the
-sifive_fu540_defconfig configuration and with U-Boot v2019.04 (or higher)
-having SMP support. From, Linux v5.2 (or higher) device tree is hosted in
-Linux kernel and compiled as a part of Linux kernel build process.
+sifive_fu540_defconfig configuration and with U-Boot v2020.01 (or higher).
 
 The detailed U-Boot booting guide is avaialble at [U-Boot](https://gitlab.denx.de/u-boot/u-boot/blob/master/doc/board/sifive/fu540.rst)
 
 ```
-make PLATFORM=sifive/fu540 FW_PAYLOAD_PATH=<u-boot_build_dir>/u-boot.bin
-or
-(For U-Boot which follows Linux v5.2 (or higher) DT bindings)
-make PLATFORM=sifive/fu540 FW_PAYLOAD_PATH=<u-boot_build_dir>/u-boot.bin FW_PAYLOAD_FDT_PATH=<hifive-unleashed-a00.dtb path from Linux kernel>
-```
-
-Generate the uImage from Linux Image.
-```
-mkimage -A riscv -O linux -T kernel -C none -a 0x80200000 -e 0x80200000 -n Linux -d \
-		<linux_build_directory>/arch/riscv/boot/Image \
-		<linux_build_directory>/arch/riscv/boot/uImage
+make PLATFORM=sifive/fu540 FW_PAYLOAD_PATH=<u-boot_build_dir>/u-boot-dtb.bin
 ```
 
 **U-Boot & Linux Kernel as a single payload**
@@ -74,29 +62,22 @@ mkimage -A riscv -O linux -T kernel -C none -a 0x80200000 -e 0x80200000 -n Linux
 A single monolithic image containing both U-Boot & Linux can also be used if
 network boot setup is not available.
 
-1. Generate the uImage from Linux Image.
-```
-mkimage -A riscv -O linux -T kernel -C none -a 0x80200000 -e 0x80200000 -n Linux -d \
-		<linux_build_directory>/arch/riscv/boot/Image \
-		<linux_build_directory>/arch/riscv/boot/uImage
-```
-
-2. Create a temporary image with u-boot.bin as the first payload. The
+1. Create a temporary image with u-boot-dtb.bin as the first payload. The
 command-line example here assumes that U-Boot was compiled using
 sifive_fu540_defconfig configuration.
 ```
-dd if=~/workspace/u-boot-riscv/u-boot.bin of=/tmp/temp.bin bs=1M
+dd if=~/workspace/u-boot-riscv/u-boot-dtb.bin of=/tmp/temp.bin bs=1M
 ```
-3. Append the Linux Kernel image generated in step 1.
+2. Append the Linux Kernel image.
 ```
-dd if=<linux_build_directory>/arch/riscv/boot/uImage of=/tmp/temp.bin bs=1M seek=4
+dd if=<linux_build_directory>/arch/riscv/boot/Image of=/tmp/temp.bin bs=1M seek=4
 ```
-4. Compile OpenSBI with temp.bin (generated in step 3) as payload.
+3. Compile OpenSBI with temp.bin (generated in step 2) as payload.
 ```
 make PLATFORM=sifive/fu540 FW_PAYLOAD_PATH=/tmp/temp.bin
 or
 (For U-Boot which follows Linux v5.2 (or higher) DT bindings)
-make PLATFORM=sifive/fu540 FW_PAYLOAD_PATH=/tmp/temp.bin FW_PAYLOAD_FDT_PATH=<hifive-unleashed-a00.dtb path from Linux kernel>
+make PLATFORM=sifive/fu540 FW_PAYLOAD_PATH=/tmp/temp.bin
 ```
 
 Flashing the OpenSBI firmware binary to storage media:
@@ -144,43 +125,33 @@ As U-Boot image is used as payload, HiFive Unleashed will boot into a U-Boot
 prompt. U-Boot tftp boot method can be used to load kernel image in U-Boot
 prompt. Here are the steps do a tftpboot.
 
-1. Set the mac address of the board.
-```
-setenv ethaddr <mac address of the board>
-```
-(Note: This step is optional)
-
-2. Set the ip address of the board.
+1. Set the ip address of the board.
 ```
 setenv ipaddr <ipaddr of the board>
 ```
-
-3. Set the tftpboot server IP.
+2. Set the tftpboot server IP.
 ```
 setenv serverip <ipaddr of the tftp server>
 ```
-
-4. Set the network gateway address.
+3. Set the network gateway address.
 ```
 setenv gatewayip <ipaddress of the network gateway>
 ```
-
-5. Load the Linux kernel image from the tftp server.
+4. Load the Linux kernel image from the tftp server.
 ```
-tftpboot ${kernel_addr_r} <uImage path in tftpboot directory>
+tftpboot ${kernel_addr_r} <Image path in tftpboot directory>
 ```
-
-6. Load the ramdisk image from the tftp server. This is only required if
+5. Load the ramdisk image from the tftp server. This is only required if
 ramdisk is loaded from tftp server. This step is optional, if rootfs is
 already part of the kernel or loaded from an external storage by kernel.
 ```
 tftpboot ${ramdisk_addr_r} <ramdisk path in tftpboot directory>
 ```
-7. Load the pre-compiled device tree via tftpboot.
+6. Load the pre-compiled device tree via tftpboot.
 ```
-tftpboot ${fdt_addr_r} <linux source>/arch/riscv/boot/dts/sifive/hifive-unleashed-a00.dtb
+tftpboot ${fdt_addr_r} <hifive-unleashed-a00.dtb path in tftpboot directory>
 ```
-8. Set the boot command-line arguments.
+7. Set the boot command-line arguments.
 ```
 setenv bootargs "root=<root partition> rw console=ttySIF0 earlycon=sbi"
 ```
@@ -188,13 +159,12 @@ setenv bootargs "root=<root partition> rw console=ttySIF0 earlycon=sbi"
 ** /dev/ram ** - If a ramdisk is used
 ** root=/dev/mmcblk0pX ** - If a rootfs is already on some other partition
 of sdcard)
-
-9. Now boot into Linux.
+8. Now boot into Linux.
 ```
-bootm ${kernel_addr_r} ${ramdisk_addr_r} ${fdt_addr_r}
+booti ${kernel_addr_r} ${ramdisk_addr_r} ${fdt_addr_r}
 or
 (If ramdisk is not loaded from network)
-bootm ${kernel_addr_r} - ${fdt_addr_r}
+booti ${kernel_addr_r} - ${fdt_addr_r}
 ```
 
 **U-Boot & Linux Kernel as a single payload**
@@ -202,7 +172,7 @@ bootm ${kernel_addr_r} - ${fdt_addr_r}
 At U-Boot prompt execute the following boot command to boot Linux.
 
 ```
-bootm ${kernel_addr_r} - ${fdt_addr_r}
+booti ${kernel_addr_r} - ${fdt_addr_r}
 ```
 
 QEMU Specific Instructions
