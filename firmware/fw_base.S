@@ -41,8 +41,8 @@
 999:
 .endm
 
-	.align 3
 	.section .entry, "ax", %progbits
+	.align 3
 	.globl _start
 	.globl _start_warm
 _start:
@@ -405,8 +405,8 @@ _link_start:
 _link_end:
 	RISCV_PTR	_fw_reloc_end
 
-	.align 3
 	.section .entry, "ax", %progbits
+	.align 3
 	.globl _hartid_to_scratch
 _hartid_to_scratch:
 	add	sp, sp, -(3 * __SIZEOF_POINTER__)
@@ -440,15 +440,15 @@ _hartid_to_scratch:
 	add	sp, sp, (3 * __SIZEOF_POINTER__)
 	ret
 
-	.align 3
 	.section .entry, "ax", %progbits
+	.align 3
 	.globl _start_hang
 _start_hang:
 	wfi
 	j	_start_hang
 
-	.align 3
 	.section .entry, "ax", %progbits
+	.align 3
 	.globl _trap_handler
 _trap_handler:
 	/* Swap TP and MSCRATCH */
@@ -603,8 +603,8 @@ _skip_mstatush_restore:
 
 	mret
 
-	.align 3
 	.section .entry, "ax", %progbits
+	.align 3
 	.globl _reset_regs
 _reset_regs:
 

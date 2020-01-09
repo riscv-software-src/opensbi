@@ -23,8 +23,8 @@
 #define REG_L		__REG_SEL(ld, lw)
 #define REG_S		__REG_SEL(sd, sw)
 
-	.align 3
 	.section .entry, "ax", %progbits
+	.align 3
 	.globl _start
 _start:
 	/* Pick one hart to run the main boot sequence */
@@ -71,15 +71,15 @@ _start_warm:
 	/* We don't expect to reach here hence just hang */
 	j	_start_hang
 
-	.align 3
 	.section .entry, "ax", %progbits
+	.align 3
 	.globl _start_hang
 _start_hang:
 	wfi
 	j	_start_hang
 
-	.align	3
 	.section .entry, "ax", %progbits
+	.align	3
 _hart_lottery:
 	RISCV_PTR	0
 _boot_a0:
