@@ -34,6 +34,10 @@ static int c910_early_init(bool cold_boot)
 		c910_regs.mccr2    = csr_read(CSR_MCCR2);
 		c910_regs.mhint    = csr_read(CSR_MHINT);
 		c910_regs.mxstatus = csr_read(CSR_MXSTATUS);
+
+		c910_regs.plic_base_addr = csr_read(CSR_PLIC_BASE);
+		c910_regs.clint_base_addr =
+			c910_regs.plic_base_addr + C910_PLIC_CLINT_OFFSET;
 	} else {
 		/* Store to other core */
 		csr_write(CSR_PMPADDR0, c910_regs.pmpaddr0);
@@ -51,10 +55,6 @@ static int c910_early_init(bool cold_boot)
 		csr_write(CSR_MHINT, c910_regs.mhint);
 		csr_write(CSR_MXSTATUS, c910_regs.mxstatus);
 	}
-
-	c910_regs.plic_base_addr = csr_read(CSR_PLIC_BASE);
-	c910_regs.clint_base_addr =
-		c910_regs.plic_base_addr + C910_PLIC_CLINT_OFFSET;
 
 	return 0;
 }
