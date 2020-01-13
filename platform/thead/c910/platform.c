@@ -48,7 +48,6 @@ static int c910_early_init(bool cold_boot)
 
 		csr_write(CSR_MCOR, c910_regs.mcor);
 		csr_write(CSR_MHCR, c910_regs.mhcr);
-		csr_write(CSR_MCCR2, c910_regs.mccr2);
 		csr_write(CSR_MHINT, c910_regs.mhint);
 		csr_write(CSR_MXSTATUS, c910_regs.mxstatus);
 	}
