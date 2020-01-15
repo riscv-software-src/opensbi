@@ -232,7 +232,7 @@ int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
 	ipi_data = sbi_scratch_offset_ptr(scratch, ipi_data_off);
 	ipi_data->ipi_type = 0x00;
 
-	ret = sbi_tlb_fifo_init(scratch, cold_boot);
+	ret = sbi_tlb_init(scratch, cold_boot);
 	if (ret)
 		return ret;
 

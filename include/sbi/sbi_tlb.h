@@ -43,9 +43,9 @@ struct sbi_tlb_info {
 
 #define SBI_TLB_INFO_SIZE			sizeof(struct sbi_tlb_info)
 
-int sbi_tlb_fifo_request(struct sbi_scratch *scratch, ulong hmask,
-			 ulong hbase, struct sbi_tlb_info *tinfo);
+int sbi_tlb_request(struct sbi_scratch *scratch, ulong hmask,
+		    ulong hbase, struct sbi_tlb_info *tinfo);
 
-int sbi_tlb_fifo_init(struct sbi_scratch *scratch, bool cold_boot);
+int sbi_tlb_init(struct sbi_scratch *scratch, bool cold_boot);
 
 #endif
