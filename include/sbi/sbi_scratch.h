@@ -36,7 +36,7 @@
 #define SBI_SCRATCH_OPTIONS_OFFSET		(9 * __SIZEOF_POINTER__)
 /** Offset of extra space in sbi_scratch */
 #define SBI_SCRATCH_EXTRA_SPACE_OFFSET		(10 * __SIZEOF_POINTER__)
-/** Maximum size of sbi_scratch and sbi_ipi_data */
+/** Maximum size of sbi_scratch */
 #define SBI_SCRATCH_SIZE			(64 * __SIZEOF_POINTER__)
 
 /* clang-format on */
