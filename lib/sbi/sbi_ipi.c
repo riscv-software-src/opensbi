@@ -17,8 +17,6 @@
 #include <sbi/sbi_init.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_platform.h>
-#include <sbi/sbi_tlb.h>
-#include <sbi/sbi_trap.h>
 
 struct sbi_ipi_data {
 	unsigned long ipi_type;
@@ -231,10 +229,6 @@ int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
 
 	ipi_data = sbi_scratch_offset_ptr(scratch, ipi_data_off);
 	ipi_data->ipi_type = 0x00;
-
-	ret = sbi_tlb_init(scratch, cold_boot);
-	if (ret)
-		return ret;
 
 	/* Platform init */
 	ret = sbi_platform_ipi_init(sbi_platform_ptr(scratch), cold_boot);

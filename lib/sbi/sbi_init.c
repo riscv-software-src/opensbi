@@ -16,6 +16,7 @@
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_timer.h>
+#include <sbi/sbi_tlb.h>
 #include <sbi/sbi_version.h>
 
 #define BANNER                                              \
@@ -103,6 +104,10 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
+	rc = sbi_tlb_init(scratch, TRUE);
+	if (rc)
+		sbi_hart_hang();
+
 	rc = sbi_timer_init(scratch, TRUE);
 	if (rc)
 		sbi_hart_hang();
@@ -149,6 +154,10 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 
 	rc = sbi_ipi_init(scratch, FALSE);
+	if (rc)
+		sbi_hart_hang();
+
+	rc = sbi_tlb_init(scratch, FALSE);
 	if (rc)
 		sbi_hart_hang();
 
