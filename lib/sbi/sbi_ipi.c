@@ -101,6 +101,12 @@ int sbi_ipi_send_many(struct sbi_scratch *scratch, ulong hmask, ulong hbase,
 	return 0;
 }
 
+int sbi_ipi_send_smode(struct sbi_scratch *scratch, ulong hmask, ulong hbase)
+{
+	return sbi_ipi_send_many(scratch, hmask, hbase,
+				 SBI_IPI_EVENT_SOFT, NULL);
+}
+
 void sbi_ipi_clear_smode(struct sbi_scratch *scratch)
 {
 	csr_clear(CSR_MIP, MIP_SSIP);

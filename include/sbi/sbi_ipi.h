@@ -25,6 +25,8 @@ struct sbi_scratch;
 int sbi_ipi_send_many(struct sbi_scratch *scratch, ulong hmask,
 		      ulong hbase, u32 event, void *data);
 
+int sbi_ipi_send_smode(struct sbi_scratch *scratch, ulong hmask, ulong hbase);
+
 void sbi_ipi_clear_smode(struct sbi_scratch *scratch);
 
 void sbi_ipi_process(struct sbi_scratch *scratch);

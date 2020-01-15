@@ -155,8 +155,7 @@ int sbi_ecall_ipi_handler(struct sbi_scratch *scratch, unsigned long funcid,
 	int ret = 0;
 
 	if (funcid == SBI_EXT_IPI_SEND_IPI)
-		ret = sbi_ipi_send_many(scratch, args[0], args[1],
-					SBI_IPI_EVENT_SOFT, NULL);
+		ret = sbi_ipi_send_smode(scratch, args[0], args[1]);
 	else
 		ret = SBI_ENOTSUPP;
 
@@ -282,8 +281,7 @@ int sbi_ecall_0_1_handler(struct sbi_scratch *scratch, unsigned long extid,
 		ret = sbi_load_hart_mask_unpriv(scratch, (ulong *)args[0],
 						&hmask, out_trap);
 		if (ret != SBI_ETRAP)
-			ret = sbi_ipi_send_many(scratch, hmask, 0,
-					       SBI_IPI_EVENT_SOFT, NULL);
+			ret = sbi_ipi_send_smode(scratch, hmask, 0);
 		break;
 	case SBI_EXT_0_1_REMOTE_FENCE_I:
 		tlb_info.start  = 0;
