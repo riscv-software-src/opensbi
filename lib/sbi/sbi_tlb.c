@@ -222,7 +222,7 @@ static void sbi_tlb_fifo_process_count(struct sbi_scratch *scratch, int count)
 	}
 }
 
-void sbi_tlb_fifo_process(struct sbi_scratch *scratch)
+static void sbi_tlb_fifo_process(struct sbi_scratch *scratch)
 {
 	struct sbi_tlb_info tinfo;
 	struct sbi_fifo *tlb_fifo =
@@ -232,7 +232,7 @@ void sbi_tlb_fifo_process(struct sbi_scratch *scratch)
 		sbi_tlb_entry_process(scratch, &tinfo);
 }
 
-void sbi_tlb_fifo_sync(struct sbi_scratch *scratch)
+static void sbi_tlb_fifo_sync(struct sbi_scratch *scratch)
 {
 	unsigned long *tlb_sync =
 			sbi_scratch_offset_ptr(scratch, tlb_sync_off);
@@ -315,11 +315,12 @@ static int sbi_tlb_fifo_update_cb(void *in, void *data)
 	return ret;
 }
 
-int sbi_tlb_fifo_update(struct sbi_scratch *rscratch, u32 hartid, void *data)
+static int sbi_tlb_fifo_update(struct sbi_scratch *scratch,
+			       struct sbi_scratch *remote_scratch,
+			       u32 remote_hartid, void *data)
 {
 	int ret;
 	struct sbi_fifo *tlb_fifo_r;
-	struct sbi_scratch *lscratch;
 	struct sbi_tlb_info *tinfo = data;
 	u32 curr_hartid = sbi_current_hartid();
 
@@ -337,13 +338,12 @@ int sbi_tlb_fifo_update(struct sbi_scratch *rscratch, u32 hartid, void *data)
 	 * If the request is to queue a tlb flush entry for itself
 	 * then just do a local flush and return;
 	 */
-	if (hartid == curr_hartid) {
+	if (remote_hartid == curr_hartid) {
 		sbi_tlb_local_flush(tinfo);
 		return -1;
 	}
 
-	lscratch = sbi_hart_id_to_scratch(rscratch, curr_hartid);
-	tlb_fifo_r = sbi_scratch_offset_ptr(rscratch, tlb_fifo_off);
+	tlb_fifo_r = sbi_scratch_offset_ptr(remote_scratch, tlb_fifo_off);
 
 	ret = sbi_fifo_inplace_update(tlb_fifo_r, data, sbi_tlb_fifo_update_cb);
 	if (ret != SBI_FIFO_UNCHANGED) {
@@ -359,23 +359,32 @@ int sbi_tlb_fifo_update(struct sbi_scratch *rscratch, u32 hartid, void *data)
 		 * TODO: Introduce a wait/wakeup event mechanism to handle
 		 * this properly.
 		 */
-		sbi_tlb_fifo_process_count(lscratch, 1);
-		sbi_dprintf(rscratch, "hart%d: hart%d tlb fifo full\n",
-			    curr_hartid, hartid);
+		sbi_tlb_fifo_process_count(scratch, 1);
+		sbi_dprintf(remote_scratch, "hart%d: hart%d tlb fifo full\n",
+			    curr_hartid, remote_hartid);
 	}
 
 	return 0;
 }
 
+static struct sbi_ipi_event_ops tlb_ops = {
+	.name = "IPI_TLB",
+	.update = sbi_tlb_fifo_update,
+	.sync = sbi_tlb_fifo_sync,
+	.process = sbi_tlb_fifo_process,
+};
+
+static u32 tlb_event = SBI_IPI_EVENT_MAX;
+
 int sbi_tlb_fifo_request(struct sbi_scratch *scratch, ulong hmask,
 			 ulong hbase, struct sbi_tlb_info *tinfo)
 {
-	return sbi_ipi_send_many(scratch, hmask, hbase,
-				 SBI_IPI_EVENT_FENCE, tinfo);
+	return sbi_ipi_send_many(scratch, hmask, hbase, tlb_event, tinfo);
 }
 
 int sbi_tlb_fifo_init(struct sbi_scratch *scratch, bool cold_boot)
 {
+	int ret;
 	void *tlb_mem;
 	unsigned long *tlb_sync;
 	struct sbi_fifo *tlb_q;
@@ -400,12 +409,22 @@ int sbi_tlb_fifo_init(struct sbi_scratch *scratch, bool cold_boot)
 			sbi_scratch_free_offset(tlb_sync_off);
 			return SBI_ENOMEM;
 		}
+		ret = sbi_ipi_event_create(&tlb_ops);
+		if (ret < 0) {
+			sbi_scratch_free_offset(tlb_fifo_mem_off);
+			sbi_scratch_free_offset(tlb_fifo_off);
+			sbi_scratch_free_offset(tlb_sync_off);
+			return ret;
+		}
+		tlb_event = ret;
 		tlb_range_flush_limit = sbi_platform_tlbr_flush_limit(plat);
 	} else {
 		if (!tlb_sync_off ||
 		    !tlb_fifo_off ||
 		    !tlb_fifo_mem_off)
 			return SBI_ENOMEM;
+		if (SBI_IPI_EVENT_MAX <= tlb_event)
+			return SBI_ENOSPC;
 	}
 
 	tlb_sync = sbi_scratch_offset_ptr(scratch, tlb_sync_off);

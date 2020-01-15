@@ -43,12 +43,6 @@ struct sbi_tlb_info {
 
 #define SBI_TLB_INFO_SIZE			sizeof(struct sbi_tlb_info)
 
-int sbi_tlb_fifo_update(struct sbi_scratch *scratch, u32 hartid, void *data);
-
-void sbi_tlb_fifo_process(struct sbi_scratch *scratch);
-
-void sbi_tlb_fifo_sync(struct sbi_scratch *scratch);
-
 int sbi_tlb_fifo_request(struct sbi_scratch *scratch, ulong hmask,
 			 ulong hbase, struct sbi_tlb_info *tinfo);
 
