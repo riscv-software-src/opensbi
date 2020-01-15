@@ -39,9 +39,8 @@ void __noreturn sbi_system_reboot(struct sbi_scratch *scratch, u32 type)
 	u32 current_hartid_mask = 1UL << sbi_current_hartid();
 
 	/* Send HALT IPI to every hart other than the current hart */
-	sbi_ipi_send_many(scratch,
-			  sbi_hart_available_mask() & ~current_hartid_mask,
-			  0, SBI_IPI_EVENT_HALT, NULL);
+	sbi_ipi_send_halt(scratch,
+			  sbi_hart_available_mask() & ~current_hartid_mask, 0);
 
 	/* Platform specific reooot */
 	sbi_platform_system_reboot(sbi_platform_ptr(scratch), type);
@@ -55,9 +54,8 @@ void __noreturn sbi_system_shutdown(struct sbi_scratch *scratch, u32 type)
 	u32 current_hartid_mask = 1UL << sbi_current_hartid();
 
 	/* Send HALT IPI to every hart other than the current hart */
-	sbi_ipi_send_many(scratch,
-			  sbi_hart_available_mask() & ~current_hartid_mask,
-			  0, SBI_IPI_EVENT_HALT, NULL);
+	sbi_ipi_send_halt(scratch,
+			  sbi_hart_available_mask() & ~current_hartid_mask, 0);
 
 	/* Platform specific shutdown */
 	sbi_platform_system_shutdown(sbi_platform_ptr(scratch), type);

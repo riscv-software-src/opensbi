@@ -112,6 +112,12 @@ void sbi_ipi_clear_smode(struct sbi_scratch *scratch)
 	csr_clear(CSR_MIP, MIP_SSIP);
 }
 
+int sbi_ipi_send_halt(struct sbi_scratch *scratch, ulong hmask, ulong hbase)
+{
+	return sbi_ipi_send_many(scratch, hmask, hbase,
+				 SBI_IPI_EVENT_HALT, NULL);
+}
+
 void sbi_ipi_process(struct sbi_scratch *scratch)
 {
 	unsigned long ipi_type;

@@ -29,6 +29,8 @@ int sbi_ipi_send_smode(struct sbi_scratch *scratch, ulong hmask, ulong hbase);
 
 void sbi_ipi_clear_smode(struct sbi_scratch *scratch);
 
+int sbi_ipi_send_halt(struct sbi_scratch *scratch, ulong hmask, ulong hbase);
+
 void sbi_ipi_process(struct sbi_scratch *scratch);
 
 int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot);
