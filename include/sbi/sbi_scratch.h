@@ -44,7 +44,6 @@
 #ifndef __ASSEMBLY__
 
 #include <sbi/sbi_types.h>
-#include <sbi/sbi_ipi.h>
 
 /** Representation of per-HART scratch space */
 struct sbi_scratch {

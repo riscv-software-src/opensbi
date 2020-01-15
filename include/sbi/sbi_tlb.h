@@ -47,8 +47,11 @@ int sbi_tlb_fifo_update(struct sbi_scratch *scratch, u32 hartid, void *data);
 
 void sbi_tlb_fifo_process(struct sbi_scratch *scratch);
 
-int sbi_tlb_fifo_init(struct sbi_scratch *scratch, bool cold_boot);
-
 void sbi_tlb_fifo_sync(struct sbi_scratch *scratch);
+
+int sbi_tlb_fifo_request(struct sbi_scratch *scratch, ulong hmask,
+			 ulong hbase, struct sbi_tlb_info *tinfo);
+
+int sbi_tlb_fifo_init(struct sbi_scratch *scratch, bool cold_boot);
 
 #endif

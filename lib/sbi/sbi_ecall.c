@@ -180,17 +180,16 @@ int sbi_ecall_rfence_handler(struct sbi_scratch *scratch, unsigned long funcid,
 		tlb_info.size  = 0;
 		tlb_info.type  = SBI_ITLB_FLUSH;
 		tlb_info.shart_mask = 1UL << source_hart;
-		ret = sbi_ipi_send_many(scratch, args[0], args[1],
-					SBI_IPI_EVENT_FENCE, &tlb_info);
+		ret = sbi_tlb_fifo_request(scratch, args[0], args[1],
+					   &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA:
 		tlb_info.start = (unsigned long)args[2];
 		tlb_info.size  = (unsigned long)args[3];
 		tlb_info.type  = SBI_TLB_FLUSH_GVMA;
 		tlb_info.shart_mask = 1UL << source_hart;
-
-		ret = sbi_ipi_send_many(scratch, args[0], args[1],
-					SBI_IPI_EVENT_FENCE, &tlb_info);
+		ret = sbi_tlb_fifo_request(scratch, args[0], args[1],
+					   &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA_VMID:
 		tlb_info.start = (unsigned long)args[2];
@@ -198,19 +197,16 @@ int sbi_ecall_rfence_handler(struct sbi_scratch *scratch, unsigned long funcid,
 		tlb_info.asid  = (unsigned long)args[4];
 		tlb_info.type  = SBI_TLB_FLUSH_GVMA_VMID;
 		tlb_info.shart_mask = 1UL << source_hart;
-
-		ret = sbi_ipi_send_many(scratch, args[0], args[1],
-					SBI_IPI_EVENT_FENCE,
-					&tlb_info);
+		ret = sbi_tlb_fifo_request(scratch, args[0], args[1],
+					   &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA:
 		tlb_info.start = (unsigned long)args[2];
 		tlb_info.size  = (unsigned long)args[3];
 		tlb_info.type  = SBI_TLB_FLUSH_VVMA;
 		tlb_info.shart_mask = 1UL << source_hart;
-
-		ret = sbi_ipi_send_many(scratch, args[0], args[1],
-					SBI_IPI_EVENT_FENCE, &tlb_info);
+		ret = sbi_tlb_fifo_request(scratch, args[0], args[1],
+					   &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA_ASID:
 		tlb_info.start = (unsigned long)args[2];
@@ -218,19 +214,16 @@ int sbi_ecall_rfence_handler(struct sbi_scratch *scratch, unsigned long funcid,
 		tlb_info.asid  = (unsigned long)args[4];
 		tlb_info.type  = SBI_TLB_FLUSH_VVMA_ASID;
 		tlb_info.shart_mask = 1UL << source_hart;
-
-		ret = sbi_ipi_send_many(scratch, args[0], args[1],
-					SBI_IPI_EVENT_FENCE,
-					&tlb_info);
+		ret = sbi_tlb_fifo_request(scratch, args[0], args[1],
+					   &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_SFENCE_VMA:
 		tlb_info.start = (unsigned long)args[2];
 		tlb_info.size  = (unsigned long)args[3];
 		tlb_info.type  = SBI_TLB_FLUSH_VMA;
 		tlb_info.shart_mask = 1UL << source_hart;
-
-		ret = sbi_ipi_send_many(scratch, args[0], args[1],
-					SBI_IPI_EVENT_FENCE, &tlb_info);
+		ret = sbi_tlb_fifo_request(scratch, args[0], args[1],
+					   &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_SFENCE_VMA_ASID:
 		tlb_info.start = (unsigned long)args[2];
@@ -238,10 +231,8 @@ int sbi_ecall_rfence_handler(struct sbi_scratch *scratch, unsigned long funcid,
 		tlb_info.asid  = (unsigned long)args[4];
 		tlb_info.type  = SBI_TLB_FLUSH_VMA_ASID;
 		tlb_info.shart_mask = 1UL << source_hart;
-
-		ret = sbi_ipi_send_many(scratch, args[0], args[1],
-					SBI_IPI_EVENT_FENCE,
-					&tlb_info);
+		ret = sbi_tlb_fifo_request(scratch, args[0], args[1],
+					   &tlb_info);
 		break;
 
 	default:
@@ -291,9 +282,8 @@ int sbi_ecall_0_1_handler(struct sbi_scratch *scratch, unsigned long extid,
 		ret = sbi_load_hart_mask_unpriv(scratch, (ulong *)args[0],
 						&hmask, out_trap);
 		if (ret != SBI_ETRAP)
-			ret = sbi_ipi_send_many(scratch, hmask, 0,
-						SBI_IPI_EVENT_FENCE,
-						&tlb_info);
+			ret = sbi_tlb_fifo_request(scratch, hmask, 0,
+						   &tlb_info);
 		break;
 	case SBI_EXT_0_1_REMOTE_SFENCE_VMA:
 		tlb_info.start = (unsigned long)args[1];
@@ -303,9 +293,8 @@ int sbi_ecall_0_1_handler(struct sbi_scratch *scratch, unsigned long extid,
 		ret = sbi_load_hart_mask_unpriv(scratch, (ulong *)args[0],
 						&hmask, out_trap);
 		if (ret != SBI_ETRAP)
-			ret = sbi_ipi_send_many(scratch, hmask, 0,
-						SBI_IPI_EVENT_FENCE,
-						&tlb_info);
+			ret = sbi_tlb_fifo_request(scratch, hmask, 0,
+						   &tlb_info);
 		break;
 	case SBI_EXT_0_1_REMOTE_SFENCE_VMA_ASID:
 		tlb_info.start = (unsigned long)args[1];
@@ -313,13 +302,11 @@ int sbi_ecall_0_1_handler(struct sbi_scratch *scratch, unsigned long extid,
 		tlb_info.asid  = (unsigned long)args[3];
 		tlb_info.type  = SBI_TLB_FLUSH_VMA_ASID;
 		tlb_info.shart_mask = 1UL << source_hart;
-
 		ret = sbi_load_hart_mask_unpriv(scratch, (ulong *)args[0],
 						&hmask, out_trap);
 		if (ret != SBI_ETRAP)
-			ret = sbi_ipi_send_many(scratch, hmask, 0,
-						SBI_IPI_EVENT_FENCE,
-						&tlb_info);
+			ret = sbi_tlb_fifo_request(scratch, hmask, 0,
+						   &tlb_info);
 		break;
 	case SBI_EXT_0_1_SHUTDOWN:
 		sbi_system_shutdown(scratch, 0);

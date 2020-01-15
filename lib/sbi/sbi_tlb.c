@@ -14,6 +14,7 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_fifo.h>
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_ipi.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_tlb.h>
 #include <sbi/sbi_hfence.h>
@@ -364,6 +365,13 @@ int sbi_tlb_fifo_update(struct sbi_scratch *rscratch, u32 hartid, void *data)
 	}
 
 	return 0;
+}
+
+int sbi_tlb_fifo_request(struct sbi_scratch *scratch, ulong hmask,
+			 ulong hbase, struct sbi_tlb_info *tinfo)
+{
+	return sbi_ipi_send_many(scratch, hmask, hbase,
+				 SBI_IPI_EVENT_FENCE, tinfo);
 }
 
 int sbi_tlb_fifo_init(struct sbi_scratch *scratch, bool cold_boot)
