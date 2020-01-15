@@ -21,11 +21,6 @@
 /* clang-format on */
 
 struct sbi_scratch;
-struct sbi_trap_info;
-
-struct sbi_ipi_data {
-	unsigned long ipi_type;
-};
 
 int sbi_ipi_send_many(struct sbi_scratch *scratch, ulong hmask,
 		      ulong hbase, u32 event, void *data);

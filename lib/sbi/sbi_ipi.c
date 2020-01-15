@@ -20,6 +20,10 @@
 #include <sbi/sbi_tlb.h>
 #include <sbi/sbi_trap.h>
 
+struct sbi_ipi_data {
+	unsigned long ipi_type;
+};
+
 static unsigned long ipi_data_off;
 
 static int sbi_ipi_send(struct sbi_scratch *scratch, u32 hartid, u32 event,
