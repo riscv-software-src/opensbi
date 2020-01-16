@@ -112,6 +112,10 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
+	rc = sbi_ecall_init();
+	if (rc)
+		sbi_hart_hang();
+
 	rc = sbi_system_final_init(scratch, TRUE);
 	if (rc)
 		sbi_hart_hang();

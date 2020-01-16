@@ -11,15 +11,37 @@
 #define __SBI_ECALL_H__
 
 #include <sbi/sbi_types.h>
+#include <sbi/sbi_list.h>
 
 struct sbi_trap_regs;
+struct sbi_trap_info;
 struct sbi_scratch;
+
+struct sbi_ecall_extension {
+	struct sbi_dlist head;
+	unsigned long extid_start;
+	unsigned long extid_end;
+	int (* probe)(struct sbi_scratch *scratch,
+		      unsigned long extid, unsigned long *out_val);
+	int (* handle)(struct sbi_scratch *scratch,
+		       unsigned long extid, unsigned long funcid,
+		       unsigned long *args, unsigned long *out_val,
+		       struct sbi_trap_info *out_trap);
+};
 
 u16 sbi_ecall_version_major(void);
 
 u16 sbi_ecall_version_minor(void);
 
+struct sbi_ecall_extension *sbi_ecall_find_extension(unsigned long extid);
+
+int sbi_ecall_register_extension(struct sbi_ecall_extension *ext);
+
+void sbi_ecall_unregister_extension(struct sbi_ecall_extension *ext);
+
 int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 		      struct sbi_scratch *scratch);
+
+int sbi_ecall_init(void);
 
 #endif
