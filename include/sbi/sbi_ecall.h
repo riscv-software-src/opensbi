@@ -13,6 +13,10 @@
 #include <sbi/sbi_types.h>
 #include <sbi/sbi_list.h>
 
+#define SBI_ECALL_VERSION_MAJOR		0
+#define SBI_ECALL_VERSION_MINOR		2
+#define SBI_OPENSBI_IMPID		1
+
 struct sbi_trap_regs;
 struct sbi_trap_info;
 struct sbi_scratch;
@@ -29,6 +33,7 @@ struct sbi_ecall_extension {
 		       struct sbi_trap_info *out_trap);
 };
 
+extern struct sbi_ecall_extension ecall_base;
 extern struct sbi_ecall_extension ecall_legacy;
 extern struct sbi_ecall_extension ecall_time;
 extern struct sbi_ecall_extension ecall_rfence;
