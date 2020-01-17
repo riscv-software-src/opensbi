@@ -30,6 +30,9 @@ struct sbi_ecall_extension {
 };
 
 extern struct sbi_ecall_extension ecall_legacy;
+extern struct sbi_ecall_extension ecall_time;
+extern struct sbi_ecall_extension ecall_rfence;
+extern struct sbi_ecall_extension ecall_ipi;
 
 u16 sbi_ecall_version_major(void);
 
