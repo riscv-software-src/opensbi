@@ -10,8 +10,9 @@
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_error.h>
-#include <sbi/sbi_platform.h>
+#include <sbi/sbi_trap.h>
 #include <sbi/sbi_version.h>
+#include <sbi/riscv_asm.h>
 
 #define SBI_ECALL_VERSION_MAJOR 0
 #define SBI_ECALL_VERSION_MINOR 2
@@ -90,32 +91,6 @@ static struct sbi_ecall_extension ecall_base = {
 	.extid_start = SBI_EXT_BASE,
 	.extid_end = SBI_EXT_BASE,
 	.handle = sbi_ecall_base_handler,
-};
-
-static int sbi_ecall_vendor_probe(struct sbi_scratch *scratch,
-				  unsigned long extid,
-				  unsigned long *out_val)
-{
-	*out_val = sbi_platform_vendor_ext_check(sbi_platform_ptr(scratch),
-						 extid);
-	return 0;
-}
-
-static int sbi_ecall_vendor_handler(struct sbi_scratch *scratch,
-				    unsigned long extid, unsigned long funcid,
-				    unsigned long *args, unsigned long *out_val,
-				    struct sbi_trap_info *out_trap)
-{
-	return sbi_platform_vendor_ext_provider(sbi_platform_ptr(scratch),
-						extid, funcid, args,
-						out_val, out_trap);
-}
-
-static struct sbi_ecall_extension ecall_vendor = {
-	.extid_start = SBI_EXT_VENDOR_START,
-	.extid_end = SBI_EXT_VENDOR_END,
-	.probe = sbi_ecall_vendor_probe,
-	.handle = sbi_ecall_vendor_handler,
 };
 
 static SBI_LIST_HEAD(ecall_exts_list);
