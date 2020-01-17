@@ -29,6 +29,8 @@ struct sbi_ecall_extension {
 		       struct sbi_trap_info *out_trap);
 };
 
+extern struct sbi_ecall_extension ecall_legacy;
+
 u16 sbi_ecall_version_major(void);
 
 u16 sbi_ecall_version_minor(void);

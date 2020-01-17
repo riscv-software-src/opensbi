@@ -14,6 +14,7 @@ libsbi-objs-y += riscv_locks.o
 
 libsbi-objs-y += sbi_console.o
 libsbi-objs-y += sbi_ecall.o
+libsbi-objs-y += sbi_ecall_legacy.o
 libsbi-objs-y += sbi_emulate_csr.o
 libsbi-objs-y += sbi_fifo.o
 libsbi-objs-y += sbi_hfence.o
