@@ -213,8 +213,8 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_event_stop	= platform_timer_event_stop,
 	.timer_event_start	= platform_timer_event_start,
 	.timer_init		= platform_timer_init,
-	.system_reboot		= platform_system_down,
-	.system_shutdown	= platform_system_down
+	.system_reboot		= platform_system_reboot,
+	.system_shutdown	= platform_system_shutdown
 };
 const struct sbi_platform platform = {
 	.opensbi_version	= OPENSBI_VERSION,
