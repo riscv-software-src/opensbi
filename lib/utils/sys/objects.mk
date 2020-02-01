@@ -8,3 +8,4 @@
 #
 
 libsbiutils-objs-y += sys/clint.o
+libsbiutils-objs-$(PLATFORM_SYS_HTIF) += sys/htif.o
