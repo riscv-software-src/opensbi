@@ -8,3 +8,4 @@
 #
 
 libsbiutils-objs-y += sys/clint.o
+libsbiutils-objs-y += sys/htif.o
