@@ -52,6 +52,9 @@
 #define FU540_PRCI_CLKMUXSTATUSREG		0x002C
 #define FU540_PRCI_CLKMUX_STATUS_TLCLKSEL	(0x1 << 1)
 
+/* Full tlb flush always */
+#define FU540_TLB_RANGE_FLUSH_LIMIT		0
+
 /* clang-format on */
 
 static void fu540_modify_dt(void *fdt)
@@ -171,6 +174,11 @@ static int fu540_ipi_init(bool cold_boot)
 	return clint_warm_ipi_init();
 }
 
+static u64 fu540_get_tlbr_flush_limit(void)
+{
+	return FU540_TLB_RANGE_FLUSH_LIMIT;
+}
+
 static int fu540_timer_init(bool cold_boot)
 {
 	int rc;
@@ -202,6 +210,7 @@ const struct sbi_platform_operations platform_ops = {
 	.ipi_send		= clint_ipi_send,
 	.ipi_clear		= clint_ipi_clear,
 	.ipi_init		= fu540_ipi_init,
+	.get_tlbr_flush_limit	= fu540_get_tlbr_flush_limit,
 	.timer_value		= clint_timer_value,
 	.timer_event_stop	= clint_timer_event_stop,
 	.timer_event_start	= clint_timer_event_start,
