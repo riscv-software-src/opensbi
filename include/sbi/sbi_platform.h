@@ -30,12 +30,10 @@
 #define SBI_PLATFORM_HART_STACK_SIZE_OFFSET (0x54)
 /** Offset of disabled_hart_mask in struct sbi_platform */
 #define SBI_PLATFORM_DISABLED_HART_OFFSET (0x58)
-/** Offset of tlb_range_flush_limit in struct sbi_platform */
-#define SBI_PLATFORM_TLB_RANGE_FLUSH_LIMIT_OFFSET (0x60)
 /** Offset of platform_ops_addr in struct sbi_platform */
-#define SBI_PLATFORM_OPS_OFFSET (0x68)
+#define SBI_PLATFORM_OPS_OFFSET (0x60)
 /** Offset of firmware_context in struct sbi_platform */
-#define SBI_PLATFORM_FIRMWARE_CONTEXT_OFFSET (0x68 + __SIZEOF_POINTER__)
+#define SBI_PLATFORM_FIRMWARE_CONTEXT_OFFSET (0x60 + __SIZEOF_POINTER__)
 
 #define SBI_PLATFORM_TLB_RANGE_FLUSH_LIMIT_DEFAULT		(1UL << 12)
 
@@ -121,6 +119,9 @@ struct sbi_platform_operations {
 	/** Exit IPI for current HART */
 	void (*ipi_exit)(void);
 
+	/** Get tlb flush limit value **/
+	u64 (*get_tlbr_flush_limit)(void);
+
 	/** Get platform timer value */
 	u64 (*timer_value)(void);
 	/** Start platform timer event for current HART */
@@ -170,8 +171,6 @@ struct sbi_platform {
 	u32 hart_stack_size;
 	/** Mask representing the set of disabled HARTs */
 	u64 disabled_hart_mask;
-	/* Maximum value of tlb flush range request*/
-	u64 tlb_range_flush_limit;
 	/** Pointer to sbi platform operations */
 	unsigned long platform_ops_addr;
 	/** Pointer to system firmware specific context */
@@ -247,8 +246,8 @@ static inline bool sbi_platform_hart_disabled(const struct sbi_platform *plat,
  */
 static inline u64 sbi_platform_tlbr_flush_limit(const struct sbi_platform *plat)
 {
-	if (plat && plat->tlb_range_flush_limit)
-		return plat->tlb_range_flush_limit;
+	if (plat && sbi_platform_ops(plat)->get_tlbr_flush_limit)
+		return sbi_platform_ops(plat)->get_tlbr_flush_limit();
 	return SBI_PLATFORM_TLB_RANGE_FLUSH_LIMIT_DEFAULT;
 }
 
