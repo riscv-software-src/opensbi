@@ -79,12 +79,11 @@ file. The parameters currently defined are as follows:
 *FW_PAYLOAD* Example
 --------------------
 
-The *[qemu/virt]* and *[qemu/sifive_u]* platforms illustrate how to configure
-and use a *FW_PAYLOAD* firmware. Detailed information regarding these platforms
-can be found in the platform documentation files.
+The *[qemu/virt]* platforms illustrate how to configure and use a *FW_PAYLOAD*
+firmware. Detailed information regarding these platforms can be found in the
+platform documentation files.
 
 The *kendryte/k210* platform also enables a build of a *FW_PAYLOAD* using an
 internally defined device tree file (*FW_PAYLOAD_FDT*).
 
 [qemu/virt]: ../platform/qemu_virt.md
-[qemu/sifive_u]: ../platform/qemu_sifive_u.md
