@@ -14,6 +14,7 @@
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_hsm.h>
 #include <sbi/sbi_init.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_platform.h>
@@ -153,7 +154,7 @@ void sbi_ipi_clear_smode(struct sbi_scratch *scratch)
 
 static void sbi_ipi_process_halt(struct sbi_scratch *scratch)
 {
-	sbi_exit(scratch);
+	sbi_hsm_hart_stop(scratch, TRUE);
 }
 
 static struct sbi_ipi_event_ops ipi_halt_ops = {

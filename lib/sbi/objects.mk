@@ -22,6 +22,7 @@ libsbi-objs-y += sbi_emulate_csr.o
 libsbi-objs-y += sbi_fifo.o
 libsbi-objs-y += sbi_hfence.o
 libsbi-objs-y += sbi_hart.o
+libsbi-objs-y += sbi_hsm.o
 libsbi-objs-y += sbi_illegal_insn.o
 libsbi-objs-y += sbi_init.o
 libsbi-objs-y += sbi_ipi.o

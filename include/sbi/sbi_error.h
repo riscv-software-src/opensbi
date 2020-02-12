@@ -28,6 +28,7 @@
 #define SBI_ETRAP	-13
 #define SBI_EUNKNOWN	-14
 #define SBI_ENOENT	-15
+#define SBI_EALREADY_STARTED	-16
 
 /* clang-format on */
 

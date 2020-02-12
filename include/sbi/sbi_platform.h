@@ -135,6 +135,14 @@ struct sbi_platform_operations {
 	/** Exit platform timer for current HART */
 	void (*timer_exit)(void);
 
+	/** Bringup the given hart from previous stage **/
+	int (*hart_start)(u32 hartid, ulong saddr, ulong priv);
+	/**
+	 *  Stop the current hart from running. This call doesn't expect to
+	 *  return if success.
+	 */
+	int (*hart_stop)(void);
+
 	/** Reboot the platform */
 	int (*system_reboot)(u32 type);
 	/** Shutdown or poweroff the platform */
@@ -282,6 +290,41 @@ static inline u32 sbi_platform_hart_stack_size(const struct sbi_platform *plat)
 	if (plat)
 		return plat->hart_stack_size;
 	return 0;
+}
+
+/**
+ * Bringup a given hart from previous stage. Platform should implement this
+ * operation if they support a custom mechanism to start a hart. Otherwise,
+ * a generic WFI based approach will be used to start/stop a hart in OpenSBI.
+ *
+ * @param plat pointer to struct sbi_platform
+ * @param hartid Hart ID
+ * @param saddr  Physical address in supervisor mode for hart to jump after
+ *		 OpenSBI
+ * @param priv	 A private context data from the caller
+ *
+ * @return 0 if sucessful and negative error code on failure
+ */
+static inline int sbi_platform_hart_start(const struct sbi_platform *plat,
+					  u32 hartid, ulong saddr, ulong priv)
+{
+	if (plat && sbi_platform_ops(plat)->hart_start)
+		return sbi_platform_ops(plat)->hart_start(hartid, saddr, priv);
+	return SBI_ENOTSUPP;
+}
+
+/**
+ * Stop the current hart in OpenSBI.
+ *
+ * @param plat pointer to struct sbi_platform
+ *
+ * @return Negative error code on failure. It doesn't return on success.
+ */
+static inline int sbi_platform_hart_stop(const struct sbi_platform *plat)
+{
+	if (plat && sbi_platform_ops(plat)->hart_stop)
+		return sbi_platform_ops(plat)->hart_stop();
+	return SBI_ENOTSUPP;
 }
 
 /**

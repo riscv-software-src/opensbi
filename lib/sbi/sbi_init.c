@@ -12,6 +12,7 @@
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_hsm.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_system.h>
@@ -85,6 +86,10 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (!init_count_offset)
 		sbi_hart_hang();
 
+	rc = sbi_hsm_init(scratch, hartid, TRUE);
+	if (rc)
+		sbi_hart_hang();
+
 	rc = sbi_system_early_init(scratch, TRUE);
 	if (rc)
 		sbi_hart_hang();
@@ -131,6 +136,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	init_count = sbi_scratch_offset_ptr(scratch, init_count_offset);
 	(*init_count)++;
 
+	sbi_hsm_prepare_next_jump(scratch, hartid);
 	sbi_hart_switch_mode(hartid, scratch->next_arg1, scratch->next_addr,
 			     scratch->next_mode, FALSE);
 }
@@ -144,6 +150,10 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 	sbi_hart_wait_for_coldboot(scratch, hartid);
 
 	if (!init_count_offset)
+		sbi_hart_hang();
+
+	rc = sbi_hsm_init(scratch, hartid, FALSE);
+	if (rc)
 		sbi_hart_hang();
 
 	rc = sbi_system_early_init(scratch, FALSE);
@@ -179,6 +189,7 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 	init_count = sbi_scratch_offset_ptr(scratch, init_count_offset);
 	(*init_count)++;
 
+	sbi_hsm_prepare_next_jump(scratch, hartid);
 	sbi_hart_switch_mode(hartid, scratch->next_arg1,
 			     scratch->next_addr,
 			     scratch->next_mode, FALSE);
@@ -260,5 +271,5 @@ void __noreturn sbi_exit(struct sbi_scratch *scratch)
 
 	sbi_platform_final_exit(plat);
 
-	sbi_hart_hang();
+	sbi_hsm_exit(scratch);
 }

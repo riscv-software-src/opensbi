@@ -9,6 +9,7 @@
  */
 
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_hsm.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_ipi.h>
@@ -42,6 +43,8 @@ void __noreturn sbi_system_reboot(struct sbi_scratch *scratch, u32 type)
 	sbi_ipi_send_halt(scratch,
 			  sbi_hart_available_mask() & ~current_hartid_mask, 0);
 
+	sbi_hsm_hart_stop(scratch, FALSE);
+
 	/* Platform specific reooot */
 	sbi_platform_system_reboot(sbi_platform_ptr(scratch), type);
 
@@ -56,6 +59,8 @@ void __noreturn sbi_system_shutdown(struct sbi_scratch *scratch, u32 type)
 	/* Send HALT IPI to every hart other than the current hart */
 	sbi_ipi_send_halt(scratch,
 			  sbi_hart_available_mask() & ~current_hartid_mask, 0);
+
+	sbi_hsm_hart_stop(scratch, FALSE);
 
 	/* Platform specific shutdown */
 	sbi_platform_system_shutdown(sbi_platform_ptr(scratch), type);
