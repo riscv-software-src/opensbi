@@ -59,6 +59,8 @@ enum sbi_platform_features {
 	SBI_PLATFORM_HAS_MCOUNTEREN = (1 << 4),
 	/** Platform has fault delegation support */
 	SBI_PLATFORM_HAS_MFAULTS_DELEGATION = (1 << 5),
+	/** Platform has custom secondary hart booting support */
+	SBI_PLATFORM_HAS_HART_SECONDARY_BOOT = (1 << 6),
 };
 
 /** Default feature set for a platform */
@@ -204,6 +206,9 @@ struct sbi_platform {
 /** Check whether the platform supports fault delegation */
 #define sbi_platform_has_mfaults_delegation(__p) \
 	((__p)->features & SBI_PLATFORM_HAS_MFAULTS_DELEGATION)
+/** Check whether the platform supports custom secondary hart booting support */
+#define sbi_platform_has_hart_secondary_boot(__p) \
+	((__p)->features & SBI_PLATFORM_HAS_HART_SECONDARY_BOOT)
 
 /**
  * Get name of the platform
