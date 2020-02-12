@@ -14,6 +14,7 @@
 #include <sbi/sbi_bits.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_hsm.h>
 #include <sbi/sbi_init.h>
@@ -29,6 +30,30 @@ static unsigned long hart_data_offset;
 struct sbi_hsm_data {
 	atomic_t state;
 };
+
+int sbi_hsm_hart_state_to_status(int state)
+{
+	int ret;
+
+	switch (state) {
+	case SBI_HART_STOPPED:
+		ret = SBI_HSM_HART_STATUS_STOPPED;
+		break;
+	case SBI_HART_STOPPING:
+		ret = SBI_HSM_HART_STATUS_STOP_PENDING;
+		break;
+	case SBI_HART_STARTING:
+		ret = SBI_HSM_HART_STATUS_START_PENDING;
+		break;
+	case SBI_HART_STARTED:
+		ret = SBI_HSM_HART_STATUS_STARTED;
+		break;
+	default:
+		ret = SBI_EINVAL;
+	}
+
+	return ret;
+}
 
 int sbi_hsm_hart_get_state(struct sbi_scratch *scratch, u32 hartid)
 {
