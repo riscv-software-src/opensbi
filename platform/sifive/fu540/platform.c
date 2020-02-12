@@ -75,7 +75,8 @@ static void fu540_modify_dt(void *fdt)
 		sbi_sprintf(cpu_node, "/cpus/cpu@%d", i);
 		cpu_offset = fdt_path_offset(fdt, cpu_node);
 		mmu_type   = fdt_getprop(fdt, cpu_offset, "mmu-type", NULL);
-		if (mmu_type && (!strcmp(mmu_type, "riscv,sv39") ||
+		if (mmu_type && (!strcmp(mmu_type, "riscv,sv32") ||
+				 !strcmp(mmu_type, "riscv,sv39") ||
 				 !strcmp(mmu_type, "riscv,sv48")))
 			continue;
 		else
