@@ -91,13 +91,13 @@ int plic_warm_irqchip_init(u32 target_hart, int m_cntx_id, int s_cntx_id)
 			plic_set_ie(s_cntx_id, i, 0);
 	}
 
-	/* By default, enable M-mode threshold */
+	/* By default, disable M-mode threshold */
 	if (m_cntx_id > -1)
-		plic_set_thresh(m_cntx_id, 1);
+		plic_set_thresh(m_cntx_id, 0xffffffff);
 
 	/* By default, disable S-mode threshold */
 	if (s_cntx_id > -1)
-		plic_set_thresh(s_cntx_id, 0);
+		plic_set_thresh(s_cntx_id, 0xffffffff);
 
 	return 0;
 }
@@ -112,7 +112,7 @@ int plic_cold_irqchip_init(unsigned long base, u32 num_sources, u32 hart_count)
 
 	/* Configure default priorities of all IRQs */
 	for (i = 1; i <= plic_num_sources; i++)
-		plic_set_priority(i, 1);
+		plic_set_priority(i, 0);
 
 	return 0;
 }
