@@ -18,6 +18,7 @@ libsbi-objs-y += sbi_ecall_base.o
 libsbi-objs-y += sbi_ecall_legacy.o
 libsbi-objs-y += sbi_ecall_replace.o
 libsbi-objs-y += sbi_ecall_vendor.o
+libsbi-objs-y += sbi_ecall_hsm.o
 libsbi-objs-y += sbi_emulate_csr.o
 libsbi-objs-y += sbi_fifo.o
 libsbi-objs-y += sbi_hfence.o
