@@ -17,11 +17,6 @@ platform-ldflags-y =
 platform-runcmd = qemu-system-riscv$(PLATFORM_RISCV_XLEN) -M virt -m 256M \
   -nographic -kernel $(build_dir)/platform/qemu/virt/firmware/fw_payload.elf
 
-# Common drivers to enable
-PLATFORM_IRQCHIP_PLIC=y
-PLATFORM_SERIAL_UART8250=y
-PLATFORM_SYS_CLINT=y
-
 # Blobs to build
 FW_TEXT_START=0x80000000
 FW_DYNAMIC=y
