@@ -94,6 +94,7 @@ case "${BUILD_RISCV_XLEN}" in
 	BUILD_PLATFORM_SUBDIR+=("ariane-fpga")
 	BUILD_PLATFORM_SUBDIR+=("andes/ae350")
 	BUILD_PLATFORM_SUBDIR+=("thead/c910")
+	BUILD_PLATFORM_SUBDIR+=("spike")
 	;;
 *)
 	echo "Invalid RISC-V XLEN"
