@@ -7,4 +7,3 @@ provided as a payload to OpenSBI.
 
 Detailed examples can be found in both the [QEMU](../platform/qemu_virt.md)
 and the [HiFive Unleashed](../platform/sifive_fu540.md) platform guides.
-
