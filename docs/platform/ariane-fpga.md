@@ -1,9 +1,11 @@
 Ariane FPGA SoC Platform
-==========================
-Ariane is a 6-stage, single issue, in-order CPU which implements the 64-bit RISC-V instruction set.
-The Ariane FPGA development platform is based on FPGA FPGA SoC(which currently supports only  Genesys 2 board) and is capable
-of running Linux.
- The FPGA SoC currently contains the following peripherals:
+========================
+Ariane is a 6-stage, single issue, in-order CPU which implements the 64-bit
+RISC-V instruction set. The Ariane FPGA development platform is based on FPGA
+SoC (which currently supports only Genesys 2 board) and is capable of running
+Linux.
+
+The FPGA SoC currently contains the following peripherals:
 - DDR3 memory controller
 - SPI controller to conncet to an SDCard
 - Ethernet controller
@@ -16,22 +18,21 @@ To build platform specific library and firmwares, provide the
 Platform Options
 ----------------
 
-The *Ariane FPGA* platform does not have any platform-specific
-options.
+The *Ariane FPGA* platform does not have any platform-specific options.
 
 Building Ariane FPGA Platform
 -----------------------------
-**Linux Kernel Payload**
 
+**Linux Kernel Payload**
 
 ```
 make PLATFORM=ariane-fpga FW_PAYLOAD_PATH=<linux_build_directory>/arch/riscv/boot/Image
 ```
 
 Booting Ariane FPGA Platform
------------------------------
+----------------------------
 
 **Linux Kernel Payload**
 
-As Linux kernel image is embedded in the OpenSBI firmware binary, Ariane will directly
-boot into Linux directly after powered on.
+As Linux kernel image is embedded in the OpenSBI firmware binary, Ariane will
+directly boot into Linux directly after powered on.
