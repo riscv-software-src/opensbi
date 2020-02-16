@@ -16,4 +16,3 @@ The libfdt source code is disjunctively dual licensed (GPL-2.0+ or
 BSD-2-Clause). Some of this project code is used in OpenSBI under the terms of
 the BSD 2-Clause license. The full text of this license can be found in the
 file [COPYING.BSD](COPYING.BSD).
-
