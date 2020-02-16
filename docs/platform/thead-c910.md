@@ -3,8 +3,8 @@ T-HEAD C910 Processor
 C910 is a 12-stage, 3 issues, 8 executions, out-of-order 64-bit RISC-V CPU which
 supports 16 cores, runs with 2.5GHz, and is capable of running Linux.
 
-To build platform specific library and firmwares, provide the *PLATFORM=thead/c910*
-parameter to the top level make command.
+To build platform specific library and firmwares, provide the
+*PLATFORM=thead/c910* parameter to the top level make command.
 
 Platform Options
 ----------------
@@ -19,7 +19,7 @@ make PLATFORM=thead/c910
 ```
 
 Booting T-HEAD C910 Platform
------------------------------
+----------------------------
 
 **No Payload**
 
