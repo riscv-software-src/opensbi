@@ -149,4 +149,3 @@ qemu-system-riscv32 -M virt -m 256M -nographic \
 	-device virtio-blk-device,drive=hd0 \
 	-append "root=/dev/vda rw console=ttyS0"
 ```
-
