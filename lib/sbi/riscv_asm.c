@@ -184,6 +184,18 @@ void csr_write_num(int csr_num, unsigned long val)
 	};
 }
 
+static unsigned long ctz(unsigned long x)
+{
+	unsigned long ret = 0;
+
+	while (!(x & 1UL)) {
+		ret++;
+		x = x >> 1;
+	}
+
+	return ret;
+}
+
 int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
 	    unsigned long log2len)
 {
@@ -275,7 +287,7 @@ int pmp_get(unsigned int n, unsigned long *prot_out, unsigned long *addr_out,
 			addr	= 0;
 			log2len = __riscv_xlen;
 		} else {
-			t1	= __builtin_ctzl(~addr);
+			t1	= ctz(~addr);
 			addr	= (addr & ~((1UL << t1) - 1)) << PMP_SHIFT;
 			log2len = (t1 + PMP_SHIFT + 1);
 		}
