@@ -9,13 +9,13 @@
 #include <sbi_utils/sys/htif.h>
 
 #define HTIF_DATA_BITS		48
-#define HTIF_DATA_MASK		((1UL << HTIF_DATA_BITS) - 1)
+#define HTIF_DATA_MASK		((1ULL << HTIF_DATA_BITS) - 1)
 #define HTIF_DATA_SHIFT		0
 #define HTIF_CMD_BITS		8
-#define HTIF_CMD_MASK		((1UL << HTIF_CMD_BITS) - 1)
+#define HTIF_CMD_MASK		((1ULL << HTIF_CMD_BITS) - 1)
 #define HTIF_CMD_SHIFT		48
 #define HTIF_DEV_BITS		8
-#define HTIF_DEV_MASK		((1UL << HTIF_DEV_BITS) - 1)
+#define HTIF_DEV_MASK		((1ULL << HTIF_DEV_BITS) - 1)
 #define HTIF_DEV_SHIFT		56
 
 #define HTIF_DEV_SYSTEM		0
