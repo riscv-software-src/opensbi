@@ -68,6 +68,7 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 		   sbi_ecall_version_major(), sbi_ecall_version_minor());
 	sbi_printf("\n");
 
+	sbi_hart_delegation_dump(scratch);
 	sbi_hart_pmp_dump(scratch);
 }
 

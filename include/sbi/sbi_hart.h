@@ -20,6 +20,7 @@ void *sbi_hart_get_trap_info(struct sbi_scratch *scratch);
 
 void sbi_hart_set_trap_info(struct sbi_scratch *scratch, void *data);
 
+void sbi_hart_delegation_dump(struct sbi_scratch *scratch);
 void sbi_hart_pmp_dump(struct sbi_scratch *scratch);
 
 void __attribute__((noreturn)) sbi_hart_hang(void);

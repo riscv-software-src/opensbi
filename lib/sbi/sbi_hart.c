@@ -107,6 +107,17 @@ static int delegate_traps(struct sbi_scratch *scratch, u32 hartid)
 	return 0;
 }
 
+void sbi_hart_delegation_dump(struct sbi_scratch *scratch)
+{
+#if __riscv_xlen == 32
+	sbi_printf("MIDELEG : 0x%08lx\n", csr_read(CSR_MIDELEG));
+	sbi_printf("MEDELEG : 0x%08lx\n", csr_read(CSR_MEDELEG));
+#else
+	sbi_printf("MIDELEG : 0x%016lx\n", csr_read(CSR_MIDELEG));
+	sbi_printf("MEDELEG : 0x%016lx\n", csr_read(CSR_MEDELEG));
+#endif
+}
+
 unsigned long log2roundup(unsigned long x)
 {
 	unsigned long ret = 0;
@@ -138,9 +149,9 @@ void sbi_hart_pmp_dump(struct sbi_scratch *scratch)
 		else
 			size = 0;
 #if __riscv_xlen == 32
-		sbi_printf("PMP%d: 0x%08lx-0x%08lx (A",
+		sbi_printf("PMP%d    : 0x%08lx-0x%08lx (A",
 #else
-		sbi_printf("PMP%d: 0x%016lx-0x%016lx (A",
+		sbi_printf("PMP%d    : 0x%016lx-0x%016lx (A",
 #endif
 			   i, addr, addr + size - 1);
 		if (prot & PMP_L)
