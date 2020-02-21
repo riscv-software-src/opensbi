@@ -79,7 +79,7 @@ long atomic_sub_return(atomic_t *atom, long value)
 #define axchg(ptr, x)							\
 	({									\
 		__typeof__(*(ptr)) _x_ = (x);					\
-		(__typeof__(*(ptr))) __xchg((ptr), _x_, sizeof(*(ptr)));	\
+		(__typeof__(*(ptr))) __axchg((ptr), _x_, sizeof(*(ptr)));	\
 	})
 
 
