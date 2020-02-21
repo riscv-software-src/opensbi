@@ -79,20 +79,23 @@ int sbi_ipi_send_many(struct sbi_scratch *scratch, ulong hmask, ulong hbase,
 	u32 hartid = sbi_current_hartid();
 	unsigned long last_bit = __fls(mask);
 
-	if (hbase > last_bit)
-		/* hart base is not available */
-		return SBI_EINVAL;
-	/**
-	 * FIXME: This check is valid only ULONG size. This is oka for now as
-	 * avaialble hart mask can support upto ULONG size only.
-	 */
-	tempmask = hmask << hbase;
-	tempmask = ~mask & tempmask;
-	if (tempmask)
-		/* at least one of the hart in hmask is not available */
-		return SBI_EINVAL;
+	if (hbase != -1UL) {
+		if (hbase > last_bit)
+			/* hart base is not available */
+			return SBI_EINVAL;
+		/**
+		 * FIXME: This check is valid only ULONG size. This is okay for
+		 * now as avaialble hart mask can support upto ULONG size only.
+		 */
+		tempmask = hmask << hbase;
+		tempmask = ~mask & tempmask;
+		if (tempmask)
+			/* at least one of the hart in hmask is not available */
+			return SBI_EINVAL;
 
-	mask &= (hmask << hbase);
+		mask &= (hmask << hbase);
+	}
+
 	/* Send IPIs to every other hart on the set */
 	for (i = 0, m = mask; m; i++, m >>= 1)
 		if ((m & 1UL) && (i != hartid))
