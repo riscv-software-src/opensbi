@@ -76,7 +76,6 @@ int sbi_ipi_send_many(struct sbi_scratch *scratch, ulong hmask, ulong hbase,
 	ulong i, m;
 	ulong mask = sbi_hart_available_mask();
 	ulong tempmask;
-	u32 hartid = sbi_current_hartid();
 	unsigned long last_bit = __fls(mask);
 
 	if (hbase != -1UL) {
@@ -98,15 +97,8 @@ int sbi_ipi_send_many(struct sbi_scratch *scratch, ulong hmask, ulong hbase,
 
 	/* Send IPIs to every other hart on the set */
 	for (i = 0, m = mask; m; i++, m >>= 1)
-		if ((m & 1UL) && (i != hartid))
+		if (m & 1UL)
 			sbi_ipi_send(scratch, i, event, data);
-
-	/*
-	 * If the current hart is on the set, send an IPI
-	 * to it as well
-	 */
-	if (mask & (1UL << hartid))
-		sbi_ipi_send(scratch, hartid, event, data);
 
 	return 0;
 }
