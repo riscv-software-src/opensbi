@@ -159,6 +159,5 @@ const struct sbi_platform platform = {
 	.features		= SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count		= VIRT_HART_COUNT,
 	.hart_stack_size	= VIRT_HART_STACK_SIZE,
-	.disabled_hart_mask	= 0,
 	.platform_ops_addr	= (unsigned long)&platform_ops
 };

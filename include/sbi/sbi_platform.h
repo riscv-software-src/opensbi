@@ -29,12 +29,10 @@
 #define SBI_PLATFORM_HART_COUNT_OFFSET (0x50)
 /** Offset of hart_stack_size in struct sbi_platform */
 #define SBI_PLATFORM_HART_STACK_SIZE_OFFSET (0x54)
-/** Offset of disabled_hart_mask in struct sbi_platform */
-#define SBI_PLATFORM_DISABLED_HART_OFFSET (0x58)
 /** Offset of platform_ops_addr in struct sbi_platform */
-#define SBI_PLATFORM_OPS_OFFSET (0x60)
+#define SBI_PLATFORM_OPS_OFFSET (0x58)
 /** Offset of firmware_context in struct sbi_platform */
-#define SBI_PLATFORM_FIRMWARE_CONTEXT_OFFSET (0x60 + __SIZEOF_POINTER__)
+#define SBI_PLATFORM_FIRMWARE_CONTEXT_OFFSET (0x58 + __SIZEOF_POINTER__)
 
 #define SBI_PLATFORM_TLB_RANGE_FLUSH_LIMIT_DEFAULT		(1UL << 12)
 
@@ -138,6 +136,9 @@ struct sbi_platform_operations {
 	/** Exit platform timer for current HART */
 	void (*timer_exit)(void);
 
+	/** Check whether given hart is disabled */
+	bool (*hart_disabled)(u32 hartid);
+
 	/** Bringup the given hart from previous stage **/
 	int (*hart_start)(u32 hartid, ulong saddr, ulong priv);
 	/**
@@ -182,8 +183,6 @@ struct sbi_platform {
 	u32 hart_count;
 	/** Per-HART stack size for exception/interrupt handling */
 	u32 hart_stack_size;
-	/** Mask representing the set of disabled HARTs */
-	u64 disabled_hart_mask;
 	/** Pointer to sbi platform operations */
 	unsigned long platform_ops_addr;
 	/** Pointer to system firmware specific context */
@@ -246,8 +245,8 @@ static inline const char *sbi_platform_name(const struct sbi_platform *plat)
 static inline bool sbi_platform_hart_disabled(const struct sbi_platform *plat,
 					      u32 hartid)
 {
-	if (plat && (plat->disabled_hart_mask & (1 << hartid)))
-		return TRUE;
+	if (plat && sbi_platform_ops(plat)->hart_disabled)
+		return sbi_platform_ops(plat)->hart_disabled(hartid);
 	return FALSE;
 }
 

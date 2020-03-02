@@ -194,6 +194,11 @@ static int fu540_timer_init(bool cold_boot)
 	return clint_warm_timer_init();
 }
 
+static bool fu540_hart_disabled(u32 hartid)
+{
+	return (FU540_HARITD_DISABLED & (1UL << hartid)) ? TRUE : FALSE;
+}
+
 static int fu540_system_down(u32 type)
 {
 	/* For now nothing to do. */
@@ -216,6 +221,7 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_event_stop	= clint_timer_event_stop,
 	.timer_event_start	= clint_timer_event_start,
 	.timer_init		= fu540_timer_init,
+	.hart_disabled		= fu540_hart_disabled,
 	.system_reboot		= fu540_system_down,
 	.system_shutdown	= fu540_system_down
 };
@@ -227,6 +233,5 @@ const struct sbi_platform platform = {
 	.features		= SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count		= FU540_HART_COUNT,
 	.hart_stack_size	= FU540_HART_STACK_SIZE,
-	.disabled_hart_mask	= FU540_HARITD_DISABLED,
 	.platform_ops_addr	= (unsigned long)&platform_ops
 };

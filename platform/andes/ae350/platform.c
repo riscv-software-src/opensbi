@@ -156,7 +156,6 @@ static int ae350_system_shutdown(u32 type)
 
 /* Platform descriptor. */
 const struct sbi_platform_operations platform_ops = {
-
 	.final_init = ae350_final_init,
 
 	.pmp_region_count = ae350_pmp_region_count,
@@ -182,13 +181,11 @@ const struct sbi_platform_operations platform_ops = {
 };
 
 const struct sbi_platform platform = {
-
 	.opensbi_version = OPENSBI_VERSION,
 	.platform_version = SBI_PLATFORM_VERSION(0x0, 0x01),
 	.name = "Andes AE350",
 	.features = SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count = AE350_HART_COUNT,
 	.hart_stack_size = AE350_HART_STACK_SIZE,
-	.disabled_hart_mask = 0,
 	.platform_ops_addr = (unsigned long)&platform_ops
 };
