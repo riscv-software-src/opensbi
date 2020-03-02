@@ -38,12 +38,19 @@ void sbi_system_final_exit(struct sbi_scratch *scratch)
 
 void __noreturn sbi_system_reboot(struct sbi_scratch *scratch, u32 type)
 {
-	u32 current_hartid_mask = 1UL << sbi_current_hartid();
+	ulong hbase = 0, hmask;
+	u32 current_hartid = sbi_current_hartid();
 
 	/* Send HALT IPI to every hart other than the current hart */
-	sbi_ipi_send_halt(scratch,
-			  sbi_hart_available_mask() & ~current_hartid_mask, 0);
+	while (!sbi_hsm_hart_started_mask(scratch, hbase, &hmask)) {
+		if (hbase <= current_hartid)
+			hmask &= ~(1UL << (current_hartid - hbase));
+		if (hmask)
+			sbi_ipi_send_halt(scratch, hmask, hbase);
+		hbase += BITS_PER_LONG;
+	}
 
+	/* Stop current HART */
 	sbi_hsm_hart_stop(scratch, FALSE);
 
 	/* Platform specific reooot */
@@ -55,12 +62,19 @@ void __noreturn sbi_system_reboot(struct sbi_scratch *scratch, u32 type)
 
 void __noreturn sbi_system_shutdown(struct sbi_scratch *scratch, u32 type)
 {
-	u32 current_hartid_mask = 1UL << sbi_current_hartid();
+	ulong hbase = 0, hmask;
+	u32 current_hartid = sbi_current_hartid();
 
 	/* Send HALT IPI to every hart other than the current hart */
-	sbi_ipi_send_halt(scratch,
-			  sbi_hart_available_mask() & ~current_hartid_mask, 0);
+	while (!sbi_hsm_hart_started_mask(scratch, hbase, &hmask)) {
+		if (hbase <= current_hartid)
+			hmask &= ~(1UL << (current_hartid - hbase));
+		if (hmask)
+			sbi_ipi_send_halt(scratch, hmask, hbase);
+		hbase += BITS_PER_LONG;
+	}
 
+	/* Stop current HART */
 	sbi_hsm_hart_stop(scratch, FALSE);
 
 	/* Platform specific shutdown */
