@@ -11,7 +11,6 @@
 #include <sbi/riscv_barrier.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/riscv_fp.h>
-#include <sbi/riscv_locks.h>
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_error.h>
@@ -340,34 +339,6 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 	register unsigned long a1 asm("a1") = arg1;
 	__asm__ __volatile__("mret" : : "r"(a0), "r"(a1));
 	__builtin_unreachable();
-}
-
-static spinlock_t avail_hart_mask_lock        = SPIN_LOCK_INITIALIZER;
-static volatile unsigned long avail_hart_mask = 0;
-
-void sbi_hart_mark_available(u32 hartid)
-{
-	spin_lock(&avail_hart_mask_lock);
-	avail_hart_mask |= (1UL << hartid);
-	spin_unlock(&avail_hart_mask_lock);
-}
-
-void sbi_hart_unmark_available(u32 hartid)
-{
-	spin_lock(&avail_hart_mask_lock);
-	avail_hart_mask &= ~(1UL << hartid);
-	spin_unlock(&avail_hart_mask_lock);
-}
-
-ulong sbi_hart_available_mask(void)
-{
-	ulong ret;
-
-	spin_lock(&avail_hart_mask_lock);
-	ret = avail_hart_mask;
-	spin_unlock(&avail_hart_mask_lock);
-
-	return ret;
 }
 
 typedef struct sbi_scratch *(*h2s)(ulong hartid);

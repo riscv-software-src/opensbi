@@ -196,8 +196,6 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 
 	wake_coldboot_harts(scratch, hartid);
 
-	sbi_hart_mark_available(hartid);
-
 	init_count = sbi_scratch_offset_ptr(scratch, init_count_offset);
 	(*init_count)++;
 
@@ -248,8 +246,6 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 	rc = sbi_system_final_init(scratch, FALSE);
 	if (rc)
 		sbi_hart_hang();
-
-	sbi_hart_mark_available(hartid);
 
 	init_count = sbi_scratch_offset_ptr(scratch, init_count_offset);
 	(*init_count)++;
@@ -325,8 +321,6 @@ void __noreturn sbi_exit(struct sbi_scratch *scratch)
 
 	if (sbi_platform_hart_disabled(plat, hartid))
 		sbi_hart_hang();
-
-	sbi_hart_unmark_available(hartid);
 
 	sbi_platform_early_exit(plat);
 

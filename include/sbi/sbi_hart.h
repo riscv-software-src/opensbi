@@ -32,12 +32,6 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 		     unsigned long next_addr, unsigned long next_mode,
 		     bool next_virt);
 
-void sbi_hart_mark_available(u32 hartid);
-
-ulong sbi_hart_available_mask(void);
-
-void sbi_hart_unmark_available(u32 hartid);
-
 struct sbi_scratch *sbi_hart_id_to_scratch(struct sbi_scratch *scratch,
 					   u32 hartid);
 
