@@ -9,6 +9,7 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_atomic.h>
+#include <sbi/riscv_locks.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_hart.h>
@@ -74,6 +75,73 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 	sbi_hart_pmp_dump(scratch);
 }
 
+#define COLDBOOT_WAIT_BITMAP_SIZE __riscv_xlen
+static spinlock_t coldboot_lock = SPIN_LOCK_INITIALIZER;
+static unsigned long coldboot_done = 0;
+static unsigned long coldboot_wait_bitmap = 0;
+
+static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
+{
+	unsigned long saved_mie;
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+
+	if ((sbi_platform_hart_count(plat) <= hartid) ||
+	    (COLDBOOT_WAIT_BITMAP_SIZE <= hartid))
+		sbi_hart_hang();
+
+	/* Save MIE CSR */
+	saved_mie = csr_read(CSR_MIE);
+
+	/* Set MSIE bit to receive IPI */
+	csr_set(CSR_MIE, MIP_MSIP);
+
+	/* Acquire coldboot lock */
+	spin_lock(&coldboot_lock);
+
+	/* Mark current HART as waiting */
+	coldboot_wait_bitmap |= (1UL << hartid);
+
+	/* Wait for coldboot to finish using WFI */
+	while (!coldboot_done) {
+		spin_unlock(&coldboot_lock);
+		wfi();
+		spin_lock(&coldboot_lock);
+	};
+
+	/* Unmark current HART as waiting */
+	coldboot_wait_bitmap &= ~(1UL << hartid);
+
+	/* Release coldboot lock */
+	spin_unlock(&coldboot_lock);
+
+	/* Restore MIE CSR */
+	csr_write(CSR_MIE, saved_mie);
+
+	/* Clear current HART IPI */
+	sbi_platform_ipi_clear(plat, hartid);
+}
+
+static void wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
+{
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	int max_hart			= sbi_platform_hart_count(plat);
+
+	/* Acquire coldboot lock */
+	spin_lock(&coldboot_lock);
+
+	/* Mark coldboot done */
+	coldboot_done = 1;
+
+	/* Send an IPI to all HARTs waiting for coldboot */
+	for (int i = 0; i < max_hart; i++) {
+		if ((i != hartid) && (coldboot_wait_bitmap & (1UL << i)))
+			sbi_platform_ipi_send(plat, i);
+	}
+
+	/* Release coldboot lock */
+	spin_unlock(&coldboot_lock);
+}
+
 static unsigned long init_count_offset;
 
 static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
@@ -130,7 +198,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (!(scratch->options & SBI_SCRATCH_NO_BOOT_PRINTS))
 		sbi_boot_prints(scratch, hartid);
 
-	sbi_hart_wake_coldboot_harts(scratch, hartid);
+	wake_coldboot_harts(scratch, hartid);
 
 	sbi_hart_mark_available(hartid);
 
@@ -148,7 +216,7 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 	unsigned long *init_count;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	sbi_hart_wait_for_coldboot(scratch, hartid);
+	wait_for_coldboot(scratch, hartid);
 
 	if (!init_count_offset)
 		sbi_hart_hang();
