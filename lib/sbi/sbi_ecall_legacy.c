@@ -12,6 +12,7 @@
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_hsm.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_timer.h>
@@ -31,9 +32,10 @@ static int sbi_load_hart_mask_unpriv(struct sbi_scratch *scratch,
 		if (uptrap->cause)
 			return SBI_ETRAP;
 	} else {
-		mask = sbi_hart_available_mask();
+		sbi_hsm_hart_started_mask(scratch, 0, &mask);
 	}
 	*hmask = mask;
+
 	return 0;
 }
 
