@@ -37,8 +37,7 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartid,
 	const struct sbi_ipi_event_ops *ipi_ops;
 
 	if ((SBI_IPI_EVENT_MAX <= event) ||
-	    !ipi_ops_array[event] ||
-	    sbi_platform_hart_disabled(plat, remote_hartid))
+	    !ipi_ops_array[event])
 		return SBI_EINVAL;
 	ipi_ops = ipi_ops_array[event];
 
@@ -74,32 +73,31 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartid,
 int sbi_ipi_send_many(struct sbi_scratch *scratch, ulong hmask, ulong hbase,
 			u32 event, void *data)
 {
+	int rc;
 	ulong i, m;
-	ulong mask = sbi_hart_available_mask();
-	ulong tempmask;
-	unsigned long last_bit = __fls(mask);
 
 	if (hbase != -1UL) {
-		if (hbase > last_bit)
-			/* hart base is not available */
-			return SBI_EINVAL;
-		/**
-		 * FIXME: This check is valid only ULONG size. This is okay for
-		 * now as avaialble hart mask can support upto ULONG size only.
-		 */
-		tempmask = hmask << hbase;
-		tempmask = ~mask & tempmask;
-		if (tempmask)
-			/* at least one of the hart in hmask is not available */
-			return SBI_EINVAL;
+		rc = sbi_hsm_hart_started_mask(scratch, hbase, &m);
+		if (rc)
+			return rc;
+		m &= hmask;
 
-		mask &= (hmask << hbase);
+		/* Send IPIs */
+		for (i = hbase; m; i++, m >>= 1) {
+			if (m & 1UL)
+				sbi_ipi_send(scratch, i, event, data);
+		}
+	} else {
+		hbase = 0;
+		while (!sbi_hsm_hart_started_mask(scratch, hbase, &m)) {
+			/* Send IPIs */
+			for (i = hbase; m; i++, m >>= 1) {
+				if (m & 1UL)
+					sbi_ipi_send(scratch, i, event, data);
+			}
+			hbase += BITS_PER_LONG;
+		}
 	}
-
-	/* Send IPIs to every other hart on the set */
-	for (i = 0, m = mask; m; i++, m >>= 1)
-		if (m & 1UL)
-			sbi_ipi_send(scratch, i, event, data);
 
 	return 0;
 }
