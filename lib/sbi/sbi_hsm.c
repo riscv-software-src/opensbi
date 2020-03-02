@@ -77,6 +77,44 @@ bool sbi_hsm_hart_started(struct sbi_scratch *scratch, u32 hartid)
 		return FALSE;
 }
 
+/**
+ * Get ulong HART mask for given HART base ID
+ * @param scratch the per-HART scratch pointer
+ * @param hbase the HART base ID
+ * @param out_hmask the output ulong HART mask
+ * @return 0 on success and SBI_Exxx (< 0) on failure
+ * Note: the output HART mask will be set to zero on failure as well.
+ */
+int sbi_hsm_hart_started_mask(struct sbi_scratch *scratch,
+			      ulong hbase, ulong *out_hmask)
+{
+	ulong i;
+	ulong hcount = sbi_platform_hart_count(sbi_platform_ptr(scratch));
+
+	/*
+	 * The SBI_HARTMASK_MAX_BITS represents the maximum HART ids generic
+	 * OpenSBI can handle whereas sbi_platform_hart_count() represents
+	 * the maximum HART ids (or HARTs) on underlying platform.
+	 *
+	 * Currently, we only support continuous HART ids so this function
+	 * is written with same assumption. In future, this function will
+	 * change when we support discontinuous and sparse HART ids.
+	 */
+
+	*out_hmask = 0;
+	if (hcount <= hbase)
+		return SBI_EINVAL;
+	if (BITS_PER_LONG < (hcount - hbase))
+		hcount = BITS_PER_LONG;
+
+	for (i = hbase; i < hcount; i++) {
+		if (sbi_hsm_hart_get_state(scratch, i) == SBI_HART_STARTED)
+			*out_hmask |= 1UL << (i - hbase);
+	}
+
+	return 0;
+}
+
 void sbi_hsm_prepare_next_jump(struct sbi_scratch *scratch, u32 hartid)
 {
 	u32 oldstate;
