@@ -69,9 +69,8 @@ int sbi_hsm_hart_get_state(struct sbi_scratch *scratch, u32 hartid)
 	return hstate;
 }
 
-int sbi_hsm_hart_started(struct sbi_scratch *scratch, u32 hartid)
+bool sbi_hsm_hart_started(struct sbi_scratch *scratch, u32 hartid)
 {
-
 	if (sbi_hsm_hart_get_state(scratch, hartid) == SBI_HART_STARTED)
 		return TRUE;
 	else
