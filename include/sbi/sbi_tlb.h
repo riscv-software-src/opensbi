@@ -41,7 +41,16 @@ struct sbi_tlb_info {
 	unsigned long shart_mask;
 };
 
-#define SBI_TLB_INFO_SIZE			sizeof(struct sbi_tlb_info)
+#define SBI_TLB_INFO_INIT(__ptr, __start, __size, __asid, __type, __src_hart) \
+do { \
+	(__ptr)->start = (__start); \
+	(__ptr)->size = (__size); \
+	(__ptr)->asid = (__asid); \
+	(__ptr)->type = (__type); \
+	(__ptr)->shart_mask = 1UL << (__src_hart); \
+} while (0)
+
+#define SBI_TLB_INFO_SIZE		sizeof(struct sbi_tlb_info)
 
 int sbi_tlb_request(struct sbi_scratch *scratch, ulong hmask,
 		    ulong hbase, struct sbi_tlb_info *tinfo);
