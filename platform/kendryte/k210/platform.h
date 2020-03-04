@@ -12,7 +12,7 @@
 #include <sbi/riscv_io.h>
 
 #define K210_HART_COUNT		2
-#define K210_HART_STACK_SIZE	4096
+#define K210_HART_STACK_SIZE	8192
 
 #define K210_UART_BAUDRATE	115200
 
