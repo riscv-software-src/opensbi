@@ -75,19 +75,14 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 	sbi_hart_pmp_dump(scratch);
 }
 
-#define COLDBOOT_WAIT_BITMAP_SIZE __riscv_xlen
 static spinlock_t coldboot_lock = SPIN_LOCK_INITIALIZER;
 static unsigned long coldboot_done = 0;
-static unsigned long coldboot_wait_bitmap = 0;
+static struct sbi_hartmask coldboot_wait_hmask = { 0 };
 
 static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 {
 	unsigned long saved_mie;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
-
-	if ((sbi_platform_hart_count(plat) <= hartid) ||
-	    (COLDBOOT_WAIT_BITMAP_SIZE <= hartid))
-		sbi_hart_hang();
 
 	/* Save MIE CSR */
 	saved_mie = csr_read(CSR_MIE);
@@ -99,7 +94,7 @@ static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	spin_lock(&coldboot_lock);
 
 	/* Mark current HART as waiting */
-	coldboot_wait_bitmap |= (1UL << hartid);
+	sbi_hartmask_set_hart(hartid, &coldboot_wait_hmask);
 
 	/* Wait for coldboot to finish using WFI */
 	while (!coldboot_done) {
@@ -109,7 +104,7 @@ static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	};
 
 	/* Unmark current HART as waiting */
-	coldboot_wait_bitmap &= ~(1UL << hartid);
+	sbi_hartmask_clear_hart(hartid, &coldboot_wait_hmask);
 
 	/* Release coldboot lock */
 	spin_unlock(&coldboot_lock);
@@ -134,7 +129,8 @@ static void wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 
 	/* Send an IPI to all HARTs waiting for coldboot */
 	for (int i = 0; i < max_hart; i++) {
-		if ((i != hartid) && (coldboot_wait_bitmap & (1UL << i)))
+		if ((i != hartid) &&
+		    sbi_hartmask_test_hart(i, &coldboot_wait_hmask))
 			sbi_platform_ipi_send(plat, i);
 	}
 
@@ -285,6 +281,7 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if ((SBI_HARTMASK_MAX_BITS <= hartid) ||
+	    (sbi_platform_hart_count(plat) <= hartid) ||
 	    sbi_platform_hart_disabled(plat, hartid))
 		sbi_hart_hang();
 
