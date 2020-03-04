@@ -190,17 +190,14 @@ static void sbi_tlb_local_flush(struct sbi_tlb_info *tinfo)
 static void sbi_tlb_entry_process(struct sbi_scratch *scratch,
 				  struct sbi_tlb_info *tinfo)
 {
-	u32 i;
-	u64 m;
+	u32 rhartid;
 	struct sbi_scratch *rscratch = NULL;
 	unsigned long *rtlb_sync = NULL;
 
 	sbi_tlb_local_flush(tinfo);
-	for (i = 0, m = tinfo->shart_mask; m; i++, m >>= 1) {
-		if (!(m & 1UL))
-			continue;
 
-		rscratch = sbi_hart_id_to_scratch(scratch, i);
+	sbi_hartmask_for_each_hart(rhartid, &tinfo->smask) {
+		rscratch = sbi_hart_id_to_scratch(scratch, rhartid);
 		rtlb_sync = sbi_scratch_offset_ptr(rscratch, tlb_sync_off);
 		while (atomic_raw_xchg_ulong(rtlb_sync, 1)) ;
 	}
@@ -263,11 +260,11 @@ static inline int __sbi_tlb_range_check(struct sbi_tlb_info *curr,
 	if (next->start <= curr->start && next_end > curr_end) {
 		curr->start = next->start;
 		curr->size  = next->size;
-		curr->shart_mask = curr->shart_mask | next->shart_mask;
-		ret	    = SBI_FIFO_UPDATED;
+		sbi_hartmask_or(&curr->smask, &curr->smask, &next->smask);
+		ret = SBI_FIFO_UPDATED;
 	} else if (next->start >= curr->start && next_end <= curr_end) {
-		curr->shart_mask = curr->shart_mask | next->shart_mask;
-		ret		 = SBI_FIFO_SKIP;
+		sbi_hartmask_or(&curr->smask, &curr->smask, &next->smask);
+		ret = SBI_FIFO_SKIP;
 	}
 
 	return ret;
