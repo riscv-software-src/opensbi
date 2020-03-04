@@ -8,7 +8,7 @@
  */
 
 #include <sbi/riscv_encoding.h>
-#include <sbi/sbi_bits.h>
+#include <sbi/sbi_bitops.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_trap.h>

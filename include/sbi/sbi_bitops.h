@@ -10,8 +10,23 @@
 #ifndef __SBI_BITOPS_H__
 #define __SBI_BITOPS_H__
 
-#include <sbi/sbi_bits.h>
-#include <sbi/riscv_asm.h>
+#include <sbi/sbi_types.h>
+
+#if __SIZEOF_POINTER__ == 8
+#define BITS_PER_LONG		64
+#elif __SIZEOF_POINTER__ == 4
+#define BITS_PER_LONG		32
+#else
+#error "Unexpected __SIZEOF_POINTER__"
+#endif
+
+#define EXTRACT_FIELD(val, which) \
+	(((val) & (which)) / ((which) & ~((which)-1)))
+#define INSERT_FIELD(val, which, fieldval) \
+	(((val) & ~(which)) | ((fieldval) * ((which) & ~((which)-1))))
+
+#define BIT_MASK(nr)		(1UL << ((nr) % BITS_PER_LONG))
+#define BIT_WORD(nr)		((nr) / BITS_PER_LONG)
 
 /**
  * ffs - Find first bit set

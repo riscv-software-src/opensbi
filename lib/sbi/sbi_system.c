@@ -8,6 +8,7 @@
  *   Nick Kossifidis <mick@ics.forth.gr>
  */
 
+#include <sbi/sbi_bitops.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_hsm.h>
 #include <sbi/sbi_platform.h>

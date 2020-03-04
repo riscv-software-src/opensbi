@@ -38,7 +38,6 @@
 #define LGREG		__REG_SEL(3, 2)
 
 #if __SIZEOF_POINTER__ == 8
-#define BITS_PER_LONG		64
 #ifdef __ASSEMBLY__
 #define RISCV_PTR		.dword
 #define RISCV_SZPTR		8
@@ -49,7 +48,6 @@
 #define RISCV_LGPTR		"3"
 #endif
 #elif __SIZEOF_POINTER__ == 4
-#define BITS_PER_LONG		32
 #ifdef __ASSEMBLY__
 #define RISCV_PTR		.word
 #define RISCV_SZPTR		4

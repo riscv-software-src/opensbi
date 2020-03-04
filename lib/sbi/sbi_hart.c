@@ -12,7 +12,7 @@
 #include <sbi/riscv_encoding.h>
 #include <sbi/riscv_fp.h>
 #include <sbi/riscv_locks.h>
-#include <sbi/sbi_bits.h>
+#include <sbi/sbi_bitops.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>

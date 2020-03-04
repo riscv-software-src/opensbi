@@ -11,7 +11,7 @@
 #include <sbi/riscv_barrier.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/riscv_atomic.h>
-#include <sbi/sbi_bits.h>
+#include <sbi/sbi_bitops.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_ecall_interface.h>

@@ -7,11 +7,10 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
-#include <sbi/sbi_types.h>
+#include <sbi/sbi_bitops.h>
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_atomic.h>
 #include <sbi/riscv_barrier.h>
-#include <sbi/sbi_bits.h>
 
 long atomic_read(atomic_t *atom)
 {
@@ -209,12 +208,12 @@ unsigned long atomic_raw_xchg_ulong(volatile unsigned long *ptr,
 #endif
 }
 
-#if (BITS_PER_LONG == 64)
+#if (__SIZEOF_POINTER__ == 8)
 #define __AMO(op) "amo" #op ".d"
-#elif (BITS_PER_LONG == 32)
+#elif (__SIZEOF_POINTER__ == 4)
 #define __AMO(op) "amo" #op ".w"
 #else
-#error "Unexpected BITS_PER_LONG"
+#error "Unexpected __SIZEOF_POINTER__"
 #endif
 
 #define __atomic_op_bit_ord(op, mod, nr, addr, ord)                          \
