@@ -12,6 +12,7 @@
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_hsm.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_platform.h>
@@ -215,7 +216,8 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 	u32 hartid			= sbi_current_hartid();
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	if (sbi_platform_hart_disabled(plat, hartid))
+	if ((SBI_HARTMASK_MAX_BITS <= hartid) ||
+	    sbi_platform_hart_disabled(plat, hartid))
 		sbi_hart_hang();
 
 	if (atomic_add_return(&coldboot_lottery, 1) == 1)
