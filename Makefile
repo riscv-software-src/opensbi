@@ -30,15 +30,15 @@ ifeq ($(build_dir),$(CURDIR))
 $(error Build directory is same as source directory.)
 endif
 ifdef I
- install_dir=$(shell $(READLINK) -f $(I))
+ install_root_dir=$(shell $(READLINK) -f $(I))
 else
- install_dir=$(CURDIR)/install
+ install_root_dir=$(CURDIR)/install/usr
 endif
-ifeq ($(install_dir),$(CURDIR))
-$(error Install directory is same as source directory.)
+ifeq ($(install_root_dir),$(CURDIR))
+$(error Install root directory is same as source directory.)
 endif
-ifeq ($(install_dir),$(build_dir))
-$(error Install directory is same as build directory.)
+ifeq ($(install_root_dir),$(build_dir))
+$(error Install root directory is same as build directory.)
 endif
 ifdef PLATFORM_DIR
   platform_dir_path=$(shell $(READLINK) -f $(PLATFORM_DIR))
@@ -156,6 +156,33 @@ ifndef PLATFORM_RISCV_CODE_MODEL
   PLATFORM_RISCV_CODE_MODEL = medany
 endif
 
+# Setup install directories
+ifdef INSTALL_INCLUDE_PATH
+	install_include_path=$(INSTALL_INCLUDE_PATH)
+else
+	install_include_path=include
+endif
+ifdef INSTALL_LIB_PATH
+	install_lib_path=$(INSTALL_LIB_PATH)
+else
+	ifneq ($(origin INSTALL_LIB_SUBDIR), undefined)
+		install_lib_subdir=$(INSTALL_LIB_SUBDIR)
+	else
+		install_lib_subdir=$(PLATFORM_RISCV_ABI)
+	endif
+	install_lib_path=lib$(subst 32,,$(PLATFORM_RISCV_XLEN))/$(install_lib_subdir)
+endif
+ifdef INSTALL_FIRMWARE_PATH
+	install_firmware_path=$(INSTALL_FIRMWARE_PATH)
+else
+	install_firmware_path=share/opensbi/$(PLATFORM_RISCV_ABI)
+endif
+ifdef INSTALL_DOCS_PATH
+	install_docs_path=$(INSTALL_DOCS_PATH)
+else
+	install_docs_path=share/opensbi/docs
+endif
+
 # Setup compilation commands flags
 GENFLAGS	=	-I$(platform_src_dir)/include
 GENFLAGS	+=	-I$(include_dir)
@@ -215,12 +242,12 @@ copy_file =  $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " COPY      $(subst $(build_dir)/,,$(1))"; \
 	     cp -f $(2) $(1)
 inst_file =  $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " INSTALL   $(subst $(install_dir)/,,$(1))"; \
+	     echo " INSTALL   $(subst $(install_root_dir)/,,$(1))"; \
 	     cp -f $(2) $(1)
 inst_file_list = $(CMD_PREFIX)if [ ! -z "$(4)" ]; then \
 	     mkdir -p $(1)/$(3); \
 	     for file in $(4) ; do \
-	     rel_file=`echo $$file | sed -e 's@$(2)/$(3)/@@'`; \
+	     rel_file=`echo $$file | sed -e 's@$(2)/$(subst $(install_firmware_path),platform,$(3))@@'`; \
 	     dest_file=$(1)"/"$(3)"/"`echo $$rel_file`; \
 	     dest_dir=`dirname $$dest_file`; \
 	     echo " INSTALL   "$(3)"/"`echo $$rel_file`; \
@@ -229,7 +256,7 @@ inst_file_list = $(CMD_PREFIX)if [ ! -z "$(4)" ]; then \
 	     done \
 	     fi
 inst_header_dir =  $(CMD_PREFIX)mkdir -p $(1); \
-	     echo " INSTALL   $(subst $(install_dir)/,,$(1))"; \
+	     echo " INSTALL   $(subst $(install_root_dir)/,,$(1))"; \
 	     cp -rf $(2) $(1)
 compile_cpp = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " CPP       $(subst $(build_dir)/,,$(1))"; \
@@ -385,26 +412,26 @@ install: $(install_targets-y)
 
 .PHONY: install_libsbi
 install_libsbi: $(build_dir)/lib/libsbi.a
-	$(call inst_header_dir,$(install_dir)/include,$(include_dir)/sbi)
-	$(call inst_file,$(install_dir)/lib/libsbi.a,$(build_dir)/lib/libsbi.a)
+	$(call inst_header_dir,$(install_root_dir)/$(install_include_path),$(include_dir)/sbi)
+	$(call inst_file,$(install_root_dir)/$(install_lib_path)/libsbi.a,$(build_dir)/lib/libsbi.a)
 
 .PHONY: install_libsbiutils
 install_libsbiutils: $(build_dir)/lib/libsbiutils.a
-	$(call inst_header_dir,$(install_dir)/include,$(include_dir)/sbi_utils)
-	$(call inst_file,$(install_dir)/lib/libsbiutils.a,$(build_dir)/lib/libsbiutils.a)
+	$(call inst_header_dir,$(install_root_dir)/$(install_include_path),$(include_dir)/sbi_utils)
+	$(call inst_file,$(install_root_dir)/$(install_lib_path)/libsbiutils.a,$(build_dir)/lib/libsbiutils.a)
 
 .PHONY: install_libplatsbi
 install_libplatsbi: $(platform_build_dir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a $(build_dir)/lib/libsbiutils.a
-	$(call inst_file,$(install_dir)/platform/$(platform_subdir)/lib/libplatsbi.a,$(platform_build_dir)/lib/libplatsbi.a)
+	$(call inst_file,$(install_root_dir)/$(install_lib_path)/opensbi/$(platform_subdir)/lib/libplatsbi.a,$(platform_build_dir)/lib/libplatsbi.a)
 
 .PHONY: install_firmwares
 install_firmwares: $(platform_build_dir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a $(build_dir)/lib/libsbiutils.a $(firmware-bins-path-y)
-	$(call inst_file_list,$(install_dir),$(build_dir),platform/$(platform_subdir)/firmware,$(firmware-elfs-path-y))
-	$(call inst_file_list,$(install_dir),$(build_dir),platform/$(platform_subdir)/firmware,$(firmware-bins-path-y))
+	$(call inst_file_list,$(install_root_dir),$(build_dir),$(install_firmware_path)/$(platform_subdir)/firmware,$(firmware-elfs-path-y))
+	$(call inst_file_list,$(install_root_dir),$(build_dir),$(install_firmware_path)/$(platform_subdir)/firmware,$(firmware-bins-path-y))
 
 .PHONY: install_docs
 install_docs: $(build_dir)/docs/latex/refman.pdf
-	$(call inst_file,$(install_dir)/docs/refman.pdf,$(build_dir)/docs/latex/refman.pdf)
+	$(call inst_file,$(install_root_dir)/$(install_docs_path)/refman.pdf,$(build_dir)/docs/latex/refman.pdf)
 
 # Rule for "make clean"
 .PHONY: clean
@@ -429,7 +456,7 @@ ifeq ($(build_dir),$(CURDIR)/build)
 	$(if $(V), @echo " RM        $(build_dir)")
 	$(CMD_PREFIX)rm -rf $(build_dir)
 endif
-ifeq ($(install_dir),$(CURDIR)/install)
-	$(if $(V), @echo " RM        $(install_dir)")
-	$(CMD_PREFIX)rm -rf $(install_dir)
+ifeq ($(install_root_dir),$(CURDIR)/install)
+	$(if $(V), @echo " RM        $(install_root_dir)")
+	$(CMD_PREFIX)rm -rf $(install_root_dir)
 endif
