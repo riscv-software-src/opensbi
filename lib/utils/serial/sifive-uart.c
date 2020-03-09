@@ -48,7 +48,7 @@ static inline unsigned int uart_min_clk_divisor(uint64_t in_freq,
 						uint64_t max_target_hz)
 {
 	uint64_t quotient = (in_freq + max_target_hz - 1) / (max_target_hz);
-	// Avoid underflow
+	/* Avoid underflow */
 	if (quotient == 0) {
 		return 0;
 	} else {

@@ -26,15 +26,15 @@
 #define UART_SCR_OFFSET		7	/* I/O: Scratch Register */
 #define UART_MDR1_OFFSET	8	/* I/O:  Mode Register */
 
-#define UART_LSR_FIFOE		0x80    /* Fifo error */
-#define UART_LSR_TEMT		0x40    /* Transmitter empty */
-#define UART_LSR_THRE		0x20    /* Transmit-hold-register empty */
-#define UART_LSR_BI		0x10    /* Break interrupt indicator */
-#define UART_LSR_FE		0x08    /* Frame error indicator */
-#define UART_LSR_PE		0x04    /* Parity error indicator */
-#define UART_LSR_OE		0x02    /* Overrun error indicator */
-#define UART_LSR_DR		0x01    /* Receiver data ready */
-#define UART_LSR_BRK_ERROR_BITS	0x1E    /* BI, FE, PE, OE bits */
+#define UART_LSR_FIFOE		0x80	/* Fifo error */
+#define UART_LSR_TEMT		0x40	/* Transmitter empty */
+#define UART_LSR_THRE		0x20	/* Transmit-hold-register empty */
+#define UART_LSR_BI		0x10	/* Break interrupt indicator */
+#define UART_LSR_FE		0x08	/* Frame error indicator */
+#define UART_LSR_PE		0x04	/* Parity error indicator */
+#define UART_LSR_OE		0x02	/* Overrun error indicator */
+#define UART_LSR_DR		0x01	/* Receiver data ready */
+#define UART_LSR_BRK_ERROR_BITS	0x1E	/* BI, FE, PE, OE bits */
 
 /* clang-format on */
 
@@ -88,7 +88,7 @@ int uart8250_init(unsigned long base, u32 in_freq, u32 baudrate, u32 reg_shift,
 {
 	u16 bdiv;
 
-	uart8250_base	   = (volatile void *)base;
+	uart8250_base      = (volatile void *)base;
 	uart8250_reg_shift = reg_shift;
 	uart8250_reg_width = reg_width;
 	uart8250_in_freq   = in_freq;
