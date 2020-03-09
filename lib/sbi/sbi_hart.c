@@ -75,7 +75,7 @@ static int delegate_traps(struct sbi_scratch *scratch, u32 hartid)
 	unsigned long interrupts, exceptions;
 
 	if (!misa_extension('S'))
-		/* No delegation possible as mideleg does not exist*/
+		/* No delegation possible as mideleg does not exist */
 		return 0;
 
 	/* Send M-mode interrupts and most exceptions to S-mode */
@@ -342,7 +342,7 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 	__builtin_unreachable();
 }
 
-static spinlock_t avail_hart_mask_lock	      = SPIN_LOCK_INITIALIZER;
+static spinlock_t avail_hart_mask_lock        = SPIN_LOCK_INITIALIZER;
 static volatile unsigned long avail_hart_mask = 0;
 
 void sbi_hart_mark_available(u32 hartid)

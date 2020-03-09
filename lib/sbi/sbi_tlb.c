@@ -392,11 +392,11 @@ int sbi_tlb_init(struct sbi_scratch *scratch, bool cold_boot)
 
 	if (cold_boot) {
 		tlb_sync_off = sbi_scratch_alloc_offset(sizeof(*tlb_sync),
-							    "IPI_TLB_SYNC");
+							"IPI_TLB_SYNC");
 		if (!tlb_sync_off)
 			return SBI_ENOMEM;
 		tlb_fifo_off = sbi_scratch_alloc_offset(sizeof(*tlb_q),
-							    "IPI_TLB_FIFO");
+							"IPI_TLB_FIFO");
 		if (!tlb_fifo_off) {
 			sbi_scratch_free_offset(tlb_sync_off);
 			return SBI_ENOMEM;

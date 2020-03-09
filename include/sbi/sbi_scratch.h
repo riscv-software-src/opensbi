@@ -85,7 +85,8 @@ enum sbi_scratch_options {
 #define sbi_scratch_thishart_arg1_ptr() \
 	((void *)(sbi_scratch_thishart_ptr()->next_arg1))
 
-/** Allocate from extra space in sbi_scratch
+/**
+ * Allocate from extra space in sbi_scratch
  *
  * @return zero on failure and non-zero (>= SBI_SCRATCH_EXTRA_SPACE_OFFSET)
  * on success

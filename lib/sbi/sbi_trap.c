@@ -178,7 +178,7 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 		regs->mstatus &= ~MSTATUS_MPP;
 		regs->mstatus |= (PRV_S << MSTATUS_MPP_SHIFT);
 
-		/* Set SPP for S-mode*/
+		/* Set SPP for S-mode */
 		regs->mstatus &= ~MSTATUS_SPP;
 		if (prev_mode == PRV_S)
 			regs->mstatus |= (1UL << MSTATUS_SPP_SHIFT);

@@ -215,20 +215,20 @@ static inline unsigned long __fls(unsigned long word)
 	     (bit) = find_next_zero_bit((addr), (size), (bit) + 1))
 
 unsigned long find_first_bit(const unsigned long *addr,
-				    unsigned long size);
+			     unsigned long size);
 
 unsigned long find_first_zero_bit(const unsigned long *addr,
-					 unsigned long size);
+				  unsigned long size);
 
 unsigned long find_last_bit(const unsigned long *addr,
-				   unsigned long size);
+			    unsigned long size);
 
 unsigned long find_next_bit(const unsigned long *addr,
-				   unsigned long size, unsigned long offset);
+			    unsigned long size, unsigned long offset);
 
 unsigned long find_next_zero_bit(const unsigned long *addr,
-					unsigned long size,
-					unsigned long offset);
+				 unsigned long size,
+				 unsigned long offset);
 
 /**
  * __set_bit - Set a bit in memory
@@ -242,7 +242,7 @@ static inline void __set_bit(int nr, volatile unsigned long *addr)
 	unsigned long mask = BIT_MASK(nr);
 	unsigned long *p = ((unsigned long *)addr) + BIT_WORD(nr);
 
-	*p  |= mask;
+	*p |= mask;
 }
 
 /**

@@ -89,7 +89,8 @@ typedef unsigned long		physical_size_t;
 /* clang-format on */
 
 #else
-/* OPENSBI_EXTERNAL_SBI_TYPES could be defined in CFLAGS for using the
+/*
+ * OPENSBI_EXTERNAL_SBI_TYPES could be defined in CFLAGS for using the
  * external definitions of data types and common macros.
  * OPENSBI_EXTERNAL_SBI_TYPES is the file name to external header file,
  * the external build system should address the additional include

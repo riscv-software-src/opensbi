@@ -10,9 +10,10 @@
 #ifndef __SBI_PLATFORM_H__
 #define __SBI_PLATFORM_H__
 
-/** OpenSBI 32-bit platform version with:
- *  1. upper 16-bits as major number
- *  2. lower 16-bits as minor number
+/**
+ * OpenSBI 32-bit platform version with:
+ * 1. upper 16-bits as major number
+ * 2. lower 16-bits as minor number
  */
 #define SBI_PLATFORM_VERSION(Major, Minor) ((Major << 16) | Minor)
 
@@ -81,12 +82,14 @@ struct sbi_platform_operations {
 	/** Platform final exit */
 	void (*final_exit)(void);
 
-	/** For platforms that do not implement misa, non-standard
+	/**
+	 * For platforms that do not implement misa, non-standard
 	 * methods are needed to determine cpu extension.
 	 */
 	int (*misa_check_extension)(char ext);
 
-	/** For platforms that do not implement misa, non-standard
+	/**
+	 * For platforms that do not implement misa, non-standard
 	 * methods are needed to get MXL field of misa.
 	 */
 	int (*misa_get_xlen)(void);
@@ -138,8 +141,8 @@ struct sbi_platform_operations {
 	/** Bringup the given hart from previous stage **/
 	int (*hart_start)(u32 hartid, ulong saddr, ulong priv);
 	/**
-	 *  Stop the current hart from running. This call doesn't expect to
-	 *  return if success.
+	 * Stop the current hart from running. This call doesn't expect to
+	 * return if success.
 	 */
 	int (*hart_stop)(void);
 

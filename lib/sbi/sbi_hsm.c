@@ -81,7 +81,7 @@ void sbi_hsm_prepare_next_jump(struct sbi_scratch *scratch, u32 hartid)
 {
 	u32 oldstate;
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
-							hart_data_offset);
+							    hart_data_offset);
 
 	oldstate = arch_atomic_cmpxchg(&hdata->state, SBI_HART_STARTING,
 				       SBI_HART_STARTED);
@@ -94,7 +94,7 @@ static void sbi_hsm_hart_wait(struct sbi_scratch *scratch, u32 hartid)
 	unsigned long saved_mie;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
-							hart_data_offset);
+							    hart_data_offset);
 	/* Save MIE CSR */
 	saved_mie = csr_read(CSR_MIE);
 
@@ -122,7 +122,7 @@ int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 
 	if (cold_boot) {
 		hart_data_offset = sbi_scratch_alloc_offset(sizeof(*hdata),
-								    "HART_DATA");
+							    "HART_DATA");
 		if (!hart_data_offset)
 			return SBI_ENOMEM;
 		hart_count = sbi_platform_hart_count(plat);
@@ -147,7 +147,7 @@ void __noreturn sbi_hsm_exit(struct sbi_scratch *scratch)
 	u32 hstate;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
-							hart_data_offset);
+							    hart_data_offset);
 	void (*jump_warmboot)(void) = (void (*)(void))scratch->warmboot_addr;
 
 	hstate = arch_atomic_cmpxchg(&hdata->state, SBI_HART_STOPPING,
@@ -183,7 +183,7 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch, u32 hartid,
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	struct sbi_scratch *rscratch = sbi_hart_id_to_scratch(scratch, hartid);
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(rscratch,
-							hart_data_offset);
+							    hart_data_offset);
 
 	if (sbi_platform_hart_disabled(plat, hartid))
 		return SBI_EINVAL;
@@ -225,14 +225,14 @@ int sbi_hsm_hart_stop(struct sbi_scratch *scratch, bool exitnow)
 	u32 hartid = sbi_current_hartid();
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
-							hart_data_offset);
+							    hart_data_offset);
 
 	if (sbi_platform_hart_disabled(plat, hartid) ||
 	    !sbi_hsm_hart_started(scratch, hartid))
 		return SBI_EINVAL;
 
 	oldstate = arch_atomic_cmpxchg(&hdata->state, SBI_HART_STARTED,
-				     SBI_HART_STOPPING);
+				       SBI_HART_STOPPING);
 	if (oldstate != SBI_HART_STARTED) {
 		sbi_printf("%s: ERR: The hart is in invalid state [%u]\n",
 			   __func__, oldstate);

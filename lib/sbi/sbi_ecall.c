@@ -105,7 +105,8 @@ int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 		trap.epc = regs->mepc;
 		sbi_trap_redirect(regs, &trap, scratch);
 	} else {
-		/* This function should return non-zero value only in case of
+		/*
+		 * This function should return non-zero value only in case of
 		 * fatal error. However, there is no good way to distinguish
 		 * between a fatal and non-fatal errors yet. That's why we treat
 		 * every return value except ETRAP as non-fatal and just return

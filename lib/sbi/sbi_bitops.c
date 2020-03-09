@@ -20,7 +20,7 @@
  * Returns the bit number of the first set bit.
  */
 unsigned long find_first_bit(const unsigned long *addr,
-				    unsigned long size)
+			     unsigned long size)
 {
 	const unsigned long *p = addr;
 	unsigned long result = 0;
@@ -50,7 +50,7 @@ found:
  * Returns the bit number of the first cleared bit.
  */
 unsigned long find_first_zero_bit(const unsigned long *addr,
-					 unsigned long size)
+				  unsigned long size)
 {
 	const unsigned long *p = addr;
 	unsigned long result = 0;
@@ -80,7 +80,7 @@ found:
  * Returns the bit number of the first set bit, or size.
  */
 unsigned long find_last_bit(const unsigned long *addr,
-				   unsigned long size)
+			    unsigned long size)
 {
 	unsigned long words;
 	unsigned long tmp;
@@ -115,7 +115,7 @@ found:
  * @size: The bitmap size in bits
  */
 unsigned long find_next_bit(const unsigned long *addr,
-				   unsigned long size, unsigned long offset)
+			    unsigned long size, unsigned long offset)
 {
 	const unsigned long *p = addr + BITOP_WORD(offset);
 	unsigned long result = offset & ~(BITS_PER_LONG-1);
@@ -160,8 +160,8 @@ found_middle:
  * @size: The bitmap size in bits
  */
 unsigned long find_next_zero_bit(const unsigned long *addr,
-					unsigned long size,
-					unsigned long offset)
+				 unsigned long size,
+				 unsigned long offset)
 {
 	const unsigned long *p = addr + BITOP_WORD(offset);
 	unsigned long result = offset & ~(BITS_PER_LONG-1);

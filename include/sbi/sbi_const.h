@@ -10,7 +10,8 @@
 #ifndef __SBI_CONST_H__
 #define __SBI_CONST_H__
 
-/* Some constant macros are used in both assembler and
+/*
+ * Some constant macros are used in both assembler and
  * C code.  Therefore we cannot annotate them always with
  * 'UL' and other type specifiers unilaterally.  We
  * use the following macros to deal with this.
@@ -39,8 +40,8 @@
 #define UL(x)		(_UL(x))
 #define ULL(x)		(_ULL(x))
 
-#define	__STR(s)	#s
-#define	STRINGIFY(s)	__STR(s)
+#define __STR(s)	#s
+#define STRINGIFY(s)	__STR(s)
 
 /* clang-format on */
 
