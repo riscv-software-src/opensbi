@@ -58,15 +58,11 @@ int sbi_hsm_hart_state_to_status(int state)
 int sbi_hsm_hart_get_state(struct sbi_scratch *scratch, u32 hartid)
 {
 	struct sbi_hsm_data *hdata;
-	u32 hstate;
 
-	if (hartid != sbi_current_hartid())
-		scratch = sbi_hart_id_to_scratch(scratch, hartid);
-
+	scratch = sbi_hart_id_to_scratch(scratch, hartid);
 	hdata = sbi_scratch_offset_ptr(scratch, hart_data_offset);
-	hstate = atomic_read(&hdata->state);
 
-	return hstate;
+	return atomic_read(&hdata->state);
 }
 
 bool sbi_hsm_hart_started(struct sbi_scratch *scratch, u32 hartid)
