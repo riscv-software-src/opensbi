@@ -32,9 +32,6 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 		     unsigned long next_addr, unsigned long next_mode,
 		     bool next_virt);
 
-struct sbi_scratch *sbi_hart_id_to_scratch(struct sbi_scratch *scratch,
-					   u32 hartid);
-
 u32 sbi_current_hartid(void);
 
 #endif

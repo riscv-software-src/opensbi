@@ -103,6 +103,12 @@ void sbi_scratch_free_offset(unsigned long offset);
 #define sbi_scratch_thishart_offset_ptr(offset)	\
 	((void *)sbi_scratch_thishart_ptr() + (offset))
 
+typedef struct sbi_scratch *(*hartid2scratch)(ulong hartid);
+
+/** Get sbi_scratch from HART id */
+#define sbi_hart_id_to_scratch(__scratch, __hartid) \
+	((hartid2scratch)(__scratch)->hartid_to_scratch)(__hartid)
+
 #endif
 
 #endif

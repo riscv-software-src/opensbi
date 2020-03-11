@@ -340,11 +340,3 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 	__asm__ __volatile__("mret" : : "r"(a0), "r"(a1));
 	__builtin_unreachable();
 }
-
-typedef struct sbi_scratch *(*h2s)(ulong hartid);
-
-struct sbi_scratch *sbi_hart_id_to_scratch(struct sbi_scratch *scratch,
-					   u32 hartid)
-{
-	return ((h2s)scratch->hartid_to_scratch)(hartid);
-}
