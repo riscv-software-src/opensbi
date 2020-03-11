@@ -29,10 +29,11 @@ endif
 ifeq ($(build_dir),$(CURDIR))
 $(error Build directory is same as source directory.)
 endif
+install_root_dir_default=$(CURDIR)/install
 ifdef I
  install_root_dir=$(shell $(READLINK) -f $(I))
 else
- install_root_dir=$(CURDIR)/install/usr
+ install_root_dir=$(install_root_dir_default)/usr
 endif
 ifeq ($(install_root_dir),$(CURDIR))
 $(error Install root directory is same as source directory.)
@@ -456,7 +457,7 @@ ifeq ($(build_dir),$(CURDIR)/build)
 	$(if $(V), @echo " RM        $(build_dir)")
 	$(CMD_PREFIX)rm -rf $(build_dir)
 endif
-ifeq ($(install_root_dir),$(CURDIR)/install)
-	$(if $(V), @echo " RM        $(install_root_dir)")
-	$(CMD_PREFIX)rm -rf $(install_root_dir)
+ifeq ($(install_root_dir),$(install_root_dir_default)/usr)
+	$(if $(V), @echo " RM        $(install_root_dir_default)")
+	$(CMD_PREFIX)rm -rf $(install_root_dir_default)
 endif
