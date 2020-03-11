@@ -409,35 +409,26 @@ _link_end:
 	.align 3
 	.globl _hartid_to_scratch
 _hartid_to_scratch:
-	add	sp, sp, -(3 * __SIZEOF_POINTER__)
-	REG_S	s0, (sp)
-	REG_S	s1, (__SIZEOF_POINTER__)(sp)
-	REG_S	s2, (__SIZEOF_POINTER__ * 2)(sp)
 	/*
 	 * a0 -> HART ID (passed by caller)
-	 * s0 -> HART Stack Size
-	 * s1 -> HART Stack End
-	 * s2 -> Temporary
+	 * t0 -> HART Stack Size
+	 * t1 -> HART Stack End
+	 * t2 -> Temporary
 	 */
-	la	s2, platform
+	la	t2, platform
 #if __riscv_xlen == 64
-	lwu	s0, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(s2)
-	lwu	s2, SBI_PLATFORM_HART_COUNT_OFFSET(s2)
+	lwu	t0, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(t2)
+	lwu	t2, SBI_PLATFORM_HART_COUNT_OFFSET(t2)
 #else
-	lw	s0, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(s2)
-	lw	s2, SBI_PLATFORM_HART_COUNT_OFFSET(s2)
+	lw	t0, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(t2)
+	lw	t2, SBI_PLATFORM_HART_COUNT_OFFSET(t2)
 #endif
-	mul	s2, s2, s0
-	la	s1, _fw_end
-	add	s1, s1, s2
-	mul	s2, s0, a0
-	sub	s1, s1, s2
-	li	s2, SBI_SCRATCH_SIZE
-	sub	a0, s1, s2
-	REG_L	s0, (sp)
-	REG_L	s1, (__SIZEOF_POINTER__)(sp)
-	REG_L	s2, (__SIZEOF_POINTER__ * 2)(sp)
-	add	sp, sp, (3 * __SIZEOF_POINTER__)
+	sub	t2, t2, a0
+	mul	t2, t2, t0
+	la	t1, _fw_end
+	add	t1, t1, t2
+	li	t2, SBI_SCRATCH_SIZE
+	sub	a0, t1, t2
 	ret
 
 	.section .entry, "ax", %progbits
