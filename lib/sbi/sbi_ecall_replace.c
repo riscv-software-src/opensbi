@@ -8,6 +8,7 @@
  *   Atish Patra <atish.patra@wdc.com>
  */
 
+#include <sbi/riscv_asm.h>
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_error.h>
@@ -15,7 +16,6 @@
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_tlb.h>
-#include <sbi/riscv_asm.h>
 
 static int sbi_ecall_time_handler(struct sbi_scratch *scratch,
 				  unsigned long extid, unsigned long funcid,
@@ -50,7 +50,7 @@ static int sbi_ecall_rfence_handler(struct sbi_scratch *scratch,
 {
 	int ret = 0;
 	struct sbi_tlb_info tlb_info;
-	u32 source_hart = sbi_current_hartid();
+	u32 source_hart = current_hartid();
 
 	if (funcid >= SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA &&
 	    funcid <= SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA_ASID)

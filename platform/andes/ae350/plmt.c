@@ -8,8 +8,8 @@
  *   Nylon Chen <nylon7@andestech.com>
  */
 
+#include <sbi/riscv_asm.h>
 #include <sbi/riscv_io.h>
-#include <sbi/sbi_hart.h>
 
 static u32 plmt_time_hart_count;
 static volatile void *plmt_time_base;
@@ -34,7 +34,7 @@ u64 plmt_timer_value(void)
 
 void plmt_timer_event_stop(void)
 {
-	u32 target_hart = sbi_current_hartid();
+	u32 target_hart = current_hartid();
 
 	if (plmt_time_hart_count <= target_hart)
 		return;
@@ -50,7 +50,7 @@ void plmt_timer_event_stop(void)
 
 void plmt_timer_event_start(u64 next_event)
 {
-	u32 target_hart = sbi_current_hartid();
+	u32 target_hart = current_hartid();
 
 	if (plmt_time_hart_count <= target_hart)
 		return;
@@ -70,7 +70,7 @@ void plmt_timer_event_start(u64 next_event)
 
 int plmt_warm_timer_init(void)
 {
-	u32 target_hart = sbi_current_hartid();
+	u32 target_hart = current_hartid();
 
 	if (plmt_time_hart_count <= target_hart || !plmt_time_base)
 		return -1;

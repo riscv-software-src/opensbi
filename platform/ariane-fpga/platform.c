@@ -4,6 +4,7 @@
  *				Panagiotis Peristerakis <perister@ics.forth.gr>
  */
 
+#include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_const.h>
 #include <sbi/sbi_platform.h>
@@ -105,7 +106,7 @@ static int plic_ariane_warm_irqchip_init(u32 target_hart,
  */
 static int ariane_irqchip_init(bool cold_boot)
 {
-	u32 hartid = sbi_current_hartid();
+	u32 hartid = current_hartid();
 	int ret;
 
 	if (cold_boot) {

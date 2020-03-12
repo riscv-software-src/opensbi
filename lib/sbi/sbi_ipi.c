@@ -176,7 +176,7 @@ void sbi_ipi_process(struct sbi_scratch *scratch)
 	struct sbi_ipi_data *ipi_data =
 			sbi_scratch_offset_ptr(scratch, ipi_data_off);
 
-	u32 hartid = sbi_current_hartid();
+	u32 hartid = current_hartid();
 	sbi_platform_ipi_clear(plat, hartid);
 
 	ipi_type = atomic_raw_xchg_ulong(&ipi_data->ipi_type, 0);

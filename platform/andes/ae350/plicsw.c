@@ -8,9 +8,9 @@
  *   Nylon Chen <nylon7@andestech.com>
  */
 
-#include <sbi/sbi_types.h>
-#include <sbi/sbi_hart.h>
+#include <sbi/riscv_asm.h>
 #include <sbi/riscv_io.h>
+#include <sbi/sbi_types.h>
 #include "plicsw.h"
 #include "platform.h"
 
@@ -19,7 +19,7 @@ static struct plicsw plicsw_dev[AE350_HART_COUNT];
 
 static inline void plicsw_claim(void)
 {
-	u32 source_hart = sbi_current_hartid();
+	u32 source_hart = current_hartid();
 
 	plicsw_dev[source_hart].source_id =
 		readl(plicsw_dev[source_hart].plicsw_claim);
@@ -27,7 +27,7 @@ static inline void plicsw_claim(void)
 
 static inline void plicsw_complete(void)
 {
-	u32 source_hart = sbi_current_hartid();
+	u32 source_hart = current_hartid();
 	u32 source = plicsw_dev[source_hart].source_id;
 
 	writel(source, plicsw_dev[source_hart].plicsw_claim);
@@ -61,7 +61,7 @@ static inline void plic_sw_pending(u32 target_hart)
 	 * The bit 5 is used to send IPI to hart 2
 	 * The bit 4 is used to send IPI to hart 3
 	 */
-	u32 source_hart = sbi_current_hartid();
+	u32 source_hart = current_hartid();
 	u32 target_offset = (PLICSW_PENDING_PER_HART - 1) - target_hart;
 	u32 per_hart_offset = PLICSW_PENDING_PER_HART * source_hart;
 	u32 val = 1 << target_offset << per_hart_offset;
@@ -90,7 +90,7 @@ void plicsw_ipi_clear(u32 target_hart)
 
 int plicsw_warm_ipi_init(void)
 {
-	u32 hartid = sbi_current_hartid();
+	u32 hartid = current_hartid();
 
 	if (!plicsw_dev[hartid].plicsw_pending
 	    && !plicsw_dev[hartid].plicsw_enable

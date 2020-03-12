@@ -8,6 +8,7 @@
  *   Nick Kossifidis <mick@ics.forth.gr>
  */
 
+#include <sbi/riscv_asm.h>
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_hsm.h>
@@ -39,12 +40,12 @@ void sbi_system_final_exit(struct sbi_scratch *scratch)
 void __noreturn sbi_system_reboot(struct sbi_scratch *scratch, u32 type)
 {
 	ulong hbase = 0, hmask;
-	u32 current_hartid = sbi_current_hartid();
+	u32 cur_hartid = current_hartid();
 
 	/* Send HALT IPI to every hart other than the current hart */
 	while (!sbi_hsm_hart_started_mask(scratch, hbase, &hmask)) {
-		if (hbase <= current_hartid)
-			hmask &= ~(1UL << (current_hartid - hbase));
+		if (hbase <= cur_hartid)
+			hmask &= ~(1UL << (cur_hartid - hbase));
 		if (hmask)
 			sbi_ipi_send_halt(scratch, hmask, hbase);
 		hbase += BITS_PER_LONG;
@@ -63,12 +64,12 @@ void __noreturn sbi_system_reboot(struct sbi_scratch *scratch, u32 type)
 void __noreturn sbi_system_shutdown(struct sbi_scratch *scratch, u32 type)
 {
 	ulong hbase = 0, hmask;
-	u32 current_hartid = sbi_current_hartid();
+	u32 cur_hartid = current_hartid();
 
 	/* Send HALT IPI to every hart other than the current hart */
 	while (!sbi_hsm_hart_started_mask(scratch, hbase, &hmask)) {
-		if (hbase <= current_hartid)
-			hmask &= ~(1UL << (current_hartid - hbase));
+		if (hbase <= cur_hartid)
+			hmask &= ~(1UL << (cur_hartid - hbase));
 		if (hmask)
 			sbi_ipi_send_halt(scratch, hmask, hbase);
 		hbase += BITS_PER_LONG;

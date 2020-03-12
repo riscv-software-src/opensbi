@@ -273,7 +273,7 @@ static atomic_t coldboot_lottery = ATOMIC_INITIALIZER(0);
 void __noreturn sbi_init(struct sbi_scratch *scratch)
 {
 	bool coldboot			= FALSE;
-	u32 hartid			= sbi_current_hartid();
+	u32 hartid			= current_hartid();
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if ((SBI_HARTMASK_MAX_BITS <= hartid) ||
@@ -316,7 +316,7 @@ unsigned long sbi_init_count(u32 hartid)
  */
 void __noreturn sbi_exit(struct sbi_scratch *scratch)
 {
-	u32 hartid			= sbi_current_hartid();
+	u32 hartid			= current_hartid();
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if (sbi_platform_hart_disabled(plat, hartid))

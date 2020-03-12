@@ -204,7 +204,7 @@ void __noreturn sbi_hsm_exit(struct sbi_scratch *scratch)
 
 fail_exit:
 	/* It should never reach here */
-	sbi_printf("ERR: Failed stop hart [%u]\n", sbi_current_hartid());
+	sbi_printf("ERR: Failed stop hart [%u]\n", current_hartid());
 	sbi_hart_hang();
 }
 
@@ -256,7 +256,7 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch, u32 hartid,
 int sbi_hsm_hart_stop(struct sbi_scratch *scratch, bool exitnow)
 {
 	int oldstate;
-	u32 hartid = sbi_current_hartid();
+	u32 hartid = current_hartid();
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
 							    hart_data_offset);

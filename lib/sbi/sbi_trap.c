@@ -217,7 +217,7 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 {
 	int rc = SBI_ENOTSUPP;
 	const char *msg = "trap handler failed";
-	u32 hartid = sbi_current_hartid();
+	u32 hartid = current_hartid();
 	ulong mcause = csr_read(CSR_MCAUSE);
 	ulong mtval = csr_read(CSR_MTVAL), mtval2 = 0, mtinst = 0;
 	struct sbi_trap_info trap, *uptrap;

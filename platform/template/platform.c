@@ -4,6 +4,7 @@
  * Copyright (c) 2019 Western Digital Corporation or its affiliates.
  */
 
+#include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_const.h>
 #include <sbi/sbi_platform.h>
@@ -82,7 +83,7 @@ static int platform_console_getc(void)
  */
 static int platform_irqchip_init(bool cold_boot)
 {
-	u32 hartid = sbi_current_hartid();
+	u32 hartid = current_hartid();
 	int ret;
 
 	/* Example if the generic PLIC driver is used */

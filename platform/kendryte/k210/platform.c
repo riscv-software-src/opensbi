@@ -7,9 +7,9 @@
  *   Damien Le Moal <damien.lemoal@wdc.com>
  */
 
+#include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_const.h>
-#include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_console.h>
 #include <sbi_utils/irqchip/plic.h>
@@ -55,7 +55,7 @@ static int k210_console_init(void)
 static int k210_irqchip_init(bool cold_boot)
 {
 	int rc;
-	u32 hartid = sbi_current_hartid();
+	u32 hartid = current_hartid();
 
 	if (cold_boot) {
 		rc = plic_cold_irqchip_init(K210_PLIC_BASE_ADDR,

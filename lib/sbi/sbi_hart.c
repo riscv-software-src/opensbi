@@ -17,14 +17,6 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
 
-/**
- * Return HART ID of the caller.
- */
-unsigned int sbi_current_hartid()
-{
-	return (u32)csr_read(CSR_MHARTID);
-}
-
 static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
 {
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);

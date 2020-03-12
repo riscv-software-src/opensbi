@@ -7,9 +7,9 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
-#include <sbi/riscv_io.h>
+#include <sbi/riscv_asm.h>
 #include <sbi/riscv_atomic.h>
-#include <sbi/sbi_hart.h>
+#include <sbi/riscv_io.h>
 #include <sbi_utils/sys/clint.h>
 
 static u32 clint_ipi_hart_count;
@@ -36,7 +36,7 @@ void clint_ipi_clear(u32 target_hart)
 
 int clint_warm_ipi_init(void)
 {
-	u32 hartid = sbi_current_hartid();
+	u32 hartid = current_hartid();
 
 	if (!clint_ipi_base)
 		return -1;
@@ -105,7 +105,7 @@ u64 clint_timer_value(void)
 
 void clint_timer_event_stop(void)
 {
-	u32 target_hart = sbi_current_hartid();
+	u32 target_hart = current_hartid();
 
 	if (clint_time_hart_count <= target_hart)
 		return;
@@ -116,7 +116,7 @@ void clint_timer_event_stop(void)
 
 void clint_timer_event_start(u64 next_event)
 {
-	u32 target_hart = sbi_current_hartid();
+	u32 target_hart = current_hartid();
 
 	if (clint_time_hart_count <= target_hart)
 		return;
@@ -127,7 +127,7 @@ void clint_timer_event_start(u64 next_event)
 
 int clint_warm_timer_init(void)
 {
-	u32 target_hart = sbi_current_hartid();
+	u32 target_hart = current_hartid();
 
 	if (clint_time_hart_count <= target_hart || !clint_time_base)
 		return -1;

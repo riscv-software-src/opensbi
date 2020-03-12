@@ -8,9 +8,9 @@
  *   Nylon Chen <nylon7@andestech.com>
  */
 
+#include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_const.h>
-#include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_console.h>
 #include <sbi_utils/serial/uart8250.h>
@@ -94,7 +94,7 @@ static int ae350_console_init(void)
 /* Initialize the platform interrupt controller for current HART. */
 static int ae350_irqchip_init(bool cold_boot)
 {
-	u32 hartid = sbi_current_hartid();
+	u32 hartid = current_hartid();
 	int ret;
 
 	if (cold_boot) {

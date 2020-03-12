@@ -8,6 +8,7 @@
  *   Atish Patra <atish.patra@wdc.com>
  */
 
+#include <sbi/riscv_asm.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_ecall_interface.h>
@@ -46,7 +47,7 @@ static int sbi_ecall_legacy_handler(struct sbi_scratch *scratch,
 {
 	int ret = 0;
 	struct sbi_tlb_info tlb_info;
-	u32 source_hart = sbi_current_hartid();
+	u32 source_hart = current_hartid();
 	ulong hmask = 0;
 
 	switch (extid) {

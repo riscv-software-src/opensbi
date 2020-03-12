@@ -319,7 +319,7 @@ static int sbi_tlb_update(struct sbi_scratch *scratch,
 	int ret;
 	struct sbi_fifo *tlb_fifo_r;
 	struct sbi_tlb_info *tinfo = data;
-	u32 curr_hartid = sbi_current_hartid();
+	u32 curr_hartid = current_hartid();
 
 	/*
 	 * If address range to flush is too big then simply

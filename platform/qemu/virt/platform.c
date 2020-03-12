@@ -8,6 +8,7 @@
  *   Nick Kossifidis <mick@ics.forth.gr>
  */
 
+#include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/riscv_io.h>
 #include <sbi/sbi_const.h>
@@ -84,7 +85,7 @@ static int virt_console_init(void)
 static int virt_irqchip_init(bool cold_boot)
 {
 	int rc;
-	u32 hartid = sbi_current_hartid();
+	u32 hartid = current_hartid();
 
 	if (cold_boot) {
 		rc = plic_cold_irqchip_init(

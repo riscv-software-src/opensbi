@@ -32,6 +32,4 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 		     unsigned long next_addr, unsigned long next_mode,
 		     bool next_virt);
 
-u32 sbi_current_hartid(void);
-
 #endif
