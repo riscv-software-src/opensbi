@@ -56,6 +56,8 @@ typedef unsigned long		physical_size_t;
 
 #define TRUE			1
 #define FALSE			0
+#define true			TRUE
+#define false			FALSE
 
 #define NULL			((void *)0)
 
