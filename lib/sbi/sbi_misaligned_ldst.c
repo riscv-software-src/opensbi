@@ -72,7 +72,6 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 		shift = 8 * (sizeof(ulong) - len);
 	} else if ((insn & INSN_MASK_LHU) == INSN_MATCH_LHU) {
 		len = 2;
-#ifdef __riscv_compressed
 #if __riscv_xlen >= 64
 	} else if ((insn & INSN_MASK_C_LD) == INSN_MATCH_C_LD) {
 		len   = 8;
@@ -107,7 +106,6 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 	} else if ((insn & INSN_MASK_C_FLWSP) == INSN_MATCH_C_FLWSP) {
 		fp  = 1;
 		len = 4;
-#endif
 #endif
 #endif
 	} else {
@@ -189,7 +187,6 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 #endif
 	} else if ((insn & INSN_MASK_SH) == INSN_MATCH_SH) {
 		len = 2;
-#ifdef __riscv_compressed
 #if __riscv_xlen >= 64
 	} else if ((insn & INSN_MASK_C_SD) == INSN_MATCH_C_SD) {
 		len	       = 8;
@@ -220,7 +217,6 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 	} else if ((insn & INSN_MASK_C_FSWSP) == INSN_MATCH_C_FSWSP) {
 		len	       = 4;
 		val.data_ulong = GET_F32_RS2C(insn, regs);
-#endif
 #endif
 #endif
 	} else {
