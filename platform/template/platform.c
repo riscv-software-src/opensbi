@@ -223,6 +223,6 @@ const struct sbi_platform platform = {
 	.name			= "platform-name",
 	.features		= SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count		= 1,
-	.hart_stack_size	= 8192,
+	.hart_stack_size	= SBI_PLATFORM_DEFAULT_HART_STACK_SIZE,
 	.platform_ops_addr	= (unsigned long)&platform_ops
 };

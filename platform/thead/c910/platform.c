@@ -152,6 +152,6 @@ const struct sbi_platform platform = {
 	.name                = "T-HEAD Xuantie c910",
 	.features            = SBI_THEAD_FEATURES,
 	.hart_count          = C910_HART_COUNT,
-	.hart_stack_size     = C910_HART_STACK_SIZE,
+	.hart_stack_size     = SBI_PLATFORM_DEFAULT_HART_STACK_SIZE,
 	.platform_ops_addr   = (unsigned long)&platform_ops
 };

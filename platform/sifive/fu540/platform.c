@@ -22,7 +22,6 @@
 /* clang-format off */
 
 #define FU540_HART_COUNT			5
-#define FU540_HART_STACK_SIZE			8192
 
 #define FU540_SYS_CLK				1000000000
 
@@ -232,6 +231,6 @@ const struct sbi_platform platform = {
 	.name			= "SiFive Freedom U540",
 	.features		= SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count		= FU540_HART_COUNT,
-	.hart_stack_size	= FU540_HART_STACK_SIZE,
+	.hart_stack_size	= SBI_PLATFORM_DEFAULT_HART_STACK_SIZE,
 	.platform_ops_addr	= (unsigned long)&platform_ops
 };

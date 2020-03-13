@@ -138,6 +138,6 @@ const struct sbi_platform platform = {
 	.name			= "Kendryte K210",
 	.features		= SBI_PLATFORM_HAS_TIMER_VALUE,
 	.hart_count		= K210_HART_COUNT,
-	.hart_stack_size	= K210_HART_STACK_SIZE,
+	.hart_stack_size	= SBI_PLATFORM_DEFAULT_HART_STACK_SIZE,
 	.platform_ops_addr	= (unsigned long)&platform_ops
 };

@@ -21,7 +21,6 @@
 /* clang-format off */
 
 #define VIRT_HART_COUNT			8
-#define VIRT_HART_STACK_SIZE		8192
 
 #define VIRT_TEST_ADDR			0x100000
 #define VIRT_TEST_FINISHER_FAIL		0x3333
@@ -159,6 +158,6 @@ const struct sbi_platform platform = {
 	.name			= "QEMU Virt Machine",
 	.features		= SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count		= VIRT_HART_COUNT,
-	.hart_stack_size	= VIRT_HART_STACK_SIZE,
+	.hart_stack_size	= SBI_PLATFORM_DEFAULT_HART_STACK_SIZE,
 	.platform_ops_addr	= (unsigned long)&platform_ops
 };
