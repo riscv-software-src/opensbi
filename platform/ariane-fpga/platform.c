@@ -201,6 +201,6 @@ const struct sbi_platform platform = {
 	.name = "ARIANE RISC-V",
 	.features = SBI_ARIANE_FEATURES,
 	.hart_count = ARIANE_HART_COUNT,
-	.hart_stack_size = 4096,
+	.hart_stack_size = 8192,
 	.platform_ops_addr = (unsigned long)&platform_ops
 };
