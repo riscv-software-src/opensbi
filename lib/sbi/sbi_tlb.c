@@ -197,6 +197,9 @@ static void sbi_tlb_entry_process(struct sbi_tlb_info *tinfo)
 
 	sbi_hartmask_for_each_hart(rhartid, &tinfo->smask) {
 		rscratch = sbi_hartid_to_scratch(rhartid);
+		if (!rscratch)
+			continue;
+
 		rtlb_sync = sbi_scratch_offset_ptr(rscratch, tlb_sync_off);
 		while (atomic_raw_xchg_ulong(rtlb_sync, 1)) ;
 	}

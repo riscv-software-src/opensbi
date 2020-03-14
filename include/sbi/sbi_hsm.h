@@ -17,6 +17,7 @@
 #define SBI_HART_STOPPING	1
 #define SBI_HART_STARTING	2
 #define SBI_HART_STARTED	3
+#define SBI_HART_UNKNOWN	4
 
 int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot);
 void __noreturn sbi_hsm_exit(struct sbi_scratch *scratch);

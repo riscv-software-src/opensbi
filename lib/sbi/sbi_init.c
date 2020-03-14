@@ -305,6 +305,9 @@ unsigned long sbi_init_count(u32 hartid)
 		return 0;
 
 	scratch = sbi_hartid_to_scratch(hartid);
+	if (!scratch)
+		return 0;
+
 	init_count = sbi_scratch_offset_ptr(scratch, init_count_offset);
 
 	return *init_count;

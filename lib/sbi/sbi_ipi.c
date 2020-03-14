@@ -41,11 +41,10 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartid,
 		return SBI_EINVAL;
 	ipi_ops = ipi_ops_array[event];
 
-	/*
-	 * Set IPI type on remote hart's scratch area and
-	 * trigger the interrupt
-	 */
 	remote_scratch = sbi_hartid_to_scratch(remote_hartid);
+	if (!remote_scratch)
+		return SBI_EINVAL;
+
 	ipi_data = sbi_scratch_offset_ptr(remote_scratch, ipi_data_off);
 
 	if (ipi_ops->update) {
@@ -55,6 +54,10 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartid,
 			return ret;
 	}
 
+	/*
+	 * Set IPI type on remote hart's scratch area and
+	 * trigger the interrupt
+	 */
 	atomic_raw_set_bit(event, &ipi_data->ipi_type);
 	smp_wmb();
 	sbi_platform_ipi_send(plat, remote_hartid);
