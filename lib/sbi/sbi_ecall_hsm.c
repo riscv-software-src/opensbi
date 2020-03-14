@@ -30,7 +30,7 @@ static int sbi_ecall_hsm_handler(struct sbi_scratch *scratch,
 		ret = sbi_hsm_hart_stop(scratch, TRUE);
 		break;
 	case SBI_EXT_HSM_HART_GET_STATUS:
-		hstate = sbi_hsm_hart_get_state(scratch, args[0]);
+		hstate = sbi_hsm_hart_get_state(args[0]);
 		ret = sbi_hsm_hart_state_to_status(hstate);
 		break;
 	default:

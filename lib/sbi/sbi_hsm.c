@@ -55,9 +55,10 @@ int sbi_hsm_hart_state_to_status(int state)
 	return ret;
 }
 
-int sbi_hsm_hart_get_state(struct sbi_scratch *scratch, u32 hartid)
+int sbi_hsm_hart_get_state(u32 hartid)
 {
 	struct sbi_hsm_data *hdata;
+	struct sbi_scratch *scratch;
 
 	scratch = sbi_hartid_to_scratch(hartid);
 	hdata = sbi_scratch_offset_ptr(scratch, hart_data_offset);
@@ -65,9 +66,9 @@ int sbi_hsm_hart_get_state(struct sbi_scratch *scratch, u32 hartid)
 	return atomic_read(&hdata->state);
 }
 
-bool sbi_hsm_hart_started(struct sbi_scratch *scratch, u32 hartid)
+bool sbi_hsm_hart_started(u32 hartid)
 {
-	if (sbi_hsm_hart_get_state(scratch, hartid) == SBI_HART_STARTED)
+	if (sbi_hsm_hart_get_state(hartid) == SBI_HART_STARTED)
 		return TRUE;
 	else
 		return FALSE;
@@ -104,7 +105,7 @@ int sbi_hsm_hart_started_mask(struct sbi_scratch *scratch,
 		hcount = BITS_PER_LONG;
 
 	for (i = hbase; i < hcount; i++) {
-		if (sbi_hsm_hart_get_state(scratch, i) == SBI_HART_STARTED)
+		if (sbi_hsm_hart_get_state(i) == SBI_HART_STARTED)
 			*out_hmask |= 1UL << (i - hbase);
 	}
 
@@ -262,7 +263,7 @@ int sbi_hsm_hart_stop(struct sbi_scratch *scratch, bool exitnow)
 							    hart_data_offset);
 
 	if (sbi_platform_hart_disabled(plat, hartid) ||
-	    !sbi_hsm_hart_started(scratch, hartid))
+	    !sbi_hsm_hart_started(hartid))
 		return SBI_EINVAL;
 
 	oldstate = arch_atomic_cmpxchg(&hdata->state, SBI_HART_STARTED,
