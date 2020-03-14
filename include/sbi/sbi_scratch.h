@@ -85,6 +85,9 @@ enum sbi_scratch_options {
 #define sbi_scratch_thishart_arg1_ptr() \
 	((void *)(sbi_scratch_thishart_ptr()->next_arg1))
 
+/** Initialize scatch table and allocator */
+int sbi_scratch_init(struct sbi_scratch *scratch);
+
 /**
  * Allocate from extra space in sbi_scratch
  *
@@ -103,11 +106,12 @@ void sbi_scratch_free_offset(unsigned long offset);
 #define sbi_scratch_thishart_offset_ptr(offset)	\
 	((void *)sbi_scratch_thishart_ptr() + (offset))
 
-typedef struct sbi_scratch *(*hartid2scratch)(ulong hartid);
+/** HART id to scratch table */
+extern struct sbi_scratch *hartid_to_scratch_table[];
 
 /** Get sbi_scratch from HART id */
 #define sbi_hart_id_to_scratch(__scratch, __hartid) \
-	((hartid2scratch)(__scratch)->hartid_to_scratch)(__hartid)
+	hartid_to_scratch_table[__hartid]
 
 #endif
 

@@ -9,12 +9,29 @@
 
 #include <sbi/riscv_locks.h>
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_string.h>
 
+struct sbi_scratch *hartid_to_scratch_table[SBI_HARTMASK_MAX_BITS] = { 0 };
+
 static spinlock_t extra_lock = SPIN_LOCK_INITIALIZER;
 static unsigned long extra_offset = SBI_SCRATCH_EXTRA_SPACE_OFFSET;
+
+typedef struct sbi_scratch *(*hartid2scratch)(ulong hartid);
+
+int sbi_scratch_init(struct sbi_scratch *scratch)
+{
+	u32 i;
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+
+	for (i = 0; i < sbi_platform_hart_count(plat); i++)
+		hartid_to_scratch_table[i] =
+			((hartid2scratch)scratch->hartid_to_scratch)(i);
+
+	return 0;
+}
 
 unsigned long sbi_scratch_alloc_offset(unsigned long size, const char *owner)
 {
