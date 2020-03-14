@@ -187,8 +187,7 @@ static void sbi_tlb_local_flush(struct sbi_tlb_info *tinfo)
 	return;
 }
 
-static void sbi_tlb_entry_process(struct sbi_scratch *scratch,
-				  struct sbi_tlb_info *tinfo)
+static void sbi_tlb_entry_process(struct sbi_tlb_info *tinfo)
 {
 	u32 rhartid;
 	struct sbi_scratch *rscratch = NULL;
@@ -211,7 +210,7 @@ static void sbi_tlb_process_count(struct sbi_scratch *scratch, int count)
 			sbi_scratch_offset_ptr(scratch, tlb_fifo_off);
 
 	while (!sbi_fifo_dequeue(tlb_fifo, &tinfo)) {
-		sbi_tlb_entry_process(scratch, &tinfo);
+		sbi_tlb_entry_process(&tinfo);
 		deq_count++;
 		if (deq_count > count)
 			break;
@@ -226,7 +225,7 @@ static void sbi_tlb_process(struct sbi_scratch *scratch)
 			sbi_scratch_offset_ptr(scratch, tlb_fifo_off);
 
 	while (!sbi_fifo_dequeue(tlb_fifo, &tinfo))
-		sbi_tlb_entry_process(scratch, &tinfo);
+		sbi_tlb_entry_process(&tinfo);
 }
 
 static void sbi_tlb_sync(struct sbi_scratch *scratch)
