@@ -238,22 +238,6 @@ static inline const char *sbi_platform_name(const struct sbi_platform *plat)
 }
 
 /**
- * Check whether the given HART is disabled
- *
- * @param plat pointer to struct sbi_platform
- * @param hartid HART ID
- *
- * @return TRUE if HART is disabled and FALSE otherwise
- */
-static inline bool sbi_platform_hart_disabled(const struct sbi_platform *plat,
-					      u32 hartid)
-{
-	if (plat && sbi_platform_ops(plat)->hart_disabled)
-		return sbi_platform_ops(plat)->hart_disabled(hartid);
-	return FALSE;
-}
-
-/**
  * Get platform specific tlb range flush maximum value. Any request with size
  * higher than this is upgraded to a full flush.
  *
@@ -295,6 +279,26 @@ static inline u32 sbi_platform_hart_stack_size(const struct sbi_platform *plat)
 	if (plat)
 		return plat->hart_stack_size;
 	return 0;
+}
+
+/**
+ * Check whether the given HART is disabled
+ *
+ * @param plat pointer to struct sbi_platform
+ * @param hartid HART ID
+ *
+ * @return TRUE if HART is disabled and FALSE otherwise
+ */
+static inline bool sbi_platform_hart_disabled(const struct sbi_platform *plat,
+					      u32 hartid)
+{
+	if (plat) {
+		if (sbi_platform_hart_count(plat) <= hartid)
+			return TRUE;
+		if (sbi_platform_ops(plat)->hart_disabled)
+			return sbi_platform_ops(plat)->hart_disabled(hartid);
+	}
+	return FALSE;
 }
 
 /**
