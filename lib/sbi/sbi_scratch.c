@@ -26,9 +26,12 @@ int sbi_scratch_init(struct sbi_scratch *scratch)
 	u32 i;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	for (i = 0; i < sbi_platform_hart_count(plat); i++)
+	for (i = 0; i < sbi_platform_hart_count(plat); i++) {
+		if (sbi_platform_hart_disabled(plat, i))
+			continue;
 		hartid_to_scratch_table[i] =
 			((hartid2scratch)scratch->hartid_to_scratch)(i);
+	}
 
 	return 0;
 }
