@@ -26,7 +26,7 @@ int sbi_scratch_init(struct sbi_scratch *scratch)
 	u32 i;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	for (i = 0; i < sbi_platform_hart_count(plat); i++) {
+	for (i = 0; i < SBI_HARTMASK_MAX_BITS; i++) {
 		if (sbi_platform_hart_disabled(plat, i))
 			continue;
 		hartid_to_scratch_table[i] =
@@ -41,8 +41,7 @@ unsigned long sbi_scratch_alloc_offset(unsigned long size, const char *owner)
 	u32 i;
 	void *ptr;
 	unsigned long ret = 0;
-	struct sbi_scratch *scratch, *rscratch;
-	const struct sbi_platform *plat;
+	struct sbi_scratch *rscratch;
 
 	/*
 	 * We have a simple brain-dead allocator which never expects
@@ -71,9 +70,7 @@ done:
 	spin_unlock(&extra_lock);
 
 	if (ret) {
-		scratch = sbi_scratch_thishart_ptr();
-		plat = sbi_platform_ptr(scratch);
-		for (i = 0; i < sbi_platform_hart_count(plat); i++) {
+		for (i = 0; i < SBI_HARTMASK_MAX_BITS; i++) {
 			rscratch = sbi_hartid_to_scratch(i);
 			if (!rscratch)
 				continue;

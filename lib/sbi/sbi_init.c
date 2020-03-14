@@ -59,8 +59,6 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 	/* Platform details */
 	sbi_printf("Platform Name          : %s\n", sbi_platform_name(plat));
 	sbi_printf("Platform HART Features : RV%d%s\n", xlen, str);
-	sbi_printf("Platform Max HARTs     : %d\n",
-		   sbi_platform_hart_count(plat));
 	sbi_printf("Current Hart           : %u\n", hartid);
 	/* Firmware details */
 	sbi_printf("Firmware Base          : 0x%lx\n", scratch->fw_start);
@@ -119,7 +117,6 @@ static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 static void wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 {
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
-	int max_hart			= sbi_platform_hart_count(plat);
 
 	/* Acquire coldboot lock */
 	spin_lock(&coldboot_lock);
@@ -128,7 +125,7 @@ static void wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 	coldboot_done = 1;
 
 	/* Send an IPI to all HARTs waiting for coldboot */
-	for (int i = 0; i < max_hart; i++) {
+	for (int i = 0; i < SBI_HARTMASK_MAX_BITS; i++) {
 		if ((i != hartid) &&
 		    sbi_hartmask_test_hart(i, &coldboot_wait_hmask))
 			sbi_platform_ipi_send(plat, i);
@@ -282,7 +279,6 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if ((SBI_HARTMASK_MAX_BITS <= hartid) ||
-	    (sbi_platform_hart_count(plat) <= hartid) ||
 	    sbi_platform_hart_disabled(plat, hartid))
 		sbi_hart_hang();
 
@@ -300,8 +296,7 @@ unsigned long sbi_init_count(u32 hartid)
 	struct sbi_scratch *scratch;
 	unsigned long *init_count;
 
-	if (sbi_platform_hart_count(sbi_platform_thishart_ptr()) <= hartid ||
-	    !init_count_offset)
+	if (!init_count_offset)
 		return 0;
 
 	scratch = sbi_hartid_to_scratch(hartid);
