@@ -216,8 +216,6 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch, u32 hartid,
 	if (!rscratch)
 		return SBI_EINVAL;
 	hdata = sbi_scratch_offset_ptr(rscratch, hart_data_offset);
-	if (sbi_platform_hart_disabled(plat, hartid))
-		return SBI_EINVAL;
 	hstate = arch_atomic_cmpxchg(&hdata->state, SBI_HART_STOPPED,
 				     SBI_HART_STARTING);
 	if (hstate == SBI_HART_STARTED)
@@ -254,12 +252,10 @@ int sbi_hsm_hart_stop(struct sbi_scratch *scratch, bool exitnow)
 {
 	int oldstate;
 	u32 hartid = current_hartid();
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
 							    hart_data_offset);
 
-	if (sbi_platform_hart_disabled(plat, hartid) ||
-	    !sbi_hsm_hart_started(hartid))
+	if (!sbi_hsm_hart_started(hartid))
 		return SBI_EINVAL;
 
 	oldstate = arch_atomic_cmpxchg(&hdata->state, SBI_HART_STARTED,
