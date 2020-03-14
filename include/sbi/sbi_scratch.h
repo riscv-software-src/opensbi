@@ -110,7 +110,7 @@ void sbi_scratch_free_offset(unsigned long offset);
 extern struct sbi_scratch *hartid_to_scratch_table[];
 
 /** Get sbi_scratch from HART id */
-#define sbi_hart_id_to_scratch(__scratch, __hartid) \
+#define sbi_hartid_to_scratch(__hartid) \
 	hartid_to_scratch_table[__hartid]
 
 #endif

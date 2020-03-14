@@ -59,7 +59,7 @@ int sbi_hsm_hart_get_state(struct sbi_scratch *scratch, u32 hartid)
 {
 	struct sbi_hsm_data *hdata;
 
-	scratch = sbi_hart_id_to_scratch(scratch, hartid);
+	scratch = sbi_hartid_to_scratch(hartid);
 	hdata = sbi_scratch_offset_ptr(scratch, hart_data_offset);
 
 	return atomic_read(&hdata->state);
@@ -163,7 +163,7 @@ int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 
 		/* Initialize hart state data for every hart */
 		for (i = 0; i < hart_count; i++) {
-			rscratch = sbi_hart_id_to_scratch(scratch, i);
+			rscratch = sbi_hartid_to_scratch(i);
 			hdata = sbi_scratch_offset_ptr(rscratch,
 						       hart_data_offset);
 			ATOMIC_INIT(&hdata->state,
@@ -215,7 +215,7 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch, u32 hartid,
 	unsigned int hstate;
 	int rc;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
-	struct sbi_scratch *rscratch = sbi_hart_id_to_scratch(scratch, hartid);
+	struct sbi_scratch *rscratch = sbi_hartid_to_scratch(hartid);
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(rscratch,
 							    hart_data_offset);
 

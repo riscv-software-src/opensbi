@@ -71,7 +71,7 @@ done:
 		scratch = sbi_scratch_thishart_ptr();
 		plat = sbi_platform_ptr(scratch);
 		for (i = 0; i < sbi_platform_hart_count(plat); i++) {
-			rscratch = sbi_hart_id_to_scratch(scratch, i);
+			rscratch = sbi_hartid_to_scratch(i);
 			ptr = sbi_scratch_offset_ptr(rscratch, ret);
 			sbi_memset(ptr, 0, size);
 		}
