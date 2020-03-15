@@ -279,7 +279,7 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if ((SBI_HARTMASK_MAX_BITS <= hartid) ||
-	    sbi_platform_hart_disabled(plat, hartid))
+	    sbi_platform_hart_invalid(plat, hartid))
 		sbi_hart_hang();
 
 	if (atomic_add_return(&coldboot_lottery, 1) == 1)
@@ -322,7 +322,7 @@ void __noreturn sbi_exit(struct sbi_scratch *scratch)
 	u32 hartid			= current_hartid();
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	if (sbi_platform_hart_disabled(plat, hartid))
+	if (sbi_platform_hart_invalid(plat, hartid))
 		sbi_hart_hang();
 
 	sbi_platform_early_exit(plat);

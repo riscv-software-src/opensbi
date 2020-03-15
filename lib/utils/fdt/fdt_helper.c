@@ -30,7 +30,7 @@ void fdt_cpu_fixup(void *fdt)
 		sbi_sprintf(cpu_node, "/cpus/cpu@%d", i);
 		cpu_offset = fdt_path_offset(fdt, cpu_node);
 
-		if (sbi_platform_hart_disabled(plat, i))
+		if (sbi_platform_hart_invalid(plat, i))
 			fdt_setprop_string(fdt, cpu_offset, "status",
 					   "disabled");
 

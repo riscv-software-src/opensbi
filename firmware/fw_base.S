@@ -351,6 +351,7 @@ _start_warm:
 	csrw	CSR_MIE, zero
 	csrw	CSR_MIP, zero
 
+	/* Find HART count and HART stack size */
 	la	a4, platform
 #if __riscv_xlen == 64
 	lwu	s7, SBI_PLATFORM_HART_COUNT_OFFSET(a4)
@@ -359,12 +360,29 @@ _start_warm:
 	lw	s7, SBI_PLATFORM_HART_COUNT_OFFSET(a4)
 	lw	s8, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(a4)
 #endif
+	REG_L	s9, SBI_PLATFORM_HART_INDEX2ID_OFFSET(a4)
 
-	/* HART ID should be within expected limit */
+	/* Find HART id */
 	csrr	s6, CSR_MHARTID
-	bge	s6, s7, _start_hang
 
-	/* find the scratch space for this hart */
+	/* Find HART index */
+	beqz	s9, 3f
+	li	a4, 0
+1:
+#if __riscv_xlen == 64
+	lwu	a5, (s9)
+#else
+	lw	a5, (s9)
+#endif
+	beq	a5, s6, 2f
+	add	s9, s9, 4
+	add	a4, a4, 1
+	blt	a4, s7, 1b
+	li	a4, -1
+2:	add	s6, a4, zero
+3:	bge	s6, s7, _start_hang
+
+	/* Find the scratch space based on HART index */
 	la	tp, _fw_end
 	mul	a5, s7, s8
 	add	tp, tp, a5
@@ -411,6 +429,7 @@ _link_end:
 _hartid_to_scratch:
 	/*
 	 * a0 -> HART ID (passed by caller)
+	 * a1 -> HART Index (passed by caller)
 	 * t0 -> HART Stack Size
 	 * t1 -> HART Stack End
 	 * t2 -> Temporary
@@ -423,7 +442,7 @@ _hartid_to_scratch:
 	lw	t0, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(t2)
 	lw	t2, SBI_PLATFORM_HART_COUNT_OFFSET(t2)
 #endif
-	sub	t2, t2, a0
+	sub	t2, t2, a1
 	mul	t2, t2, t0
 	la	t1, _fw_end
 	add	t1, t1, t2

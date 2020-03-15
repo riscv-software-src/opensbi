@@ -165,10 +165,12 @@ static int fu540_timer_init(bool cold_boot)
 	return clint_warm_timer_init();
 }
 
-static bool fu540_hart_disabled(u32 hartid)
-{
-	return (FU540_HARITD_DISABLED & (1UL << hartid)) ? TRUE : FALSE;
-}
+static u32 fu540_hart_index2id[FU540_HART_COUNT - 1] = {
+	[0] = 1,
+	[1] = 2,
+	[2] = 3,
+	[3] = 4,
+};
 
 static int fu540_system_down(u32 type)
 {
@@ -192,7 +194,6 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_event_stop	= clint_timer_event_stop,
 	.timer_event_start	= clint_timer_event_start,
 	.timer_init		= fu540_timer_init,
-	.hart_disabled		= fu540_hart_disabled,
 	.system_reboot		= fu540_system_down,
 	.system_shutdown	= fu540_system_down
 };
@@ -202,7 +203,8 @@ const struct sbi_platform platform = {
 	.platform_version	= SBI_PLATFORM_VERSION(0x0, 0x01),
 	.name			= "SiFive Freedom U540",
 	.features		= SBI_PLATFORM_DEFAULT_FEATURES,
-	.hart_count		= FU540_HART_COUNT,
+	.hart_count		= (FU540_HART_COUNT - 1),
+	.hart_index2id		= fu540_hart_index2id,
 	.hart_stack_size	= SBI_PLATFORM_DEFAULT_HART_STACK_SIZE,
 	.platform_ops_addr	= (unsigned long)&platform_ops
 };

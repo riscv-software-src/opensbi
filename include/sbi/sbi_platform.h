@@ -33,6 +33,8 @@
 #define SBI_PLATFORM_OPS_OFFSET (0x58)
 /** Offset of firmware_context in struct sbi_platform */
 #define SBI_PLATFORM_FIRMWARE_CONTEXT_OFFSET (0x58 + __SIZEOF_POINTER__)
+/** Offset of hart_index2id in struct sbi_platform */
+#define SBI_PLATFORM_HART_INDEX2ID_OFFSET (0x58 + (__SIZEOF_POINTER__ * 2))
 
 #define SBI_PLATFORM_TLB_RANGE_FLUSH_LIMIT_DEFAULT		(1UL << 12)
 
@@ -136,9 +138,6 @@ struct sbi_platform_operations {
 	/** Exit platform timer for current HART */
 	void (*timer_exit)(void);
 
-	/** Check whether given hart is disabled */
-	bool (*hart_disabled)(u32 hartid);
-
 	/** Bringup the given hart from previous stage **/
 	int (*hart_start)(u32 hartid, ulong saddr, ulong priv);
 	/**
@@ -190,6 +189,22 @@ struct sbi_platform {
 	unsigned long platform_ops_addr;
 	/** Pointer to system firmware specific context */
 	unsigned long firmware_context;
+	/**
+	 * HART index to HART id table
+	 *
+	 * For used HART index <abc>:
+	 *     hart_index2id[<abc>] = some HART id
+	 * For unused HART index <abc>:
+	 *     hart_index2id[<abc>] = -1U
+	 *
+	 * If hart_index2id == NULL then we assume identity mapping
+	 *     hart_index2id[<abc>] = <abc>
+	 *
+	 * We have only two restrictions:
+	 * 1. HART index < sbi_platform hart_count
+	 * 2. HART id < SBI_HARTMASK_MAX_BITS
+	 */
+	const u32 *hart_index2id;
 } __packed;
 
 /** Get pointer to sbi_platform for sbi_scratch pointer */
@@ -282,22 +297,46 @@ static inline u32 sbi_platform_hart_stack_size(const struct sbi_platform *plat)
 }
 
 /**
- * Check whether the given HART is disabled
+ * Get HART index for the given HART
  *
  * @param plat pointer to struct sbi_platform
  * @param hartid HART ID
  *
- * @return TRUE if HART is disabled and FALSE otherwise
+ * @return 0 <= value < hart_count for valid HART otherwise -1U
  */
-static inline bool sbi_platform_hart_disabled(const struct sbi_platform *plat,
-					      u32 hartid)
+static inline u32 sbi_platform_hart_index(const struct sbi_platform *plat,
+					  u32 hartid)
 {
-	if (plat) {
-		if (sbi_platform_hart_count(plat) <= hartid)
-			return TRUE;
-		if (sbi_platform_ops(plat)->hart_disabled)
-			return sbi_platform_ops(plat)->hart_disabled(hartid);
+	u32 i;
+
+	if (!plat)
+		return -1U;
+	if (plat->hart_index2id) {
+		for (i = 0; i < plat->hart_count; i++) {
+			if (plat->hart_index2id[i] == hartid)
+				return i;
+		}
+		return -1U;
 	}
+
+	return hartid;
+}
+
+/**
+ * Check whether given HART is invalid
+ *
+ * @param plat pointer to struct sbi_platform
+ * @param hartid HART ID
+ *
+ * @return TRUE if HART is invalid and FALSE otherwise
+ */
+static inline bool sbi_platform_hart_invalid(const struct sbi_platform *plat,
+					     u32 hartid)
+{
+	if (!plat)
+		return TRUE;
+	if (plat->hart_count <= sbi_platform_hart_index(plat, hartid))
+		return TRUE;
 	return FALSE;
 }
 

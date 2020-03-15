@@ -19,7 +19,7 @@ struct sbi_scratch *hartid_to_scratch_table[SBI_HARTMASK_MAX_BITS] = { 0 };
 static spinlock_t extra_lock = SPIN_LOCK_INITIALIZER;
 static unsigned long extra_offset = SBI_SCRATCH_EXTRA_SPACE_OFFSET;
 
-typedef struct sbi_scratch *(*hartid2scratch)(ulong hartid);
+typedef struct sbi_scratch *(*hartid2scratch)(ulong hartid, ulong hartindex);
 
 int sbi_scratch_init(struct sbi_scratch *scratch)
 {
@@ -27,10 +27,11 @@ int sbi_scratch_init(struct sbi_scratch *scratch)
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	for (i = 0; i < SBI_HARTMASK_MAX_BITS; i++) {
-		if (sbi_platform_hart_disabled(plat, i))
+		if (sbi_platform_hart_invalid(plat, i))
 			continue;
 		hartid_to_scratch_table[i] =
-			((hartid2scratch)scratch->hartid_to_scratch)(i);
+			((hartid2scratch)scratch->hartid_to_scratch)(i,
+					sbi_platform_hart_index(plat, i));
 	}
 
 	return 0;
