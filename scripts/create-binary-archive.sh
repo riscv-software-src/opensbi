@@ -85,6 +85,7 @@ case "${BUILD_RISCV_XLEN}" in
 32)
 	# Setup 32-bit platform list
 	BUILD_PLATFORM_SUBDIR=("qemu/virt")
+	BUILD_PLATFORM_SUBDIR+=("sifive/fu540")
 	;;
 64)
 	# Setup 64-bit platform list
