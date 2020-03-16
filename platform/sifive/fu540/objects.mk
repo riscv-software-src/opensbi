@@ -8,6 +8,3 @@
 #
 
 platform-objs-y += platform.o
-ifdef FU540_ENABLED_HART_MASK
-platform-genflags-y += -DFU540_ENABLED_HART_MASK=$(FU540_ENABLED_HART_MASK)
-endif

@@ -13,16 +13,8 @@ To build platform specific library and firmwares, provide the
 Platform Options
 ----------------
 
-As hart0 in the FU540 doesn't have an MMU, only harts 1-4 boot by default.
-A hart mask i.e. *FU540_ENABLED_HART_MASK* compile time option is provided
-to select any other hart for booting. Please keep in mind that this is not
-a generic option and it can only be specified for FU540 platform in the
-following way:
-
-```
-make PLATFORM=sifive/fu540 FW_PAYLOAD_PATH=Image FU540_ENABLED_HART_MASK=0x02
-```
-This will let the board boot only hart1 instead of default 1-4.
+The *SiFive FU540 SoC* platform does not have any platform-specific
+options.
 
 Building SiFive Fu540 Platform
 ------------------------------

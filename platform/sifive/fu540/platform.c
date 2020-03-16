@@ -35,16 +35,6 @@
 #define FU540_UART1_ADDR			0x10011000
 #define FU540_UART_BAUDRATE			115200
 
-/**
- * The FU540 SoC has 5 HARTs but HART ID 0 doesn't have S mode. enable only
- * HARTs 1 to 4.
- */
-#ifndef FU540_ENABLED_HART_MASK
-#define FU540_ENABLED_HART_MASK	(1 << 1 | 1 << 2 | 1 << 3 | 1 << 4)
-#endif
-
-#define FU540_HARITD_DISABLED			~(FU540_ENABLED_HART_MASK)
-
 /* PRCI clock related macros */
 //TODO: Do we need a separate driver for this ?
 #define FU540_PRCI_BASE_ADDR			0x10000000
