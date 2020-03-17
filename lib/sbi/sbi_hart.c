@@ -125,20 +125,16 @@ unsigned long log2roundup(unsigned long x)
 void sbi_hart_pmp_dump(struct sbi_scratch *scratch)
 {
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
-	unsigned long prot, addr, size, l2l;
+	unsigned long prot, addr, size;
 	unsigned int i;
 
 	if (!sbi_platform_has_pmp(plat))
 		return;
 
 	for (i = 0; i < PMP_COUNT; i++) {
-		pmp_get(i, &prot, &addr, &l2l);
+		pmp_get(i, &prot, &addr, &size);
 		if (!(prot & PMP_A))
 			continue;
-		if (l2l < __riscv_xlen)
-			size = (1UL << l2l);
-		else
-			size = 0;
 #if __riscv_xlen == 32
 		sbi_printf("PMP%d    : 0x%08lx-0x%08lx (A",
 #else
@@ -160,20 +156,16 @@ void sbi_hart_pmp_dump(struct sbi_scratch *scratch)
 int sbi_hart_pmp_check_addr(struct sbi_scratch *scratch, unsigned long addr,
 			    unsigned long attr)
 {
-	unsigned long prot, size, l2l, i, tempaddr;
+	unsigned long prot, size, i, tempaddr;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if (!sbi_platform_has_pmp(plat))
 		return SBI_OK;
 
 	for (i = 0; i < PMP_COUNT; i++) {
-		pmp_get(i, &prot, &tempaddr, &l2l);
+		pmp_get(i, &prot, &tempaddr, &size);
 		if (!(prot & PMP_A))
 			continue;
-		if (l2l < __riscv_xlen)
-			size = (1UL << l2l);
-		else
-			size = 0;
 		if (tempaddr <= addr && addr <= tempaddr + size)
 			if (!(prot & attr))
 				return SBI_INVALID_ADDR;
