@@ -5,8 +5,8 @@
  */
 
 #include <sbi/sbi_platform.h>
-#include <sbi_utils/sys/htif.h>
 #include <sbi_utils/sys/clint.h>
+#include <sbi_utils/sys/htif.h>
 
 /* clang-format off */
 

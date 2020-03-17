@@ -6,17 +6,14 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
+#include <sbi/riscv_io.h>
+#include <sbi/sbi_console.h>
 #include <sbi/sbi_const.h>
+#include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
 #include <sbi_utils/irqchip/plic.h>
 #include <sbi_utils/serial/uart8250.h>
 #include <sbi_utils/sys/clint.h>
-#include <sbi/sbi_console.h>
-#include <sbi/sbi_hart.h>
-#include <libfdt.h>
-#include <fdt.h>
-#include <sbi_utils/irqchip/plic.h>
-#include <sbi/riscv_io.h>
 
 #define ARIANE_UART_ADDR			0x10000000
 #define ARIANE_UART_FREQ			50000000

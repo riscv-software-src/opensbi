@@ -10,14 +10,14 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
+#include <sbi/sbi_console.h>
 #include <sbi/sbi_const.h>
 #include <sbi/sbi_platform.h>
-#include <sbi/sbi_console.h>
-#include <sbi_utils/serial/uart8250.h>
 #include <sbi_utils/irqchip/plic.h>
+#include <sbi_utils/serial/uart8250.h>
 #include "platform.h"
-#include "plmt.h"
 #include "plicsw.h"
+#include "plmt.h"
 
 /* Platform final initialization. */
 static int ae350_final_init(bool cold_boot)

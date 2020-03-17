@@ -4,13 +4,13 @@
 
 #include <sbi/riscv_encoding.h>
 #include <sbi/riscv_io.h>
+#include <sbi/sbi_console.h>
 #include <sbi/sbi_const.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
-#include <sbi/sbi_console.h>
 #include <sbi_utils/irqchip/plic.h>
-#include <sbi_utils/sys/clint.h>
 #include <sbi_utils/serial/uart8250.h>
+#include <sbi_utils/sys/clint.h>
 #include "platform.h"
 
 static struct c910_regs_struct c910_regs;

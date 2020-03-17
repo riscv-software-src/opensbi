@@ -8,12 +8,11 @@
  */
 
 #include <libfdt.h>
-#include <fdt.h>
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_io.h>
 #include <sbi/riscv_encoding.h>
-#include <sbi/sbi_const.h>
 #include <sbi/sbi_console.h>
+#include <sbi/sbi_const.h>
 #include <sbi/sbi_platform.h>
 #include <sbi_utils/irqchip/plic.h>
 #include <sbi_utils/serial/sifive-uart.h>

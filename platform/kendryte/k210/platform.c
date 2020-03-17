@@ -9,12 +9,12 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
+#include <sbi/sbi_console.h>
 #include <sbi/sbi_const.h>
 #include <sbi/sbi_platform.h>
-#include <sbi/sbi_console.h>
 #include <sbi_utils/irqchip/plic.h>
-#include <sbi_utils/sys/clint.h>
 #include <sbi_utils/serial/sifive-uart.h>
+#include <sbi_utils/sys/clint.h>
 #include "platform.h"
 
 static u32 k210_get_clk_freq(void)
