@@ -47,9 +47,7 @@ static int virt_final_init(bool cold_boot)
 		return 0;
 
 	fdt = sbi_scratch_thishart_arg1_ptr();
-	fdt_plic_fixup(fdt, "riscv,plic0");
-
-	fdt_reserved_memory_fixup(fdt);
+	fdt_fixups(fdt);
 
 	return 0;
 }
