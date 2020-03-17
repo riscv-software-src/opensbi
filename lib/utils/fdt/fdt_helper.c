@@ -12,6 +12,31 @@
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
 
+void fdt_plic_fixup(void *fdt, const char *compat)
+{
+	u32 *cells;
+	int i, cells_count;
+	int plic_off;
+
+	plic_off = fdt_node_offset_by_compatible(fdt, 0, compat);
+	if (plic_off < 0)
+		return;
+
+	cells = (u32 *)fdt_getprop(fdt, plic_off,
+				   "interrupts-extended", &cells_count);
+	if (!cells)
+		return;
+
+	cells_count = cells_count / sizeof(u32);
+	if (!cells_count)
+		return;
+
+	for (i = 0; i < (cells_count / 2); i++) {
+		if (fdt32_to_cpu(cells[2 * i + 1]) == IRQ_M_EXT)
+			cells[2 * i + 1] = cpu_to_fdt32(0xffffffff);
+	}
+}
+
 /**
  * We use PMP to protect OpenSBI firmware to safe-guard it from buggy S-mode
  * software, see pmp_init() in lib/sbi/sbi_hart.c. The protected memory region

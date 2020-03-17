@@ -14,6 +14,7 @@
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_const.h>
 #include <sbi/sbi_platform.h>
+#include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/irqchip/plic.h>
 #include <sbi_utils/serial/sifive-uart.h>
 #include <sbi_utils/sys/clint.h>
@@ -87,7 +88,7 @@ static void fu540_modify_dt(void *fdt)
 	fdt_setprop_string(fdt, chosen_offset, "stdout-path",
 			   "/soc/serial@10010000:115200");
 
-	plic_fdt_fixup(fdt, "riscv,plic0");
+	fdt_plic_fixup(fdt, "riscv,plic0");
 }
 
 static int fu540_final_init(bool cold_boot)

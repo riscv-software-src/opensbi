@@ -10,6 +10,19 @@
 #define __FDT_HELPER_H__
 
 /**
+ * Fix up the PLIC node in the device tree
+ *
+ * This routine updates the "interrupt-extended" property of the PLIC node in
+ * the device tree to hide the M-mode external interrupt from CPUs.
+ *
+ * It is recommended that platform codes call this helper in their final_init()
+ *
+ * @param fdt: device tree blob
+ * @param compat: PLIC node compatible string
+ */
+void fdt_plic_fixup(void *fdt, const char *compat);
+
+/**
  * Fix up the reserved memory node in the device tree
  *
  * This routine inserts a child node of the reserved memory node in the device

@@ -12,8 +12,6 @@
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_string.h>
 #include <sbi_utils/irqchip/plic.h>
-#include <libfdt.h>
-#include <fdt.h>
 
 #define PLIC_PRIORITY_BASE 0x0
 #define PLIC_PENDING_BASE 0x1000
@@ -45,31 +43,6 @@ void plic_set_ie(u32 cntxid, u32 word_index, u32 val)
 	volatile void *plic_ie =
 		plic_base + PLIC_ENABLE_BASE + PLIC_ENABLE_STRIDE * cntxid;
 	writel(val, plic_ie + word_index * 4);
-}
-
-void plic_fdt_fixup(void *fdt, const char *compat)
-{
-	u32 *cells;
-	int i, cells_count;
-	int plic_off;
-
-	plic_off = fdt_node_offset_by_compatible(fdt, 0, compat);
-	if (plic_off < 0)
-		return;
-
-	cells = (u32 *)fdt_getprop(fdt, plic_off,
-				   "interrupts-extended", &cells_count);
-	if (!cells)
-		return;
-
-	cells_count = cells_count / sizeof(u32);
-	if (!cells_count)
-		return;
-
-	for (i = 0; i < (cells_count / 2); i++) {
-		if (fdt32_to_cpu(cells[2 * i + 1]) == IRQ_M_EXT)
-			cells[2 * i + 1] = cpu_to_fdt32(0xffffffff);
-	}
 }
 
 int plic_warm_irqchip_init(u32 target_hart, int m_cntx_id, int s_cntx_id)
