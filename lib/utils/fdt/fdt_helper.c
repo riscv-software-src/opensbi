@@ -191,3 +191,10 @@ int fdt_reserved_memory_fixup(void *fdt)
 
 	return 0;
 }
+
+void fdt_fixups(void *fdt)
+{
+	fdt_plic_fixup(fdt, "riscv,plic0");
+
+	fdt_reserved_memory_fixup(fdt);
+}

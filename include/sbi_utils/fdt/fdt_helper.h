@@ -47,4 +47,17 @@ void fdt_plic_fixup(void *fdt, const char *compat);
  */
 int fdt_reserved_memory_fixup(void *fdt);
 
+/**
+ * General device tree fix-up
+ *
+ * This routine do all required device tree fix-ups for a typical platform.
+ * It fixes up the PLIC node and the reserved memory node in the device tree
+ * by calling the corresponding helper routines to accomplish the task.
+ *
+ * It is recommended that platform codes call this helper in their final_init()
+ *
+ * @param fdt: device tree blob
+ */
+void fdt_fixups(void *fdt);
+
 #endif /* __FDT_HELPER_H__ */
