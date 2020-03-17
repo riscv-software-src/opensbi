@@ -58,31 +58,7 @@
 
 static void fu540_modify_dt(void *fdt)
 {
-	u32 i, size;
-	int err;
-	int cpu_offset;
-	char cpu_node[32] = "";
-	const char *mmu_type;
-
-	size = fdt_totalsize(fdt);
-	err  = fdt_open_into(fdt, fdt, size + 256);
-	if (err < 0)
-		sbi_printf(
-			"Device Tree can't be expanded to accmodate new node");
-
-	for (i = 0; i < FU540_HART_COUNT; i++) {
-		sbi_sprintf(cpu_node, "/cpus/cpu@%d", i);
-		cpu_offset = fdt_path_offset(fdt, cpu_node);
-		mmu_type   = fdt_getprop(fdt, cpu_offset, "mmu-type", NULL);
-		if (mmu_type && (!strcmp(mmu_type, "riscv,sv32") ||
-				 !strcmp(mmu_type, "riscv,sv39") ||
-				 !strcmp(mmu_type, "riscv,sv48")))
-			continue;
-		else
-			fdt_setprop_string(fdt, cpu_offset, "status",
-					   "disabled");
-		memset(cpu_node, 0, sizeof(cpu_node));
-	}
+	fdt_cpu_fixup(fdt);
 
 	fdt_plic_fixup(fdt, "riscv,plic0");
 
