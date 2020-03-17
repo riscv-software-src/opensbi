@@ -10,6 +10,18 @@
 #define __FDT_HELPER_H__
 
 /**
+ * Fix up the CPU node in the device tree
+ *
+ * This routine updates the "status" property of a CPU node in the device tree
+ * to "disabled" if that hart is in disabled state in OpenSBI.
+ *
+ * It is recommended that platform codes call this helper in their final_init()
+ *
+ * @param fdt: device tree blob
+ */
+void fdt_cpu_fixup(void *fdt);
+
+/**
  * Fix up the PLIC node in the device tree
  *
  * This routine updates the "interrupt-extended" property of the PLIC node in

@@ -12,6 +12,32 @@
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
 
+void fdt_cpu_fixup(void *fdt)
+{
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	char cpu_node[32] = "";
+	int cpu_offset;
+	int err;
+	u32 i;
+
+	err = fdt_open_into(fdt, fdt, fdt_totalsize(fdt) + 32);
+	if (err < 0)
+		return;
+
+	/* assume hart ids are continuous */
+	for (i = 0; i < sbi_platform_hart_count(plat); i++) {
+		sbi_sprintf(cpu_node, "/cpus/cpu@%d", i);
+		cpu_offset = fdt_path_offset(fdt, cpu_node);
+
+		if (sbi_platform_hart_disabled(plat, i))
+			fdt_setprop_string(fdt, cpu_offset, "status",
+					   "disabled");
+
+		memset(cpu_node, 0, sizeof(cpu_node));
+	}
+}
+
 void fdt_plic_fixup(void *fdt, const char *compat)
 {
 	u32 *cells;
