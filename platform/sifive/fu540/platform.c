@@ -59,7 +59,7 @@
 static void fu540_modify_dt(void *fdt)
 {
 	u32 i, size;
-	int chosen_offset, err;
+	int err;
 	int cpu_offset;
 	char cpu_node[32] = "";
 	const char *mmu_type;
@@ -83,10 +83,6 @@ static void fu540_modify_dt(void *fdt)
 					   "disabled");
 		memset(cpu_node, 0, sizeof(cpu_node));
 	}
-
-	chosen_offset = fdt_path_offset(fdt, "/chosen");
-	fdt_setprop_string(fdt, chosen_offset, "stdout-path",
-			   "/soc/serial@10010000:115200");
 
 	fdt_plic_fixup(fdt, "riscv,plic0");
 
