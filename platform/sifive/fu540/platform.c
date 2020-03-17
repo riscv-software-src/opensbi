@@ -89,6 +89,8 @@ static void fu540_modify_dt(void *fdt)
 			   "/soc/serial@10010000:115200");
 
 	fdt_plic_fixup(fdt, "riscv,plic0");
+
+	fdt_reserved_memory_fixup(fdt);
 }
 
 static int fu540_final_init(bool cold_boot)
