@@ -16,6 +16,7 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_hsm.h>
 #include <sbi/sbi_init.h>
 #include <sbi/sbi_ipi.h>
@@ -89,17 +90,7 @@ int sbi_hsm_hart_started_mask(struct sbi_scratch *scratch,
 			      ulong hbase, ulong *out_hmask)
 {
 	ulong i;
-	ulong hcount = sbi_platform_hart_count(sbi_platform_ptr(scratch));
-
-	/*
-	 * The SBI_HARTMASK_MAX_BITS represents the maximum HART ids generic
-	 * OpenSBI can handle whereas sbi_platform_hart_count() represents
-	 * the maximum HART ids (or HARTs) on underlying platform.
-	 *
-	 * Currently, we only support continuous HART ids so this function
-	 * is written with same assumption. In future, this function will
-	 * change when we support discontinuous and sparse HART ids.
-	 */
+	ulong hcount = SBI_HARTMASK_MAX_BITS;
 
 	*out_hmask = 0;
 	if (hcount <= hbase)
@@ -153,20 +144,18 @@ static void sbi_hsm_hart_wait(struct sbi_scratch *scratch, u32 hartid)
 
 int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 {
+	u32 i;
 	struct sbi_scratch *rscratch;
 	struct sbi_hsm_data *hdata;
-	u32 hart_count, i;
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if (cold_boot) {
 		hart_data_offset = sbi_scratch_alloc_offset(sizeof(*hdata),
 							    "HART_DATA");
 		if (!hart_data_offset)
 			return SBI_ENOMEM;
-		hart_count = sbi_platform_hart_count(plat);
 
 		/* Initialize hart state data for every hart */
-		for (i = 0; i < hart_count; i++) {
+		for (i = 0; i < SBI_HARTMASK_MAX_BITS; i++) {
 			rscratch = sbi_hartid_to_scratch(i);
 			if (!rscratch)
 				continue;
