@@ -28,8 +28,7 @@ int sbi_hsm_hart_stop(struct sbi_scratch *scratch, bool exitnow);
 int sbi_hsm_hart_get_state(u32 hartid);
 int sbi_hsm_hart_state_to_status(int state);
 bool sbi_hsm_hart_started(u32 hartid);
-int sbi_hsm_hart_started_mask(struct sbi_scratch *scratch,
-			      ulong hbase, ulong *out_hmask);
+int sbi_hsm_hart_started_mask(ulong hbase, ulong *out_hmask);
 void sbi_hsm_prepare_next_jump(struct sbi_scratch *scratch, u32 hartid);
 
 #endif

@@ -33,7 +33,7 @@ static int sbi_load_hart_mask_unpriv(struct sbi_scratch *scratch,
 		if (uptrap->cause)
 			return SBI_ETRAP;
 	} else {
-		sbi_hsm_hart_started_mask(scratch, 0, &mask);
+		sbi_hsm_hart_started_mask(0, &mask);
 	}
 	*hmask = mask;
 

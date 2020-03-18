@@ -43,7 +43,7 @@ void __noreturn sbi_system_reboot(struct sbi_scratch *scratch, u32 type)
 	u32 cur_hartid = current_hartid();
 
 	/* Send HALT IPI to every hart other than the current hart */
-	while (!sbi_hsm_hart_started_mask(scratch, hbase, &hmask)) {
+	while (!sbi_hsm_hart_started_mask(hbase, &hmask)) {
 		if (hbase <= cur_hartid)
 			hmask &= ~(1UL << (cur_hartid - hbase));
 		if (hmask)
@@ -67,7 +67,7 @@ void __noreturn sbi_system_shutdown(struct sbi_scratch *scratch, u32 type)
 	u32 cur_hartid = current_hartid();
 
 	/* Send HALT IPI to every hart other than the current hart */
-	while (!sbi_hsm_hart_started_mask(scratch, hbase, &hmask)) {
+	while (!sbi_hsm_hart_started_mask(hbase, &hmask)) {
 		if (hbase <= cur_hartid)
 			hmask &= ~(1UL << (cur_hartid - hbase));
 		if (hmask)

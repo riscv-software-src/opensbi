@@ -80,14 +80,12 @@ bool sbi_hsm_hart_started(u32 hartid)
 
 /**
  * Get ulong HART mask for given HART base ID
- * @param scratch the per-HART scratch pointer
  * @param hbase the HART base ID
  * @param out_hmask the output ulong HART mask
  * @return 0 on success and SBI_Exxx (< 0) on failure
  * Note: the output HART mask will be set to zero on failure as well.
  */
-int sbi_hsm_hart_started_mask(struct sbi_scratch *scratch,
-			      ulong hbase, ulong *out_hmask)
+int sbi_hsm_hart_started_mask(ulong hbase, ulong *out_hmask)
 {
 	ulong i;
 	ulong hcount = SBI_HARTMASK_MAX_BITS;
