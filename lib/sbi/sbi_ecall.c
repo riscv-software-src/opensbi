@@ -40,11 +40,19 @@ struct sbi_ecall_extension *sbi_ecall_find_extension(unsigned long extid)
 
 int sbi_ecall_register_extension(struct sbi_ecall_extension *ext)
 {
+	struct sbi_ecall_extension *t;
+
 	if (!ext || (ext->extid_end < ext->extid_start) || !ext->handle)
 		return SBI_EINVAL;
-	if (sbi_ecall_find_extension(ext->extid_start) ||
-	    sbi_ecall_find_extension(ext->extid_end))
-		return SBI_EINVAL;
+
+	sbi_list_for_each_entry(t, &ecall_exts_list, head) {
+		unsigned long start = t->extid_start;
+		unsigned long end = t->extid_end;
+		if (end < ext->extid_start || ext->extid_end < start)
+			/* no overlap */;
+		else
+			return SBI_EINVAL;
+	}
 
 	SBI_INIT_LIST_HEAD(&ext->head);
 	sbi_list_add_tail(&ext->head, &ecall_exts_list);
