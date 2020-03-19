@@ -13,21 +13,19 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_platform.h>
 
-static int sbi_ecall_vendor_probe(struct sbi_scratch *scratch,
-				  unsigned long extid,
+static int sbi_ecall_vendor_probe(unsigned long extid,
 				  unsigned long *out_val)
 {
-	*out_val = sbi_platform_vendor_ext_check(sbi_platform_ptr(scratch),
+	*out_val = sbi_platform_vendor_ext_check(sbi_platform_thishart_ptr(),
 						 extid);
 	return 0;
 }
 
-static int sbi_ecall_vendor_handler(struct sbi_scratch *scratch,
-				    unsigned long extid, unsigned long funcid,
+static int sbi_ecall_vendor_handler(unsigned long extid, unsigned long funcid,
 				    unsigned long *args, unsigned long *out_val,
 				    struct sbi_trap_info *out_trap)
 {
-	return sbi_platform_vendor_ext_provider(sbi_platform_ptr(scratch),
+	return sbi_platform_vendor_ext_provider(sbi_platform_thishart_ptr(),
 						extid, funcid, args,
 						out_val, out_trap);
 }

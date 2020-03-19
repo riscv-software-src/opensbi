@@ -79,8 +79,7 @@ void sbi_ecall_unregister_extension(struct sbi_ecall_extension *ext)
 		sbi_list_del_init(&ext->head);
 }
 
-int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
-		      struct sbi_scratch *scratch)
+int sbi_ecall_handler(struct sbi_trap_regs *regs)
 {
 	int ret = 0;
 	struct sbi_ecall_extension *ext;
@@ -100,7 +99,7 @@ int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 
 	ext = sbi_ecall_find_extension(extension_id);
 	if (ext && ext->handle) {
-		ret = ext->handle(scratch, extension_id, func_id,
+		ret = ext->handle(extension_id, func_id,
 				  args, &out_val, &trap);
 		if (extension_id >= SBI_EXT_0_1_SET_TIMER &&
 		    extension_id <= SBI_EXT_0_1_SHUTDOWN)

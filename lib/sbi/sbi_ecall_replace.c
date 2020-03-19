@@ -14,11 +14,11 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_ipi.h>
+#include <sbi/sbi_scratch.h>
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_tlb.h>
 
-static int sbi_ecall_time_handler(struct sbi_scratch *scratch,
-				  unsigned long extid, unsigned long funcid,
+static int sbi_ecall_time_handler(unsigned long extid, unsigned long funcid,
 				  unsigned long *args, unsigned long *out_val,
 				  struct sbi_trap_info *out_trap)
 {
@@ -26,10 +26,11 @@ static int sbi_ecall_time_handler(struct sbi_scratch *scratch,
 
 	if (funcid == SBI_EXT_TIME_SET_TIMER) {
 #if __riscv_xlen == 32
-		sbi_timer_event_start(scratch,
+		sbi_timer_event_start(sbi_scratch_thishart_ptr(),
 				      (((u64)args[1] << 32) | (u64)args[0]));
 #else
-		sbi_timer_event_start(scratch, (u64)args[0]);
+		sbi_timer_event_start(sbi_scratch_thishart_ptr(),
+				      (u64)args[0]);
 #endif
 	} else
 		ret = SBI_ENOTSUPP;
@@ -43,14 +44,14 @@ struct sbi_ecall_extension ecall_time = {
 	.handle = sbi_ecall_time_handler,
 };
 
-static int sbi_ecall_rfence_handler(struct sbi_scratch *scratch,
-				    unsigned long extid, unsigned long funcid,
+static int sbi_ecall_rfence_handler(unsigned long extid, unsigned long funcid,
 				    unsigned long *args, unsigned long *out_val,
 				    struct sbi_trap_info *out_trap)
 {
 	int ret = 0;
 	struct sbi_tlb_info tlb_info;
 	u32 source_hart = current_hartid();
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	if (funcid >= SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA &&
 	    funcid <= SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA_ASID)
@@ -106,15 +107,15 @@ struct sbi_ecall_extension ecall_rfence = {
 	.handle = sbi_ecall_rfence_handler,
 };
 
-static int sbi_ecall_ipi_handler(struct sbi_scratch *scratch,
-				 unsigned long extid, unsigned long funcid,
+static int sbi_ecall_ipi_handler(unsigned long extid, unsigned long funcid,
 				 unsigned long *args, unsigned long *out_val,
 				 struct sbi_trap_info *out_trap)
 {
 	int ret = 0;
 
 	if (funcid == SBI_EXT_IPI_SEND_IPI)
-		ret = sbi_ipi_send_smode(scratch, args[0], args[1]);
+		ret = sbi_ipi_send_smode(sbi_scratch_thishart_ptr(),
+					 args[0], args[1]);
 	else
 		ret = SBI_ENOTSUPP;
 

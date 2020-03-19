@@ -12,15 +12,15 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_version.h>
 #include <sbi/sbi_hsm.h>
+#include <sbi/sbi_scratch.h>
 #include <sbi/riscv_asm.h>
 
-static int sbi_ecall_hsm_handler(struct sbi_scratch *scratch,
-				 unsigned long extid, unsigned long funcid,
+static int sbi_ecall_hsm_handler(unsigned long extid, unsigned long funcid,
 				 unsigned long *args, unsigned long *out_val,
 				 struct sbi_trap_info *out_trap)
 {
-	int ret = 0;
-	int hstate;
+	int ret = 0, hstate;
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	switch (funcid) {
 	case SBI_EXT_HSM_HART_START:

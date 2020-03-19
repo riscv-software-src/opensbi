@@ -15,6 +15,7 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hsm.h>
 #include <sbi/sbi_ipi.h>
+#include <sbi/sbi_scratch.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_tlb.h>
@@ -39,14 +40,14 @@ static int sbi_load_hart_mask_unpriv(ulong *pmask, ulong *hmask,
 	return 0;
 }
 
-static int sbi_ecall_legacy_handler(struct sbi_scratch *scratch,
-				    unsigned long extid, unsigned long funcid,
+static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
 				    unsigned long *args, unsigned long *out_val,
 				    struct sbi_trap_info *out_trap)
 {
 	int ret = 0;
 	struct sbi_tlb_info tlb_info;
 	u32 source_hart = current_hartid();
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	ulong hmask = 0;
 
 	switch (extid) {
