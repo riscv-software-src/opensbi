@@ -111,7 +111,7 @@ int sbi_ecall_handler(u32 hartid, ulong mcause, struct sbi_trap_regs *regs,
 
 	if (ret == SBI_ETRAP) {
 		trap.epc = regs->mepc;
-		sbi_trap_redirect(regs, &trap, scratch);
+		sbi_trap_redirect(regs, &trap);
 	} else {
 		/*
 		 * This function should return non-zero value only in case of

@@ -74,13 +74,11 @@ static void __noreturn sbi_trap_error(const char *msg, int rc, u32 hartid,
  *
  * @param regs pointer to register state
  * @param trap pointer to trap details
- * @param scratch pointer to sbi_scratch of current HART
  *
  * @return 0 on success and negative error code on failure
  */
 int sbi_trap_redirect(struct sbi_trap_regs *regs,
-		      struct sbi_trap_info *trap,
-		      struct sbi_scratch *scratch)
+		      struct sbi_trap_info *trap)
 {
 	ulong hstatus, vsstatus, prev_mode;
 #if __riscv_xlen == 32
@@ -273,7 +271,7 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 		trap.tval = mtval;
 		trap.tval2 = mtval2;
 		trap.tinst = mtinst;
-		rc = sbi_trap_redirect(regs, &trap, scratch);
+		rc = sbi_trap_redirect(regs, &trap);
 		break;
 	};
 

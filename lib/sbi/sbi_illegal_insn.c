@@ -32,7 +32,7 @@ static int truly_illegal_insn(ulong insn, u32 hartid, ulong mcause,
 	trap.tval2 = 0;
 	trap.tinst = 0;
 
-	return sbi_trap_redirect(regs, &trap, scratch);
+	return sbi_trap_redirect(regs, &trap);
 }
 
 static int system_opcode_insn(ulong insn, u32 hartid, ulong mcause,
@@ -144,8 +144,7 @@ int sbi_illegal_insn_handler(u32 hartid, ulong mcause, ulong insn,
 			insn = sbi_get_insn(regs->mepc, &uptrap);
 			if (uptrap.cause) {
 				uptrap.epc = regs->mepc;
-				return sbi_trap_redirect(regs, &uptrap,
-							 scratch);
+				return sbi_trap_redirect(regs, &uptrap);
 			}
 		}
 		if ((insn & 3) != 3)

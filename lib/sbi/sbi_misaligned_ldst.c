@@ -45,7 +45,7 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 		insn = sbi_get_insn(regs->mepc, &uptrap);
 		if (uptrap.cause) {
 			uptrap.epc = regs->mepc;
-			return sbi_trap_redirect(regs, &uptrap, scratch);
+			return sbi_trap_redirect(regs, &uptrap);
 		}
 	}
 
@@ -114,7 +114,7 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 		uptrap.tval = addr;
 		uptrap.tval2 = tval2;
 		uptrap.tinst = tinst;
-		return sbi_trap_redirect(regs, &uptrap, scratch);
+		return sbi_trap_redirect(regs, &uptrap);
 	}
 
 	val.data_u64 = 0;
@@ -123,7 +123,7 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 						&uptrap);
 		if (uptrap.cause) {
 			uptrap.epc = regs->mepc;
-			return sbi_trap_redirect(regs, &uptrap, scratch);
+			return sbi_trap_redirect(regs, &uptrap);
 		}
 	}
 
@@ -165,7 +165,7 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 		insn = sbi_get_insn(regs->mepc, &uptrap);
 		if (uptrap.cause) {
 			uptrap.epc = regs->mepc;
-			return sbi_trap_redirect(regs, &uptrap, scratch);
+			return sbi_trap_redirect(regs, &uptrap);
 		}
 	}
 
@@ -225,7 +225,7 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 		uptrap.tval = addr;
 		uptrap.tval2 = tval2;
 		uptrap.tinst = tinst;
-		return sbi_trap_redirect(regs, &uptrap, scratch);
+		return sbi_trap_redirect(regs, &uptrap);
 	}
 
 	for (i = 0; i < len; i++) {
@@ -233,7 +233,7 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 			     &uptrap);
 		if (uptrap.cause) {
 			uptrap.epc = regs->mepc;
-			return sbi_trap_redirect(regs, &uptrap, scratch);
+			return sbi_trap_redirect(regs, &uptrap);
 		}
 	}
 
