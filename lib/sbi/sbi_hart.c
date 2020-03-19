@@ -17,6 +17,11 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
 
+extern void __sbi_unpriv_trap(void);
+extern void __sbi_unpriv_trap_hext(void);
+
+void (*sbi_hart_unpriv_trap)(void) = &__sbi_unpriv_trap;
+
 static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
 {
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
@@ -203,17 +208,13 @@ static int pmp_init(struct sbi_scratch *scratch, u32 hartid)
 	return 0;
 }
 
-static unsigned long trap_info_offset;
-
 int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 {
 	int rc;
 
 	if (cold_boot) {
-		trap_info_offset = sbi_scratch_alloc_offset(__SIZEOF_POINTER__,
-							    "HART_TRAP_INFO");
-		if (!trap_info_offset)
-			return SBI_ENOMEM;
+		if (misa_extension('H'))
+			sbi_hart_unpriv_trap = &__sbi_unpriv_trap_hext;
 	}
 
 	mstatus_init(scratch, hartid);
@@ -227,29 +228,6 @@ int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 		return rc;
 
 	return pmp_init(scratch, hartid);
-}
-
-void *sbi_hart_get_trap_info(struct sbi_scratch *scratch)
-{
-	unsigned long *trap_info;
-
-	if (!trap_info_offset)
-		return NULL;
-
-	trap_info = sbi_scratch_offset_ptr(scratch, trap_info_offset);
-
-	return (void *)(*trap_info);
-}
-
-void sbi_hart_set_trap_info(struct sbi_scratch *scratch, void *data)
-{
-	unsigned long *trap_info;
-
-	if (!trap_info_offset)
-		return;
-
-	trap_info = sbi_scratch_offset_ptr(scratch, trap_info_offset);
-	*trap_info = (unsigned long)data;
 }
 
 void __attribute__((noreturn)) sbi_hart_hang(void)

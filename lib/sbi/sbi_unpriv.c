@@ -19,25 +19,30 @@
 			     struct sbi_scratch *scratch,                     \
 			     struct sbi_trap_info *trap)                      \
 	{                                                                     \
-		register ulong __mstatus asm("a2");                           \
-		type val = 0;                                                 \
-		trap->epc = 0;                                                \
+		register ulong tinfo asm("a3");                               \
+		register ulong ttmp asm("a4");                                \
+		register ulong mstatus asm("a5");                             \
+		register ulong mtvec asm("a6") = sbi_hart_unpriv_trap_addr(); \
+		type ret = 0;                                                 \
 		trap->cause = 0;                                              \
-		trap->tval = 0;                                               \
-		trap->tval2 = 0;                                              \
-		trap->tinst = 0;                                              \
-		sbi_hart_set_trap_info(scratch, trap);                        \
 		asm volatile(                                                 \
-			"csrrs %0, " STR(CSR_MSTATUS) ", %3\n"                \
+			"add %[tinfo], %[taddr], zero\n"                      \
+			"add %[ttmp], %[taddr], zero\n"                       \
+			"csrrw %[mtvec], " STR(CSR_MTVEC) ", %[mtvec]\n"      \
+			"csrrs %[mstatus], " STR(CSR_MSTATUS) ", %[mprv]\n"   \
 			".option push\n"                                      \
 			".option norvc\n"                                     \
-			#insn " %1, %2\n"                                     \
+			#insn " %[ret], %[addr]\n"                            \
 			".option pop\n"                                       \
-			"csrw " STR(CSR_MSTATUS) ", %0"                       \
-		    : "+&r"(__mstatus), "=&r"(val)                            \
-		    : "m"(*addr), "r"(MSTATUS_MPRV));                         \
-		sbi_hart_set_trap_info(scratch, NULL);                        \
-		return val;                                                   \
+			"csrw " STR(CSR_MSTATUS) ", %[mstatus]\n"             \
+			"csrw " STR(CSR_MTVEC) ", %[mtvec]"                   \
+		    : [mstatus] "+&r"(mstatus), [mtvec] "+&r"(mtvec),         \
+		      [tinfo] "+&r"(tinfo), [ttmp] "+&r"(ttmp),               \
+		      [ret] "=&r"(ret)                                        \
+		    : [addr] "m"(*addr), [mprv] "r"(MSTATUS_MPRV),            \
+		      [taddr] "r"((ulong)trap)                                \
+		    : "memory");                                              \
+		return ret;                                                   \
 	}
 
 #define DEFINE_UNPRIVILEGED_STORE_FUNCTION(type, insn)                        \
@@ -45,23 +50,27 @@
 			      struct sbi_scratch *scratch,                    \
 			      struct sbi_trap_info *trap)                     \
 	{                                                                     \
-		register ulong __mstatus asm("a3");                           \
-		trap->epc = 0;                                                \
+		register ulong tinfo asm("a3");                               \
+		register ulong ttmp asm("a4");                                \
+		register ulong mstatus asm("a5");                             \
+		register ulong mtvec asm("a6") = sbi_hart_unpriv_trap_addr(); \
 		trap->cause = 0;                                              \
-		trap->tval = 0;                                               \
-		trap->tval2 = 0;                                              \
-		trap->tinst = 0;                                              \
-		sbi_hart_set_trap_info(scratch, trap);                        \
 		asm volatile(                                                 \
-			"csrrs %0, " STR(CSR_MSTATUS) ", %3\n"                \
+			"add %[tinfo], %[taddr], zero\n"                      \
+			"add %[ttmp], %[taddr], zero\n"                       \
+			"csrrw %[mtvec], " STR(CSR_MTVEC) ", %[mtvec]\n"      \
+			"csrrs %[mstatus], " STR(CSR_MSTATUS) ", %[mprv]\n"   \
 			".option push\n"                                      \
 			".option norvc\n"                                     \
-			#insn " %1, %2\n"                                     \
+			#insn " %[val], %[addr]\n"                            \
 			".option pop\n"                                       \
-			"csrw " STR(CSR_MSTATUS) ", %0"                       \
-			: "+&r"(__mstatus)                                    \
-			: "r"(val), "m"(*addr), "r"(MSTATUS_MPRV));           \
-		sbi_hart_set_trap_info(scratch, NULL);                        \
+			"csrw " STR(CSR_MSTATUS) ", %[mstatus]\n"             \
+			"csrw " STR(CSR_MTVEC) ", %[mtvec]"                   \
+		    : [mstatus] "+&r"(mstatus), [mtvec] "+&r"(mtvec),         \
+		      [tinfo] "+&r"(tinfo), [ttmp] "+&r"(ttmp)                \
+		    : [addr] "m"(*addr), [mprv] "r"(MSTATUS_MPRV),            \
+		      [taddr] "r"((ulong)trap), [val] "r"(val)                \
+		    : "memory");              \
 	}
 
 DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u8, lbu)
@@ -113,52 +122,33 @@ void sbi_store_u64(u64 *addr, u64 val,
 ulong sbi_get_insn(ulong mepc, struct sbi_scratch *scratch,
 		   struct sbi_trap_info *trap)
 {
-	ulong __mstatus = 0, val = 0;
-#ifdef __riscv_compressed
-	ulong rvc_mask = 3, tmp;
-#endif
+	register ulong tinfo asm("a3");
+	register ulong ttmp asm("a4");
+	register ulong mstatus asm("a5");
+	register ulong mtvec asm("a6") = sbi_hart_unpriv_trap_addr();
+	ulong insn = 0;
 
-	trap->epc = 0;
 	trap->cause = 0;
-	trap->tval = 0;
-	trap->tval2 = 0;
-	trap->tinst = 0;
-	sbi_hart_set_trap_info(scratch, trap);
 
-#ifndef __riscv_compressed
-	asm("csrrs %[mstatus], " STR(CSR_MSTATUS) ", %[mprv]\n"
-	    ".option push\n"
-	    ".option norvc\n"
-#if __riscv_xlen == 64
-	    STR(LWU) " %[insn], (%[addr])\n"
-#else
-	    STR(LW) " %[insn], (%[addr])\n"
-#endif
-	    ".option pop\n"
-	    "csrw " STR(CSR_MSTATUS) ", %[mstatus]"
-	    : [mstatus] "+&r"(__mstatus), [insn] "=&r"(val)
-	    : [mprv] "r"(MSTATUS_MPRV | MSTATUS_MXR), [addr] "r"(mepc));
-#else
-	asm("csrrs %[mstatus], " STR(CSR_MSTATUS) ", %[mprv]\n"
-	    ".option push\n"
-	    ".option norvc\n"
+	asm volatile(
+	    "add %[tinfo], %[taddr], zero\n"
+	    "csrrw %[mtvec], " STR(CSR_MTVEC) ", %[mtvec]\n"
+	    "csrrs %[mstatus], " STR(CSR_MSTATUS) ", %[mprv]\n"
 	    "lhu %[insn], (%[addr])\n"
-	    ".option pop\n"
-	    "and %[tmp], %[insn], %[rvc_mask]\n"
-	    "bne %[tmp], %[rvc_mask], 2f\n"
-	    ".option push\n"
-	    ".option norvc\n"
-	    "lhu %[tmp], 2(%[addr])\n"
-	    ".option pop\n"
-	    "sll %[tmp], %[tmp], 16\n"
-	    "add %[insn], %[insn], %[tmp]\n"
-	    "2: csrw " STR(CSR_MSTATUS) ", %[mstatus]"
-	    : [mstatus] "+&r"(__mstatus), [insn] "=&r"(val), [tmp] "=&r"(tmp)
-	    : [mprv] "r"(MSTATUS_MPRV | MSTATUS_MXR), [addr] "r"(mepc),
-	      [rvc_mask] "r"(rvc_mask));
-#endif
-
-	sbi_hart_set_trap_info(scratch, NULL);
+	    "andi %[ttmp], %[insn], 3\n"
+	    "addi %[ttmp], %[ttmp], -3\n"
+	    "bne %[ttmp], zero, 2f\n"
+	    "lhu %[ttmp], 2(%[addr])\n"
+	    "sll %[ttmp], %[ttmp], 16\n"
+	    "add %[insn], %[insn], %[ttmp]\n"
+	    "2: csrw " STR(CSR_MSTATUS) ", %[mstatus]\n"
+	    "csrw " STR(CSR_MTVEC) ", %[mtvec]"
+	    : [mstatus] "+&r"(mstatus), [mtvec] "+&r"(mtvec),
+	      [tinfo] "+&r"(tinfo), [ttmp] "+&r"(ttmp),
+	      [insn] "=&r"(insn)
+	    : [mprv] "r"(MSTATUS_MPRV | MSTATUS_MXR),
+	      [taddr] "r"((ulong)trap), [addr] "r"(mepc)
+	    : "memory");
 
 	switch (trap->cause) {
 	case CAUSE_LOAD_ACCESS:
@@ -177,5 +167,5 @@ ulong sbi_get_insn(ulong mepc, struct sbi_scratch *scratch,
 		break;
 	};
 
-	return val;
+	return insn;
 }

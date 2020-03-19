@@ -220,7 +220,7 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 	u32 hartid = current_hartid();
 	ulong mcause = csr_read(CSR_MCAUSE);
 	ulong mtval = csr_read(CSR_MTVAL), mtval2 = 0, mtinst = 0;
-	struct sbi_trap_info trap, *uptrap;
+	struct sbi_trap_info trap;
 
 	if (misa_extension('H')) {
 		mtval2 = csr_read(CSR_MTVAL2);
@@ -265,29 +265,6 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 	case CAUSE_HYPERVISOR_ECALL:
 		rc  = sbi_ecall_handler(hartid, mcause, regs, scratch);
 		msg = "ecall handler failed";
-		break;
-	case CAUSE_LOAD_ACCESS:
-	case CAUSE_STORE_ACCESS:
-	case CAUSE_LOAD_PAGE_FAULT:
-	case CAUSE_STORE_PAGE_FAULT:
-		uptrap = sbi_hart_get_trap_info(scratch);
-		if ((regs->mstatus & MSTATUS_MPRV) && uptrap) {
-			rc = 0;
-			uptrap->epc = regs->mepc;
-			regs->mepc += 4;
-			uptrap->cause = mcause;
-			uptrap->tval = mtval;
-			uptrap->tval2 = mtval2;
-			uptrap->tinst = mtinst;
-		} else {
-			trap.epc = regs->mepc;
-			trap.cause = mcause;
-			trap.tval = mtval;
-			trap.tval2 = mtval2;
-			trap.tinst = mtinst;
-			rc = sbi_trap_redirect(regs, &trap, scratch);
-		}
-		msg = "page/access fault handler failed";
 		break;
 	default:
 		/* If the trap came from S or U mode, redirect it there */

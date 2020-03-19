@@ -85,12 +85,30 @@
 /** Last member index in sbi_trap_regs */
 #define SBI_TRAP_REGS_last			35
 
+/** Index of epc member in sbi_trap_info */
+#define SBI_TRAP_INFO_epc			0
+/** Index of cause member in sbi_trap_info */
+#define SBI_TRAP_INFO_cause			1
+/** Index of tval member in sbi_trap_info */
+#define SBI_TRAP_INFO_tval			2
+/** Index of tval2 member in sbi_trap_info */
+#define SBI_TRAP_INFO_tval2			3
+/** Index of tinst member in sbi_trap_info */
+#define SBI_TRAP_INFO_tinst			4
+/** Last member index in sbi_trap_info */
+#define SBI_TRAP_INFO_last			5
+
 /* clang-format on */
 
 /** Get offset of member with name 'x' in sbi_trap_regs */
 #define SBI_TRAP_REGS_OFFSET(x) ((SBI_TRAP_REGS_##x) * __SIZEOF_POINTER__)
 /** Size (in bytes) of sbi_trap_regs */
 #define SBI_TRAP_REGS_SIZE SBI_TRAP_REGS_OFFSET(last)
+
+/** Get offset of member with name 'x' in sbi_trap_info */
+#define SBI_TRAP_INFO_OFFSET(x) ((SBI_TRAP_INFO_##x) * __SIZEOF_POINTER__)
+/** Size (in bytes) of sbi_trap_info */
+#define SBI_TRAP_INFO_SIZE SBI_TRAP_INFO_OFFSET(last)
 
 #ifndef __ASSEMBLY__
 
