@@ -12,30 +12,43 @@
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
+#include <sbi/sbi_string.h>
 
 void fdt_cpu_fixup(void *fdt)
 {
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
-	char cpu_node[32] = "";
-	int cpu_offset;
-	int err;
-	u32 i;
+	int err, len, cpu_offset, cpus_offset;
+	const fdt32_t *val;
+	const void *prop;
+	u32 hartid;
 
 	err = fdt_open_into(fdt, fdt, fdt_totalsize(fdt) + 32);
 	if (err < 0)
 		return;
 
-	/* assume hart ids are continuous */
-	for (i = 0; i < sbi_platform_hart_count(plat); i++) {
-		sbi_sprintf(cpu_node, "/cpus/cpu@%d", i);
-		cpu_offset = fdt_path_offset(fdt, cpu_node);
+	cpus_offset = fdt_path_offset(fdt, "/cpus");
+	if (cpus_offset < 0)
+		return;
 
-		if (sbi_platform_hart_invalid(plat, i))
+	fdt_for_each_subnode(cpu_offset, fdt, cpus_offset) {
+		prop = fdt_getprop(fdt, cpu_offset, "device_type", &len);
+		if (!prop || !len)
+			continue;
+		if (sbi_strcmp(prop, "cpu"))
+			continue;
+
+		val = fdt_getprop(fdt, cpu_offset, "reg", &len);
+		if (!val || len < sizeof(fdt32_t))
+			continue;
+
+		if (len > sizeof(fdt32_t))
+			val++;
+		hartid = fdt32_to_cpu(*val);
+
+		if (sbi_platform_hart_invalid(plat, hartid))
 			fdt_setprop_string(fdt, cpu_offset, "status",
 					   "disabled");
-
-		memset(cpu_node, 0, sizeof(cpu_node));
 	}
 }
 
