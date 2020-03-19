@@ -13,12 +13,11 @@
 #include <sbi/sbi_types.h>
 
 struct sbi_trap_regs;
-struct sbi_scratch;
 
-int sbi_emulate_csr_read(int csr_num, u32 hartid, struct sbi_trap_regs *regs,
-			 struct sbi_scratch *scratch, ulong *csr_val);
+int sbi_emulate_csr_read(int csr_num, struct sbi_trap_regs *regs,
+			 ulong *csr_val);
 
-int sbi_emulate_csr_write(int csr_num, u32 hartid, struct sbi_trap_regs *regs,
-			  struct sbi_scratch *scratch, ulong csr_val);
+int sbi_emulate_csr_write(int csr_num, struct sbi_trap_regs *regs,
+			  ulong csr_val);
 
 #endif

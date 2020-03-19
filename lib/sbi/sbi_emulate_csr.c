@@ -13,14 +13,16 @@
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_emulate_csr.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_scratch.h>
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_trap.h>
 
-int sbi_emulate_csr_read(int csr_num, u32 hartid, struct sbi_trap_regs *regs,
-			 struct sbi_scratch *scratch, ulong *csr_val)
+int sbi_emulate_csr_read(int csr_num, struct sbi_trap_regs *regs,
+			 ulong *csr_val)
 {
 	int ret = 0;
 	ulong cen = -1UL;
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	ulong prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
 #if __riscv_xlen == 32
 	bool virt = (regs->mstatusH & MSTATUSH_MPV) ? TRUE : FALSE;
@@ -111,15 +113,16 @@ int sbi_emulate_csr_read(int csr_num, u32 hartid, struct sbi_trap_regs *regs,
 
 	if (ret)
 		sbi_dprintf(scratch, "%s: hartid%d: invalid csr_num=0x%x\n",
-			    __func__, hartid, csr_num);
+			    __func__, current_hartid(), csr_num);
 
 	return ret;
 }
 
-int sbi_emulate_csr_write(int csr_num, u32 hartid, struct sbi_trap_regs *regs,
-			  struct sbi_scratch *scratch, ulong csr_val)
+int sbi_emulate_csr_write(int csr_num, struct sbi_trap_regs *regs,
+			  ulong csr_val)
 {
 	int ret = 0;
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	ulong prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
 #if __riscv_xlen == 32
 	bool virt = (regs->mstatusH & MSTATUSH_MPV) ? TRUE : FALSE;
@@ -179,7 +182,7 @@ int sbi_emulate_csr_write(int csr_num, u32 hartid, struct sbi_trap_regs *regs,
 
 	if (ret)
 		sbi_dprintf(scratch, "%s: hartid%d: invalid csr_num=0x%x\n",
-			    __func__, hartid, csr_num);
+			    __func__, current_hartid(), csr_num);
 
 	return ret;
 }
