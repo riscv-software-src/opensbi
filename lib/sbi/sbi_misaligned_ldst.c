@@ -21,10 +21,8 @@ union reg_data {
 	u64 data_u64;
 };
 
-int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
-				ulong addr, ulong tval2, ulong tinst,
-				struct sbi_trap_regs *regs,
-				struct sbi_scratch *scratch)
+int sbi_misaligned_load_handler(ulong addr, ulong tval2, ulong tinst,
+				struct sbi_trap_regs *regs)
 {
 	ulong insn;
 	union reg_data val;
@@ -110,7 +108,7 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 #endif
 	} else {
 		uptrap.epc = regs->mepc;
-		uptrap.cause = mcause;
+		uptrap.cause = CAUSE_MISALIGNED_LOAD;
 		uptrap.tval = addr;
 		uptrap.tval2 = tval2;
 		uptrap.tinst = tinst;
@@ -141,10 +139,8 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 	return 0;
 }
 
-int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
-				 ulong addr, ulong tval2, ulong tinst,
-				 struct sbi_trap_regs *regs,
-				 struct sbi_scratch *scratch)
+int sbi_misaligned_store_handler(ulong addr, ulong tval2, ulong tinst,
+				 struct sbi_trap_regs *regs)
 {
 	ulong insn;
 	union reg_data val;
@@ -221,7 +217,7 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 #endif
 	} else {
 		uptrap.epc = regs->mepc;
-		uptrap.cause = mcause;
+		uptrap.cause = CAUSE_MISALIGNED_STORE;
 		uptrap.tval = addr;
 		uptrap.tval2 = tval2;
 		uptrap.tinst = tinst;

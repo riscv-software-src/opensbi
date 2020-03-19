@@ -247,15 +247,11 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 		msg = "illegal instruction handler failed";
 		break;
 	case CAUSE_MISALIGNED_LOAD:
-		rc = sbi_misaligned_load_handler(hartid, mcause, mtval,
-						 mtval2, mtinst, regs,
-						 scratch);
+		rc = sbi_misaligned_load_handler(mtval, mtval2, mtinst, regs);
 		msg = "misaligned load handler failed";
 		break;
 	case CAUSE_MISALIGNED_STORE:
-		rc  = sbi_misaligned_store_handler(hartid, mcause, mtval,
-						   mtval2, mtinst, regs,
-						   scratch);
+		rc  = sbi_misaligned_store_handler(mtval, mtval2, mtinst, regs);
 		msg = "misaligned store handler failed";
 		break;
 	case CAUSE_SUPERVISOR_ECALL:
