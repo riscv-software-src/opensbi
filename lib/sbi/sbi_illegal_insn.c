@@ -141,7 +141,7 @@ int sbi_illegal_insn_handler(u32 hartid, ulong mcause, ulong insn,
 
 	if (unlikely((insn & 3) != 3)) {
 		if (insn == 0) {
-			insn = sbi_get_insn(regs->mepc, scratch, &uptrap);
+			insn = sbi_get_insn(regs->mepc, &uptrap);
 			if (uptrap.cause) {
 				uptrap.epc = regs->mepc;
 				return sbi_trap_redirect(regs, &uptrap,

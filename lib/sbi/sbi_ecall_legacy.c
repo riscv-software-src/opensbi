@@ -22,14 +22,13 @@
 #include <sbi/sbi_unpriv.h>
 #include <sbi/sbi_hart.h>
 
-static int sbi_load_hart_mask_unpriv(struct sbi_scratch *scratch,
-				     ulong *pmask, ulong *hmask,
+static int sbi_load_hart_mask_unpriv(ulong *pmask, ulong *hmask,
 				     struct sbi_trap_info *uptrap)
 {
 	ulong mask = 0;
 
 	if (pmask) {
-		mask = sbi_load_ulong(pmask, scratch, uptrap);
+		mask = sbi_load_ulong(pmask, uptrap);
 		if (uptrap->cause)
 			return SBI_ETRAP;
 	} else {
@@ -69,13 +68,13 @@ static int sbi_ecall_legacy_handler(struct sbi_scratch *scratch,
 		sbi_ipi_clear_smode(scratch);
 		break;
 	case SBI_EXT_0_1_SEND_IPI:
-		ret = sbi_load_hart_mask_unpriv(scratch, (ulong *)args[0],
+		ret = sbi_load_hart_mask_unpriv((ulong *)args[0],
 						&hmask, out_trap);
 		if (ret != SBI_ETRAP)
 			ret = sbi_ipi_send_smode(scratch, hmask, 0);
 		break;
 	case SBI_EXT_0_1_REMOTE_FENCE_I:
-		ret = sbi_load_hart_mask_unpriv(scratch, (ulong *)args[0],
+		ret = sbi_load_hart_mask_unpriv((ulong *)args[0],
 						&hmask, out_trap);
 		if (ret != SBI_ETRAP) {
 			SBI_TLB_INFO_INIT(&tlb_info, 0, 0, 0,
@@ -84,7 +83,7 @@ static int sbi_ecall_legacy_handler(struct sbi_scratch *scratch,
 		}
 		break;
 	case SBI_EXT_0_1_REMOTE_SFENCE_VMA:
-		ret = sbi_load_hart_mask_unpriv(scratch, (ulong *)args[0],
+		ret = sbi_load_hart_mask_unpriv((ulong *)args[0],
 						&hmask, out_trap);
 		if (ret != SBI_ETRAP) {
 			SBI_TLB_INFO_INIT(&tlb_info, args[1], args[2], 0,
@@ -93,7 +92,7 @@ static int sbi_ecall_legacy_handler(struct sbi_scratch *scratch,
 		}
 		break;
 	case SBI_EXT_0_1_REMOTE_SFENCE_VMA_ASID:
-		ret = sbi_load_hart_mask_unpriv(scratch, (ulong *)args[0],
+		ret = sbi_load_hart_mask_unpriv((ulong *)args[0],
 						&hmask, out_trap);
 		if (ret != SBI_ETRAP) {
 			SBI_TLB_INFO_INIT(&tlb_info, args[1], args[2], args[3],

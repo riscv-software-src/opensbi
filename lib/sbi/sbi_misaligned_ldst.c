@@ -42,7 +42,7 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 		 * Bit[0] == 0 implies trapped instruction value is
 		 * zero or special value.
 		 */
-		insn = sbi_get_insn(regs->mepc, scratch, &uptrap);
+		insn = sbi_get_insn(regs->mepc, &uptrap);
 		if (uptrap.cause) {
 			uptrap.epc = regs->mepc;
 			return sbi_trap_redirect(regs, &uptrap, scratch);
@@ -120,7 +120,7 @@ int sbi_misaligned_load_handler(u32 hartid, ulong mcause,
 	val.data_u64 = 0;
 	for (i = 0; i < len; i++) {
 		val.data_bytes[i] = sbi_load_u8((void *)(addr + i),
-						scratch, &uptrap);
+						&uptrap);
 		if (uptrap.cause) {
 			uptrap.epc = regs->mepc;
 			return sbi_trap_redirect(regs, &uptrap, scratch);
@@ -162,7 +162,7 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 		 * Bit[0] == 0 implies trapped instruction value is
 		 * zero or special value.
 		 */
-		insn = sbi_get_insn(regs->mepc, scratch, &uptrap);
+		insn = sbi_get_insn(regs->mepc, &uptrap);
 		if (uptrap.cause) {
 			uptrap.epc = regs->mepc;
 			return sbi_trap_redirect(regs, &uptrap, scratch);
@@ -230,7 +230,7 @@ int sbi_misaligned_store_handler(u32 hartid, ulong mcause,
 
 	for (i = 0; i < len; i++) {
 		sbi_store_u8((void *)(addr + i), val.data_bytes[i],
-			     scratch, &uptrap);
+			     &uptrap);
 		if (uptrap.cause) {
 			uptrap.epc = regs->mepc;
 			return sbi_trap_redirect(regs, &uptrap, scratch);

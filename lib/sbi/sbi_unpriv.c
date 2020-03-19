@@ -16,7 +16,6 @@
 
 #define DEFINE_UNPRIVILEGED_LOAD_FUNCTION(type, insn)                         \
 	type sbi_load_##type(const type *addr,                                \
-			     struct sbi_scratch *scratch,                     \
 			     struct sbi_trap_info *trap)                      \
 	{                                                                     \
 		register ulong tinfo asm("a3");                               \
@@ -47,7 +46,6 @@
 
 #define DEFINE_UNPRIVILEGED_STORE_FUNCTION(type, insn)                        \
 	void sbi_store_##type(type *addr, type val,                           \
-			      struct sbi_scratch *scratch,                    \
 			      struct sbi_trap_info *trap)                     \
 	{                                                                     \
 		register ulong tinfo asm("a3");                               \
@@ -91,14 +89,13 @@ DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u32, lw)
 DEFINE_UNPRIVILEGED_LOAD_FUNCTION(ulong, lw)
 
 u64 sbi_load_u64(const u64 *addr,
-		 struct sbi_scratch *scratch,
 		 struct sbi_trap_info *trap)
 {
-	u64 ret = sbi_load_u32((u32 *)addr, scratch, trap);
+	u64 ret = sbi_load_u32((u32 *)addr, trap);
 
 	if (trap->cause)
 		return 0;
-	ret |= ((u64)sbi_load_u32((u32 *)addr + 1, scratch, trap) << 32);
+	ret |= ((u64)sbi_load_u32((u32 *)addr + 1, trap) << 32);
 	if (trap->cause)
 		return 0;
 
@@ -106,21 +103,19 @@ u64 sbi_load_u64(const u64 *addr,
 }
 
 void sbi_store_u64(u64 *addr, u64 val,
-		   struct sbi_scratch *scratch,
 		   struct sbi_trap_info *trap)
 {
-	sbi_store_u32((u32 *)addr, val, scratch, trap);
+	sbi_store_u32((u32 *)addr, val, trap);
 	if (trap->cause)
 		return;
 
-	sbi_store_u32((u32 *)addr + 1, val >> 32, scratch, trap);
+	sbi_store_u32((u32 *)addr + 1, val >> 32, trap);
 	if (trap->cause)
 		return;
 }
 #endif
 
-ulong sbi_get_insn(ulong mepc, struct sbi_scratch *scratch,
-		   struct sbi_trap_info *trap)
+ulong sbi_get_insn(ulong mepc, struct sbi_trap_info *trap)
 {
 	register ulong tinfo asm("a3");
 	register ulong ttmp asm("a4");
