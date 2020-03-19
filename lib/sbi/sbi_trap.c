@@ -243,8 +243,7 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 
 	switch (mcause) {
 	case CAUSE_ILLEGAL_INSTRUCTION:
-		rc  = sbi_illegal_insn_handler(hartid, mcause, mtval,
-					       regs, scratch);
+		rc  = sbi_illegal_insn_handler(mtval, regs);
 		msg = "illegal instruction handler failed";
 		break;
 	case CAUSE_MISALIGNED_LOAD:

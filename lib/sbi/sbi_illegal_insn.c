@@ -16,18 +16,14 @@
 #include <sbi/sbi_trap.h>
 #include <sbi/sbi_unpriv.h>
 
-typedef int (*illegal_insn_func)(ulong insn, u32 hartid, ulong mcause,
-				 struct sbi_trap_regs *regs,
-				 struct sbi_scratch *scratch);
+typedef int (*illegal_insn_func)(ulong insn, struct sbi_trap_regs *regs);
 
-static int truly_illegal_insn(ulong insn, u32 hartid, ulong mcause,
-			      struct sbi_trap_regs *regs,
-			      struct sbi_scratch *scratch)
+static int truly_illegal_insn(ulong insn, struct sbi_trap_regs *regs)
 {
 	struct sbi_trap_info trap;
 
 	trap.epc = regs->mepc;
-	trap.cause = mcause;
+	trap.cause = CAUSE_ILLEGAL_INSTRUCTION;
 	trap.tval = insn;
 	trap.tval2 = 0;
 	trap.tinst = 0;
@@ -35,9 +31,7 @@ static int truly_illegal_insn(ulong insn, u32 hartid, ulong mcause,
 	return sbi_trap_redirect(regs, &trap);
 }
 
-static int system_opcode_insn(ulong insn, u32 hartid, ulong mcause,
-			      struct sbi_trap_regs *regs,
-			      struct sbi_scratch *scratch)
+static int system_opcode_insn(ulong insn, struct sbi_trap_regs *regs)
 {
 	int do_write, rs1_num = (insn >> 15) & 0x1f;
 	ulong rs1_val = GET_RS1(insn, regs);
@@ -54,12 +48,10 @@ static int system_opcode_insn(ulong insn, u32 hartid, ulong mcause,
 	if ((regs->mstatus & MSTATUS_MPV) &&
 #endif
 	    (insn & INSN_MASK_WFI) == INSN_MATCH_WFI)
-		return truly_illegal_insn(insn, hartid, mcause,
-					  regs, scratch);
+		return truly_illegal_insn(insn, regs);
 
 	if (sbi_emulate_csr_read(csr_num, regs, &csr_val))
-		return truly_illegal_insn(insn, hartid, mcause,
-					  regs, scratch);
+		return truly_illegal_insn(insn, regs);
 
 	do_write = rs1_num;
 	switch (GET_RM(insn)) {
@@ -84,11 +76,11 @@ static int system_opcode_insn(ulong insn, u32 hartid, ulong mcause,
 		new_csr_val = csr_val & ~rs1_num;
 		break;
 	default:
-		return truly_illegal_insn(insn, hartid, mcause, regs, scratch);
+		return truly_illegal_insn(insn, regs);
 	};
 
 	if (do_write && sbi_emulate_csr_write(csr_num, regs, new_csr_val))
-		return truly_illegal_insn(insn, hartid, mcause, regs, scratch);
+		return truly_illegal_insn(insn, regs);
 
 	SET_RD(insn, regs, csr_val);
 
@@ -132,9 +124,7 @@ static illegal_insn_func illegal_insn_table[32] = {
 	truly_illegal_insn  /* 31 */
 };
 
-int sbi_illegal_insn_handler(u32 hartid, ulong mcause, ulong insn,
-			     struct sbi_trap_regs *regs,
-			     struct sbi_scratch *scratch)
+int sbi_illegal_insn_handler(ulong insn, struct sbi_trap_regs *regs)
 {
 	struct sbi_trap_info uptrap;
 
@@ -147,10 +137,8 @@ int sbi_illegal_insn_handler(u32 hartid, ulong mcause, ulong insn,
 			}
 		}
 		if ((insn & 3) != 3)
-			return truly_illegal_insn(insn, hartid, mcause, regs,
-						  scratch);
+			return truly_illegal_insn(insn, regs);
 	}
 
-	return illegal_insn_table[(insn & 0x7c) >> 2](insn, hartid, mcause,
-						      regs, scratch);
+	return illegal_insn_table[(insn & 0x7c) >> 2](insn, regs);
 }
