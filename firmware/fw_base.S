@@ -556,7 +556,6 @@ _skip_mstatush_save:
 
 	/* Call C routine */
 	add	a0, sp, zero
-	csrr	a1, CSR_MSCRATCH
 	call	sbi_trap_handler
 
 	/* Restore all general regisers except SP and T0 */

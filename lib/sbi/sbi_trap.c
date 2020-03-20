@@ -16,13 +16,16 @@
 #include <sbi/sbi_illegal_insn.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_misaligned_ldst.h>
+#include <sbi/sbi_scratch.h>
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_trap.h>
 
-static void __noreturn sbi_trap_error(const char *msg, int rc, u32 hartid,
+static void __noreturn sbi_trap_error(const char *msg, int rc,
 				      ulong mcause, ulong mtval, ulong mtval2,
 				      ulong mtinst, struct sbi_trap_regs *regs)
 {
+	u32 hartid = current_hartid();
+
 	sbi_printf("%s: hart%d: %s (error %d)\n", __func__, hartid, msg, rc);
 	sbi_printf("%s: hart%d: mcause=0x%" PRILX " mtval=0x%" PRILX "\n",
 		   __func__, hartid, mcause, mtval);
@@ -208,14 +211,11 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
  * 7. Interrupts are disabled in MSTATUS CSR
  *
  * @param regs pointer to register state
- * @param scratch pointer to sbi_scratch of current HART
  */
-void sbi_trap_handler(struct sbi_trap_regs *regs,
-		      struct sbi_scratch *scratch)
+void sbi_trap_handler(struct sbi_trap_regs *regs)
 {
 	int rc = SBI_ENOTSUPP;
 	const char *msg = "trap handler failed";
-	u32 hartid = current_hartid();
 	ulong mcause = csr_read(CSR_MCAUSE);
 	ulong mtval = csr_read(CSR_MTVAL), mtval2 = 0, mtinst = 0;
 	struct sbi_trap_info trap;
@@ -229,10 +229,10 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 		mcause &= ~(1UL << (__riscv_xlen - 1));
 		switch (mcause) {
 		case IRQ_M_TIMER:
-			sbi_timer_process(scratch);
+			sbi_timer_process(sbi_scratch_thishart_ptr());
 			break;
 		case IRQ_M_SOFT:
-			sbi_ipi_process(scratch);
+			sbi_ipi_process(sbi_scratch_thishart_ptr());
 			break;
 		default:
 			msg = "unhandled external interrupt";
@@ -271,8 +271,6 @@ void sbi_trap_handler(struct sbi_trap_regs *regs,
 	};
 
 trap_error:
-	if (rc) {
-		sbi_trap_error(msg, rc, hartid, mcause, mtval,
-			       mtval2, mtinst, regs);
-	}
+	if (rc)
+		sbi_trap_error(msg, rc, mcause, mtval, mtval2, mtinst, regs);
 }

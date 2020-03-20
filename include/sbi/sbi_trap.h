@@ -202,13 +202,10 @@ struct sbi_trap_info {
 	unsigned long tinst;
 };
 
-struct sbi_scratch;
-
 int sbi_trap_redirect(struct sbi_trap_regs *regs,
 		      struct sbi_trap_info *trap);
 
-void sbi_trap_handler(struct sbi_trap_regs *regs,
-		      struct sbi_scratch *scratch);
+void sbi_trap_handler(struct sbi_trap_regs *regs);
 
 #endif
 
