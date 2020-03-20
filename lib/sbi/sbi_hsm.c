@@ -240,7 +240,7 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch, u32 hartid,
 	if (sbi_platform_has_hart_hotplug(plat) ||
 	   (sbi_platform_has_hart_secondary_boot(plat) && !init_count)) {
 		return sbi_platform_hart_start(plat, hartid,
-					     scratch->warmboot_addr, priv);
+					       scratch->warmboot_addr);
 	} else {
 		sbi_platform_ipi_send(plat, hartid);
 	}

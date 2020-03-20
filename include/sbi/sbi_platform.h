@@ -138,8 +138,8 @@ struct sbi_platform_operations {
 	/** Exit platform timer for current HART */
 	void (*timer_exit)(void);
 
-	/** Bringup the given hart from previous stage **/
-	int (*hart_start)(u32 hartid, ulong saddr, ulong priv);
+	/** Bringup the given hart */
+	int (*hart_start)(u32 hartid, ulong saddr);
 	/**
 	 * Stop the current hart from running. This call doesn't expect to
 	 * return if success.
@@ -346,18 +346,16 @@ static inline bool sbi_platform_hart_invalid(const struct sbi_platform *plat,
  * a generic WFI based approach will be used to start/stop a hart in OpenSBI.
  *
  * @param plat pointer to struct sbi_platform
- * @param hartid Hart ID
- * @param saddr  Physical address in supervisor mode for hart to jump after
- *		 OpenSBI
- * @param priv	 A private context data from the caller
+ * @param hartid HART id
+ * @param saddr M-mode start physical address for the HART
  *
  * @return 0 if sucessful and negative error code on failure
  */
 static inline int sbi_platform_hart_start(const struct sbi_platform *plat,
-					  u32 hartid, ulong saddr, ulong priv)
+					  u32 hartid, ulong saddr)
 {
 	if (plat && sbi_platform_ops(plat)->hart_start)
-		return sbi_platform_ops(plat)->hart_start(hartid, saddr, priv);
+		return sbi_platform_ops(plat)->hart_start(hartid, saddr);
 	return SBI_ENOTSUPP;
 }
 
