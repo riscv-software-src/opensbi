@@ -79,7 +79,7 @@ static struct sbi_hartmask coldboot_wait_hmask = { 0 };
 
 static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 {
-	unsigned long saved_mie;
+	unsigned long saved_mie, cmip;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	/* Save MIE CSR */
@@ -97,7 +97,10 @@ static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	/* Wait for coldboot to finish using WFI */
 	while (!coldboot_done) {
 		spin_unlock(&coldboot_lock);
-		wfi();
+		do {
+			wfi();
+			cmip = csr_read(CSR_MIP);
+		 } while (!(cmip & MIP_MSIP));
 		spin_lock(&coldboot_lock);
 	};
 
