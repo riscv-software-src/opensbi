@@ -13,7 +13,7 @@
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_const.h>
 #include <sbi/sbi_platform.h>
-#include <sbi_utils/fdt/fdt_helper.h>
+#include <sbi_utils/fdt/fdt_fixup.h>
 #include <sbi_utils/irqchip/plic.h>
 #include <sbi_utils/serial/uart8250.h>
 #include "platform.h"
