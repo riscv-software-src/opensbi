@@ -16,15 +16,15 @@
 #include <sbi_utils/serial/uart8250.h>
 #include <sbi_utils/sys/clint.h>
 
-#define OPENPITON_UART_ADDR			0xfff0c2c000
-#define OPENPITON_UART_FREQ			60000000
-#define OPENPITON_UART_BAUDRATE			115200
-#define OPENPITON_UART_REG_SHIFT		0
-#define OPENPITON_UART_REG_WIDTH		1
-#define OPENPITON_PLIC_ADDR			0xfff1100000
-#define OPENPITON_PLIC_NUM_SOURCES		2
-#define OPENPITON_HART_COUNT			3
-#define OPENPITON_CLINT_ADDR			0xfff1020000
+#define OPENPITON_DEFAULT_UART_ADDR		0xfff0c2c000
+#define OPENPITON_DEFAULT_UART_FREQ		60000000
+#define OPENPITON_DEFAULT_UART_BAUDRATE		115200
+#define OPENPITON_DEFAULT_UART_REG_SHIFT	0
+#define OPENPITON_DEFAULT_UART_REG_WIDTH	1
+#define OPENPITON_DEFAULT_PLIC_ADDR		0xfff1100000
+#define OPENPITON_DEFAULT_PLIC_NUM_SOURCES	2
+#define OPENPITON_DEFAULT_HART_COUNT		3
+#define OPENPITON_DEFAULT_CLINT_ADDR		0xfff1020000
 
 #define SBI_OPENPITON_FEATURES	\
 	(SBI_PLATFORM_HAS_TIMER_VALUE | \
@@ -32,12 +32,44 @@
 	 SBI_PLATFORM_HAS_MCOUNTEREN | \
 	 SBI_PLATFORM_HAS_MFAULTS_DELEGATION)
 
+static struct platform_uart_data uart = {
+		OPENPITON_DEFAULT_UART_ADDR,
+		OPENPITON_DEFAULT_UART_FREQ,
+		OPENPITON_DEFAULT_UART_BAUDRATE,
+	};
+static struct platform_plic_data plic = {
+		OPENPITON_DEFAULT_PLIC_ADDR,
+		OPENPITON_DEFAULT_PLIC_NUM_SOURCES,
+	};
+static unsigned long clint_addr = OPENPITON_DEFAULT_CLINT_ADDR;
+
 /*
  * OpenPiton platform early initialization.
  */
 static int openpiton_early_init(bool cold_boot)
 {
-	/* For now nothing to do. */
+	void *fdt;
+	struct platform_uart_data uart_data;
+	struct platform_plic_data plic_data;
+	unsigned long clint_data;
+	int rc;
+
+	if (!cold_boot)
+		return 0;
+	fdt = sbi_scratch_thishart_arg1_ptr();
+
+	rc = fdt_parse_uart8250(fdt, &uart_data, "ns16550");
+	if (!rc)
+		uart = uart_data;
+
+	rc = fdt_parse_plic(fdt, &plic_data, "riscv,plic0");
+	if (!rc)
+		plic = plic_data;
+
+	rc = fdt_parse_clint(fdt, &clint_data, "riscv,clint0");
+	if (!rc)
+		clint_addr = clint_data;
+
 	return 0;
 }
 
@@ -62,19 +94,19 @@ static int openpiton_final_init(bool cold_boot)
  */
 static int openpiton_console_init(void)
 {
-	return uart8250_init(OPENPITON_UART_ADDR,
-			     OPENPITON_UART_FREQ,
-			     OPENPITON_UART_BAUDRATE,
-			     OPENPITON_UART_REG_SHIFT,
-			     OPENPITON_UART_REG_WIDTH);
+	return uart8250_init(uart.addr,
+			     uart.freq,
+			     uart.baud,
+			     OPENPITON_DEFAULT_UART_REG_SHIFT,
+			     OPENPITON_DEFAULT_UART_REG_WIDTH);
 }
 
 static int plic_openpiton_warm_irqchip_init(u32 target_hart,
 			   int m_cntx_id, int s_cntx_id)
 {
-	size_t i, ie_words = OPENPITON_PLIC_NUM_SOURCES / 32 + 1;
+	size_t i, ie_words = plic.num_src / 32 + 1;
 
-	if (target_hart >= OPENPITON_HART_COUNT)
+	if (target_hart >= OPENPITON_DEFAULT_HART_COUNT)
 		return -1;
 	/* By default, enable all IRQs for M-mode of target HART */
 	if (m_cntx_id > -1) {
@@ -105,9 +137,9 @@ static int openpiton_irqchip_init(bool cold_boot)
 	int ret;
 
 	if (cold_boot) {
-		ret = plic_cold_irqchip_init(OPENPITON_PLIC_ADDR,
-					     OPENPITON_PLIC_NUM_SOURCES,
-					     OPENPITON_HART_COUNT);
+		ret = plic_cold_irqchip_init(plic.addr,
+					     plic.num_src,
+					     OPENPITON_DEFAULT_HART_COUNT);
 		if (ret)
 			return ret;
 	}
@@ -123,8 +155,8 @@ static int openpiton_ipi_init(bool cold_boot)
 	int ret;
 
 	if (cold_boot) {
-		ret = clint_cold_ipi_init(OPENPITON_CLINT_ADDR,
-					  OPENPITON_HART_COUNT);
+		ret = clint_cold_ipi_init(clint_addr,
+					  OPENPITON_DEFAULT_HART_COUNT);
 		if (ret)
 			return ret;
 	}
@@ -140,8 +172,8 @@ static int openpiton_timer_init(bool cold_boot)
 	int ret;
 
 	if (cold_boot) {
-		ret = clint_cold_timer_init(OPENPITON_CLINT_ADDR,
-					    OPENPITON_HART_COUNT, TRUE);
+		ret = clint_cold_timer_init(clint_addr,
+					    OPENPITON_DEFAULT_HART_COUNT, TRUE);
 		if (ret)
 			return ret;
 	}
@@ -195,7 +227,7 @@ const struct sbi_platform platform = {
 	.platform_version = SBI_PLATFORM_VERSION(0x0, 0x01),
 	.name = "OPENPITON RISC-V",
 	.features = SBI_OPENPITON_FEATURES,
-	.hart_count = OPENPITON_HART_COUNT,
+	.hart_count = OPENPITON_DEFAULT_HART_COUNT,
 	.hart_stack_size = SBI_PLATFORM_DEFAULT_HART_STACK_SIZE,
 	.platform_ops_addr = (unsigned long)&platform_ops
 };
