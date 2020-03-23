@@ -93,6 +93,7 @@ case "${BUILD_RISCV_XLEN}" in
 	BUILD_PLATFORM_SUBDIR+=("sifive/fu540")
 	BUILD_PLATFORM_SUBDIR+=("kendryte/k210")
 	BUILD_PLATFORM_SUBDIR+=("fpga/ariane")
+	BUILD_PLATFORM_SUBDIR+=("fpga/openpiton")
 	BUILD_PLATFORM_SUBDIR+=("andes/ae350")
 	BUILD_PLATFORM_SUBDIR+=("thead/c910")
 	BUILD_PLATFORM_SUBDIR+=("spike")
