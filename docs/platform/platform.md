@@ -33,7 +33,7 @@ facilitate the implementation.
 
 [qemu_virt.md]: qemu_virt.md
 [sifive_fu540.md]: sifive_fu540.md
-[ariane-fpga.md]: ariane-fpga.md
+[fpga-ariane.md]: fpga-ariane.md
 [andes_ae350.md]: andes-ae350.md
 [thead-c910.md]: thead-c910.md
 [spike.md]: spike.md
