@@ -25,17 +25,12 @@
 #define ARIANE_PLIC_NUM_SOURCES			3
 #define ARIANE_HART_COUNT			1
 #define ARIANE_CLINT_ADDR 0x2000000
-#define PLIC_ENABLE_BASE		0x2000
-#define PLIC_ENABLE_STRIDE		0x80
-#define PLIC_CONTEXT_BASE		0x200000
-#define PLIC_CONTEXT_STRIDE		0x1000
 
 #define SBI_ARIANE_FEATURES	\
 	(SBI_PLATFORM_HAS_TIMER_VALUE | \
 	 SBI_PLATFORM_HAS_SCOUNTEREN | \
 	 SBI_PLATFORM_HAS_MCOUNTEREN | \
 	 SBI_PLATFORM_HAS_MFAULTS_DELEGATION)
-
 
 /*
  * Ariane platform early initialization.
@@ -68,10 +63,10 @@ static int ariane_final_init(bool cold_boot)
 static int ariane_console_init(void)
 {
 	return uart8250_init(ARIANE_UART_ADDR,
-						 ARIANE_UART_FREQ,
-						 ARIANE_UART_BAUDRATE,
-						ARIANE_UART_REG_SHIFT,
-						ARIANE_UART_REG_WIDTH);
+			     ARIANE_UART_FREQ,
+			     ARIANE_UART_BAUDRATE,
+			     ARIANE_UART_REG_SHIFT,
+			     ARIANE_UART_REG_WIDTH);
 }
 
 static int plic_ariane_warm_irqchip_init(u32 target_hart,
