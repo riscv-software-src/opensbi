@@ -167,7 +167,7 @@ long atomic_sub_return(atomic_t *atom, long value)
 			__cmpxchg((ptr), _o_, _n_, sizeof(*(ptr))); \
 	})
 
-long arch_atomic_cmpxchg(atomic_t *atom, long oldval, long newval)
+long atomic_cmpxchg(atomic_t *atom, long oldval, long newval)
 {
 #ifdef __riscv_atomic
 	return __sync_val_compare_and_swap(&atom->counter, oldval, newval);
@@ -176,7 +176,7 @@ long arch_atomic_cmpxchg(atomic_t *atom, long oldval, long newval)
 #endif
 }
 
-long arch_atomic_xchg(atomic_t *atom, long newval)
+long atomic_xchg(atomic_t *atom, long newval)
 {
 	/* Atomically set new value and return old value. */
 #ifdef __riscv_atomic

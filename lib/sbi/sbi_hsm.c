@@ -110,8 +110,8 @@ void sbi_hsm_prepare_next_jump(struct sbi_scratch *scratch, u32 hartid)
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
 							    hart_data_offset);
 
-	oldstate = arch_atomic_cmpxchg(&hdata->state, SBI_HART_STARTING,
-				       SBI_HART_STARTED);
+	oldstate = atomic_cmpxchg(&hdata->state, SBI_HART_STARTING,
+				  SBI_HART_STARTED);
 	if (oldstate != SBI_HART_STARTING)
 		sbi_hart_hang();
 }
@@ -178,8 +178,8 @@ void __noreturn sbi_hsm_exit(struct sbi_scratch *scratch)
 							    hart_data_offset);
 	void (*jump_warmboot)(void) = (void (*)(void))scratch->warmboot_addr;
 
-	hstate = arch_atomic_cmpxchg(&hdata->state, SBI_HART_STOPPING,
-				     SBI_HART_STOPPED);
+	hstate = atomic_cmpxchg(&hdata->state, SBI_HART_STOPPING,
+				SBI_HART_STOPPED);
 	if (hstate != SBI_HART_STOPPING)
 		goto fail_exit;
 
@@ -216,8 +216,8 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch, u32 hartid,
 	if (!rscratch)
 		return SBI_EINVAL;
 	hdata = sbi_scratch_offset_ptr(rscratch, hart_data_offset);
-	hstate = arch_atomic_cmpxchg(&hdata->state, SBI_HART_STOPPED,
-				     SBI_HART_STARTING);
+	hstate = atomic_cmpxchg(&hdata->state, SBI_HART_STOPPED,
+				SBI_HART_STARTING);
 	if (hstate == SBI_HART_STARTED)
 		return SBI_EALREADY_STARTED;
 
@@ -258,8 +258,8 @@ int sbi_hsm_hart_stop(struct sbi_scratch *scratch, bool exitnow)
 	if (!sbi_hsm_hart_started(hartid))
 		return SBI_EINVAL;
 
-	oldstate = arch_atomic_cmpxchg(&hdata->state, SBI_HART_STARTED,
-				       SBI_HART_STOPPING);
+	oldstate = atomic_cmpxchg(&hdata->state, SBI_HART_STARTED,
+				  SBI_HART_STOPPING);
 	if (oldstate != SBI_HART_STARTED) {
 		sbi_printf("%s: ERR: The hart is in invalid state [%u]\n",
 			   __func__, oldstate);

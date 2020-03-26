@@ -285,7 +285,7 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 	    sbi_platform_hart_invalid(plat, hartid))
 		sbi_hart_hang();
 
-	if (arch_atomic_xchg(&coldboot_lottery, 1) == 0)
+	if (atomic_xchg(&coldboot_lottery, 1) == 0)
 		coldboot = TRUE;
 
 	if (coldboot)

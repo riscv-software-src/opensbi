@@ -29,9 +29,9 @@ long atomic_add_return(atomic_t *atom, long value);
 
 long atomic_sub_return(atomic_t *atom, long value);
 
-long arch_atomic_cmpxchg(atomic_t *atom, long oldval, long newval);
+long atomic_cmpxchg(atomic_t *atom, long oldval, long newval);
 
-long arch_atomic_xchg(atomic_t *atom, long newval);
+long atomic_xchg(atomic_t *atom, long newval);
 
 unsigned int atomic_raw_xchg_uint(volatile unsigned int *ptr,
 				  unsigned int newval);
