@@ -128,7 +128,7 @@ static void wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 	coldboot_done = 1;
 
 	/* Send an IPI to all HARTs waiting for coldboot */
-	for (int i = 0; i < SBI_HARTMASK_MAX_BITS; i++) {
+	for (int i = 0; i <= sbi_scratch_last_hartid(); i++) {
 		if ((i != hartid) &&
 		    sbi_hartmask_test_hart(i, &coldboot_wait_hmask))
 			sbi_platform_ipi_send(plat, i);

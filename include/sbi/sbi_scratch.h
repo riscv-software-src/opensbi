@@ -113,6 +113,12 @@ extern struct sbi_scratch *hartid_to_scratch_table[];
 #define sbi_hartid_to_scratch(__hartid) \
 	hartid_to_scratch_table[__hartid]
 
+/** Last HART id having a sbi_scratch pointer */
+extern u32 last_hartid_having_scratch;
+
+/** Get last HART id having a sbi_scratch pointer */
+#define sbi_scratch_last_hartid()	last_hartid_having_scratch
+
 #endif
 
 #endif

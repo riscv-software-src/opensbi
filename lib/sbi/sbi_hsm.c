@@ -88,7 +88,7 @@ bool sbi_hsm_hart_started(u32 hartid)
 int sbi_hsm_hart_started_mask(ulong hbase, ulong *out_hmask)
 {
 	ulong i;
-	ulong hcount = SBI_HARTMASK_MAX_BITS;
+	ulong hcount = sbi_scratch_last_hartid() + 1;
 
 	*out_hmask = 0;
 	if (hcount <= hbase)
@@ -153,7 +153,7 @@ int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 			return SBI_ENOMEM;
 
 		/* Initialize hart state data for every hart */
-		for (i = 0; i < SBI_HARTMASK_MAX_BITS; i++) {
+		for (i = 0; i <= sbi_scratch_last_hartid(); i++) {
 			rscratch = sbi_hartid_to_scratch(i);
 			if (!rscratch)
 				continue;
