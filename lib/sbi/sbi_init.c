@@ -160,7 +160,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_system_early_init(scratch, TRUE);
+	rc = sbi_platform_early_init(plat, TRUE);
 	if (rc)
 		sbi_hart_hang();
 
@@ -192,7 +192,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_system_final_init(scratch, TRUE);
+	rc = sbi_platform_final_init(plat, TRUE);
 	if (rc)
 		sbi_hart_hang();
 
@@ -224,7 +224,7 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_system_early_init(scratch, FALSE);
+	rc = sbi_platform_early_init(plat, FALSE);
 	if (rc)
 		sbi_hart_hang();
 
@@ -248,7 +248,7 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_system_final_init(scratch, FALSE);
+	rc = sbi_platform_final_init(plat, FALSE);
 	if (rc)
 		sbi_hart_hang();
 
