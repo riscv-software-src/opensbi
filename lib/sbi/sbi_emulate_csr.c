@@ -13,7 +13,6 @@
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_emulate_csr.h>
 #include <sbi/sbi_error.h>
-#include <sbi/sbi_scratch.h>
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_trap.h>
 
@@ -111,8 +110,7 @@ int sbi_emulate_csr_read(int csr_num, struct sbi_trap_regs *regs,
 	};
 
 	if (ret)
-		sbi_dprintf(sbi_scratch_thishart_ptr(),
-			    "%s: hartid%d: invalid csr_num=0x%x\n",
+		sbi_dprintf("%s: hartid%d: invalid csr_num=0x%x\n",
 			    __func__, current_hartid(), csr_num);
 
 	return ret;
@@ -180,8 +178,7 @@ int sbi_emulate_csr_write(int csr_num, struct sbi_trap_regs *regs,
 	};
 
 	if (ret)
-		sbi_dprintf(sbi_scratch_thishart_ptr(),
-			    "%s: hartid%d: invalid csr_num=0x%x\n",
+		sbi_dprintf("%s: hartid%d: invalid csr_num=0x%x\n",
 			    __func__, current_hartid(), csr_num);
 
 	return ret;

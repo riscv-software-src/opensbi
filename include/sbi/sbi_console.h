@@ -30,10 +30,9 @@ int __printf(3, 4) sbi_snprintf(char *out, u32 out_sz, const char *format, ...);
 
 int __printf(1, 2) sbi_printf(const char *format, ...);
 
-struct sbi_scratch;
+int __printf(1, 2) sbi_dprintf(const char *format, ...);
 
-int __printf(2, 3) sbi_dprintf(struct sbi_scratch *scratch,
-			       const char *format, ...);
+struct sbi_scratch;
 
 int sbi_console_init(struct sbi_scratch *scratch);
 

@@ -7,9 +7,10 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
-#include <sbi/sbi_platform.h>
-#include <sbi/sbi_console.h>
 #include <sbi/riscv_locks.h>
+#include <sbi/sbi_console.h>
+#include <sbi/sbi_platform.h>
+#include <sbi/sbi_scratch.h>
 
 static const struct sbi_platform *console_plat = NULL;
 static spinlock_t console_out_lock	       = SPIN_LOCK_INITIALIZER;
@@ -375,10 +376,11 @@ int sbi_printf(const char *format, ...)
 	return retval;
 }
 
-int sbi_dprintf(struct sbi_scratch *scratch, const char *format, ...)
+int sbi_dprintf(const char *format, ...)
 {
 	va_list args;
 	int retval = 0;
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	va_start(args, format);
 	if (scratch->options & SBI_SCRATCH_DEBUG_PRINTS)

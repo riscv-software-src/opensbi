@@ -359,7 +359,7 @@ static int sbi_tlb_update(struct sbi_scratch *scratch,
 		 * this properly.
 		 */
 		sbi_tlb_process_count(scratch, 1);
-		sbi_dprintf(remote_scratch, "hart%d: hart%d tlb fifo full\n",
+		sbi_dprintf("hart%d: hart%d tlb fifo full\n",
 			    curr_hartid, remote_hartid);
 	}
 
