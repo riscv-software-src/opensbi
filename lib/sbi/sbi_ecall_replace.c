@@ -51,7 +51,6 @@ static int sbi_ecall_rfence_handler(unsigned long extid, unsigned long funcid,
 	int ret = 0;
 	struct sbi_tlb_info tlb_info;
 	u32 source_hart = current_hartid();
-	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	if (funcid >= SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA &&
 	    funcid <= SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA_ASID)
@@ -62,37 +61,37 @@ static int sbi_ecall_rfence_handler(unsigned long extid, unsigned long funcid,
 	case SBI_EXT_RFENCE_REMOTE_FENCE_I:
 		SBI_TLB_INFO_INIT(&tlb_info, 0, 0, 0,
 				  SBI_ITLB_FLUSH, source_hart);
-		ret = sbi_tlb_request(scratch, args[0], args[1], &tlb_info);
+		ret = sbi_tlb_request(args[0], args[1], &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA:
 		SBI_TLB_INFO_INIT(&tlb_info, args[2], args[3], 0,
 				  SBI_TLB_FLUSH_GVMA, source_hart);
-		ret = sbi_tlb_request(scratch, args[0], args[1], &tlb_info);
+		ret = sbi_tlb_request(args[0], args[1], &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA_VMID:
 		SBI_TLB_INFO_INIT(&tlb_info, args[2], args[3], args[4],
 				  SBI_TLB_FLUSH_GVMA_VMID, source_hart);
-		ret = sbi_tlb_request(scratch, args[0], args[1], &tlb_info);
+		ret = sbi_tlb_request(args[0], args[1], &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA:
 		SBI_TLB_INFO_INIT(&tlb_info, args[2], args[3], 0,
 				  SBI_TLB_FLUSH_VVMA, source_hart);
-		ret = sbi_tlb_request(scratch, args[0], args[1], &tlb_info);
+		ret = sbi_tlb_request(args[0], args[1], &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA_ASID:
 		SBI_TLB_INFO_INIT(&tlb_info, args[2], args[3], args[4],
 				  SBI_TLB_FLUSH_VVMA_ASID, source_hart);
-		ret = sbi_tlb_request(scratch, args[0], args[1], &tlb_info);
+		ret = sbi_tlb_request(args[0], args[1], &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_SFENCE_VMA:
 		SBI_TLB_INFO_INIT(&tlb_info, args[2], args[3], 0,
 				  SBI_TLB_FLUSH_VMA, source_hart);
-		ret = sbi_tlb_request(scratch, args[0], args[1], &tlb_info);
+		ret = sbi_tlb_request(args[0], args[1], &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_SFENCE_VMA_ASID:
 		SBI_TLB_INFO_INIT(&tlb_info, args[2], args[3], args[4],
 				  SBI_TLB_FLUSH_VMA_ASID, source_hart);
-		ret = sbi_tlb_request(scratch, args[0], args[1], &tlb_info);
+		ret = sbi_tlb_request(args[0], args[1], &tlb_info);
 		break;
 	default:
 		ret = SBI_ENOTSUPP;

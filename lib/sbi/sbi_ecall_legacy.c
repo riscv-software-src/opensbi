@@ -80,7 +80,7 @@ static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
 		if (ret != SBI_ETRAP) {
 			SBI_TLB_INFO_INIT(&tlb_info, 0, 0, 0,
 					  SBI_ITLB_FLUSH, source_hart);
-			ret = sbi_tlb_request(scratch, hmask, 0, &tlb_info);
+			ret = sbi_tlb_request(hmask, 0, &tlb_info);
 		}
 		break;
 	case SBI_EXT_0_1_REMOTE_SFENCE_VMA:
@@ -89,7 +89,7 @@ static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
 		if (ret != SBI_ETRAP) {
 			SBI_TLB_INFO_INIT(&tlb_info, args[1], args[2], 0,
 					  SBI_TLB_FLUSH_VMA, source_hart);
-			ret = sbi_tlb_request(scratch, hmask, 0, &tlb_info);
+			ret = sbi_tlb_request(hmask, 0, &tlb_info);
 		}
 		break;
 	case SBI_EXT_0_1_REMOTE_SFENCE_VMA_ASID:
@@ -98,7 +98,7 @@ static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
 		if (ret != SBI_ETRAP) {
 			SBI_TLB_INFO_INIT(&tlb_info, args[1], args[2], args[3],
 					  SBI_TLB_FLUSH_VMA_ASID, source_hart);
-			ret = sbi_tlb_request(scratch, hmask, 0, &tlb_info);
+			ret = sbi_tlb_request(hmask, 0, &tlb_info);
 		}
 		break;
 	case SBI_EXT_0_1_SHUTDOWN:
