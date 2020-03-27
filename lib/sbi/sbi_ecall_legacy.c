@@ -15,7 +15,6 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hsm.h>
 #include <sbi/sbi_ipi.h>
-#include <sbi/sbi_scratch.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_tlb.h>
@@ -47,16 +46,14 @@ static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
 	int ret = 0;
 	struct sbi_tlb_info tlb_info;
 	u32 source_hart = current_hartid();
-	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	ulong hmask = 0;
 
 	switch (extid) {
 	case SBI_EXT_0_1_SET_TIMER:
 #if __riscv_xlen == 32
-		sbi_timer_event_start(scratch,
-				      (((u64)args[1] << 32) | (u64)args[0]));
+		sbi_timer_event_start((((u64)args[1] << 32) | (u64)args[0]));
 #else
-		sbi_timer_event_start(scratch, (u64)args[0]);
+		sbi_timer_event_start((u64)args[0]);
 #endif
 		break;
 	case SBI_EXT_0_1_CONSOLE_PUTCHAR:

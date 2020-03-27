@@ -14,22 +14,31 @@
 
 struct sbi_scratch;
 
-u64 sbi_timer_value(struct sbi_scratch *scratch);
+/** Get timer value for current HART */
+u64 sbi_timer_value(void);
 
-u64 sbi_timer_virt_value(struct sbi_scratch *scratch);
+/** Get virtualized timer value for current HART */
+u64 sbi_timer_virt_value(void);
 
-u64 sbi_timer_get_delta(struct sbi_scratch *scratch);
+/** Get timer delta value for current HART */
+u64 sbi_timer_get_delta(void);
 
-void sbi_timer_set_delta(struct sbi_scratch *scratch, ulong delta);
+/** Set timer delta value for current HART */
+void sbi_timer_set_delta(ulong delta);
 
-void sbi_timer_set_delta_upper(struct sbi_scratch *scratch, ulong delta_upper);
+/** Set upper 32-bits of timer delta value for current HART */
+void sbi_timer_set_delta_upper(ulong delta_upper);
 
-void sbi_timer_event_start(struct sbi_scratch *scratch, u64 next_event);
+/** Start timer event for current HART */
+void sbi_timer_event_start(u64 next_event);
 
-void sbi_timer_process(struct sbi_scratch *scratch);
+/** Process timer event for current HART */
+void sbi_timer_process(void);
 
+/* Initialize timer */
 int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot);
 
+/* Exit timer */
 void sbi_timer_exit(struct sbi_scratch *scratch);
 
 #endif

@@ -11,6 +11,7 @@
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_platform.h>
+#include <sbi/sbi_scratch.h>
 #include <sbi/sbi_timer.h>
 
 static unsigned long time_delta_off;
@@ -37,9 +38,9 @@ u64 get_ticks(void)
 }
 #endif
 
-u64 sbi_timer_value(struct sbi_scratch *scratch)
+u64 sbi_timer_value(void)
 {
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	const struct sbi_platform *plat = sbi_platform_thishart_ptr();
 
 	if (sbi_platform_has_timer_value(plat))
 		return sbi_platform_timer_value(plat);
@@ -47,43 +48,47 @@ u64 sbi_timer_value(struct sbi_scratch *scratch)
 		return get_ticks();
 }
 
-u64 sbi_timer_virt_value(struct sbi_scratch *scratch)
+u64 sbi_timer_virt_value(void)
 {
-	u64 *time_delta = sbi_scratch_offset_ptr(scratch, time_delta_off);
+	u64 *time_delta = sbi_scratch_offset_ptr(sbi_scratch_thishart_ptr(),
+						 time_delta_off);
 
-	return sbi_timer_value(scratch) + *time_delta;
+	return sbi_timer_value() + *time_delta;
 }
 
-u64 sbi_timer_get_delta(struct sbi_scratch *scratch)
+u64 sbi_timer_get_delta(void)
 {
-	u64 *time_delta = sbi_scratch_offset_ptr(scratch, time_delta_off);
+	u64 *time_delta = sbi_scratch_offset_ptr(sbi_scratch_thishart_ptr(),
+						 time_delta_off);
 
 	return *time_delta;
 }
 
-void sbi_timer_set_delta(struct sbi_scratch *scratch, ulong delta)
+void sbi_timer_set_delta(ulong delta)
 {
-	u64 *time_delta = sbi_scratch_offset_ptr(scratch, time_delta_off);
+	u64 *time_delta = sbi_scratch_offset_ptr(sbi_scratch_thishart_ptr(),
+						 time_delta_off);
 
 	*time_delta = (u64)delta;
 }
 
-void sbi_timer_set_delta_upper(struct sbi_scratch *scratch, ulong delta_upper)
+void sbi_timer_set_delta_upper(ulong delta_upper)
 {
-	u64 *time_delta = sbi_scratch_offset_ptr(scratch, time_delta_off);
+	u64 *time_delta = sbi_scratch_offset_ptr(sbi_scratch_thishart_ptr(),
+						 time_delta_off);
 
 	*time_delta &= 0xffffffffULL;
 	*time_delta |= ((u64)delta_upper << 32);
 }
 
-void sbi_timer_event_start(struct sbi_scratch *scratch, u64 next_event)
+void sbi_timer_event_start(u64 next_event)
 {
-	sbi_platform_timer_event_start(sbi_platform_ptr(scratch), next_event);
+	sbi_platform_timer_event_start(sbi_platform_thishart_ptr(), next_event);
 	csr_clear(CSR_MIP, MIP_STIP);
 	csr_set(CSR_MIE, MIP_MTIP);
 }
 
-void sbi_timer_process(struct sbi_scratch *scratch)
+void sbi_timer_process(void)
 {
 	csr_clear(CSR_MIE, MIP_MTIP);
 	csr_set(CSR_MIP, MIP_STIP);

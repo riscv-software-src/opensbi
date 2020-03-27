@@ -14,7 +14,6 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_ipi.h>
-#include <sbi/sbi_scratch.h>
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_tlb.h>
 
@@ -26,11 +25,9 @@ static int sbi_ecall_time_handler(unsigned long extid, unsigned long funcid,
 
 	if (funcid == SBI_EXT_TIME_SET_TIMER) {
 #if __riscv_xlen == 32
-		sbi_timer_event_start(sbi_scratch_thishart_ptr(),
-				      (((u64)args[1] << 32) | (u64)args[0]));
+		sbi_timer_event_start((((u64)args[1] << 32) | (u64)args[0]));
 #else
-		sbi_timer_event_start(sbi_scratch_thishart_ptr(),
-				      (u64)args[0]);
+		sbi_timer_event_start((u64)args[0]);
 #endif
 	} else
 		ret = SBI_ENOTSUPP;

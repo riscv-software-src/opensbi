@@ -16,7 +16,6 @@
 #include <sbi/sbi_illegal_insn.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_misaligned_ldst.h>
-#include <sbi/sbi_scratch.h>
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_trap.h>
 
@@ -229,7 +228,7 @@ void sbi_trap_handler(struct sbi_trap_regs *regs)
 		mcause &= ~(1UL << (__riscv_xlen - 1));
 		switch (mcause) {
 		case IRQ_M_TIMER:
-			sbi_timer_process(sbi_scratch_thishart_ptr());
+			sbi_timer_process();
 			break;
 		case IRQ_M_SOFT:
 			sbi_ipi_process();
