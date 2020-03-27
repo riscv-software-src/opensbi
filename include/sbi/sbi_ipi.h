@@ -49,20 +49,19 @@ struct sbi_ipi_event_ops {
 	void (* process)(struct sbi_scratch *scratch);
 };
 
-int sbi_ipi_send_many(struct sbi_scratch *scratch, ulong hmask,
-		      ulong hbase, u32 event, void *data);
+int sbi_ipi_send_many(ulong hmask, ulong hbase, u32 event, void *data);
 
 int sbi_ipi_event_create(const struct sbi_ipi_event_ops *ops);
 
 void sbi_ipi_event_destroy(u32 event);
 
-int sbi_ipi_send_smode(struct sbi_scratch *scratch, ulong hmask, ulong hbase);
+int sbi_ipi_send_smode(ulong hmask, ulong hbase);
 
-void sbi_ipi_clear_smode(struct sbi_scratch *scratch);
+void sbi_ipi_clear_smode(void);
 
-int sbi_ipi_send_halt(struct sbi_scratch *scratch, ulong hmask, ulong hbase);
+int sbi_ipi_send_halt(ulong hmask, ulong hbase);
 
-void sbi_ipi_process(struct sbi_scratch *scratch);
+void sbi_ipi_process(void);
 
 int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot);
 

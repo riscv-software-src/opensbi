@@ -73,11 +73,11 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartid,
  * set to all online harts if the intention is to send IPIs to all the harts.
  * If hmask is zero, no IPIs will be sent.
  */
-int sbi_ipi_send_many(struct sbi_scratch *scratch, ulong hmask, ulong hbase,
-			u32 event, void *data)
+int sbi_ipi_send_many(ulong hmask, ulong hbase, u32 event, void *data)
 {
 	int rc;
 	ulong i, m;
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	if (hbase != -1UL) {
 		rc = sbi_hsm_hart_started_mask(hbase, &m);
@@ -143,12 +143,12 @@ static struct sbi_ipi_event_ops ipi_smode_ops = {
 
 static u32 ipi_smode_event = SBI_IPI_EVENT_MAX;
 
-int sbi_ipi_send_smode(struct sbi_scratch *scratch, ulong hmask, ulong hbase)
+int sbi_ipi_send_smode(ulong hmask, ulong hbase)
 {
-	return sbi_ipi_send_many(scratch, hmask, hbase, ipi_smode_event, NULL);
+	return sbi_ipi_send_many(hmask, hbase, ipi_smode_event, NULL);
 }
 
-void sbi_ipi_clear_smode(struct sbi_scratch *scratch)
+void sbi_ipi_clear_smode(void)
 {
 	csr_clear(CSR_MIP, MIP_SSIP);
 }
@@ -165,16 +165,17 @@ static struct sbi_ipi_event_ops ipi_halt_ops = {
 
 static u32 ipi_halt_event = SBI_IPI_EVENT_MAX;
 
-int sbi_ipi_send_halt(struct sbi_scratch *scratch, ulong hmask, ulong hbase)
+int sbi_ipi_send_halt(ulong hmask, ulong hbase)
 {
-	return sbi_ipi_send_many(scratch, hmask, hbase, ipi_halt_event, NULL);
+	return sbi_ipi_send_many(hmask, hbase, ipi_halt_event, NULL);
 }
 
-void sbi_ipi_process(struct sbi_scratch *scratch)
+void sbi_ipi_process(void)
 {
 	unsigned long ipi_type;
 	unsigned int ipi_event;
 	const struct sbi_ipi_event_ops *ipi_ops;
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	struct sbi_ipi_data *ipi_data =
 			sbi_scratch_offset_ptr(scratch, ipi_data_off);
@@ -244,7 +245,7 @@ void sbi_ipi_exit(struct sbi_scratch *scratch)
 	csr_clear(CSR_MIE, MIP_MSIP);
 
 	/* Process pending IPIs */
-	sbi_ipi_process(scratch);
+	sbi_ipi_process();
 
 	/* Platform exit */
 	sbi_platform_ipi_exit(sbi_platform_ptr(scratch));

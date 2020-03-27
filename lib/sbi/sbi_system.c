@@ -47,7 +47,7 @@ void __noreturn sbi_system_reboot(struct sbi_scratch *scratch, u32 type)
 		if (hbase <= cur_hartid)
 			hmask &= ~(1UL << (cur_hartid - hbase));
 		if (hmask)
-			sbi_ipi_send_halt(scratch, hmask, hbase);
+			sbi_ipi_send_halt(hmask, hbase);
 		hbase += BITS_PER_LONG;
 	}
 
@@ -71,7 +71,7 @@ void __noreturn sbi_system_shutdown(struct sbi_scratch *scratch, u32 type)
 		if (hbase <= cur_hartid)
 			hmask &= ~(1UL << (cur_hartid - hbase));
 		if (hmask)
-			sbi_ipi_send_halt(scratch, hmask, hbase);
+			sbi_ipi_send_halt(hmask, hbase);
 		hbase += BITS_PER_LONG;
 	}
 

@@ -113,8 +113,7 @@ static int sbi_ecall_ipi_handler(unsigned long extid, unsigned long funcid,
 	int ret = 0;
 
 	if (funcid == SBI_EXT_IPI_SEND_IPI)
-		ret = sbi_ipi_send_smode(sbi_scratch_thishart_ptr(),
-					 args[0], args[1]);
+		ret = sbi_ipi_send_smode(args[0], args[1]);
 	else
 		ret = SBI_ENOTSUPP;
 

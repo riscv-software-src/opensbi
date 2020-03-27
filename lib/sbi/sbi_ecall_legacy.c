@@ -66,13 +66,13 @@ static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
 		ret = sbi_getc();
 		break;
 	case SBI_EXT_0_1_CLEAR_IPI:
-		sbi_ipi_clear_smode(scratch);
+		sbi_ipi_clear_smode();
 		break;
 	case SBI_EXT_0_1_SEND_IPI:
 		ret = sbi_load_hart_mask_unpriv((ulong *)args[0],
 						&hmask, out_trap);
 		if (ret != SBI_ETRAP)
-			ret = sbi_ipi_send_smode(scratch, hmask, 0);
+			ret = sbi_ipi_send_smode(hmask, 0);
 		break;
 	case SBI_EXT_0_1_REMOTE_FENCE_I:
 		ret = sbi_load_hart_mask_unpriv((ulong *)args[0],

@@ -377,8 +377,7 @@ static u32 tlb_event = SBI_IPI_EVENT_MAX;
 
 int sbi_tlb_request(ulong hmask, ulong hbase, struct sbi_tlb_info *tinfo)
 {
-	return sbi_ipi_send_many(sbi_scratch_thishart_ptr(),
-				 hmask, hbase, tlb_event, tinfo);
+	return sbi_ipi_send_many(hmask, hbase, tlb_event, tinfo);
 }
 
 int sbi_tlb_init(struct sbi_scratch *scratch, bool cold_boot)

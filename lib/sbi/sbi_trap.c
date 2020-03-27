@@ -232,7 +232,7 @@ void sbi_trap_handler(struct sbi_trap_regs *regs)
 			sbi_timer_process(sbi_scratch_thishart_ptr());
 			break;
 		case IRQ_M_SOFT:
-			sbi_ipi_process(sbi_scratch_thishart_ptr());
+			sbi_ipi_process();
 			break;
 		default:
 			msg = "unhandled external interrupt";
