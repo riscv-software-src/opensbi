@@ -66,11 +66,11 @@ int plic_warm_irqchip_init(u32 target_hart, int m_cntx_id, int s_cntx_id)
 
 	/* By default, disable M-mode threshold */
 	if (m_cntx_id > -1)
-		plic_set_thresh(m_cntx_id, 0xffffffff);
+		plic_set_thresh(m_cntx_id, 0x7);
 
 	/* By default, disable S-mode threshold */
 	if (s_cntx_id > -1)
-		plic_set_thresh(s_cntx_id, 0xffffffff);
+		plic_set_thresh(s_cntx_id, 0x7);
 
 	return 0;
 }
