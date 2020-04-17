@@ -39,6 +39,27 @@ OpenSBI also provides several runtime firmware examples built using the platform
 *riscv-pk* bootloader (aka BBL) and enable the use of well-known bootloaders
 such as [U-Boot] (https://git.denx.de/u-boot.git).
 
+Supported SBI version
+---------------------
+Currently, OpenSBI fully supports SBI specification *v0.2*. OpenSBI also
+supports Hart State Management (HSM) SBI extension starting from OpenSBI v0.7.
+HSM extension allows S-mode software to boot all the harts a defined order
+rather than legacy method of random booting of harts. As a result, many
+required features such as CPU hotplug, kexec/kdump can also be supported easily
+in S-mode. HSM extension in OpenSBI is implemented in a non-backward compatible
+manner to reduce the maintenance burden and avoid confusion. That's why, any
+S-mode software using OpenSBI will not be able to boot more than 1 hart if HSM
+extension is not supported in S-mode.
+
+Linux kernel already supports SBI v0.2 and HSM SBI extension starting from
+**v5.7-rc1**. If you are using an Linux kernel older than **5.7-rc1** or any
+other S-mode software without HSM SBI extension, you should stick to OpenSBI
+v0.6 to boot all the harts. For a UMP systems, it doesn't matter.
+
+N.B. Any S-mode boot loader (i.e. U-Boot) doesn't need to support HSM extension,
+as it doesn't need to boot all the harts. The operating system should be
+capable enough to bring up all other non-booting harts using HSM extension.
+
 Required Toolchain
 ------------------
 
