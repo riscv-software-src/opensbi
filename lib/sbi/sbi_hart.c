@@ -25,10 +25,17 @@ void (*sbi_hart_unpriv_trap)(void) = &__sbi_unpriv_trap;
 static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
 {
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	unsigned long mstatus_val = 0;
 
 	/* Enable FPU */
 	if (misa_extension('D') || misa_extension('F'))
-		csr_write(CSR_MSTATUS, MSTATUS_FS);
+		mstatus_val |=  MSTATUS_FS;
+
+	/* Enable Vector context */
+	if (misa_extension('V'))
+		mstatus_val |=  MSTATUS_VS;
+
+	csr_write(CSR_MSTATUS, mstatus_val);
 
 	/* Enable user/supervisor use of perf counters */
 	if (misa_extension('S') && sbi_platform_has_scounteren(plat))
