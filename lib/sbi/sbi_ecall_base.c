@@ -46,7 +46,7 @@ static int sbi_ecall_base_handler(unsigned long extid, unsigned long funcid,
 		*out_val = *out_val | SBI_ECALL_VERSION_MINOR;
 		break;
 	case SBI_EXT_BASE_GET_IMP_ID:
-		*out_val = SBI_OPENSBI_IMPID;
+		*out_val = sbi_ecall_get_impid();
 		break;
 	case SBI_EXT_BASE_GET_IMP_VERSION:
 		*out_val = OPENSBI_VERSION;

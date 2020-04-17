@@ -42,6 +42,10 @@ u16 sbi_ecall_version_major(void);
 
 u16 sbi_ecall_version_minor(void);
 
+unsigned long sbi_ecall_get_impid(void);
+
+void sbi_ecall_set_impid(unsigned long impid);
+
 struct sbi_ecall_extension *sbi_ecall_find_extension(unsigned long extid);
 
 int sbi_ecall_register_extension(struct sbi_ecall_extension *ext);
