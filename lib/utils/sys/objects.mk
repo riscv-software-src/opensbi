@@ -7,5 +7,6 @@
 #   Anup Patel <anup.patel@wdc.com>
 #
 
+libsbiutils-objs-y += sys/nuclei_timer.o
 libsbiutils-objs-y += sys/clint.o
 libsbiutils-objs-y += sys/htif.o

@@ -1,0 +1,70 @@
+/dts-v1/;
+
+/ {
+  #address-cells = <2>;
+  #size-cells = <2>;
+  compatible = "nuclei,ux600";
+  model = "nuclei,ux600";
+  
+  chosen {
+     bootargs = "earlycon=sbi";
+  };
+
+  cpus {
+    #address-cells = <1>;
+    #size-cells = <0>;
+    timebase-frequency = <0x00989680>;
+    cpu0: cpu@0 {
+      device_type = "cpu";
+      reg = <0>;
+      status = "okay";
+      compatible = "riscv";
+      riscv,isa = "rv64imafdc";
+      mmu-type = "riscv,sv39";
+      clock-frequency = <0x3b9aca00>;
+      cpu0_intc: interrupt-controller {
+        #interrupt-cells = <1>;
+        interrupt-controller;
+        compatible = "riscv,cpu-intc";
+      };
+    };
+  };
+
+  memory@80000000 {
+    device_type = "memory";
+    reg = <0x0 0x80000000 0x0 0x04000000>;
+  };
+
+  soc {
+    #address-cells = <2>;
+    #size-cells = <2>;
+    compatible = "nuclei,ux600", "simple-bus";
+    ranges;
+  };
+  
+  plic0: interrupt-controller@8000000 {
+		#interrupt-cells = <1>;
+		compatible = "riscv,plic0";
+		interrupt-controller;
+        riscv,ndev = <53>;
+		interrupts-extended =
+			<&cpu0_intc 11 &cpu0_intc 9>;
+		reg = <0x0 0x8000000 0x0 0x4000000>;
+	};
+
+	uart0: serial@10013000 {
+        compatible = "sifive,uart0";
+        reg = <0x0 0x10013000 0x0 0x1000>;
+        interrupt-parent = <&plic0>;
+        interrupts = <4>;
+        status = "disabled";
+	};
+
+	uart1: serial@10023000 {
+        compatible = "sifive,uart0";
+        reg = <0x0 0x10023000 0x0 0x1000>;
+        interrupt-parent = <&plic0>;
+        interrupts = <5>;
+        status = "disabled";
+	};
+};
