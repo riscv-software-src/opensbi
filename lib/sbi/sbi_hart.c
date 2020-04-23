@@ -188,7 +188,7 @@ int sbi_hart_pmp_check_addr(struct sbi_scratch *scratch, unsigned long addr,
 
 static int pmp_init(struct sbi_scratch *scratch, u32 hartid)
 {
-	u32 i, count;
+	u32 i, pmp_idx = 0, count;
 	unsigned long fw_start, fw_size_log2;
 	ulong prot, addr, log2size;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
@@ -196,21 +196,27 @@ static int pmp_init(struct sbi_scratch *scratch, u32 hartid)
 	if (!sbi_platform_has_pmp(plat))
 		return 0;
 
+	/* Firmware PMP region to protect OpenSBI firmware */
 	fw_size_log2 = log2roundup(scratch->fw_size);
-	fw_start     = scratch->fw_start & ~((1UL << fw_size_log2) - 1UL);
+	fw_start = scratch->fw_start & ~((1UL << fw_size_log2) - 1UL);
+	pmp_set(pmp_idx++, 0, fw_start, fw_size_log2);
 
-	pmp_set(0, 0, fw_start, fw_size_log2);
-
+	/* Platform specific PMP regions */
 	count = sbi_platform_pmp_region_count(plat, hartid);
-	if ((PMP_COUNT - 1) < count)
-		count = (PMP_COUNT - 1);
-
-	for (i = 0; i < count; i++) {
+	for (i = 0; i < count && pmp_idx < (PMP_COUNT - 1); i++) {
 		if (sbi_platform_pmp_region_info(plat, hartid, i, &prot, &addr,
 						 &log2size))
 			continue;
-		pmp_set(i + 1, prot, addr, log2size);
+		pmp_set(pmp_idx++, prot, addr, log2size);
 	}
+
+	/*
+	 * Default PMP region for allowing S-mode and U-mode access to
+	 * memory not covered by:
+	 * 1) Firmware PMP region
+	 * 2) Platform specific PMP regions
+	 */
+	pmp_set(pmp_idx++, PMP_R | PMP_W | PMP_X, 0, __riscv_xlen);
 
 	return 0;
 }

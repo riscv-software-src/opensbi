@@ -66,30 +66,6 @@ static int fu540_final_init(bool cold_boot)
 	return 0;
 }
 
-static u32 fu540_pmp_region_count(u32 hartid)
-{
-	return 1;
-}
-
-static int fu540_pmp_region_info(u32 hartid, u32 index, ulong *prot,
-				 ulong *addr, ulong *log2size)
-{
-	int ret = 0;
-
-	switch (index) {
-	case 0:
-		*prot	  = PMP_R | PMP_W | PMP_X;
-		*addr	  = 0;
-		*log2size = __riscv_xlen;
-		break;
-	default:
-		ret = -1;
-		break;
-	};
-
-	return ret;
-}
-
 static int fu540_console_init(void)
 {
 	unsigned long peri_in_freq;
@@ -169,8 +145,6 @@ static int fu540_system_down(u32 type)
 }
 
 const struct sbi_platform_operations platform_ops = {
-	.pmp_region_count	= fu540_pmp_region_count,
-	.pmp_region_info	= fu540_pmp_region_info,
 	.final_init		= fu540_final_init,
 	.console_putc		= sifive_uart_putc,
 	.console_getc		= sifive_uart_getc,

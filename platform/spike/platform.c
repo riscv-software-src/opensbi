@@ -21,30 +21,6 @@ static int spike_final_init(bool cold_boot)
 	return 0;
 }
 
-static u32 spike_pmp_region_count(u32 hartid)
-{
-	return 1;
-}
-
-static int spike_pmp_region_info(u32 hartid, u32 index, ulong *prot, ulong *addr,
-				ulong *log2size)
-{
-	int ret = 0;
-
-	switch (index) {
-	case 0:
-		*prot	  = PMP_R | PMP_W | PMP_X;
-		*addr	  = 0;
-		*log2size = __riscv_xlen;
-		break;
-	default:
-		ret = -1;
-		break;
-	};
-
-	return ret;
-}
-
 static int spike_console_init(void)
 {
 	return 0;
@@ -84,8 +60,6 @@ static int spike_timer_init(bool cold_boot)
 }
 
 const struct sbi_platform_operations platform_ops = {
-	.pmp_region_count	= spike_pmp_region_count,
-	.pmp_region_info	= spike_pmp_region_info,
 	.final_init		= spike_final_init,
 	.console_putc		= htif_putc,
 	.console_getc		= htif_getc,

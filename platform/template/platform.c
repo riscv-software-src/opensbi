@@ -34,24 +34,6 @@ static int platform_final_init(bool cold_boot)
 }
 
 /*
- * Get number of PMP regions for given HART.
- */
-static u32 platform_pmp_region_count(u32 hartid)
-{
-	return 0;
-}
-
-/*
- * Get PMP regions details (namely: protection, base address, and size) for
- * a given HART.
- */
-static int platform_pmp_region_info(u32 hartid, u32 index, ulong *prot,
-				    ulong *addr, ulong *log2size)
-{
-	return 0;
-}
-
-/*
  * Initialize the platform console.
  */
 static int platform_console_init(void)
@@ -201,8 +183,6 @@ static int platform_system_shutdown(u32 type)
 const struct sbi_platform_operations platform_ops = {
 	.early_init		= platform_early_init,
 	.final_init		= platform_final_init,
-	.pmp_region_count	= platform_pmp_region_count,
-	.pmp_region_info	= platform_pmp_region_info,
 	.console_putc		= platform_console_putc,
 	.console_getc		= platform_console_getc,
 	.console_init		= platform_console_init,

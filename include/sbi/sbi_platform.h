@@ -492,8 +492,9 @@ static inline int sbi_platform_pmp_region_info(const struct sbi_platform *plat,
 						ulong *log2size)
 {
 	if (plat && sbi_platform_ops(plat)->pmp_region_info)
-		return sbi_platform_ops(plat)->pmp_region_info(hartid, index, prot, addr,
-                                                                              log2size);
+		return sbi_platform_ops(plat)->pmp_region_info(hartid, index,
+							       prot, addr,
+							       log2size);
 	return 0;
 }
 

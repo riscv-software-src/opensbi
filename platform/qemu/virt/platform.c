@@ -52,30 +52,6 @@ static int virt_final_init(bool cold_boot)
 	return 0;
 }
 
-static u32 virt_pmp_region_count(u32 hartid)
-{
-	return 1;
-}
-
-static int virt_pmp_region_info(u32 hartid, u32 index, ulong *prot, ulong *addr,
-				ulong *log2size)
-{
-	int ret = 0;
-
-	switch (index) {
-	case 0:
-		*prot	  = PMP_R | PMP_W | PMP_X;
-		*addr	  = 0;
-		*log2size = __riscv_xlen;
-		break;
-	default:
-		ret = -1;
-		break;
-	};
-
-	return ret;
-}
-
 static int virt_console_init(void)
 {
 	return uart8250_init(VIRT_UART16550_ADDR, VIRT_UART_SHIFTREG_ADDR,
@@ -135,8 +111,6 @@ static int virt_system_down(u32 type)
 }
 
 const struct sbi_platform_operations platform_ops = {
-	.pmp_region_count	= virt_pmp_region_count,
-	.pmp_region_info	= virt_pmp_region_info,
 	.final_init		= virt_final_init,
 	.console_putc		= uart8250_putc,
 	.console_getc		= uart8250_getc,

@@ -53,35 +53,6 @@ static int ae350_final_init(bool cold_boot)
 	return 0;
 }
 
-/* Get number of PMP regions for given HART. */
-static u32 ae350_pmp_region_count(u32 hartid)
-{
-	return 1;
-}
-
-/*
- * Get PMP regions details (namely: protection, base address, and size) for
- * a given HART.
- */
-static int ae350_pmp_region_info(u32 hartid, u32 index, ulong *prot,
-				 ulong *addr, ulong *log2size)
-{
-	int ret = 0;
-
-	switch (index) {
-	case 0:
-		*prot	  = PMP_R | PMP_W | PMP_X;
-		*addr	  = 0;
-		*log2size = __riscv_xlen;
-		break;
-	default:
-		ret = -1;
-		break;
-	};
-
-	return ret;
-}
-
 /* Initialize the platform console. */
 static int ae350_console_init(void)
 {
@@ -158,9 +129,6 @@ static int ae350_system_shutdown(u32 type)
 /* Platform descriptor. */
 const struct sbi_platform_operations platform_ops = {
 	.final_init = ae350_final_init,
-
-	.pmp_region_count = ae350_pmp_region_count,
-	.pmp_region_info  = ae350_pmp_region_info,
 
 	.console_init = ae350_console_init,
 	.console_putc = uart8250_putc,
