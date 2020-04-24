@@ -18,14 +18,13 @@
 #include <sbi_utils/irqchip/plic.h>
 #include <sbi_utils/serial/uart8250.h>
 #include <sbi_utils/sys/clint.h>
+#include <sbi_utils/sys/sifive_test.h>
 
 /* clang-format off */
 
 #define VIRT_HART_COUNT			8
 
 #define VIRT_TEST_ADDR			0x100000
-#define VIRT_TEST_FINISHER_FAIL		0x3333
-#define VIRT_TEST_FINISHER_PASS		0x5555
 
 #define VIRT_CLINT_ADDR			0x2000000
 
@@ -38,6 +37,14 @@
 #define VIRT_UART_SHIFTREG_ADDR		1843200
 
 /* clang-format on */
+
+static int virt_early_init(bool cold_boot)
+{
+	if (!cold_boot)
+		return 0;
+
+	return sifive_test_init(VIRT_TEST_ADDR);
+}
 
 static int virt_final_init(bool cold_boot)
 {
@@ -100,17 +107,8 @@ static int virt_timer_init(bool cold_boot)
 	return clint_warm_timer_init();
 }
 
-static int virt_system_reset(u32 type)
-{
-	/* Tell the "finisher" that the simulation
-	 * was successful so that QEMU exits
-	 */
-	writew(VIRT_TEST_FINISHER_PASS, (void *)VIRT_TEST_ADDR);
-
-	return 0;
-}
-
 const struct sbi_platform_operations platform_ops = {
+	.early_init		= virt_early_init,
 	.final_init		= virt_final_init,
 	.console_putc		= uart8250_putc,
 	.console_getc		= uart8250_getc,
@@ -123,7 +121,7 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_event_stop	= clint_timer_event_stop,
 	.timer_event_start	= clint_timer_event_start,
 	.timer_init		= virt_timer_init,
-	.system_reset		= virt_system_reset,
+	.system_reset		= sifive_test_system_reset,
 };
 
 const struct sbi_platform platform = {
