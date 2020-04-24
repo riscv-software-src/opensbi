@@ -146,10 +146,11 @@ struct sbi_platform_operations {
 	 */
 	int (*hart_stop)(void);
 
-	/** Reboot the platform */
-	int (*system_reboot)(u32 type);
-	/** Shutdown or poweroff the platform */
-	int (*system_shutdown)(u32 type);
+	/** Reset the platform */
+#define SBI_PLATFORM_RESET_SHUTDOWN	0
+#define SBI_PLATFORM_RESET_COLD		1
+#define SBI_PLATFORM_RESET_WARM		2
+	int (*system_reset)(u32 reset_type);
 
 	/** platform specific SBI extension implementation probe function */
 	int (*vendor_ext_check)(long extid);
@@ -686,34 +687,18 @@ static inline void sbi_platform_timer_exit(const struct sbi_platform *plat)
 }
 
 /**
- * Reboot the platform
+ * Reset the platform
  *
  * @param plat pointer to struct sbi_platform
- * @param type type of reboot
+ * @param reset_type type of reset
  *
  * @return 0 on success and negative error code on failure
  */
-static inline int sbi_platform_system_reboot(const struct sbi_platform *plat,
-					     u32 type)
+static inline int sbi_platform_system_reset(const struct sbi_platform *plat,
+					    u32 reset_type)
 {
-	if (plat && sbi_platform_ops(plat)->system_reboot)
-		return sbi_platform_ops(plat)->system_reboot(type);
-	return 0;
-}
-
-/**
- * Shutdown or poweroff the platform
- *
- * @param plat pointer to struct sbi_platform
- * @param type type of shutdown or poweroff
- *
- * @return 0 on success and negative error code on failure
- */
-static inline int sbi_platform_system_shutdown(const struct sbi_platform *plat,
-					       u32 type)
-{
-	if (plat && sbi_platform_ops(plat)->system_shutdown)
-		return sbi_platform_ops(plat)->system_shutdown(type);
+	if (plat && sbi_platform_ops(plat)->system_reset)
+		return sbi_platform_ops(plat)->system_reset(reset_type);
 	return 0;
 }
 

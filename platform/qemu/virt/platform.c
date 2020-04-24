@@ -100,7 +100,7 @@ static int virt_timer_init(bool cold_boot)
 	return clint_warm_timer_init();
 }
 
-static int virt_system_down(u32 type)
+static int virt_system_reset(u32 type)
 {
 	/* Tell the "finisher" that the simulation
 	 * was successful so that QEMU exits
@@ -123,8 +123,7 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_event_stop	= clint_timer_event_stop,
 	.timer_event_start	= clint_timer_event_start,
 	.timer_init		= virt_timer_init,
-	.system_reboot		= virt_system_down,
-	.system_shutdown	= virt_system_down
+	.system_reset		= virt_system_reset,
 };
 
 const struct sbi_platform platform = {

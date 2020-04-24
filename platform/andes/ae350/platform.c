@@ -110,19 +110,11 @@ static int ae350_timer_init(bool cold_boot)
 	return plmt_warm_timer_init();
 }
 
-/* Reboot the platform. */
-static int ae350_system_reboot(u32 type)
+/* Reset the platform. */
+static int ae350_system_reset(u32 type)
 {
 	/* For now nothing to do. */
-	sbi_printf("System reboot\n");
-	return 0;
-}
-
-/* Shutdown or poweroff the platform. */
-static int ae350_system_shutdown(u32 type)
-{
-	/* For now nothing to do. */
-	sbi_printf("System shutdown\n");
+	sbi_printf("System reset\n");
 	return 0;
 }
 
@@ -145,8 +137,7 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_event_start = plmt_timer_event_start,
 	.timer_event_stop  = plmt_timer_event_stop,
 
-	.system_reboot	 = ae350_system_reboot,
-	.system_shutdown = ae350_system_shutdown
+	.system_reset	 = ae350_system_reset
 };
 
 const struct sbi_platform platform = {

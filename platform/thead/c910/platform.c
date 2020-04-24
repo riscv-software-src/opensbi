@@ -100,7 +100,7 @@ static int c910_timer_init(bool cold_boot)
 	return clint_warm_timer_init();
 }
 
-static int c910_system_shutdown(u32 type)
+static int c910_system_reset(u32 type)
 {
 	asm volatile ("ebreak");
 	return 0;
@@ -127,7 +127,7 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_init          = c910_timer_init,
 	.timer_event_start   = clint_timer_event_start,
 
-	.system_shutdown     = c910_system_shutdown,
+	.system_reset        = c910_system_reset,
 
 	.hart_start          = c910_hart_start,
 };

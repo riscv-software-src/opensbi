@@ -14,6 +14,6 @@ void htif_putc(char ch);
 
 int htif_getc(void);
 
-int htif_system_down(u32 type);
+int htif_system_reset(u32 type);
 
 #endif

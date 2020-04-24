@@ -15,6 +15,7 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hsm.h>
 #include <sbi/sbi_ipi.h>
+#include <sbi/sbi_platform.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_tlb.h>
@@ -99,7 +100,7 @@ static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
 		}
 		break;
 	case SBI_EXT_0_1_SHUTDOWN:
-		sbi_system_shutdown(0);
+		sbi_system_reset(SBI_PLATFORM_RESET_SHUTDOWN);
 		break;
 	default:
 		ret = SBI_ENOTSUPP;

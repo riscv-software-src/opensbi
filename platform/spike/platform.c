@@ -72,8 +72,7 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_event_stop	= clint_timer_event_stop,
 	.timer_event_start	= clint_timer_event_start,
 	.timer_init		= spike_timer_init,
-	.system_reboot		= htif_system_down,
-	.system_shutdown	= htif_system_down
+	.system_reset		= htif_system_reset
 };
 
 const struct sbi_platform platform = {

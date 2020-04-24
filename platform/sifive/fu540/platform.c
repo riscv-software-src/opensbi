@@ -138,7 +138,7 @@ static u32 fu540_hart_index2id[FU540_HART_COUNT - 1] = {
 	[3] = 4,
 };
 
-static int fu540_system_down(u32 type)
+static int fu540_system_reset(u32 type)
 {
 	/* For now nothing to do. */
 	return 0;
@@ -158,8 +158,7 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_event_stop	= clint_timer_event_stop,
 	.timer_event_start	= clint_timer_event_start,
 	.timer_init		= fu540_timer_init,
-	.system_reboot		= fu540_system_down,
-	.system_shutdown	= fu540_system_down
+	.system_reset		= fu540_system_reset
 };
 
 const struct sbi_platform platform = {

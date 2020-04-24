@@ -150,22 +150,12 @@ static int ariane_timer_init(bool cold_boot)
 }
 
 /*
- * Reboot the ariane.
+ * Reset the ariane.
  */
-static int ariane_system_reboot(u32 type)
+static int ariane_system_reset(u32 type)
 {
 	/* For now nothing to do. */
-	sbi_printf("System reboot\n");
-	return 0;
-}
-
-/*
- * Shutdown or poweroff the ariane.
- */
-static int ariane_system_shutdown(u32 type)
-{
-	/* For now nothing to do. */
-	sbi_printf("System shutdown\n");
+	sbi_printf("System reset\n");
 	return 0;
 }
 
@@ -186,8 +176,7 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_value = clint_timer_value,
 	.timer_event_start = clint_timer_event_start,
 	.timer_event_stop = clint_timer_event_stop,
-	.system_reboot = ariane_system_reboot,
-	.system_shutdown = ariane_system_shutdown
+	.system_reset = ariane_system_reset
 };
 
 const struct sbi_platform platform = {

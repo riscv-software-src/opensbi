@@ -96,18 +96,10 @@ static int k210_timer_init(bool cold_boot)
 	return clint_warm_timer_init();
 }
 
-static int k210_system_reboot(u32 type)
+static int k210_system_reset(u32 type)
 {
 	/* For now nothing to do. */
-	sbi_printf("System reboot\n");
-
-	return 0;
-}
-
-static int k210_system_shutdown(u32 type)
-{
-	/* For now nothing to do. */
-	sbi_printf("System shutdown\n");
+	sbi_printf("System reset\n");
 
 	return 0;
 }
@@ -128,8 +120,7 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_event_stop  = clint_timer_event_stop,
 	.timer_event_start = clint_timer_event_start,
 
-	.system_reboot	 = k210_system_reboot,
-	.system_shutdown = k210_system_shutdown
+	.system_reset	 = k210_system_reset
 };
 
 const struct sbi_platform platform = {
