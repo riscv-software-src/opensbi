@@ -34,6 +34,9 @@ const struct fdt_match *fdt_match_node(void *fdt, int nodeoff,
 int fdt_find_match(void *fdt, const struct fdt_match *match_table,
 		   const struct fdt_match **out_match);
 
+int fdt_get_node_addr_size(void *fdt, int node, unsigned long *addr,
+			   unsigned long *size);
+
 int fdt_parse_uart8250_node(void *fdt, int nodeoffset,
 			    struct platform_uart_data *uart);
 
