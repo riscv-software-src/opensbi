@@ -14,8 +14,6 @@
 
 void clint_ipi_send(u32 target_hart);
 
-void clint_ipi_sync(u32 target_hart);
-
 void clint_ipi_clear(u32 target_hart);
 
 int clint_warm_ipi_init(void);
