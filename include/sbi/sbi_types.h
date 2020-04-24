@@ -78,6 +78,8 @@ typedef unsigned long		physical_size_t;
 	const typeof(((type *)0)->member) * __mptr = (ptr);	\
 	(type *)((char *)__mptr - offsetof(type, member)); })
 
+#define array_size(x) 	(sizeof(x) / sizeof((x)[0]))
+
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define CLAMP(a, lo, hi) MIN(MAX(a, lo), hi)
