@@ -142,8 +142,8 @@ int fdt_parse_plic(void *fdt, struct platform_plic_data *plic,
 	return 0;
 }
 
-int fdt_parse_clint(void *fdt, unsigned long *clint_addr,
-		    const char *compatible)
+int fdt_parse_compat_addr(void *fdt, unsigned long *addr,
+			  const char *compatible)
 {
 	int nodeoffset, rc;
 
@@ -151,8 +151,8 @@ int fdt_parse_clint(void *fdt, unsigned long *clint_addr,
 	if (nodeoffset < 0)
 		return nodeoffset;
 
-	rc = fdt_get_node_addr_size(fdt, nodeoffset, clint_addr, NULL);
-	if (rc < 0 || !clint_addr)
+	rc = fdt_get_node_addr_size(fdt, nodeoffset, addr, NULL);
+	if (rc < 0 || !addr)
 		return SBI_ENODEV;
 
 	return 0;

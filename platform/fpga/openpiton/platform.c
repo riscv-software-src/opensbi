@@ -66,7 +66,7 @@ static int openpiton_early_init(bool cold_boot)
 	if (!rc)
 		plic = plic_data;
 
-	rc = fdt_parse_clint(fdt, &clint_data, "riscv,clint0");
+	rc = fdt_parse_compat_addr(fdt, &clint_data, "riscv,clint0");
 	if (!rc)
 		clint_addr = clint_data;
 

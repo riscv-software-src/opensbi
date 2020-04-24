@@ -32,7 +32,7 @@ int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
 int fdt_parse_plic(void *fdt, struct platform_plic_data *plic,
 		   const char *compatible);
 
-int fdt_parse_clint(void *fdt, unsigned long *clint_addr,
-		    const char *compatible);
+int fdt_parse_compat_addr(void *fdt, unsigned long *addr,
+			  const char *compatible);
 
 #endif /* __FDT_HELPER_H__ */
