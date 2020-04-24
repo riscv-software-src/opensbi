@@ -18,6 +18,47 @@
 #define DEFAULT_UART_REG_SHIFT		0
 #define DEFAULT_UART_REG_IO_WIDTH	1
 
+const struct fdt_match *fdt_match_node(void *fdt, int nodeoff,
+				       const struct fdt_match *match_table)
+{
+	int ret;
+
+	if (!fdt || nodeoff < 0 || !match_table)
+		return NULL;
+
+	while (match_table->compatible) {
+		ret = fdt_node_check_compatible(fdt, nodeoff,
+						match_table->compatible);
+		if (!ret)
+			return match_table;
+		match_table++;
+	}
+
+	return NULL;
+}
+
+int fdt_find_match(void *fdt, const struct fdt_match *match_table,
+		   const struct fdt_match **out_match)
+{
+	int nodeoff;
+
+	if (!fdt || !match_table)
+		return SBI_ENODEV;
+
+	while (match_table->compatible) {
+		nodeoff = fdt_node_offset_by_compatible(fdt, -1,
+						match_table->compatible);
+		if (nodeoff >= 0) {
+			if (out_match)
+				*out_match = match_table;
+			return nodeoff;
+		}
+		match_table++;
+	}
+
+	return SBI_ENODEV;
+}
+
 static int fdt_get_node_addr_size(void *fdt, int node, unsigned long *addr,
 				  unsigned long *size)
 {

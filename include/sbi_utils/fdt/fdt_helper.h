@@ -10,6 +10,11 @@
 #ifndef __FDT_HELPER_H__
 #define __FDT_HELPER_H__
 
+struct fdt_match {
+	const char *compatible;
+	void *data;
+};
+
 struct platform_uart_data {
 	unsigned long addr;
 	unsigned long freq;
@@ -22,6 +27,12 @@ struct platform_plic_data {
 	unsigned long addr;
 	unsigned long num_src;
 };
+
+const struct fdt_match *fdt_match_node(void *fdt, int nodeoff,
+				       const struct fdt_match *match_table);
+
+int fdt_find_match(void *fdt, const struct fdt_match *match_table,
+		   const struct fdt_match **out_match);
 
 int fdt_parse_uart8250_node(void *fdt, int nodeoffset,
 			    struct platform_uart_data *uart);
