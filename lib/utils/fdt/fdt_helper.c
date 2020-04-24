@@ -13,6 +13,11 @@
 #include <sbi/sbi_scratch.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 
+#define DEFAULT_UART_FREQ		0
+#define DEFAULT_UART_BAUD		115200
+#define DEFAULT_UART_REG_SHIFT		0
+#define DEFAULT_UART_REG_IO_WIDTH	1
+
 static int fdt_get_node_addr_size(void *fdt, int node, unsigned long *addr,
 				  unsigned long *size)
 {
@@ -81,10 +86,26 @@ int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
 	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "clock-frequency", &len);
 	if (len > 0 && val)
 		uart->freq = fdt32_to_cpu(*val);
+	else
+		uart->freq = DEFAULT_UART_FREQ;
 
 	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "current-speed", &len);
 	if (len > 0 && val)
 		uart->baud = fdt32_to_cpu(*val);
+	else
+		uart->baud = DEFAULT_UART_BAUD;
+
+	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "reg-shift", &len);
+	if (len > 0 && val)
+		uart->reg_shift = fdt32_to_cpu(*val);
+	else
+		uart->reg_shift = DEFAULT_UART_REG_SHIFT;
+
+	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "reg-io-width", &len);
+	if (len > 0 && val)
+		uart->reg_io_width = fdt32_to_cpu(*val);
+	else
+		uart->reg_io_width = DEFAULT_UART_REG_IO_WIDTH;
 
 	return 0;
 }

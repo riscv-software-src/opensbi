@@ -14,6 +14,8 @@ struct platform_uart_data {
 	unsigned long addr;
 	unsigned long freq;
 	unsigned long baud;
+	unsigned long reg_shift;
+	unsigned long reg_io_width;
 };
 
 struct platform_plic_data {
