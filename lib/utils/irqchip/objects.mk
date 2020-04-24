@@ -7,4 +7,6 @@
 #   Anup Patel <anup.patel@wdc.com>
 #
 
+libsbiutils-objs-y += irqchip/fdt_irqchip.o
+libsbiutils-objs-y += irqchip/fdt_irqchip_plic.o
 libsbiutils-objs-y += irqchip/plic.o
