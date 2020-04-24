@@ -132,6 +132,34 @@ int fdt_parse_hart_id(void *fdt, int cpu_offset, u32 *hartid)
 	return 0;
 }
 
+int fdt_parse_max_hart_id(void *fdt, u32 *max_hartid)
+{
+	u32 hartid;
+	int err, cpu_offset, cpus_offset;
+
+	if (!fdt)
+		return SBI_EINVAL;
+	if (!max_hartid)
+		return 0;
+
+	*max_hartid = 0;
+
+	cpus_offset = fdt_path_offset(fdt, "/cpus");
+	if (cpus_offset < 0)
+		return cpus_offset;
+
+	fdt_for_each_subnode(cpu_offset, fdt, cpus_offset) {
+		err = fdt_parse_hart_id(fdt, cpu_offset, &hartid);
+		if (err)
+			continue;
+
+		if (hartid > *max_hartid)
+			*max_hartid = hartid;
+	}
+
+	return 0;
+}
+
 int fdt_parse_sifive_uart_node(void *fdt, int nodeoffset,
 			       struct platform_uart_data *uart)
 {
