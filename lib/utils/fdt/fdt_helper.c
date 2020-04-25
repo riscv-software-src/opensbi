@@ -58,21 +58,15 @@ static int fdt_get_node_addr_size(void *fdt, int node, unsigned long *addr,
 	return 0;
 }
 
-int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
-		   const char *compatible)
+int fdt_parse_uart8250_node(void *fdt, int nodeoffset,
+			    struct platform_uart_data *uart)
 {
-	int nodeoffset, len, rc;
-	fdt32_t *val;
+	int len, rc;
+	const fdt32_t *val;
 	unsigned long reg_addr, reg_size;
 
-	/**
-	 * TODO: We don't know how to handle multiple nodes with the same
-	 * compatible sring. Just return the first node for now.
-	 */
-
-	nodeoffset = fdt_node_offset_by_compatible(fdt, -1, compatible);
-	if (nodeoffset < 0)
-		return nodeoffset;
+	if (nodeoffset < 0 || !uart || !fdt)
+		return SBI_ENODEV;
 
 	rc = fdt_get_node_addr_size(fdt, nodeoffset, &reg_addr, &reg_size);
 	if (rc < 0 || !reg_addr || !reg_size)
@@ -80,8 +74,8 @@ int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
 	uart->addr = reg_addr;
 
 	/**
-	 * UART address is mandaotry. clock-frequency and current-speed may not
-	 * be present. Don't return error.
+	 * UART address is mandaotry. clock-frequency and current-speed
+	 * may not be present. Don't return error.
 	 */
 	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "clock-frequency", &len);
 	if (len > 0 && val)
@@ -108,6 +102,21 @@ int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
 		uart->reg_io_width = DEFAULT_UART_REG_IO_WIDTH;
 
 	return 0;
+}
+
+int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
+		   const char *compatible)
+{
+	int nodeoffset;
+
+	if (!compatible || !uart || !fdt)
+		return SBI_ENODEV;
+
+	nodeoffset = fdt_node_offset_by_compatible(fdt, -1, compatible);
+	if (nodeoffset < 0)
+		return nodeoffset;
+
+	return fdt_parse_uart8250_node(fdt, nodeoffset, uart);
 }
 
 int fdt_parse_plic(void *fdt, struct platform_plic_data *plic,

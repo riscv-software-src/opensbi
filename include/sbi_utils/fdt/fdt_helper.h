@@ -23,6 +23,9 @@ struct platform_plic_data {
 	unsigned long num_src;
 };
 
+int fdt_parse_uart8250_node(void *fdt, int nodeoffset,
+			    struct platform_uart_data *uart);
+
 int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
 		       const char *compatible);
 
