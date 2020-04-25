@@ -18,6 +18,11 @@
 #define DEFAULT_UART_REG_SHIFT		0
 #define DEFAULT_UART_REG_IO_WIDTH	1
 
+#define DEFAULT_SIFIVE_UART_FREQ		0
+#define DEFAULT_SIFIVE_UART_BAUD		115200
+#define DEFAULT_SIFIVE_UART_REG_SHIFT		0
+#define DEFAULT_SIFIVE_UART_REG_IO_WIDTH	4
+
 const struct fdt_match *fdt_match_node(void *fdt, int nodeoff,
 				       const struct fdt_match *match_table)
 {
@@ -95,6 +100,44 @@ int fdt_get_node_addr_size(void *fdt, int node, unsigned long *addr,
 			temp = (temp << 32) | fdt32_to_cpu(*prop_size++);
 		*size = temp;
 	}
+
+	return 0;
+}
+
+int fdt_parse_sifive_uart_node(void *fdt, int nodeoffset,
+			       struct platform_uart_data *uart)
+{
+	int len, rc;
+	const fdt32_t *val;
+	unsigned long reg_addr, reg_size;
+
+	if (nodeoffset < 0 || !uart || !fdt)
+		return SBI_ENODEV;
+
+	rc = fdt_get_node_addr_size(fdt, nodeoffset, &reg_addr, &reg_size);
+	if (rc < 0 || !reg_addr || !reg_size)
+		return SBI_ENODEV;
+	uart->addr = reg_addr;
+
+	/**
+	 * UART address is mandaotry. clock-frequency and current-speed
+	 * may not be present. Don't return error.
+	 */
+	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "clock-frequency", &len);
+	if (len > 0 && val)
+		uart->freq = fdt32_to_cpu(*val);
+	else
+		uart->freq = DEFAULT_SIFIVE_UART_FREQ;
+
+	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "current-speed", &len);
+	if (len > 0 && val)
+		uart->baud = fdt32_to_cpu(*val);
+	else
+		uart->baud = DEFAULT_SIFIVE_UART_BAUD;
+
+	/* For SiFive UART, the reg-shift and reg-io-width are fixed .*/
+	uart->reg_shift = DEFAULT_SIFIVE_UART_REG_SHIFT;
+	uart->reg_io_width = DEFAULT_SIFIVE_UART_REG_IO_WIDTH;
 
 	return 0;
 }
