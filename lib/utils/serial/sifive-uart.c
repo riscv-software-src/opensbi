@@ -89,7 +89,8 @@ int sifive_uart_init(unsigned long base, u32 in_freq, u32 baudrate)
 	uart_baudrate = baudrate;
 
 	/* Configure baudrate */
-	set_reg(UART_REG_DIV, uart_min_clk_divisor(in_freq, baudrate));
+	if (in_freq)
+		set_reg(UART_REG_DIV, uart_min_clk_divisor(in_freq, baudrate));
 	/* Disable interrupts */
 	set_reg(UART_REG_IE, 0);
 	/* Enable TX */
