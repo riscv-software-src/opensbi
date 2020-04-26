@@ -10,6 +10,8 @@
 #ifndef __FDT_HELPER_H__
 #define __FDT_HELPER_H__
 
+#include <sbi/sbi_types.h>
+
 struct fdt_match {
 	const char *compatible;
 	void *data;
@@ -36,6 +38,8 @@ int fdt_find_match(void *fdt, const struct fdt_match *match_table,
 
 int fdt_get_node_addr_size(void *fdt, int node, unsigned long *addr,
 			   unsigned long *size);
+
+int fdt_parse_hart_id(void *fdt, int cpu_offset, u32 *hartid);
 
 int fdt_parse_sifive_uart_node(void *fdt, int nodeoffset,
 			       struct platform_uart_data *uart);

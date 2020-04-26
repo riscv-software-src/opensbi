@@ -13,14 +13,14 @@
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_string.h>
+#include <sbi_utils/fdt/fdt_fixup.h>
+#include <sbi_utils/fdt/fdt_helper.h>
 
 void fdt_cpu_fixup(void *fdt)
 {
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
-	int err, len, cpu_offset, cpus_offset;
-	const fdt32_t *val;
-	const void *prop;
+	int err, cpu_offset, cpus_offset;
 	u32 hartid;
 
 	err = fdt_open_into(fdt, fdt, fdt_totalsize(fdt) + 32);
@@ -32,19 +32,9 @@ void fdt_cpu_fixup(void *fdt)
 		return;
 
 	fdt_for_each_subnode(cpu_offset, fdt, cpus_offset) {
-		prop = fdt_getprop(fdt, cpu_offset, "device_type", &len);
-		if (!prop || !len)
+		err = fdt_parse_hart_id(fdt, cpu_offset, &hartid);
+		if (err)
 			continue;
-		if (sbi_strcmp(prop, "cpu"))
-			continue;
-
-		val = fdt_getprop(fdt, cpu_offset, "reg", &len);
-		if (!val || len < sizeof(fdt32_t))
-			continue;
-
-		if (len > sizeof(fdt32_t))
-			val++;
-		hartid = fdt32_to_cpu(*val);
 
 		if (sbi_platform_hart_invalid(plat, hartid))
 			fdt_setprop_string(fdt, cpu_offset, "status",

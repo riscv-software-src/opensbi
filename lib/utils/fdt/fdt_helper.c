@@ -104,6 +104,34 @@ int fdt_get_node_addr_size(void *fdt, int node, unsigned long *addr,
 	return 0;
 }
 
+int fdt_parse_hart_id(void *fdt, int cpu_offset, u32 *hartid)
+{
+	int len;
+	const void *prop;
+	const fdt32_t *val;
+
+	if (!fdt || cpu_offset < 0)
+		return SBI_EINVAL;
+
+	prop = fdt_getprop(fdt, cpu_offset, "device_type", &len);
+	if (!prop || !len)
+		return SBI_EINVAL;
+	if (sbi_strcmp(prop, "cpu"))
+		return SBI_EINVAL;
+
+	val = fdt_getprop(fdt, cpu_offset, "reg", &len);
+	if (!val || len < sizeof(fdt32_t))
+		return SBI_EINVAL;
+
+	if (len > sizeof(fdt32_t))
+		val++;
+
+	if (hartid)
+		*hartid = fdt32_to_cpu(*val);
+
+	return 0;
+}
+
 int fdt_parse_sifive_uart_node(void *fdt, int nodeoffset,
 			       struct platform_uart_data *uart)
 {
