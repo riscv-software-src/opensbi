@@ -160,6 +160,32 @@ _relocate_done:
 	li	ra, 0
 	call	_reset_regs
 
+	/* Zero-out BSS */
+	la	s4, _bss_start
+	la	s5, _bss_end
+_bss_zero:
+	REG_S	zero, (s4)
+	add	s4, s4, __SIZEOF_POINTER__
+	blt	s4, s5, _bss_zero
+
+	/* Setup temporary trap handler */
+	la	s4, _start_hang
+	csrw	CSR_MTVEC, s4
+
+	/* Setup temporary stack */
+	la	s4, _fw_end
+	li	s5, (SBI_SCRATCH_SIZE * 2)
+	add	sp, s4, s5
+
+	/*
+	 * Initialize platform
+	 * Note: The a0 to a4 registers passed to the
+	 * firmware are parameters to this function.
+	 */
+	MOV_5R	s0, a0, s1, a1, s2, a2, s3, a3, s4, a4
+	call	fw_platform_init
+	MOV_5R	a0, s0, a1, s1, a2, s2, a3, s3, a4, s4
+
 	/* Allow main firmware to save info */
 	MOV_5R	s0, a0, s1, a1, s2, a2, s3, a3, s4, a4
 	call	fw_save_info
@@ -244,14 +270,6 @@ _scratch_init:
 	/* Move to next scratch space */
 	add	t1, t1, t2
 	blt	t1, s7, _scratch_init
-
-	/* Zero-out BSS */
-	la	a4, _bss_start
-	la	a5, _bss_end
-_bss_zero:
-	REG_S	zero, (a4)
-	add	a4, a4, __SIZEOF_POINTER__
-	blt	a4, a5, _bss_zero
 
 	/* Override pervious arg1 */
 	MOV_3R	s0, a0, s1, a1, s2, a2
@@ -453,6 +471,13 @@ _hartid_to_scratch:
 _start_hang:
 	wfi
 	j	_start_hang
+
+	.section .entry, "ax", %progbits
+	.align 3
+	.globl fw_platform_init
+	.weak fw_platform_init
+fw_platform_init:
+	ret
 
 	.section .entry, "ax", %progbits
 	.align 3
