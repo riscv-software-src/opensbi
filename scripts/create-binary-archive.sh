@@ -97,6 +97,7 @@ build_opensbi() {
 		# Setup 32-bit platform list
 		BUILD_PLATFORM_SUBDIR=("qemu/virt")
 		BUILD_PLATFORM_SUBDIR+=("sifive/fu540")
+		BUILD_PLATFORM_SUBDIR+=("generic")
 		;;
 	64)
 		# Setup 64-bit platform list
@@ -109,6 +110,7 @@ build_opensbi() {
 		BUILD_PLATFORM_SUBDIR+=("andes/ae350")
 		BUILD_PLATFORM_SUBDIR+=("thead/c910")
 		BUILD_PLATFORM_SUBDIR+=("spike")
+		BUILD_PLATFORM_SUBDIR+=("generic")
 		;;
 	*)
 		echo "Invalid Build RISC-V XLEN"
