@@ -3,6 +3,11 @@ OpenSBI Supported Platforms
 
 OpenSBI currently supports the following virtual and hardware platforms:
 
+* **Generic**: Flattened device tree (FDT) based platform where platform
+  specific functionality is provided based on the FDT passed by previous
+  booting stage. More details on this platform can be found in the file
+  *[generic.md]*.
+
 * **QEMU RISC-V Virt Machine**: Platform support for the QEMU *virt* virtual
   RISC-V machine. This virtual machine is intended for RISC-V software
   development and tests. More details on this platform can be found in the
@@ -34,6 +39,7 @@ template files for implementing support for a new platform. The *object.mk*,
 *config.mk* and *platform.c* template files provides enough comments to
 facilitate the implementation.
 
+[generic.md]: generic.md
 [qemu_virt.md]: qemu_virt.md
 [sifive_fu540.md]: sifive_fu540.md
 [fpga-ariane.md]: fpga-ariane.md
