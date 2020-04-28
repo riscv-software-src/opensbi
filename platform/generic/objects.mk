@@ -8,3 +8,4 @@
 #
 
 platform-objs-y += platform.o
+platform-objs-y += sifive_fu540.o
