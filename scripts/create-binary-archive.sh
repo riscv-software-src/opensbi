@@ -102,6 +102,7 @@ build_opensbi() {
 		# Setup 64-bit platform list
 		BUILD_PLATFORM_SUBDIR=("qemu/virt")
 		BUILD_PLATFORM_SUBDIR+=("sifive/fu540")
+		BUILD_PLATFORM_SUBDIR+=("nuclei/ux600")
 		BUILD_PLATFORM_SUBDIR+=("kendryte/k210")
 		BUILD_PLATFORM_SUBDIR+=("fpga/ariane")
 		BUILD_PLATFORM_SUBDIR+=("fpga/openpiton")
