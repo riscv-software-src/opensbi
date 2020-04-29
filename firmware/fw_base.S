@@ -400,9 +400,6 @@ _start_warm:
 	/* Setup trap handler */
 	la	a4, _trap_handler
 	csrw	CSR_MTVEC, a4
-	/* Make sure that mtvec is updated */
-1:	csrr	a5, CSR_MTVEC
-	bne	a4, a5, 1b
 
 	/* Initialize SBI runtime */
 	csrr	a0, CSR_MSCRATCH
