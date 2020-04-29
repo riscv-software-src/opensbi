@@ -259,16 +259,15 @@ int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
 	return fdt_parse_uart8250_node(fdt, nodeoffset, uart);
 }
 
-int fdt_parse_plic(void *fdt, struct platform_plic_data *plic,
-		   const char *compatible)
+int fdt_parse_plic_node(void *fdt, int nodeoffset,
+			struct platform_plic_data *plic)
 {
-	int nodeoffset, len, rc;
+	int len, rc;
 	const fdt32_t *val;
 	unsigned long reg_addr, reg_size;
 
-	nodeoffset = fdt_node_offset_by_compatible(fdt, -1, compatible);
-	if (nodeoffset < 0)
-		return nodeoffset;
+	if (nodeoffset < 0 || !plic || !fdt)
+		return SBI_ENODEV;
 
 	rc = fdt_get_node_addr_size(fdt, nodeoffset, &reg_addr, &reg_size);
 	if (rc < 0 || !reg_addr || !reg_size)
@@ -280,6 +279,21 @@ int fdt_parse_plic(void *fdt, struct platform_plic_data *plic,
 		plic->num_src = fdt32_to_cpu(*val);
 
 	return 0;
+}
+
+int fdt_parse_plic(void *fdt, struct platform_plic_data *plic,
+		   const char *compatible)
+{
+	int nodeoffset;
+
+	if (!compatible || !plic || !fdt)
+		return SBI_ENODEV;
+
+	nodeoffset = fdt_node_offset_by_compatible(fdt, -1, compatible);
+	if (nodeoffset < 0)
+		return nodeoffset;
+
+	return fdt_parse_plic_node(fdt, nodeoffset, plic);
 }
 
 int fdt_parse_compat_addr(void *fdt, unsigned long *addr,
