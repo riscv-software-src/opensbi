@@ -39,4 +39,6 @@ The *Generic* platform does not have any platform-specific options.
 RISC-V Platforms Using Generic Platform
 ---------------------------------------
 
-To be added later.
+* **QEMU RISC-V Virt Machine** (*[qemu_virt.md]*)
+
+[qemu_virt.md]: qemu_virt.md

@@ -115,7 +115,7 @@ line, the platform-specific static library *libplatsbi.a* and firmware examples
 are built for the platform *<platform_subdir>* present in the directory
 *platform* in the OpenSBI top directory. For example, to compile the platform
 library and the firmware examples for the QEMU RISC-V *virt* machine,
-*<platform_subdir>* should be *qemu/virt*.
+*<platform_subdir>* should be *generic*.
 
 To build *libsbi.a*, *libplatsbi.a* and the firmware for one of the supported
 platforms, run:
