@@ -40,5 +40,7 @@ RISC-V Platforms Using Generic Platform
 ---------------------------------------
 
 * **QEMU RISC-V Virt Machine** (*[qemu_virt.md]*)
+* **Spike** (*[spike.md]*)
 
 [qemu_virt.md]: qemu_virt.md
+[spike.md]: spike.md
