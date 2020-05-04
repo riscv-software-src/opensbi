@@ -38,17 +38,19 @@ struct sbi_tlb_info {
 	unsigned long start;
 	unsigned long size;
 	unsigned long asid;
+	unsigned long vmid;
 	unsigned long type;
 	struct sbi_hartmask smask;
 };
 
-#define SBI_TLB_INFO_INIT(__ptr, __start, __size, __asid, __type, __src_hart) \
+#define SBI_TLB_INFO_INIT(__p, __start, __size, __asid, __vmid, __type, __src) \
 do { \
-	(__ptr)->start = (__start); \
-	(__ptr)->size = (__size); \
-	(__ptr)->asid = (__asid); \
-	(__ptr)->type = (__type); \
-	SBI_HARTMASK_INIT_EXCEPT(&(__ptr)->smask, (__src_hart)); \
+	(__p)->start = (__start); \
+	(__p)->size = (__size); \
+	(__p)->asid = (__asid); \
+	(__p)->vmid = (__vmid); \
+	(__p)->type = (__type); \
+	SBI_HARTMASK_INIT_EXCEPT(&(__p)->smask, (__src)); \
 } while (0)
 
 #define SBI_TLB_INFO_SIZE		sizeof(struct sbi_tlb_info)

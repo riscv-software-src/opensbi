@@ -36,16 +36,23 @@ static void sbi_tlb_hfence_vvma(struct sbi_tlb_info *tinfo)
 {
 	unsigned long start = tinfo->start;
 	unsigned long size  = tinfo->size;
-	unsigned long i;
+	unsigned long vmid  = tinfo->vmid;
+	unsigned long i, hgatp;
+
+	hgatp = csr_swap(CSR_HGATP,
+			 (vmid << HGATP_VMID_SHIFT) & HGATP_VMID_MASK);
 
 	if ((start == 0 && size == 0) || (size == SBI_TLB_FLUSH_ALL)) {
 		__sbi_hfence_vvma_all();
-		return;
+		goto done;
 	}
 
 	for (i = 0; i < size; i += PAGE_SIZE) {
 		__sbi_hfence_vvma_va(start+i);
 	}
+
+done:
+	csr_write(CSR_HGATP, hgatp);
 }
 
 static void sbi_tlb_hfence_gvma(struct sbi_tlb_info *tinfo)
@@ -88,28 +95,35 @@ static void sbi_tlb_hfence_vvma_asid(struct sbi_tlb_info *tinfo)
 	unsigned long start = tinfo->start;
 	unsigned long size  = tinfo->size;
 	unsigned long asid  = tinfo->asid;
-	unsigned long i;
+	unsigned long vmid  = tinfo->vmid;
+	unsigned long i, hgatp;
+
+	hgatp = csr_swap(CSR_HGATP,
+			 (vmid << HGATP_VMID_SHIFT) & HGATP_VMID_MASK);
 
 	if (start == 0 && size == 0) {
 		__sbi_hfence_vvma_all();
-		return;
+		goto done;
 	}
 
 	if (size == SBI_TLB_FLUSH_ALL) {
 		__sbi_hfence_vvma_asid(asid);
-		return;
+		goto done;
 	}
 
 	for (i = 0; i < size; i += PAGE_SIZE) {
 		__sbi_hfence_vvma_asid_va(asid, start + i);
 	}
+
+done:
+	csr_write(CSR_HGATP, hgatp);
 }
 
 static void sbi_tlb_hfence_gvma_vmid(struct sbi_tlb_info *tinfo)
 {
 	unsigned long start = tinfo->start;
 	unsigned long size  = tinfo->size;
-	unsigned long vmid  = tinfo->asid;
+	unsigned long vmid  = tinfo->vmid;
 	unsigned long i;
 
 	if (start == 0 && size == 0) {
