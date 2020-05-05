@@ -218,6 +218,7 @@ Detailed documentation of various aspects of OpenSBI can be found under the
 
 * [Contribution Guideline]: Guideline for contributing code to OpenSBI project
 * [Library Usage]: API documentation of OpenSBI static library *libsbi.a*
+* [Platform Requirements]: Requirements for using OpenSBI on a platform
 * [Platform Support Guide]: Guideline for implementing support for new platforms
 * [Platform Documentation]: Documentation of the platforms currently supported.
 * [Firmware Documentation]: Documentation for the different types of firmware
@@ -270,6 +271,7 @@ make I=<install_directory> install_docs
 [Contribution Guideline]: docs/contributing.md
 [Contributors List]: CONTRIBUTORS.md
 [Library Usage]: docs/library_usage.md
+[Platform Requirements]: docs/platform_requirements.md
 [Platform Support Guide]: docs/platform_guide.md
 [Platform Documentation]: docs/platform/platform.md
 [Firmware Documentation]: docs/firmware/fw.md
