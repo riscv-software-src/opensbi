@@ -53,15 +53,15 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 		sbi_printf("Error %d getting MISA XLEN\n", xlen);
 		sbi_hart_hang();
 	}
-	xlen = 16 * (1 << xlen);
-	misa_string(str, sizeof(str));
+	misa_string(xlen, str, sizeof(str));
 
 	/* Platform details */
 	sbi_printf("Platform Name          : %s\n", sbi_platform_name(plat));
-	sbi_printf("Platform HART Features : RV%d%s\n", xlen, str);
 	sbi_printf("Platform HART Count    : %u\n",
 		   sbi_platform_hart_count(plat));
-	sbi_printf("Current HART ID        : %u\n", hartid);
+	/* Boot HART details */
+	sbi_printf("Boot HART ID           : %u\n", hartid);
+	sbi_printf("Boot HART ISA          : %s\n", str);
 	/* Firmware details */
 	sbi_printf("Firmware Base          : 0x%lx\n", scratch->fw_start);
 	sbi_printf("Firmware Size          : %d KB\n",

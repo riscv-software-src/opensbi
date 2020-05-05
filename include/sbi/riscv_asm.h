@@ -173,19 +173,8 @@ int misa_extension_imp(char ext);
 /* Get MXL field of misa, return -1 on error */
 int misa_xlen(void);
 
-static inline void misa_string(char *out, unsigned int out_sz)
-{
-	unsigned long i;
-
-	for (i = 0; i < 26; i++) {
-		if (misa_extension_imp('A' + i)) {
-			*out = 'A' + i;
-			out++;
-		}
-	}
-	*out = '\0';
-	out++;
-}
+/* Get RISC-V ISA string representation */
+void misa_string(int xlen, char *out, unsigned int out_sz);
 
 int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
 	    unsigned long log2len);
