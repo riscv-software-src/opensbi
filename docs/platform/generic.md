@@ -23,6 +23,8 @@ Users of the generic FDT platform will have to ensure that:
    based on their platform requirements
 2. The FDT passed by previous booting stage has DT compatible strings and
    DT properties in sync with the FDT based drivers under lib/utils directory
+3. The FDT must have "stdout-path" DT property in the "/chosen" DT node when
+   a platform has multiple serial ports or consoles
 
 To build the platform-specific library and firmware images, provide the
 *PLATFORM=generic* parameter to the top level `make` command.
