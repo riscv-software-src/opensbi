@@ -1,8 +1,40 @@
-Copyright (c) 2019 Western Digital Corporation or its affiliates
-and other contributors.
-
-RISC-V Open Source Supervisor Binary Interface (OpenSBI)
+RISC-V Open Source Supervisor Binary Interface (OpenSBI) {#mainpage}
 ========================================================
+
+Copyright and License
+---------------------
+
+The OpenSBI project is copyright (c) 2019 Western Digital Corporation
+or its affiliates and other contributors.
+
+It is distributed under the terms of the BSD 2-clause license
+("Simplified BSD License" or "FreeBSD License", SPDX: *BSD-2-Clause*).
+A copy of this license with OpenSBI copyright can be found in the file
+[COPYING.BSD].
+
+All source files in OpenSBI contain the 2-Clause BSD license SPDX short
+identifier in place of the full license text.
+
+```
+SPDX-License-Identifier:    BSD-2-Clause
+```
+
+This enables machine processing of license information based on the SPDX
+License Identifiers that are available on the [SPDX] web site.
+
+OpenSBI source code also contains code reused from other projects as listed
+below. The original license text of these projects is included in the source
+files where the reused code is present.
+
+* The libfdt source code is disjunctively dual licensed
+  (GPL-2.0+ OR BSD-2-Clause). Some of this project code is used in OpenSBI
+  under the terms of the BSD 2-Clause license. Any contributions to this
+  code must be made under the terms of both licenses.
+
+See also the [third party notices] file for more information.
+
+Introduction
+------------
 
 The **RISC-V Supervisor Binary Interface (SBI)** is the recommended interface
 between:
@@ -170,35 +202,6 @@ export PLATFORM_RISCV_XLEN=32
 ```
 
 will generate 32-bit OpenSBI images. And vice vesa.
-
-License
--------
-
-OpenSBI is distributed under the terms of the BSD 2-clause license
-("Simplified BSD License" or "FreeBSD License", SPDX: *BSD-2-Clause*).
-A copy of this license with OpenSBI copyright can be found in the file
-[COPYING.BSD].
-
-All source files in OpenSBI contain the 2-Clause BSD license SPDX short
-identifier in place of the full license text.
-
-```
-SPDX-License-Identifier:    BSD-2-Clause
-```
-
-This enables machine processing of license information based on the SPDX
-License Identifiers that are available on the [SPDX] web site.
-
-OpenSBI source code also contains code reused from other projects as listed
-below. The original license text of these projects is included in the source
-files where the reused code is present.
-
-* The libfdt source code is disjunctively dual licensed
-  (GPL-2.0+ OR BSD-2-Clause). Some of this project code is used in OpenSBI
-  under the terms of the BSD 2-Clause license. Any contributions to this
-  code must be made under the terms of both licenses.
-
-See also the [third party notices] file for more information.
 
 Contributing to OpenSBI
 -----------------------
