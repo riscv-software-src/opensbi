@@ -1,4 +1,4 @@
-OpenSBI Firmware with Payload *FW_PAYLOAD*
+OpenSBI Firmware with Payload (FW_PAYLOAD)
 ==========================================
 
 OpenSBI **firmware with Payload (FW_PAYLOAD)** is a firmware which directly

@@ -1,4 +1,4 @@
-OpenSBI Firmware with Dynamic Information *FW_DYNAMIC*
+OpenSBI Firmware with Dynamic Information (FW_DYNAMIC)
 ======================================================
 
 OpenSBI **firmware with dynamic info (FW_DYNAMIC)** is a firmware which gets
