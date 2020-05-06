@@ -25,6 +25,10 @@ Users of the generic FDT platform will have to ensure that:
    DT properties in sync with the FDT based drivers under lib/utils directory
 3. The FDT must have "stdout-path" DT property in the "/chosen" DT node when
    a platform has multiple serial ports or consoles
+4. On multi-HART platform, the FDT must have a DT node for IPI device and
+   lib/utils/ipi directory must have corresponding FDT based IPI driver
+5. The FDT must have a DT node for timer device and lib/utils/timer directory
+   must have corresponding FDT based timer driver
 
 To build the platform-specific library and firmware images, provide the
 *PLATFORM=generic* parameter to the top level `make` command.
