@@ -20,6 +20,8 @@ enum sbi_hart_features {
 	SBI_HART_HAS_SCOUNTEREN = (1 << 1),
 	/** Hart has M-mode counter enable */
 	SBI_HART_HAS_MCOUNTEREN = (1 << 2),
+	/** HART has timer csr implementation in hardware */
+	SBI_HART_HAS_TIME = (1 << 3),
 };
 
 struct sbi_scratch;

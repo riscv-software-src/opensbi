@@ -271,6 +271,12 @@ static void sbi_hart_detect_features(u32 hartid)
 			feature |= SBI_HART_HAS_MCOUNTEREN;
 	}
 
+	/* Detect if hart supports time CSR */
+	trap.cause = 0;
+	csr_read_allowed(CSR_TIME, (unsigned long)&trap);
+	if (!trap.cause)
+		feature |= SBI_HART_HAS_TIME;
+
 	sbi_hart_set_feature(hartid, feature);
 }
 

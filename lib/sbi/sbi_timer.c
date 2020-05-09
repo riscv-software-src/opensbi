@@ -10,14 +10,16 @@
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_timer.h>
 
 static unsigned long time_delta_off;
+static u64 (*get_time_val)(const struct sbi_platform *plat);
 
 #if __riscv_xlen == 32
-u64 get_ticks(void)
+static u64 get_ticks(const struct sbi_platform *plat)
 {
 	u32 lo, hi, tmp;
 	__asm__ __volatile__("1:\n"
@@ -29,7 +31,7 @@ u64 get_ticks(void)
 	return ((u64)hi << 32) | lo;
 }
 #else
-u64 get_ticks(void)
+static u64 get_ticks(const struct sbi_platform *plat)
 {
 	unsigned long n;
 
@@ -40,12 +42,7 @@ u64 get_ticks(void)
 
 u64 sbi_timer_value(void)
 {
-	const struct sbi_platform *plat = sbi_platform_thishart_ptr();
-
-	if (sbi_platform_has_timer_value(plat))
-		return sbi_platform_timer_value(plat);
-	else
-		return get_ticks();
+	return get_time_val(sbi_platform_thishart_ptr());
 }
 
 u64 sbi_timer_virt_value(void)
@@ -97,6 +94,8 @@ void sbi_timer_process(void)
 int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot)
 {
 	u64 *time_delta;
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	int ret;
 
 	if (cold_boot) {
 		time_delta_off = sbi_scratch_alloc_offset(sizeof(*time_delta),
@@ -111,7 +110,19 @@ int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot)
 	time_delta = sbi_scratch_offset_ptr(scratch, time_delta_off);
 	*time_delta = 0;
 
-	return sbi_platform_timer_init(sbi_platform_ptr(scratch), cold_boot);
+	ret = sbi_platform_timer_init(plat, cold_boot);
+	if (ret)
+		return ret;
+
+	if (sbi_hart_has_feature(current_hartid(), SBI_HART_HAS_TIME))
+		get_time_val = get_ticks;
+	else if (sbi_platform_has_timer_value(plat))
+		get_time_val = sbi_platform_timer_value;
+	else
+		/* There is no method to provide timer value */
+		return SBI_ENODEV;
+
+	return 0;
 }
 
 void sbi_timer_exit(struct sbi_scratch *scratch)
