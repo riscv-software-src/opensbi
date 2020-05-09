@@ -10,6 +10,7 @@
 #include <libfdt.h>
 #include <sbi/riscv_asm.h>
 #include <sbi/sbi_console.h>
+#include <sbi/sbi_math.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_string.h>
@@ -67,6 +68,63 @@ void fdt_plic_fixup(void *fdt, const char *compat)
 	}
 }
 
+static int fdt_resv_memory_update_node(void *fdt, unsigned long addr,
+				       unsigned long size, int index,
+				       int parent)
+{
+	int na = fdt_address_cells(fdt, 0);
+	int ns = fdt_size_cells(fdt, 0);
+	fdt32_t addr_high, addr_low;
+	fdt32_t size_high, size_low;
+	int subnode, err;
+	fdt32_t reg[4];
+	fdt32_t *val;
+	char name[32];
+
+	addr_high = (u64)addr >> 32;
+	addr_low = addr;
+	size_high = (u64)size >> 32;
+	size_low = size;
+
+	if (na > 1 && addr_high)
+		sbi_snprintf(name, sizeof(name),
+			     "mmode_pmp%d@%x,%x", index,
+			     addr_high, addr_low);
+	else
+		sbi_snprintf(name, sizeof(name),
+			     "mmode_pmp%d@%x", index,
+			     addr_low);
+
+	subnode = fdt_add_subnode(fdt, parent, name);
+	if (subnode < 0)
+		return subnode;
+
+	/*
+	 * Tell operating system not to create a virtual
+	 * mapping of the region as part of its standard
+	 * mapping of system memory.
+	 */
+	err = fdt_setprop_empty(fdt, subnode, "no-map");
+	if (err < 0)
+		return err;
+
+	/* encode the <reg> property value */
+	val = reg;
+	if (na > 1)
+		*val++ = cpu_to_fdt32(addr_high);
+	*val++ = cpu_to_fdt32(addr_low);
+	if (ns > 1)
+		*val++ = cpu_to_fdt32(size_high);
+	*val++ = cpu_to_fdt32(size_low);
+
+	err = fdt_setprop(fdt, subnode, "reg", reg,
+			  (na + ns) * sizeof(fdt32_t));
+	if (err < 0)
+		return err;
+
+	return 0;
+}
+
 /**
  * We use PMP to protect OpenSBI firmware to safe-guard it from buggy S-mode
  * software, see pmp_init() in lib/sbi/sbi_hart.c. The protected memory region
@@ -87,19 +145,10 @@ int fdt_reserved_memory_fixup(void *fdt)
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	unsigned long prot, addr, size;
+	int parent, i, j;
+	int err;
 	int na = fdt_address_cells(fdt, 0);
 	int ns = fdt_size_cells(fdt, 0);
-	fdt32_t addr_high, addr_low;
-	fdt32_t size_high, size_low;
-	fdt32_t reg[4];
-	fdt32_t *val;
-	char name[32];
-	int parent, subnode;
-	int i, j;
-	int err;
-
-	if (!sbi_platform_has_pmp(plat))
-		return 0;
 
 	/* expand the device tree to accommodate new node */
 	err  = fdt_open_into(fdt, fdt, fdt_totalsize(fdt) + 256);
@@ -134,6 +183,15 @@ int fdt_reserved_memory_fixup(void *fdt)
 			return err;
 	}
 
+	if (!sbi_platform_has_pmp(plat)) {
+		/* update the DT with firmware start & size even if PMP is not
+		 * supported. This makes sure that supervisor OS is always
+		 * aware of wheren OpenSBI resident memory area.
+		 */
+		addr = scratch->fw_start & ~(scratch->fw_size - 1UL);
+		size = (1UL << log2roundup(scratch->fw_size));
+		return fdt_resv_memory_update_node(fdt, addr, size, 0, parent);
+	}
 	/*
 	 * We assume the given device tree does not contain any memory region
 	 * child node protected by PMP. Normally PMP programming happens at
@@ -148,47 +206,8 @@ int fdt_reserved_memory_fixup(void *fdt)
 		if (!(prot & PMP_A))
 			continue;
 		if (!(prot & (PMP_R | PMP_W | PMP_X))) {
-			addr_high = (u64)addr >> 32;
-			addr_low = addr;
-			size_high = (u64)size >> 32;
-			size_low = size;
-
-			if (na > 1 && addr_high)
-				sbi_snprintf(name, sizeof(name),
-					     "mmode_pmp%d@%x,%x", j,
-					     addr_high, addr_low);
-			else
-				sbi_snprintf(name, sizeof(name),
-					     "mmode_pmp%d@%x", j,
-					     addr_low);
-
-			subnode = fdt_add_subnode(fdt, parent, name);
-			if (subnode < 0)
-				return subnode;
-
-			/*
-			 * Tell operating system not to create a virtual
-			 * mapping of the region as part of its standard
-			 * mapping of system memory.
-			 */
-			err = fdt_setprop_empty(fdt, subnode, "no-map");
-			if (err < 0)
-				return err;
-
-			/* encode the <reg> property value */
-			val = reg;
-			if (na > 1)
-				*val++ = cpu_to_fdt32(addr_high);
-			*val++ = cpu_to_fdt32(addr_low);
-			if (ns > 1)
-				*val++ = cpu_to_fdt32(size_high);
-			*val++ = cpu_to_fdt32(size_low);
-
-			err = fdt_setprop(fdt, subnode, "reg", reg,
-					  (na + ns) * sizeof(fdt32_t));
-			if (err < 0)
-				return err;
-
+			return fdt_resv_memory_update_node(fdt, addr, size,
+							   j, parent);
 			j++;
 		}
 	}
