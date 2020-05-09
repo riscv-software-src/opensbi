@@ -18,6 +18,7 @@
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_system.h>
+#include <sbi/sbi_string.h>
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_tlb.h>
 #include <sbi/sbi_version.h>
@@ -34,8 +35,10 @@
 
 static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 {
-	int xlen;
+	int xlen, ret;
 	char str[64];
+	int max_fstr_len = 128;
+	char features[128];
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 #ifdef OPENSBI_VERSION_GIT
@@ -59,6 +62,14 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 	sbi_printf("Platform Name          : %s\n", sbi_platform_name(plat));
 	sbi_printf("Platform HART Count    : %u\n",
 		   sbi_platform_hart_count(plat));
+
+	sbi_memset(features, 0, max_fstr_len);
+	ret = sbi_platform_get_features_str(plat, features, max_fstr_len);
+	if (!ret)
+		sbi_printf("Platform Features      : %s\n", features);
+	else
+		sbi_printf("Platform Features      : %s\n", "none");
+
 	/* Boot HART details */
 	sbi_printf("Boot HART ID           : %u\n", hartid);
 	sbi_printf("Boot HART ISA          : %s\n", str);

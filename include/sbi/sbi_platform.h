@@ -56,6 +56,9 @@ enum sbi_platform_features {
 	SBI_PLATFORM_HAS_MFAULTS_DELEGATION = (1 << 2),
 	/** Platform has custom secondary hart booting support */
 	SBI_PLATFORM_HAS_HART_SECONDARY_BOOT = (1 << 3),
+
+	/** Last index of Platform features*/
+	SBI_PLATFORM_HAS_LAST_FEATURE = SBI_PLATFORM_HAS_HART_SECONDARY_BOOT,
 };
 
 /** Default feature set for a platform */
@@ -224,6 +227,29 @@ struct sbi_platform {
 	((__p)->features & SBI_PLATFORM_HAS_HART_SECONDARY_BOOT)
 
 /**
+ * Get HART index for the given HART
+ *
+ * @param plat pointer to struct sbi_platform
+ * @param hartid HART ID
+ *
+ * @return 0 <= value < hart_count for valid HART otherwise -1U
+ */
+u32 sbi_platform_hart_index(const struct sbi_platform *plat, u32 hartid);
+
+/**
+ * Get the platform features in string format
+ *
+ * @param plat pointer to struct sbi_platform
+ * @param features_str pointer to a char array where the features string will be
+ *		       updated
+ * @param nfstr length of the features_str. The feature string will be truncated
+ *		if nfstr is not long enough.
+ * @return the features value currently set for the given platform
+ */
+int sbi_platform_get_features_str(const struct sbi_platform *plat,
+				  char *features_str, int nfstr);
+
+/**
  * Get name of the platform
  *
  * @param plat pointer to struct sbi_platform
@@ -235,6 +261,21 @@ static inline const char *sbi_platform_name(const struct sbi_platform *plat)
 	if (plat)
 		return plat->name;
 	return "Unknown";
+}
+
+/**
+ * Get the platform features
+ *
+ * @param plat pointer to struct sbi_platform
+ *
+ * @return the features value currently set for the given platform
+ */
+static inline unsigned long sbi_platform_get_features(
+						const struct sbi_platform *plat)
+{
+	if (plat)
+		return plat->features;
+	return 0;
 }
 
 /**
@@ -279,32 +320,6 @@ static inline u32 sbi_platform_hart_stack_size(const struct sbi_platform *plat)
 	if (plat)
 		return plat->hart_stack_size;
 	return 0;
-}
-
-/**
- * Get HART index for the given HART
- *
- * @param plat pointer to struct sbi_platform
- * @param hartid HART ID
- *
- * @return 0 <= value < hart_count for valid HART otherwise -1U
- */
-static inline u32 sbi_platform_hart_index(const struct sbi_platform *plat,
-					  u32 hartid)
-{
-	u32 i;
-
-	if (!plat)
-		return -1U;
-	if (plat->hart_index2id) {
-		for (i = 0; i < plat->hart_count; i++) {
-			if (plat->hart_index2id[i] == hartid)
-				return i;
-		}
-		return -1U;
-	}
-
-	return hartid;
 }
 
 /**
