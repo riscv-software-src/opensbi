@@ -73,6 +73,14 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 	/* Boot HART details */
 	sbi_printf("Boot HART ID           : %u\n", hartid);
 	sbi_printf("Boot HART ISA          : %s\n", str);
+
+	sbi_memset(features, 0, max_fstr_len);
+	ret = sbi_hart_get_features_str(hartid, features, max_fstr_len);
+	if (!ret)
+		sbi_printf("BOOT HART Features     : %s\n", features);
+	else
+		sbi_printf("BOOT HART Features     : %s\n", "none");
+
 	/* Firmware details */
 	sbi_printf("Firmware Base          : 0x%lx\n", scratch->fw_start);
 	sbi_printf("Firmware Size          : %d KB\n",

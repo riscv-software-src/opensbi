@@ -18,6 +18,7 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_math.h>
 #include <sbi/sbi_platform.h>
+#include <sbi/sbi_string.h>
 
 extern void __sbi_expected_trap(void);
 extern void __sbi_expected_trap_hext(void);
@@ -221,6 +222,82 @@ bool sbi_hart_has_feature(u32 hartid, unsigned long feature)
 		return true;
 	else
 		return false;
+}
+
+unsigned long sbi_hart_get_features(u32 hartid)
+{
+	unsigned long *hart_features;
+	struct sbi_scratch *scratch;
+
+	scratch = sbi_hartid_to_scratch(hartid);
+	hart_features = sbi_scratch_offset_ptr(scratch, hart_features_offset);
+
+	return *hart_features;
+}
+
+static inline char *sbi_hart_feature_id2string(unsigned long feature)
+{
+	char *fstr = NULL;
+
+	if (!feature)
+		return NULL;
+
+	switch (feature) {
+	case SBI_HART_HAS_PMP:
+		fstr = "pmp";
+		break;
+	case SBI_HART_HAS_SCOUNTEREN:
+		fstr = "scountern";
+		break;
+	case SBI_HART_HAS_MCOUNTEREN:
+		fstr = "mcounteren";
+		break;
+	case SBI_HART_HAS_TIME:
+		fstr = "time";
+		break;
+	default:
+		break;
+	}
+
+	return fstr;
+}
+
+/**
+ * Get the hart features in string format
+ *
+ * @param hartid Hart ID of the hart whose feature list is requested
+ * @param features_str pointer to a char array where the features string will be
+ *		       updated
+ * @param nfstr length of the features_str. The feature string will be truncated
+ *		if nfstr is not long enough.
+ * @return the features value currently set for the given platform
+ */
+int sbi_hart_get_features_str(u32 hartid, char *features_str, int nfstr)
+{
+	unsigned long features, feat = 1UL;
+	char *temp;
+	int offset = 0;
+
+	if (!features_str || !nfstr)
+		return SBI_EINVAL;
+
+	features = sbi_hart_get_features(hartid);
+
+	do {
+		if (features & feat) {
+			temp = sbi_hart_feature_id2string(feat);
+			if (temp) {
+				sbi_snprintf(features_str + offset, nfstr,
+					     "%s,", temp);
+				offset = offset + sbi_strlen(temp) + 1;
+			}
+		}
+		feat = feat << 1;
+	} while (feat <= SBI_HART_HAS_LAST_FEATURE);
+
+	features_str[offset - 1] = '\0';
+
+	return 0;
 }
 
 static void sbi_hart_set_feature(u32 hartid, unsigned long feature)
