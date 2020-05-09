@@ -26,10 +26,6 @@
 #define OPENPITON_DEFAULT_HART_COUNT		3
 #define OPENPITON_DEFAULT_CLINT_ADDR		0xfff1020000
 
-#define SBI_OPENPITON_FEATURES	\
-	(SBI_PLATFORM_HAS_TIMER_VALUE | \
-	 SBI_PLATFORM_HAS_MFAULTS_DELEGATION)
-
 static struct platform_uart_data uart = {
 		OPENPITON_DEFAULT_UART_ADDR,
 		OPENPITON_DEFAULT_UART_FREQ,
@@ -213,7 +209,7 @@ const struct sbi_platform platform = {
 	.opensbi_version = OPENSBI_VERSION,
 	.platform_version = SBI_PLATFORM_VERSION(0x0, 0x01),
 	.name = "OPENPITON RISC-V",
-	.features = SBI_OPENPITON_FEATURES,
+	.features = SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count = OPENPITON_DEFAULT_HART_COUNT,
 	.hart_stack_size = SBI_PLATFORM_DEFAULT_HART_STACK_SIZE,
 	.platform_ops_addr = (unsigned long)&platform_ops
