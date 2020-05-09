@@ -22,6 +22,7 @@ extern void __sbi_expected_trap(void);
 extern void __sbi_expected_trap_hext(void);
 
 void (*sbi_hart_expected_trap)(void) = &__sbi_expected_trap;
+static unsigned long hart_features_offset;
 
 static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
 {
@@ -209,14 +210,36 @@ static int pmp_init(struct sbi_scratch *scratch, u32 hartid)
 	return 0;
 }
 
+bool sbi_hart_has_feature(u32 hartid, unsigned long feature)
+{
+	unsigned long *hart_features;
+	struct sbi_scratch *scratch;
+
+	scratch = sbi_hartid_to_scratch(hartid);
+	hart_features = sbi_scratch_offset_ptr(scratch, hart_features_offset);
+
+	if (*hart_features & feature)
+		return true;
+	else
+		return false;
+}
+
 int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 {
 	int rc;
+	unsigned long *hart_features;
 
 	if (cold_boot) {
 		if (misa_extension('H'))
 			sbi_hart_expected_trap = &__sbi_expected_trap_hext;
+		hart_features_offset = sbi_scratch_alloc_offset(
+							sizeof(hart_features),
+							"HART_FEATURES");
+		if (!hart_features_offset)
+			return SBI_ENOMEM;
 	}
+	hart_features = sbi_scratch_offset_ptr(scratch, hart_features_offset);
+	*hart_features = 0;
 
 	mstatus_init(scratch, hartid);
 
