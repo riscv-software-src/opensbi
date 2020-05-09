@@ -11,6 +11,7 @@
 #include <sbi/riscv_asm.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_math.h>
+#include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_string.h>
@@ -143,7 +144,6 @@ static int fdt_resv_memory_update_node(void *fdt, unsigned long addr,
 int fdt_reserved_memory_fixup(void *fdt)
 {
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	unsigned long prot, addr, size;
 	int parent, i, j;
 	int err;
@@ -183,7 +183,7 @@ int fdt_reserved_memory_fixup(void *fdt)
 			return err;
 	}
 
-	if (!sbi_platform_has_pmp(plat)) {
+	if (!sbi_hart_has_feature(current_hartid(), SBI_HART_HAS_PMP)) {
 		/* update the DT with firmware start & size even if PMP is not
 		 * supported. This makes sure that supervisor OS is always
 		 * aware of wheren OpenSBI resident memory area.

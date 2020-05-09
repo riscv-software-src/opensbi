@@ -52,23 +52,15 @@ enum sbi_platform_features {
 	SBI_PLATFORM_HAS_TIMER_VALUE = (1 << 0),
 	/** Platform has HART hotplug support */
 	SBI_PLATFORM_HAS_HART_HOTPLUG = (1 << 1),
-	/** Platform has PMP support */
-	SBI_PLATFORM_HAS_PMP = (1 << 2),
-	/** Platform has S-mode counter enable */
-	SBI_PLATFORM_HAS_SCOUNTEREN = (1 << 3),
-	/** Platform has M-mode counter enable */
-	SBI_PLATFORM_HAS_MCOUNTEREN = (1 << 4),
 	/** Platform has fault delegation support */
-	SBI_PLATFORM_HAS_MFAULTS_DELEGATION = (1 << 5),
+	SBI_PLATFORM_HAS_MFAULTS_DELEGATION = (1 << 2),
 	/** Platform has custom secondary hart booting support */
-	SBI_PLATFORM_HAS_HART_SECONDARY_BOOT = (1 << 6),
+	SBI_PLATFORM_HAS_HART_SECONDARY_BOOT = (1 << 3),
 };
 
 /** Default feature set for a platform */
 #define SBI_PLATFORM_DEFAULT_FEATURES                                \
-	(SBI_PLATFORM_HAS_TIMER_VALUE | SBI_PLATFORM_HAS_PMP |       \
-	 SBI_PLATFORM_HAS_SCOUNTEREN | SBI_PLATFORM_HAS_MCOUNTEREN | \
-	 SBI_PLATFORM_HAS_MFAULTS_DELEGATION)
+	(SBI_PLATFORM_HAS_TIMER_VALUE | SBI_PLATFORM_HAS_MFAULTS_DELEGATION)
 
 /** Platform functions */
 struct sbi_platform_operations {
@@ -224,14 +216,6 @@ struct sbi_platform {
 /** Check whether the platform supports HART hotplug */
 #define sbi_platform_has_hart_hotplug(__p) \
 	((__p)->features & SBI_PLATFORM_HAS_HART_HOTPLUG)
-/** Check whether the platform has PMP support */
-#define sbi_platform_has_pmp(__p) ((__p)->features & SBI_PLATFORM_HAS_PMP)
-/** Check whether the platform supports scounteren CSR */
-#define sbi_platform_has_scounteren(__p) \
-	((__p)->features & SBI_PLATFORM_HAS_SCOUNTEREN)
-/** Check whether the platform supports mcounteren CSR */
-#define sbi_platform_has_mcounteren(__p) \
-	((__p)->features & SBI_PLATFORM_HAS_MCOUNTEREN)
 /** Check whether the platform supports fault delegation */
 #define sbi_platform_has_mfaults_delegation(__p) \
 	((__p)->features & SBI_PLATFORM_HAS_MFAULTS_DELEGATION)

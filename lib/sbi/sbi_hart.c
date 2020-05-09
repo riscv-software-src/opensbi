@@ -13,6 +13,7 @@
 #include <sbi/riscv_fp.h>
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_console.h>
+#include <sbi/sbi_csr_detect.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_math.h>
@@ -26,7 +27,6 @@ static unsigned long hart_features_offset;
 
 static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
 {
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	unsigned long mstatus_val = 0;
 
 	/* Enable FPU */
@@ -40,9 +40,10 @@ static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
 	csr_write(CSR_MSTATUS, mstatus_val);
 
 	/* Enable user/supervisor use of perf counters */
-	if (misa_extension('S') && sbi_platform_has_scounteren(plat))
+	if (misa_extension('S') &&
+	    sbi_hart_has_feature(hartid, SBI_HART_HAS_SCOUNTEREN))
 		csr_write(CSR_SCOUNTEREN, -1);
-	if (sbi_platform_has_mcounteren(plat))
+	if (!sbi_hart_has_feature(hartid, SBI_HART_HAS_MCOUNTEREN))
 		csr_write(CSR_MCOUNTEREN, -1);
 
 	/* Disable all interrupts */
@@ -125,11 +126,10 @@ void sbi_hart_delegation_dump(struct sbi_scratch *scratch)
 
 void sbi_hart_pmp_dump(struct sbi_scratch *scratch)
 {
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	unsigned long prot, addr, size;
 	unsigned int i;
 
-	if (!sbi_platform_has_pmp(plat))
+	if (!sbi_hart_has_feature(current_hartid(), SBI_HART_HAS_PMP))
 		return;
 
 	for (i = 0; i < PMP_COUNT; i++) {
@@ -158,9 +158,8 @@ int sbi_hart_pmp_check_addr(struct sbi_scratch *scratch, unsigned long addr,
 			    unsigned long attr)
 {
 	unsigned long prot, size, i, tempaddr;
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	if (!sbi_platform_has_pmp(plat))
+	if (!sbi_hart_has_feature(current_hartid(), SBI_HART_HAS_PMP))
 		return SBI_OK;
 
 	for (i = 0; i < PMP_COUNT; i++) {
@@ -182,7 +181,7 @@ static int pmp_init(struct sbi_scratch *scratch, u32 hartid)
 	ulong prot, addr, log2size;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	if (!sbi_platform_has_pmp(plat))
+	if (!sbi_hart_has_feature(current_hartid(), SBI_HART_HAS_PMP))
 		return 0;
 
 	/* Firmware PMP region to protect OpenSBI firmware */
@@ -224,6 +223,57 @@ bool sbi_hart_has_feature(u32 hartid, unsigned long feature)
 		return false;
 }
 
+static void sbi_hart_set_feature(u32 hartid, unsigned long feature)
+{
+	unsigned long *hart_features;
+	struct sbi_scratch *scratch;
+
+	scratch = sbi_hartid_to_scratch(hartid);
+	hart_features = sbi_scratch_offset_ptr(scratch, hart_features_offset);
+
+	*hart_features = *hart_features | feature;
+}
+
+static void sbi_hart_detect_features(u32 hartid)
+{
+	struct sbi_trap_info trap = {0};
+	unsigned long feature = 0;
+	unsigned long csr_val;
+
+	if (hartid != current_hartid())
+		sbi_hart_hang();
+
+	/* Detect if hart supports PMP feature */
+	csr_val = csr_read_allowed(CSR_PMPCFG0, (unsigned long)&trap);
+	if (!trap.cause) {
+		csr_write_allowed(CSR_PMPCFG0, (unsigned long)&trap, csr_val);
+		if (!trap.cause)
+			feature |= SBI_HART_HAS_PMP;
+	}
+
+	/* Detect if hart supports SCOUNTEREN feature */
+	trap.cause = 0;
+	csr_val = csr_read_allowed(CSR_SCOUNTEREN, (unsigned long)&trap);
+	if (!trap.cause) {
+		csr_write_allowed(CSR_SCOUNTEREN, (unsigned long)&trap,
+				  csr_val);
+		if (!trap.cause)
+			feature |= SBI_HART_HAS_SCOUNTEREN;
+	}
+
+	/* Detect if hart supports MCOUNTEREN feature */
+	trap.cause = 0;
+	csr_val = csr_read_allowed(CSR_MCOUNTEREN, (unsigned long)&trap);
+	if (!trap.cause) {
+		csr_write_allowed(CSR_MCOUNTEREN, (unsigned long)&trap,
+				  csr_val);
+		if (!trap.cause)
+			feature |= SBI_HART_HAS_MCOUNTEREN;
+	}
+
+	sbi_hart_set_feature(hartid, feature);
+}
+
 int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 {
 	int rc;
@@ -250,6 +300,8 @@ int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 	rc = delegate_traps(scratch, hartid);
 	if (rc)
 		return rc;
+
+	sbi_hart_detect_features(hartid);
 
 	return pmp_init(scratch, hartid);
 }
