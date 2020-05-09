@@ -16,10 +16,10 @@ struct sbi_scratch;
 
 int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot);
 
-extern void (*sbi_hart_unpriv_trap)(void);
-static inline ulong sbi_hart_unpriv_trap_addr(void)
+extern void (*sbi_hart_expected_trap)(void);
+static inline ulong sbi_hart_expected_trap_addr(void)
 {
-	return (ulong)sbi_hart_unpriv_trap;
+	return (ulong)sbi_hart_expected_trap;
 }
 
 void sbi_hart_delegation_dump(struct sbi_scratch *scratch);

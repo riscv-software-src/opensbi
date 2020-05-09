@@ -11,8 +11,8 @@
 #include <sbi/sbi_trap.h>
 
 	/*
-	 * We assume that faulting unpriv load/store instruction is
-	 * is 4-byte long and blindly increment SEPC by 4.
+	 * We assume that faulting instruction is is 4-byte long and blindly
+	 * increment SEPC by 4.
 	 *
 	 * The trap info will be saved as follows:
 	 * A3 <- pointer struct sbi_trap_info
@@ -20,8 +20,8 @@
 	 */
 
 	.align 3
-	.global __sbi_unpriv_trap
-__sbi_unpriv_trap:
+	.global __sbi_expected_trap
+__sbi_expected_trap:
 	/* Without H-extension so, MTVAL2 and MTINST CSRs not available */
 	csrr	a4, CSR_MEPC
 	REG_S	a4, SBI_TRAP_INFO_OFFSET(epc)(a3)
@@ -37,8 +37,8 @@ __sbi_unpriv_trap:
 	mret
 
 	.align 3
-	.global __sbi_unpriv_trap_hext
-__sbi_unpriv_trap_hext:
+	.global __sbi_expected_trap_hext
+__sbi_expected_trap_hext:
 	/* With H-extension so, MTVAL2 and MTINST CSRs available */
 	csrr	a4, CSR_MEPC
 	REG_S	a4, SBI_TRAP_INFO_OFFSET(epc)(a3)

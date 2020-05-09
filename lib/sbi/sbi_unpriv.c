@@ -21,7 +21,7 @@
 		register ulong tinfo asm("a3");                               \
 		register ulong ttmp asm("a4");                                \
 		register ulong mstatus asm("a5");                             \
-		register ulong mtvec asm("a6") = sbi_hart_unpriv_trap_addr(); \
+		register ulong mtvec asm("a6") = sbi_hart_expected_trap_addr(); \
 		type ret = 0;                                                 \
 		trap->cause = 0;                                              \
 		asm volatile(                                                 \
@@ -51,7 +51,7 @@
 		register ulong tinfo asm("a3");                               \
 		register ulong ttmp asm("a4");                                \
 		register ulong mstatus asm("a5");                             \
-		register ulong mtvec asm("a6") = sbi_hart_unpriv_trap_addr(); \
+		register ulong mtvec asm("a6") = sbi_hart_expected_trap_addr(); \
 		trap->cause = 0;                                              \
 		asm volatile(                                                 \
 			"add %[tinfo], %[taddr], zero\n"                      \
@@ -120,7 +120,7 @@ ulong sbi_get_insn(ulong mepc, struct sbi_trap_info *trap)
 	register ulong tinfo asm("a3");
 	register ulong ttmp asm("a4");
 	register ulong mstatus asm("a5");
-	register ulong mtvec asm("a6") = sbi_hart_unpriv_trap_addr();
+	register ulong mtvec asm("a6") = sbi_hart_expected_trap_addr();
 	ulong insn = 0;
 
 	trap->cause = 0;

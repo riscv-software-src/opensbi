@@ -17,10 +17,10 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
 
-extern void __sbi_unpriv_trap(void);
-extern void __sbi_unpriv_trap_hext(void);
+extern void __sbi_expected_trap(void);
+extern void __sbi_expected_trap_hext(void);
 
-void (*sbi_hart_unpriv_trap)(void) = &__sbi_unpriv_trap;
+void (*sbi_hart_expected_trap)(void) = &__sbi_expected_trap;
 
 static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
 {
@@ -227,7 +227,7 @@ int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 
 	if (cold_boot) {
 		if (misa_extension('H'))
-			sbi_hart_unpriv_trap = &__sbi_unpriv_trap_hext;
+			sbi_hart_expected_trap = &__sbi_expected_trap_hext;
 	}
 
 	mstatus_init(scratch, hartid);
