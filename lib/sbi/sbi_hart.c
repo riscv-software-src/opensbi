@@ -247,7 +247,7 @@ static inline char *sbi_hart_feature_id2string(unsigned long feature)
 		fstr = "pmp";
 		break;
 	case SBI_HART_HAS_SCOUNTEREN:
-		fstr = "scountern";
+		fstr = "scounteren";
 		break;
 	case SBI_HART_HAS_MCOUNTEREN:
 		fstr = "mcounteren";
@@ -371,8 +371,10 @@ int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 		if (!hart_features_offset)
 			return SBI_ENOMEM;
 	}
+
 	hart_features = sbi_scratch_offset_ptr(scratch, hart_features_offset);
 	*hart_features = 0;
+	sbi_hart_detect_features(hartid);
 
 	mstatus_init(scratch, hartid);
 
@@ -383,8 +385,6 @@ int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 	rc = delegate_traps(scratch, hartid);
 	if (rc)
 		return rc;
-
-	sbi_hart_detect_features(hartid);
 
 	return pmp_init(scratch, hartid);
 }
