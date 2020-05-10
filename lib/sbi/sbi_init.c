@@ -57,10 +57,10 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 
 	/* Platform details */
 	sbi_printf("Platform Name       : %s\n", sbi_platform_name(plat));
-	sbi_printf("Platform HART Count : %u\n",
-		   sbi_platform_hart_count(plat));
 	sbi_platform_get_features_str(plat, str, sizeof(str));
 	sbi_printf("Platform Features   : %s\n", str);
+	sbi_printf("Platform HART Count : %u\n",
+		   sbi_platform_hart_count(plat));
 
 	/* Boot HART details */
 	sbi_printf("Boot HART ID        : %u\n", hartid);
