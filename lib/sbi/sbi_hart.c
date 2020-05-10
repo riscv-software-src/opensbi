@@ -270,18 +270,20 @@ static inline char *sbi_hart_feature_id2string(unsigned long feature)
  *		       updated
  * @param nfstr length of the features_str. The feature string will be truncated
  *		if nfstr is not long enough.
- * @return the features value currently set for the given platform
  */
-int sbi_hart_get_features_str(u32 hartid, char *features_str, int nfstr)
+void sbi_hart_get_features_str(u32 hartid, char *features_str, int nfstr)
 {
 	unsigned long features, feat = 1UL;
 	char *temp;
 	int offset = 0;
 
-	if (!features_str || !nfstr)
-		return SBI_EINVAL;
+	if (!features_str || nfstr <= 0)
+		return;
+	sbi_memset(features_str, 0, nfstr);
 
 	features = sbi_hart_get_features(hartid);
+	if (!features)
+		goto done;
 
 	do {
 		if (features & feat) {
@@ -295,9 +297,11 @@ int sbi_hart_get_features_str(u32 hartid, char *features_str, int nfstr)
 		feat = feat << 1;
 	} while (feat <= SBI_HART_HAS_LAST_FEATURE);
 
-	features_str[offset - 1] = '\0';
-
-	return 0;
+done:
+	if (offset)
+		features_str[offset - 1] = '\0';
+	else
+		sbi_strncpy(features_str, "none", nfstr);
 }
 
 static void sbi_hart_set_feature(u32 hartid, unsigned long feature)

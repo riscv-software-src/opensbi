@@ -244,10 +244,9 @@ u32 sbi_platform_hart_index(const struct sbi_platform *plat, u32 hartid);
  *		       updated
  * @param nfstr length of the features_str. The feature string will be truncated
  *		if nfstr is not long enough.
- * @return the features value currently set for the given platform
  */
-int sbi_platform_get_features_str(const struct sbi_platform *plat,
-				  char *features_str, int nfstr);
+void sbi_platform_get_features_str(const struct sbi_platform *plat,
+				   char *features_str, int nfstr);
 
 /**
  * Get name of the platform

@@ -38,27 +38,20 @@ static inline char *sbi_platform_feature_id2string(unsigned long feature)
 	return fstr;
 }
 
-/**
- * Get the platform features in string format
- *
- * @param plat pointer to struct sbi_platform
- * @param features_str pointer to a char array where the features string will be
- *		       updated
- * @param nfstr length of the features_str. The feature string will be truncated
- *		if nfstr is not long enough.
- * @return the features value currently set for the given platform
- */
-int sbi_platform_get_features_str(const struct sbi_platform *plat,
-						char *features_str, int nfstr)
+void sbi_platform_get_features_str(const struct sbi_platform *plat,
+				   char *features_str, int nfstr)
 {
 	unsigned long features, feat = 1UL;
 	char *temp;
 	int offset = 0;
 
 	if (!plat || !features_str || !nfstr)
-		return SBI_EINVAL;
+		return;
+	sbi_memset(features_str, 0, nfstr);
 
 	features = sbi_platform_get_features(plat);
+	if (!features)
+		goto done;
 
 	do {
 		if (features & feat) {
@@ -72,21 +65,14 @@ int sbi_platform_get_features_str(const struct sbi_platform *plat,
 		feat = feat << 1;
 	} while (feat <= SBI_PLATFORM_HAS_LAST_FEATURE);
 
-	features_str[offset - 1] = '\0';
-
-	return 0;
+done:
+	if (offset)
+		features_str[offset - 1] = '\0';
+	else
+		sbi_strncpy(features_str, "none", nfstr);
 }
 
-/**
- * Get HART index for the given HART
- *
- * @param plat pointer to struct sbi_platform
- * @param hartid HART ID
- *
- * @return 0 <= value < hart_count for valid HART otherwise -1U
- */
-u32 sbi_platform_hart_index(const struct sbi_platform *plat,
-					  u32 hartid)
+u32 sbi_platform_hart_index(const struct sbi_platform *plat, u32 hartid)
 {
 	u32 i;
 
