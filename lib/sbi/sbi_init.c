@@ -56,26 +56,26 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 	}
 
 	/* Platform details */
-	sbi_printf("Platform Name          : %s\n", sbi_platform_name(plat));
-	sbi_printf("Platform HART Count    : %u\n",
+	sbi_printf("Platform Name       : %s\n", sbi_platform_name(plat));
+	sbi_printf("Platform HART Count : %u\n",
 		   sbi_platform_hart_count(plat));
 	sbi_platform_get_features_str(plat, str, sizeof(str));
-	sbi_printf("Platform Features      : %s\n", str);
+	sbi_printf("Platform Features   : %s\n", str);
 
 	/* Boot HART details */
-	sbi_printf("Boot HART ID           : %u\n", hartid);
+	sbi_printf("Boot HART ID        : %u\n", hartid);
 	misa_string(xlen, str, sizeof(str));
-	sbi_printf("Boot HART ISA          : %s\n", str);
+	sbi_printf("Boot HART ISA       : %s\n", str);
 	sbi_hart_get_features_str(hartid, str, sizeof(str));
-	sbi_printf("BOOT HART Features     : %s\n", str);
+	sbi_printf("BOOT HART Features  : %s\n", str);
 
 	/* Firmware details */
-	sbi_printf("Firmware Base          : 0x%lx\n", scratch->fw_start);
-	sbi_printf("Firmware Size          : %d KB\n",
+	sbi_printf("Firmware Base       : 0x%lx\n", scratch->fw_start);
+	sbi_printf("Firmware Size       : %d KB\n",
 		   (u32)(scratch->fw_size / 1024));
 
 	/* Generic details */
-	sbi_printf("Runtime SBI Version    : %d.%d\n",
+	sbi_printf("Runtime SBI Version : %d.%d\n",
 		   sbi_ecall_version_major(), sbi_ecall_version_minor());
 	sbi_printf("\n");
 
