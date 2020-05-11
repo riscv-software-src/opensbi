@@ -308,28 +308,20 @@ done:
 		sbi_strncpy(features_str, "none", nfstr);
 }
 
-static void sbi_hart_set_feature(struct sbi_scratch *scratch,
-				 unsigned long feature)
-{
-	unsigned long *hart_features;
-
-	hart_features = sbi_scratch_offset_ptr(scratch, hart_features_offset);
-
-	*hart_features = *hart_features | feature;
-}
-
-static void sbi_hart_detect_features(struct sbi_scratch *scratch)
+static void hart_detect_features(struct sbi_scratch *scratch)
 {
 	struct sbi_trap_info trap = {0};
-	unsigned long feature = 0;
+	unsigned long *hart_features;
 	unsigned long csr_val;
+
+	hart_features = sbi_scratch_offset_ptr(scratch, hart_features_offset);
 
 	/* Detect if hart supports PMP feature */
 	csr_val = csr_read_allowed(CSR_PMPCFG0, (unsigned long)&trap);
 	if (!trap.cause) {
 		csr_write_allowed(CSR_PMPCFG0, (unsigned long)&trap, csr_val);
 		if (!trap.cause)
-			feature |= SBI_HART_HAS_PMP;
+			*hart_features |= SBI_HART_HAS_PMP;
 	}
 
 	/* Detect if hart supports SCOUNTEREN feature */
@@ -339,7 +331,7 @@ static void sbi_hart_detect_features(struct sbi_scratch *scratch)
 		csr_write_allowed(CSR_SCOUNTEREN, (unsigned long)&trap,
 				  csr_val);
 		if (!trap.cause)
-			feature |= SBI_HART_HAS_SCOUNTEREN;
+			*hart_features |= SBI_HART_HAS_SCOUNTEREN;
 	}
 
 	/* Detect if hart supports MCOUNTEREN feature */
@@ -349,16 +341,14 @@ static void sbi_hart_detect_features(struct sbi_scratch *scratch)
 		csr_write_allowed(CSR_MCOUNTEREN, (unsigned long)&trap,
 				  csr_val);
 		if (!trap.cause)
-			feature |= SBI_HART_HAS_MCOUNTEREN;
+			*hart_features |= SBI_HART_HAS_MCOUNTEREN;
 	}
 
 	/* Detect if hart supports time CSR */
 	trap.cause = 0;
 	csr_read_allowed(CSR_TIME, (unsigned long)&trap);
 	if (!trap.cause)
-		feature |= SBI_HART_HAS_TIME;
-
-	sbi_hart_set_feature(scratch, feature);
+		*hart_features |= SBI_HART_HAS_TIME;
 }
 
 int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
@@ -369,16 +359,18 @@ int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 	if (cold_boot) {
 		if (misa_extension('H'))
 			sbi_hart_expected_trap = &__sbi_expected_trap_hext;
+
 		hart_features_offset = sbi_scratch_alloc_offset(
-							sizeof(hart_features),
-							"HART_FEATURES");
+						sizeof(*hart_features),
+						"HART_FEATURES");
 		if (!hart_features_offset)
 			return SBI_ENOMEM;
 	}
 
 	hart_features = sbi_scratch_offset_ptr(scratch, hart_features_offset);
 	*hart_features = 0;
-	sbi_hart_detect_features(scratch);
+
+	hart_detect_features(scratch);
 
 	mstatus_init(scratch, hartid);
 
