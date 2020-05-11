@@ -41,9 +41,9 @@ void sbi_hart_delegation_dump(struct sbi_scratch *scratch);
 void sbi_hart_pmp_dump(struct sbi_scratch *scratch);
 int  sbi_hart_pmp_check_addr(struct sbi_scratch *scratch, unsigned long daddr,
 			     unsigned long attr);
-bool sbi_hart_has_feature(u32 hartid, unsigned long feature);
-unsigned long sbi_hart_get_features(u32 hartid);
-void sbi_hart_get_features_str(u32 hartid, char *features_str, int nfstr);
+bool sbi_hart_has_feature(struct sbi_scratch *scratch, unsigned long feature);
+void sbi_hart_get_features_str(struct sbi_scratch *scratch,
+			       char *features_str, int nfstr);
 
 void __attribute__((noreturn)) sbi_hart_hang(void);
 

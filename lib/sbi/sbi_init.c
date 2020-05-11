@@ -66,7 +66,7 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 	sbi_printf("Boot HART ID        : %u\n", hartid);
 	misa_string(xlen, str, sizeof(str));
 	sbi_printf("Boot HART ISA       : %s\n", str);
-	sbi_hart_get_features_str(hartid, str, sizeof(str));
+	sbi_hart_get_features_str(scratch, str, sizeof(str));
 	sbi_printf("BOOT HART Features  : %s\n", str);
 
 	/* Firmware details */

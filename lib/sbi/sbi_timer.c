@@ -114,7 +114,7 @@ int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot)
 	if (ret)
 		return ret;
 
-	if (sbi_hart_has_feature(current_hartid(), SBI_HART_HAS_TIME))
+	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_TIME))
 		get_time_val = get_ticks;
 	else if (sbi_platform_has_timer_value(plat))
 		get_time_val = sbi_platform_timer_value;

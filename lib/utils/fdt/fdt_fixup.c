@@ -183,10 +183,11 @@ int fdt_reserved_memory_fixup(void *fdt)
 			return err;
 	}
 
-	if (!sbi_hart_has_feature(current_hartid(), SBI_HART_HAS_PMP)) {
-		/* update the DT with firmware start & size even if PMP is not
+	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_PMP)) {
+		/*
+		 * Update the DT with firmware start & size even if PMP is not
 		 * supported. This makes sure that supervisor OS is always
-		 * aware of wheren OpenSBI resident memory area.
+		 * aware of OpenSBI resident memory area.
 		 */
 		addr = scratch->fw_start & ~(scratch->fw_size - 1UL);
 		size = (1UL << log2roundup(scratch->fw_size));

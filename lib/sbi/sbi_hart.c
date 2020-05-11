@@ -42,9 +42,9 @@ static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
 
 	/* Enable user/supervisor use of perf counters */
 	if (misa_extension('S') &&
-	    sbi_hart_has_feature(hartid, SBI_HART_HAS_SCOUNTEREN))
+	    sbi_hart_has_feature(scratch, SBI_HART_HAS_SCOUNTEREN))
 		csr_write(CSR_SCOUNTEREN, -1);
-	if (!sbi_hart_has_feature(hartid, SBI_HART_HAS_MCOUNTEREN))
+	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTEREN))
 		csr_write(CSR_MCOUNTEREN, -1);
 
 	/* Disable all interrupts */
@@ -130,7 +130,7 @@ void sbi_hart_pmp_dump(struct sbi_scratch *scratch)
 	unsigned long prot, addr, size;
 	unsigned int i;
 
-	if (!sbi_hart_has_feature(current_hartid(), SBI_HART_HAS_PMP))
+	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_PMP))
 		return;
 
 	for (i = 0; i < PMP_COUNT; i++) {
@@ -160,7 +160,7 @@ int sbi_hart_pmp_check_addr(struct sbi_scratch *scratch, unsigned long addr,
 {
 	unsigned long prot, size, i, tempaddr;
 
-	if (!sbi_hart_has_feature(current_hartid(), SBI_HART_HAS_PMP))
+	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_PMP))
 		return SBI_OK;
 
 	for (i = 0; i < PMP_COUNT; i++) {
@@ -182,7 +182,7 @@ static int pmp_init(struct sbi_scratch *scratch, u32 hartid)
 	ulong prot, addr, log2size;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	if (!sbi_hart_has_feature(current_hartid(), SBI_HART_HAS_PMP))
+	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_PMP))
 		return 0;
 
 	/* Firmware PMP region to protect OpenSBI firmware */
@@ -210,12 +210,17 @@ static int pmp_init(struct sbi_scratch *scratch, u32 hartid)
 	return 0;
 }
 
-bool sbi_hart_has_feature(u32 hartid, unsigned long feature)
+/**
+ * Check whether a particular hart feature is available
+ *
+ * @param scratch pointer to the HART scratch space
+ * @param feature the feature to check
+ * @returns true (feature available) or false (feature not available)
+ */
+bool sbi_hart_has_feature(struct sbi_scratch *scratch, unsigned long feature)
 {
 	unsigned long *hart_features;
-	struct sbi_scratch *scratch;
 
-	scratch = sbi_hartid_to_scratch(hartid);
 	hart_features = sbi_scratch_offset_ptr(scratch, hart_features_offset);
 
 	if (*hart_features & feature)
@@ -224,12 +229,10 @@ bool sbi_hart_has_feature(u32 hartid, unsigned long feature)
 		return false;
 }
 
-unsigned long sbi_hart_get_features(u32 hartid)
+static unsigned long hart_get_features(struct sbi_scratch *scratch)
 {
 	unsigned long *hart_features;
-	struct sbi_scratch *scratch;
 
-	scratch = sbi_hartid_to_scratch(hartid);
 	hart_features = sbi_scratch_offset_ptr(scratch, hart_features_offset);
 
 	return *hart_features;
@@ -265,13 +268,14 @@ static inline char *sbi_hart_feature_id2string(unsigned long feature)
 /**
  * Get the hart features in string format
  *
- * @param hartid Hart ID of the hart whose feature list is requested
+ * @param scratch pointer to the HART scratch space
  * @param features_str pointer to a char array where the features string will be
  *		       updated
  * @param nfstr length of the features_str. The feature string will be truncated
  *		if nfstr is not long enough.
  */
-void sbi_hart_get_features_str(u32 hartid, char *features_str, int nfstr)
+void sbi_hart_get_features_str(struct sbi_scratch *scratch,
+			       char *features_str, int nfstr)
 {
 	unsigned long features, feat = 1UL;
 	char *temp;
@@ -281,7 +285,7 @@ void sbi_hart_get_features_str(u32 hartid, char *features_str, int nfstr)
 		return;
 	sbi_memset(features_str, 0, nfstr);
 
-	features = sbi_hart_get_features(hartid);
+	features = hart_get_features(scratch);
 	if (!features)
 		goto done;
 
@@ -304,25 +308,21 @@ done:
 		sbi_strncpy(features_str, "none", nfstr);
 }
 
-static void sbi_hart_set_feature(u32 hartid, unsigned long feature)
+static void sbi_hart_set_feature(struct sbi_scratch *scratch,
+				 unsigned long feature)
 {
 	unsigned long *hart_features;
-	struct sbi_scratch *scratch;
 
-	scratch = sbi_hartid_to_scratch(hartid);
 	hart_features = sbi_scratch_offset_ptr(scratch, hart_features_offset);
 
 	*hart_features = *hart_features | feature;
 }
 
-static void sbi_hart_detect_features(u32 hartid)
+static void sbi_hart_detect_features(struct sbi_scratch *scratch)
 {
 	struct sbi_trap_info trap = {0};
 	unsigned long feature = 0;
 	unsigned long csr_val;
-
-	if (hartid != current_hartid())
-		sbi_hart_hang();
 
 	/* Detect if hart supports PMP feature */
 	csr_val = csr_read_allowed(CSR_PMPCFG0, (unsigned long)&trap);
@@ -358,7 +358,7 @@ static void sbi_hart_detect_features(u32 hartid)
 	if (!trap.cause)
 		feature |= SBI_HART_HAS_TIME;
 
-	sbi_hart_set_feature(hartid, feature);
+	sbi_hart_set_feature(scratch, feature);
 }
 
 int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
@@ -378,7 +378,7 @@ int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 
 	hart_features = sbi_scratch_offset_ptr(scratch, hart_features_offset);
 	*hart_features = 0;
-	sbi_hart_detect_features(hartid);
+	sbi_hart_detect_features(scratch);
 
 	mstatus_init(scratch, hartid);
 
