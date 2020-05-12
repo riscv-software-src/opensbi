@@ -42,17 +42,19 @@ static int fdt_irqchip_cold_init(void)
 	for (pos = 0; pos < array_size(irqchip_drivers); pos++) {
 		drv = irqchip_drivers[pos];
 
-		noff = fdt_find_match(fdt, -1, drv->match_table, &match);
-		if (noff < 0)
-			continue;
-
-		if (drv->cold_init) {
-			rc = drv->cold_init(fdt, noff, match);
-			if (rc)
-				return rc;
+		noff = -1;
+		while ((noff = fdt_find_match(fdt, noff,
+					drv->match_table, &match)) >= 0) {
+			if (drv->cold_init) {
+				rc = drv->cold_init(fdt, noff, match);
+				if (rc)
+					return rc;
+			}
+			current_driver = drv;
 		}
-		current_driver = drv;
-		break;
+
+		if (current_driver)
+			break;
 	}
 
 	return 0;

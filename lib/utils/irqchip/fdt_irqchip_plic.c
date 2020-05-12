@@ -15,27 +15,29 @@
 #include <sbi_utils/irqchip/fdt_irqchip.h>
 #include <sbi_utils/irqchip/plic.h>
 
-static struct plic_data plic;
+#define PLIC_MAX_NR			16
+
+static unsigned long plic_count = 0;
+static struct plic_data plic[PLIC_MAX_NR];
+
+static struct plic_data *plic_hartid2data[SBI_HARTMASK_MAX_BITS];
 static int plic_hartid2context[SBI_HARTMASK_MAX_BITS][2];
 
 static int irqchip_plic_warm_init(void)
 {
 	u32 hartid = current_hartid();
 
-	return plic_warm_irqchip_init(&plic, plic_hartid2context[hartid][0],
+	return plic_warm_irqchip_init(plic_hartid2data[hartid],
+				      plic_hartid2context[hartid][0],
 				      plic_hartid2context[hartid][1]);
 }
 
-static int irqchip_plic_parse_hartid2context(void *fdt, int nodeoff)
+static int irqchip_plic_update_hartid_table(void *fdt, int nodeoff,
+					    struct plic_data *pd)
 {
 	const fdt32_t *val;
 	u32 phandle, hwirq, hartid;
 	int i, err, count, cpu_offset, cpu_intc_offset;
-
-	for (i = 0; i < SBI_HARTMASK_MAX_BITS; i++) {
-		plic_hartid2context[i][0] = -1;
-		plic_hartid2context[i][1] = -1;
-	}
 
 	val = fdt_getprop(fdt, nodeoff, "interrupts-extended", &count);
 	if (!val || count < sizeof(fdt32_t))
@@ -61,6 +63,7 @@ static int irqchip_plic_parse_hartid2context(void *fdt, int nodeoff)
 		if (SBI_HARTMASK_MAX_BITS <= hartid)
 			continue;
 
+		plic_hartid2data[hartid] = pd;
 		switch (hwirq) {
 		case IRQ_M_EXT:
 			plic_hartid2context[hartid][0] = i / 2;
@@ -77,17 +80,30 @@ static int irqchip_plic_parse_hartid2context(void *fdt, int nodeoff)
 static int irqchip_plic_cold_init(void *fdt, int nodeoff,
 				  const struct fdt_match *match)
 {
-	int rc;
+	int i, rc;
+	struct plic_data *pd;
 
-	rc = fdt_parse_plic_node(fdt, nodeoff, &plic);
+	if (PLIC_MAX_NR <= plic_count)
+		return SBI_ENOSPC;
+	pd = &plic[plic_count++];
+
+	rc = fdt_parse_plic_node(fdt, nodeoff, pd);
 	if (rc)
 		return rc;
 
-	rc = plic_cold_irqchip_init(&plic);
+	rc = plic_cold_irqchip_init(pd);
 	if (rc)
 		return rc;
 
-	return irqchip_plic_parse_hartid2context(fdt, nodeoff);
+	if (plic_count == 1) {
+		for (i = 0; i < SBI_HARTMASK_MAX_BITS; i++) {
+			plic_hartid2data[i] = NULL;
+			plic_hartid2context[i][0] = -1;
+			plic_hartid2context[i][1] = -1;
+		}
+	}
+
+	return irqchip_plic_update_hartid_table(fdt, nodeoff, pd);
 }
 
 static const struct fdt_match irqchip_plic_match[] = {
