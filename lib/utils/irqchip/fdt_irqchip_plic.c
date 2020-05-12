@@ -15,13 +15,14 @@
 #include <sbi_utils/irqchip/fdt_irqchip.h>
 #include <sbi_utils/irqchip/plic.h>
 
+static struct plic_data plic;
 static int plic_hartid2context[SBI_HARTMASK_MAX_BITS][2];
 
 static int irqchip_plic_warm_init(void)
 {
 	u32 hartid = current_hartid();
 
-	return plic_warm_irqchip_init(plic_hartid2context[hartid][0],
+	return plic_warm_irqchip_init(&plic, plic_hartid2context[hartid][0],
 				      plic_hartid2context[hartid][1]);
 }
 
@@ -77,13 +78,12 @@ static int irqchip_plic_cold_init(void *fdt, int nodeoff,
 				  const struct fdt_match *match)
 {
 	int rc;
-	struct platform_plic_data plic;
 
 	rc = fdt_parse_plic_node(fdt, nodeoff, &plic);
 	if (rc)
 		return rc;
 
-	rc = plic_cold_irqchip_init(plic.addr, plic.num_src);
+	rc = plic_cold_irqchip_init(&plic);
 	if (rc)
 		return rc;
 

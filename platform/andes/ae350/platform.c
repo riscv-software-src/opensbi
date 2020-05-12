@@ -20,6 +20,11 @@
 #include "plicsw.h"
 #include "plmt.h"
 
+static struct plic_data plic = {
+	.addr = AE350_PLIC_ADDR,
+	.num_src = AE350_PLIC_NUM_SOURCES,
+};
+
 /* Platform final initialization. */
 static int ae350_final_init(bool cold_boot)
 {
@@ -70,13 +75,12 @@ static int ae350_irqchip_init(bool cold_boot)
 	int ret;
 
 	if (cold_boot) {
-		ret = plic_cold_irqchip_init(AE350_PLIC_ADDR,
-					     AE350_PLIC_NUM_SOURCES);
+		ret = plic_cold_irqchip_init(&plic);
 		if (ret)
 			return ret;
 	}
 
-	return plic_warm_irqchip_init(2 * hartid, 2 * hartid + 1);
+	return plic_warm_irqchip_init(&plic, 2 * hartid, 2 * hartid + 1);
 }
 
 /* Initialize IPI for current HART. */

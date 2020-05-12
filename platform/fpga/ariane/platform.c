@@ -26,6 +26,11 @@
 #define ARIANE_HART_COUNT			1
 #define ARIANE_CLINT_ADDR 0x2000000
 
+static struct plic_data plic = {
+	.addr = ARIANE_PLIC_ADDR,
+	.num_src = ARIANE_PLIC_NUM_SOURCES,
+};
+
 /*
  * Ariane platform early initialization.
  */
@@ -70,19 +75,19 @@ static int plic_ariane_warm_irqchip_init(int m_cntx_id, int s_cntx_id)
 	/* By default, enable all IRQs for M-mode of target HART */
 	if (m_cntx_id > -1) {
 		for (i = 0; i < ie_words; i++)
-			plic_set_ie(m_cntx_id, i, 1);
+			plic_set_ie(&plic, m_cntx_id, i, 1);
 	}
 	/* Enable all IRQs for S-mode of target HART */
 	if (s_cntx_id > -1) {
 		for (i = 0; i < ie_words; i++)
-			plic_set_ie(s_cntx_id, i, 1);
+			plic_set_ie(&plic, s_cntx_id, i, 1);
 	}
 	/* By default, enable M-mode threshold */
 	if (m_cntx_id > -1)
-		plic_set_thresh(m_cntx_id, 1);
+		plic_set_thresh(&plic, m_cntx_id, 1);
 	/* By default, disable S-mode threshold */
 	if (s_cntx_id > -1)
-		plic_set_thresh(s_cntx_id, 0);
+		plic_set_thresh(&plic, s_cntx_id, 0);
 
 	return 0;
 }
@@ -96,8 +101,7 @@ static int ariane_irqchip_init(bool cold_boot)
 	int ret;
 
 	if (cold_boot) {
-		ret = plic_cold_irqchip_init(ARIANE_PLIC_NUM_SOURCES,
-					     ARIANE_HART_COUNT);
+		ret = plic_cold_irqchip_init(&plic);
 		if (ret)
 			return ret;
 	}

@@ -25,11 +25,6 @@ struct platform_uart_data {
 	unsigned long reg_io_width;
 };
 
-struct platform_plic_data {
-	unsigned long addr;
-	unsigned long num_src;
-};
-
 const struct fdt_match *fdt_match_node(void *fdt, int nodeoff,
 				       const struct fdt_match *match_table);
 
@@ -52,11 +47,11 @@ int fdt_parse_uart8250_node(void *fdt, int nodeoffset,
 int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
 		       const char *compatible);
 
-int fdt_parse_plic_node(void *fdt, int nodeoffset,
-			struct platform_plic_data *plic);
+struct plic_data;
 
-int fdt_parse_plic(void *fdt, struct platform_plic_data *plic,
-		   const char *compatible);
+int fdt_parse_plic_node(void *fdt, int nodeoffset, struct plic_data *plic);
+
+int fdt_parse_plic(void *fdt, struct plic_data *plic, const char *compat);
 
 int fdt_parse_compat_addr(void *fdt, unsigned long *addr,
 			  const char *compatible);

@@ -43,6 +43,11 @@
 
 /* clang-format on */
 
+static struct plic_data plic = {
+	.addr = UX600_PLIC_ADDR,
+	.num_src = UX600_PLIC_NUM_SOURCES,
+};
+
 static void ux600_modify_dt(void *fdt)
 {
 	fdt_fixups(fdt);
@@ -73,13 +78,12 @@ static int ux600_irqchip_init(bool cold_boot)
 	u32 hartid = current_hartid();
 
 	if (cold_boot) {
-		rc = plic_cold_irqchip_init(UX600_PLIC_ADDR,
-					    UX600_PLIC_NUM_SOURCES);
+		rc = plic_cold_irqchip_init(&plic);
 		if (rc)
 			return rc;
 	}
 
-	return plic_warm_irqchip_init((hartid) ? (2 * hartid - 1) : 0,
+	return plic_warm_irqchip_init(&plic, (hartid) ? (2 * hartid - 1) : 0,
 				      (hartid) ? (2 * hartid) : -1);
 }
 

@@ -46,6 +46,11 @@
 
 /* clang-format on */
 
+static struct plic_data plic = {
+	.addr = FU540_PLIC_ADDR,
+	.num_src = FU540_PLIC_NUM_SOURCES,
+};
+
 static void fu540_modify_dt(void *fdt)
 {
 	fdt_cpu_fixup(fdt);
@@ -88,13 +93,12 @@ static int fu540_irqchip_init(bool cold_boot)
 	u32 hartid = current_hartid();
 
 	if (cold_boot) {
-		rc = plic_cold_irqchip_init(FU540_PLIC_ADDR,
-					    FU540_PLIC_NUM_SOURCES);
+		rc = plic_cold_irqchip_init(&plic);
 		if (rc)
 			return rc;
 	}
 
-	return plic_warm_irqchip_init((hartid) ? (2 * hartid - 1) : 0,
+	return plic_warm_irqchip_init(&plic, (hartid) ? (2 * hartid - 1) : 0,
 				      (hartid) ? (2 * hartid) : -1);
 }
 

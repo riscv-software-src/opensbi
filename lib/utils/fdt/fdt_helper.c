@@ -12,6 +12,7 @@
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi_utils/fdt/fdt_helper.h>
+#include <sbi_utils/irqchip/plic.h>
 
 #define DEFAULT_UART_FREQ		0
 #define DEFAULT_UART_BAUD		115200
@@ -259,8 +260,7 @@ int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
 	return fdt_parse_uart8250_node(fdt, nodeoffset, uart);
 }
 
-int fdt_parse_plic_node(void *fdt, int nodeoffset,
-			struct platform_plic_data *plic)
+int fdt_parse_plic_node(void *fdt, int nodeoffset, struct plic_data *plic)
 {
 	int len, rc;
 	const fdt32_t *val;
@@ -281,15 +281,14 @@ int fdt_parse_plic_node(void *fdt, int nodeoffset,
 	return 0;
 }
 
-int fdt_parse_plic(void *fdt, struct platform_plic_data *plic,
-		   const char *compatible)
+int fdt_parse_plic(void *fdt, struct plic_data *plic, const char *compat)
 {
 	int nodeoffset;
 
-	if (!compatible || !plic || !fdt)
+	if (!compat || !plic || !fdt)
 		return SBI_ENODEV;
 
-	nodeoffset = fdt_node_offset_by_compatible(fdt, -1, compatible);
+	nodeoffset = fdt_node_offset_by_compatible(fdt, -1, compat);
 	if (nodeoffset < 0)
 		return nodeoffset;
 
