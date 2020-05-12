@@ -11,6 +11,8 @@
 #include <sbi_utils/timer/fdt_timer.h>
 #include <sbi_utils/sys/clint.h>
 
+static struct clint_data clint_timer;
+
 static int timer_clint_cold_init(void *fdt, int nodeoff,
 				  const struct fdt_match *match)
 {
@@ -27,7 +29,12 @@ static int timer_clint_cold_init(void *fdt, int nodeoff,
 		return rc;
 
 	/* TODO: We should figure-out CLINT has_64bit_mmio from DT node */
-	return clint_cold_timer_init(addr, max_hartid + 1, TRUE);
+	clint_timer.addr = addr;
+	clint_timer.first_hartid = 0;
+	clint_timer.hart_count = max_hartid + 1;
+	clint_timer.has_64bit_mmio = TRUE;
+
+	return clint_cold_timer_init(&clint_timer, NULL);
 }
 
 static const struct fdt_match timer_clint_match[] = {

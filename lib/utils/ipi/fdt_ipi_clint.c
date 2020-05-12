@@ -11,6 +11,8 @@
 #include <sbi_utils/ipi/fdt_ipi.h>
 #include <sbi_utils/sys/clint.h>
 
+static struct clint_data clint_ipi;
+
 static int ipi_clint_cold_init(void *fdt, int nodeoff,
 			       const struct fdt_match *match)
 {
@@ -26,7 +28,13 @@ static int ipi_clint_cold_init(void *fdt, int nodeoff,
 	if (rc)
 		return rc;
 
-	return clint_cold_ipi_init(addr, max_hartid + 1);
+	/* TODO: We should figure-out CLINT has_64bit_mmio from DT node */
+	clint_ipi.addr = addr;
+	clint_ipi.first_hartid = 0;
+	clint_ipi.hart_count = max_hartid + 1;
+	clint_ipi.has_64bit_mmio = TRUE;
+
+	return clint_cold_ipi_init(&clint_ipi);
 }
 
 static const struct fdt_match ipi_clint_match[] = {

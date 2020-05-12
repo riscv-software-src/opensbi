@@ -51,6 +51,13 @@ static struct plic_data plic = {
 	.num_src = FU540_PLIC_NUM_SOURCES,
 };
 
+static struct clint_data clint = {
+	.addr = FU540_CLINT_ADDR,
+	.first_hartid = 0,
+	.hart_count = FU540_HART_COUNT,
+	.has_64bit_mmio = TRUE,
+};
+
 static void fu540_modify_dt(void *fdt)
 {
 	fdt_cpu_fixup(fdt);
@@ -107,7 +114,7 @@ static int fu540_ipi_init(bool cold_boot)
 	int rc;
 
 	if (cold_boot) {
-		rc = clint_cold_ipi_init(FU540_CLINT_ADDR, FU540_HART_COUNT);
+		rc = clint_cold_ipi_init(&clint);
 		if (rc)
 			return rc;
 	}
@@ -125,8 +132,7 @@ static int fu540_timer_init(bool cold_boot)
 	int rc;
 
 	if (cold_boot) {
-		rc = clint_cold_timer_init(FU540_CLINT_ADDR,
-					   FU540_HART_COUNT, TRUE);
+		rc = clint_cold_timer_init(&clint, NULL);
 		if (rc)
 			return rc;
 	}

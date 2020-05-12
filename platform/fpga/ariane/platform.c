@@ -24,11 +24,18 @@
 #define ARIANE_PLIC_ADDR			0xc000000
 #define ARIANE_PLIC_NUM_SOURCES			3
 #define ARIANE_HART_COUNT			1
-#define ARIANE_CLINT_ADDR 0x2000000
+#define ARIANE_CLINT_ADDR			0x2000000
 
 static struct plic_data plic = {
 	.addr = ARIANE_PLIC_ADDR,
 	.num_src = ARIANE_PLIC_NUM_SOURCES,
+};
+
+static struct clint_data clint = {
+	.addr = ARIANE_CLINT_ADDR,
+	.first_hartid = 0,
+	.hart_count = ARIANE_HART_COUNT,
+	.has_64bit_mmio = TRUE,
 };
 
 /*
@@ -116,8 +123,7 @@ static int ariane_ipi_init(bool cold_boot)
 	int ret;
 
 	if (cold_boot) {
-		ret = clint_cold_ipi_init(ARIANE_CLINT_ADDR,
-					  ARIANE_HART_COUNT);
+		ret = clint_cold_ipi_init(&clint);
 		if (ret)
 			return ret;
 	}
@@ -133,8 +139,7 @@ static int ariane_timer_init(bool cold_boot)
 	int ret;
 
 	if (cold_boot) {
-		ret = clint_cold_timer_init(ARIANE_CLINT_ADDR,
-					    ARIANE_HART_COUNT, TRUE);
+		ret = clint_cold_timer_init(&clint, NULL);
 		if (ret)
 			return ret;
 	}

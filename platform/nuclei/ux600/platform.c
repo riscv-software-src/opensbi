@@ -48,6 +48,13 @@ static struct plic_data plic = {
 	.num_src = UX600_PLIC_NUM_SOURCES,
 };
 
+static struct clint_data clint = {
+	.addr = UX600_CLINT_TIMER_ADDR,
+	.first_hartid = 0,
+	.hart_count = UX600_HART_COUNT,
+	.has_64bit_mmio = TRUE,
+};
+
 static void ux600_modify_dt(void *fdt)
 {
 	fdt_fixups(fdt);
@@ -92,7 +99,7 @@ static int ux600_ipi_init(bool cold_boot)
 	int rc;
 
 	if (cold_boot) {
-		rc = clint_cold_ipi_init(UX600_CLINT_TIMER_ADDR, UX600_HART_COUNT);
+		rc = clint_cold_ipi_init(&clint);
 		if (rc)
 			return rc;
 	}
@@ -105,8 +112,7 @@ static int ux600_timer_init(bool cold_boot)
 	int rc;
 
 	if (cold_boot) {
-		rc = clint_cold_timer_init(UX600_CLINT_TIMER_ADDR,
-					   UX600_HART_COUNT, TRUE);
+		rc = clint_cold_timer_init(&clint, NULL);
 		if (rc)
 			return rc;
 	}

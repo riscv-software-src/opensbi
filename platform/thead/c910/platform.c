@@ -15,6 +15,13 @@
 
 static struct c910_regs_struct c910_regs;
 
+static struct clint_data clint = {
+	.addr = 0, /* Updated at cold boot time */
+	.first_hartid = 0,
+	.hart_count = C910_HART_COUNT,
+	.has_64bit_mmio = FALSE,
+};
+
 static int c910_early_init(bool cold_boot)
 {
 	if (cold_boot) {
@@ -78,7 +85,8 @@ static int c910_ipi_init(bool cold_boot)
 	int rc;
 
 	if (cold_boot) {
-		rc = clint_cold_ipi_init(c910_regs.clint_base_addr, C910_HART_COUNT);
+		clint.addr = c910_regs.clint_base_addr;
+		rc = clint_cold_ipi_init(&clint);
 		if (rc)
 			return rc;
 	}
@@ -91,8 +99,8 @@ static int c910_timer_init(bool cold_boot)
 	int ret;
 
 	if (cold_boot) {
-		ret = clint_cold_timer_init(c910_regs.clint_base_addr,
-					C910_HART_COUNT, FALSE);
+		clint.addr = c910_regs.clint_base_addr;
+		ret = clint_cold_timer_init(&clint, NULL);
 		if (ret)
 			return ret;
 	}

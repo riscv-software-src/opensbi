@@ -35,7 +35,13 @@ static struct plic_data plic = {
 	.addr = OPENPITON_DEFAULT_PLIC_ADDR,
 	.num_src = OPENPITON_DEFAULT_PLIC_NUM_SOURCES,
 };
-static unsigned long clint_addr = OPENPITON_DEFAULT_CLINT_ADDR;
+
+static struct clint_data clint = {
+	.addr = OPENPITON_DEFAULT_CLINT_ADDR,
+	.first_hartid = 0,
+	.hart_count = OPENPITON_DEFAULT_HART_COUNT,
+	.has_64bit_mmio = TRUE,
+};
 
 /*
  * OpenPiton platform early initialization.
@@ -45,7 +51,7 @@ static int openpiton_early_init(bool cold_boot)
 	void *fdt;
 	struct platform_uart_data uart_data;
 	struct plic_data plic_data;
-	unsigned long clint_data;
+	unsigned long clint_addr;
 	int rc;
 
 	if (!cold_boot)
@@ -60,9 +66,9 @@ static int openpiton_early_init(bool cold_boot)
 	if (!rc)
 		plic = plic_data;
 
-	rc = fdt_parse_compat_addr(fdt, &clint_data, "riscv,clint0");
+	rc = fdt_parse_compat_addr(fdt, &clint_addr, "riscv,clint0");
 	if (!rc)
-		clint_addr = clint_data;
+		clint.addr = clint_addr;
 
 	return 0;
 }
@@ -143,8 +149,7 @@ static int openpiton_ipi_init(bool cold_boot)
 	int ret;
 
 	if (cold_boot) {
-		ret = clint_cold_ipi_init(clint_addr,
-					  OPENPITON_DEFAULT_HART_COUNT);
+		ret = clint_cold_ipi_init(&clint);
 		if (ret)
 			return ret;
 	}
@@ -160,8 +165,7 @@ static int openpiton_timer_init(bool cold_boot)
 	int ret;
 
 	if (cold_boot) {
-		ret = clint_cold_timer_init(clint_addr,
-					    OPENPITON_DEFAULT_HART_COUNT, TRUE);
+		ret = clint_cold_timer_init(&clint, NULL);
 		if (ret)
 			return ret;
 	}

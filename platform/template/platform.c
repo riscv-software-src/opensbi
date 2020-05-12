@@ -17,10 +17,10 @@
 #include <sbi_utils/serial/uart8250.h>
 #include <sbi_utils/sys/clint.h>
 
-#define PLATFORM_PLIC_ADDR			0xc000000
-#define PLATFORM_PLIC_NUM_SOURCES		128
-#define PLATFORM_HART_COUNT			4
-#define PLATFORM_CLINT_ADDR			0x2000000
+#define PLATFORM_PLIC_ADDR		0xc000000
+#define PLATFORM_PLIC_NUM_SOURCES	128
+#define PLATFORM_HART_COUNT		4
+#define PLATFORM_CLINT_ADDR		0x2000000
 #define PLATFORM_UART_ADDR		0x09000000
 #define PLATFORM_UART_INPUT_FREQ	10000000
 #define PLATFORM_UART_BAUDRATE		115200
@@ -28,6 +28,13 @@
 static struct plic_data plic = {
 	.addr = PLATFORM_PLIC_ADDR,
 	.num_src = PLATFORM_PLIC_NUM_SOURCES,
+};
+
+static struct clint_data clint = {
+	.addr = PLATFORM_CLINT_ADDR,
+	.first_hartid = 0,
+	.hart_count = PLATFORM_HART_COUNT,
+	.has_64bit_mmio = TRUE,
 };
 
 /*
@@ -100,8 +107,7 @@ static int platform_ipi_init(bool cold_boot)
 
 	/* Example if the generic CLINT driver is used */
 	if (cold_boot) {
-		ret = clint_cold_ipi_init(PLATFORM_CLINT_ADDR,
-					  PLATFORM_HART_COUNT);
+		ret = clint_cold_ipi_init(&clint, NULL);
 		if (ret)
 			return ret;
 	}
@@ -136,8 +142,7 @@ static int platform_timer_init(bool cold_boot)
 
 	/* Example if the generic CLINT driver is used */
 	if (cold_boot) {
-		ret = clint_cold_timer_init(PLATFORM_CLINT_ADDR,
-					    PLATFORM_HART_COUNT, TRUE);
+		ret = clint_cold_timer_init(&clint);
 		if (ret)
 			return ret;
 	}
