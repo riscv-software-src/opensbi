@@ -71,13 +71,12 @@ static int ae350_irqchip_init(bool cold_boot)
 
 	if (cold_boot) {
 		ret = plic_cold_irqchip_init(AE350_PLIC_ADDR,
-					     AE350_PLIC_NUM_SOURCES,
-					     AE350_HART_COUNT);
+					     AE350_PLIC_NUM_SOURCES);
 		if (ret)
 			return ret;
 	}
 
-	return plic_warm_irqchip_init(hartid, 2 * hartid, 2 * hartid + 1);
+	return plic_warm_irqchip_init(2 * hartid, 2 * hartid + 1);
 }
 
 /* Initialize IPI for current HART. */

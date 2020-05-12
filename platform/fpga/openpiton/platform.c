@@ -95,13 +95,10 @@ static int openpiton_console_init(void)
 			     OPENPITON_DEFAULT_UART_REG_WIDTH);
 }
 
-static int plic_openpiton_warm_irqchip_init(u32 target_hart,
-			   int m_cntx_id, int s_cntx_id)
+static int plic_openpiton_warm_irqchip_init(int m_cntx_id, int s_cntx_id)
 {
 	size_t i, ie_words = plic.num_src / 32 + 1;
 
-	if (target_hart >= OPENPITON_DEFAULT_HART_COUNT)
-		return -1;
 	/* By default, enable all IRQs for M-mode of target HART */
 	if (m_cntx_id > -1) {
 		for (i = 0; i < ie_words; i++)
@@ -132,13 +129,11 @@ static int openpiton_irqchip_init(bool cold_boot)
 
 	if (cold_boot) {
 		ret = plic_cold_irqchip_init(plic.addr,
-					     plic.num_src,
-					     OPENPITON_DEFAULT_HART_COUNT);
+					     plic.num_src);
 		if (ret)
 			return ret;
 	}
-	return plic_openpiton_warm_irqchip_init(hartid,
-					2 * hartid, 2 * hartid + 1);
+	return plic_openpiton_warm_irqchip_init(2 * hartid, 2 * hartid + 1);
 }
 
 /*

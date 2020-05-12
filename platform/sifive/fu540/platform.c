@@ -89,13 +89,12 @@ static int fu540_irqchip_init(bool cold_boot)
 
 	if (cold_boot) {
 		rc = plic_cold_irqchip_init(FU540_PLIC_ADDR,
-					    FU540_PLIC_NUM_SOURCES,
-					    FU540_HART_COUNT);
+					    FU540_PLIC_NUM_SOURCES);
 		if (rc)
 			return rc;
 	}
 
-	return plic_warm_irqchip_init(hartid, (hartid) ? (2 * hartid - 1) : 0,
+	return plic_warm_irqchip_init((hartid) ? (2 * hartid - 1) : 0,
 				      (hartid) ? (2 * hartid) : -1);
 }
 

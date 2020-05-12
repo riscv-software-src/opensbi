@@ -20,7 +20,6 @@
 #define PLIC_CONTEXT_BASE 0x200000
 #define PLIC_CONTEXT_STRIDE 0x1000
 
-static u32 plic_hart_count;
 static u32 plic_num_sources;
 static volatile void *plic_base;
 
@@ -45,12 +44,9 @@ void plic_set_ie(u32 cntxid, u32 word_index, u32 val)
 	writel(val, plic_ie + word_index * 4);
 }
 
-int plic_warm_irqchip_init(u32 target_hart, int m_cntx_id, int s_cntx_id)
+int plic_warm_irqchip_init(int m_cntx_id, int s_cntx_id)
 {
 	size_t i, ie_words = plic_num_sources / 32 + 1;
-
-	if (plic_hart_count <= target_hart)
-		return -1;
 
 	/* By default, disable all IRQs for M-mode of target HART */
 	if (m_cntx_id > -1) {
@@ -75,11 +71,10 @@ int plic_warm_irqchip_init(u32 target_hart, int m_cntx_id, int s_cntx_id)
 	return 0;
 }
 
-int plic_cold_irqchip_init(unsigned long base, u32 num_sources, u32 hart_count)
+int plic_cold_irqchip_init(unsigned long base, u32 num_sources)
 {
 	int i;
 
-	plic_hart_count	 = hart_count;
 	plic_num_sources = num_sources;
 	plic_base	 = (void *)base;
 

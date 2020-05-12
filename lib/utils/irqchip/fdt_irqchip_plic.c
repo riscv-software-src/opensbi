@@ -21,8 +21,7 @@ static int irqchip_plic_warm_init(void)
 {
 	u32 hartid = current_hartid();
 
-	return plic_warm_irqchip_init(hartid,
-				      plic_hartid2context[hartid][0],
+	return plic_warm_irqchip_init(plic_hartid2context[hartid][0],
 				      plic_hartid2context[hartid][1]);
 }
 
@@ -78,18 +77,13 @@ static int irqchip_plic_cold_init(void *fdt, int nodeoff,
 				  const struct fdt_match *match)
 {
 	int rc;
-	u32 max_hartid;
 	struct platform_plic_data plic;
-
-	rc = fdt_parse_max_hart_id(fdt, &max_hartid);
-	if (rc)
-		return rc;
 
 	rc = fdt_parse_plic_node(fdt, nodeoff, &plic);
 	if (rc)
 		return rc;
 
-	rc = plic_cold_irqchip_init(plic.addr, plic.num_src, max_hartid + 1);
+	rc = plic_cold_irqchip_init(plic.addr, plic.num_src);
 	if (rc)
 		return rc;
 

@@ -74,13 +74,12 @@ static int ux600_irqchip_init(bool cold_boot)
 
 	if (cold_boot) {
 		rc = plic_cold_irqchip_init(UX600_PLIC_ADDR,
-					    UX600_PLIC_NUM_SOURCES,
-					    UX600_HART_COUNT);
+					    UX600_PLIC_NUM_SOURCES);
 		if (rc)
 			return rc;
 	}
 
-	return plic_warm_irqchip_init(hartid, (hartid) ? (2 * hartid - 1) : 0,
+	return plic_warm_irqchip_init((hartid) ? (2 * hartid - 1) : 0,
 				      (hartid) ? (2 * hartid) : -1);
 }
 

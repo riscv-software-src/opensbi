@@ -71,13 +71,12 @@ static int platform_irqchip_init(bool cold_boot)
 	/* Example if the generic PLIC driver is used */
 	if (cold_boot) {
 		ret = plic_cold_irqchip_init(PLATFORM_PLIC_ADDR,
-					     PLATFORM_PLIC_NUM_SOURCES,
-					     PLATFORM_HART_COUNT);
+					     PLATFORM_PLIC_NUM_SOURCES);
 		if (ret)
 			return ret;
 	}
 
-	return plic_warm_irqchip_init(hartid, 2 * hartid, 2 * hartid + 1);
+	return plic_warm_irqchip_init(2 * hartid, 2 * hartid + 1);
 }
 
 /*

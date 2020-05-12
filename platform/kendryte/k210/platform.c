@@ -59,13 +59,12 @@ static int k210_irqchip_init(bool cold_boot)
 
 	if (cold_boot) {
 		rc = plic_cold_irqchip_init(K210_PLIC_BASE_ADDR,
-					    K210_PLIC_NUM_SOURCES,
-					    K210_HART_COUNT);
+					    K210_PLIC_NUM_SOURCES);
 		if (rc)
 			return rc;
 	}
 
-	return plic_warm_irqchip_init(hartid, hartid * 2, hartid * 2 + 1);
+	return plic_warm_irqchip_init(hartid * 2, hartid * 2 + 1);
 }
 
 static int k210_ipi_init(bool cold_boot)
