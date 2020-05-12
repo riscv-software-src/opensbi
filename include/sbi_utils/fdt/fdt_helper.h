@@ -28,7 +28,8 @@ struct platform_uart_data {
 const struct fdt_match *fdt_match_node(void *fdt, int nodeoff,
 				       const struct fdt_match *match_table);
 
-int fdt_find_match(void *fdt, const struct fdt_match *match_table,
+int fdt_find_match(void *fdt, int startoff,
+		   const struct fdt_match *match_table,
 		   const struct fdt_match **out_match);
 
 int fdt_get_node_addr_size(void *fdt, int node, unsigned long *addr,

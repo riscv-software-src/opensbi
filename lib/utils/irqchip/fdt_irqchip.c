@@ -42,7 +42,7 @@ static int fdt_irqchip_cold_init(void)
 	for (pos = 0; pos < array_size(irqchip_drivers); pos++) {
 		drv = irqchip_drivers[pos];
 
-		noff = fdt_find_match(fdt, drv->match_table, &match);
+		noff = fdt_find_match(fdt, -1, drv->match_table, &match);
 		if (noff < 0)
 			continue;
 

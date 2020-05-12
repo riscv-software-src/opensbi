@@ -69,7 +69,7 @@ static int fdt_ipi_cold_init(void)
 	for (pos = 0; pos < array_size(ipi_drivers); pos++) {
 		drv = ipi_drivers[pos];
 
-		noff = fdt_find_match(fdt, drv->match_table, &match);
+		noff = fdt_find_match(fdt, -1, drv->match_table, &match);
 		if (noff < 0)
 			continue;
 

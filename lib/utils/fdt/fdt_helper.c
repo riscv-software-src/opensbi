@@ -43,7 +43,8 @@ const struct fdt_match *fdt_match_node(void *fdt, int nodeoff,
 	return NULL;
 }
 
-int fdt_find_match(void *fdt, const struct fdt_match *match_table,
+int fdt_find_match(void *fdt, int startoff,
+		   const struct fdt_match *match_table,
 		   const struct fdt_match **out_match)
 {
 	int nodeoff;
@@ -52,7 +53,7 @@ int fdt_find_match(void *fdt, const struct fdt_match *match_table,
 		return SBI_ENODEV;
 
 	while (match_table->compatible) {
-		nodeoff = fdt_node_offset_by_compatible(fdt, -1,
+		nodeoff = fdt_node_offset_by_compatible(fdt, startoff,
 						match_table->compatible);
 		if (nodeoff >= 0) {
 			if (out_match)

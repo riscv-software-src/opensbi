@@ -38,7 +38,7 @@ int fdt_reset_init(void)
 	for (pos = 0; pos < array_size(reset_drivers); pos++) {
 		drv = reset_drivers[pos];
 
-		noff = fdt_find_match(fdt, drv->match_table, &match);
+		noff = fdt_find_match(fdt, -1, drv->match_table, &match);
 		if (noff < 0)
 			continue;
 

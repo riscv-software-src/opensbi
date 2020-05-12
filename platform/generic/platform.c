@@ -41,7 +41,7 @@ static void fw_platform_lookup_special(void *fdt, int root_offset)
 		if (!plat->match_table)
 			continue;
 
-		noff = fdt_find_match(fdt, plat->match_table, &match);
+		noff = fdt_find_match(fdt, -1, plat->match_table, &match);
 		if (noff < 0)
 			continue;
 

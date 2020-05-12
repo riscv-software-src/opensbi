@@ -80,7 +80,7 @@ static int fdt_timer_cold_init(void)
 	for (pos = 0; pos < array_size(timer_drivers); pos++) {
 		drv = timer_drivers[pos];
 
-		noff = fdt_find_match(fdt, drv->match_table, &match);
+		noff = fdt_find_match(fdt, -1, drv->match_table, &match);
 		if (noff < 0)
 			continue;
 

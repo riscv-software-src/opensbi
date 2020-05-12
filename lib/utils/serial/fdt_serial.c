@@ -91,7 +91,7 @@ int fdt_serial_init(void)
 	for (pos = 0; pos < array_size(serial_drivers); pos++) {
 		drv = serial_drivers[pos];
 
-		noff = fdt_find_match(fdt, drv->match_table, &match);
+		noff = fdt_find_match(fdt, -1, drv->match_table, &match);
 		if (noff < 0)
 			continue;
 
