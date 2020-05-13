@@ -7,22 +7,31 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
+#include <sbi/sbi_error.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/ipi/fdt_ipi.h>
 #include <sbi_utils/sys/clint.h>
 
-static struct clint_data clint_ipi;
+#define CLINT_IPI_MAX_NR			16
+
+static unsigned long clint_ipi_count = 0;
+static struct clint_data clint_ipi[CLINT_IPI_MAX_NR];
 
 static int ipi_clint_cold_init(void *fdt, int nodeoff,
 			       const struct fdt_match *match)
 {
 	int rc;
+	struct clint_data *ci;
 
-	rc = fdt_parse_clint_node(fdt, nodeoff, FALSE, &clint_ipi);
+	if (CLINT_IPI_MAX_NR <= clint_ipi_count)
+		return SBI_ENOSPC;
+	ci = &clint_ipi[clint_ipi_count++];
+
+	rc = fdt_parse_clint_node(fdt, nodeoff, FALSE, ci);
 	if (rc)
 		return rc;
 
-	return clint_cold_ipi_init(&clint_ipi);
+	return clint_cold_ipi_init(ci);
 }
 
 static const struct fdt_match ipi_clint_match[] = {
