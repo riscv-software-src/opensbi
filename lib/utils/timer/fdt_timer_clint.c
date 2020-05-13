@@ -17,22 +17,10 @@ static int timer_clint_cold_init(void *fdt, int nodeoff,
 				  const struct fdt_match *match)
 {
 	int rc;
-	u32 max_hartid;
-	unsigned long addr;
 
-	rc = fdt_parse_max_hart_id(fdt, &max_hartid);
+	rc = fdt_parse_clint_node(fdt, nodeoff, TRUE, &clint_timer);
 	if (rc)
 		return rc;
-
-	rc = fdt_get_node_addr_size(fdt, nodeoff, &addr, NULL);
-	if (rc)
-		return rc;
-
-	/* TODO: We should figure-out CLINT has_64bit_mmio from DT node */
-	clint_timer.addr = addr;
-	clint_timer.first_hartid = 0;
-	clint_timer.hart_count = max_hartid + 1;
-	clint_timer.has_64bit_mmio = TRUE;
 
 	return clint_cold_timer_init(&clint_timer, NULL);
 }
