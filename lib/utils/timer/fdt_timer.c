@@ -80,17 +80,19 @@ static int fdt_timer_cold_init(void)
 	for (pos = 0; pos < array_size(timer_drivers); pos++) {
 		drv = timer_drivers[pos];
 
-		noff = fdt_find_match(fdt, -1, drv->match_table, &match);
-		if (noff < 0)
-			continue;
-
-		if (drv->cold_init) {
-			rc = drv->cold_init(fdt, noff, match);
-			if (rc)
-				return rc;
+		noff = -1;
+		while ((noff = fdt_find_match(fdt, noff,
+					drv->match_table, &match)) >= 0) {
+			if (drv->cold_init) {
+				rc = drv->cold_init(fdt, noff, match);
+				if (rc)
+					return rc;
+			}
+			current_driver = drv;
 		}
-		current_driver = drv;
-		break;
+
+		if (current_driver != &dummy)
+			break;
 	}
 
 	return 0;
