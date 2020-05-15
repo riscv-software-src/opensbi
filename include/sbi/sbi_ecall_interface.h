@@ -67,6 +67,8 @@
 #define SBI_SPEC_VERSION_MINOR_MASK		0xffffff
 #define SBI_EXT_VENDOR_START			0x09000000
 #define SBI_EXT_VENDOR_END			0x09FFFFFF
+#define SBI_EXT_FIRMWARE_START			0x0A000000
+#define SBI_EXT_FIRMWARE_END			0x0AFFFFFF
 /* clang-format on */
 
 #endif
