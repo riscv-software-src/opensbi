@@ -14,19 +14,21 @@
 #include <sbi/sbi_trap.h>
 #include <sbi/sbi_unpriv.h>
 
+/**
+ * a3 must a pointer to the sbi_trap_info and a4 is used as a temporary
+ * register in the trap handler. Make sure that compiler doesn't use a3 & a4.
+ */
 #define DEFINE_UNPRIVILEGED_LOAD_FUNCTION(type, insn)                         \
 	type sbi_load_##type(const type *addr,                                \
 			     struct sbi_trap_info *trap)                      \
 	{                                                                     \
 		register ulong tinfo asm("a3");                               \
-		register ulong ttmp asm("a4");                                \
-		register ulong mstatus asm("a5");                             \
-		register ulong mtvec asm("a6") = sbi_hart_expected_trap_addr(); \
+		register ulong mstatus = 0;                                   \
+		register ulong mtvec = sbi_hart_expected_trap_addr();         \
 		type ret = 0;                                                 \
 		trap->cause = 0;                                              \
 		asm volatile(                                                 \
 			"add %[tinfo], %[taddr], zero\n"                      \
-			"add %[ttmp], %[taddr], zero\n"                       \
 			"csrrw %[mtvec], " STR(CSR_MTVEC) ", %[mtvec]\n"      \
 			"csrrs %[mstatus], " STR(CSR_MSTATUS) ", %[mprv]\n"   \
 			".option push\n"                                      \
@@ -36,11 +38,10 @@
 			"csrw " STR(CSR_MSTATUS) ", %[mstatus]\n"             \
 			"csrw " STR(CSR_MTVEC) ", %[mtvec]"                   \
 		    : [mstatus] "+&r"(mstatus), [mtvec] "+&r"(mtvec),         \
-		      [tinfo] "+&r"(tinfo), [ttmp] "+&r"(ttmp),               \
-		      [ret] "=&r"(ret)                                        \
+		      [tinfo] "+&r"(tinfo), [ret] "=&r"(ret)                  \
 		    : [addr] "m"(*addr), [mprv] "r"(MSTATUS_MPRV),            \
 		      [taddr] "r"((ulong)trap)                                \
-		    : "memory");                                              \
+		    : "a4", "memory");                                        \
 		return ret;                                                   \
 	}
 
@@ -48,14 +49,12 @@
 	void sbi_store_##type(type *addr, type val,                           \
 			      struct sbi_trap_info *trap)                     \
 	{                                                                     \
-		register ulong tinfo asm("a3");                               \
-		register ulong ttmp asm("a4");                                \
-		register ulong mstatus asm("a5");                             \
-		register ulong mtvec asm("a6") = sbi_hart_expected_trap_addr(); \
+		register ulong tinfo asm("a3") = (ulong)trap;                 \
+		register ulong mstatus = 0;                                   \
+		register ulong mtvec = sbi_hart_expected_trap_addr();         \
 		trap->cause = 0;                                              \
 		asm volatile(                                                 \
 			"add %[tinfo], %[taddr], zero\n"                      \
-			"add %[ttmp], %[taddr], zero\n"                       \
 			"csrrw %[mtvec], " STR(CSR_MTVEC) ", %[mtvec]\n"      \
 			"csrrs %[mstatus], " STR(CSR_MSTATUS) ", %[mprv]\n"   \
 			".option push\n"                                      \
@@ -65,10 +64,10 @@
 			"csrw " STR(CSR_MSTATUS) ", %[mstatus]\n"             \
 			"csrw " STR(CSR_MTVEC) ", %[mtvec]"                   \
 		    : [mstatus] "+&r"(mstatus), [mtvec] "+&r"(mtvec),         \
-		      [tinfo] "+&r"(tinfo), [ttmp] "+&r"(ttmp)                \
+		      [tinfo] "+&r"(tinfo)                                    \
 		    : [addr] "m"(*addr), [mprv] "r"(MSTATUS_MPRV),            \
-		      [taddr] "r"((ulong)trap), [val] "r"(val)                \
-		    : "memory");              \
+		      [val] "r"(val), [taddr] "r"((ulong)trap)                \
+		    : "a4", "memory");                                        \
 	}
 
 DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u8, lbu)
@@ -119,8 +118,8 @@ ulong sbi_get_insn(ulong mepc, struct sbi_trap_info *trap)
 {
 	register ulong tinfo asm("a3");
 	register ulong ttmp asm("a4");
-	register ulong mstatus asm("a5");
-	register ulong mtvec asm("a6") = sbi_hart_expected_trap_addr();
+	register ulong mstatus = 0;
+	register ulong mtvec = sbi_hart_expected_trap_addr();
 	ulong insn = 0;
 
 	trap->cause = 0;
