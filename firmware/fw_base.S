@@ -271,7 +271,7 @@ _scratch_init:
 	add	t1, t1, t2
 	blt	t1, s7, _scratch_init
 
-	/* Override pervious arg1 */
+	/* Override previous arg1 */
 	MOV_3R	s0, a0, s1, a1, s2, a2
 	call	fw_prev_arg1
 	add	t1, a0, zero
@@ -349,7 +349,7 @@ _fdt_reloc_done:
 	fence	rw, rw
 	j	_start_warm
 
-	/* waitting for boot hart done (_boot_status == 2) */
+	/* waiting for boot hart to be done (_boot_status == 2) */
 _wait_for_boot_hart:
 	li	t0, BOOT_STATUS_BOOT_HART_DONE
 	la	t1, _boot_status
