@@ -38,6 +38,10 @@ static inline ulong sbi_hart_expected_trap_addr(void)
 }
 
 void sbi_hart_delegation_dump(struct sbi_scratch *scratch);
+unsigned int sbi_hart_pmp_count(struct sbi_scratch *scratch);
+int sbi_hart_pmp_get(struct sbi_scratch *scratch, unsigned int n,
+		     unsigned long *prot_out, unsigned long *addr_out,
+		     unsigned long *size);
 void sbi_hart_pmp_dump(struct sbi_scratch *scratch);
 int  sbi_hart_pmp_check_addr(struct sbi_scratch *scratch, unsigned long daddr,
 			     unsigned long attr);

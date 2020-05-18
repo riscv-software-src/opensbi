@@ -8,7 +8,6 @@
  */
 
 #include <libfdt.h>
-#include <sbi/riscv_asm.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_math.h>
 #include <sbi/sbi_hart.h>
@@ -183,6 +182,15 @@ int fdt_reserved_memory_fixup(void *fdt)
 			return err;
 	}
 
+	/*
+	 * We assume the given device tree does not contain any memory region
+	 * child node protected by PMP. Normally PMP programming happens at
+	 * M-mode firmware. The memory space used by OpenSBI is protected.
+	 * Some additional memory spaces may be protected by platform codes.
+	 *
+	 * With above assumption, we create child nodes directly.
+	 */
+
 	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_PMP)) {
 		/*
 		 * Update the DT with firmware start & size even if PMP is not
@@ -193,24 +201,18 @@ int fdt_reserved_memory_fixup(void *fdt)
 		size = (1UL << log2roundup(scratch->fw_size));
 		return fdt_resv_memory_update_node(fdt, addr, size, 0, parent);
 	}
-	/*
-	 * We assume the given device tree does not contain any memory region
-	 * child node protected by PMP. Normally PMP programming happens at
-	 * M-mode firmware. The memory space used by OpenSBI is protected.
-	 * Some additional memory spaces may be protected by platform codes.
-	 *
-	 * With above assumption, we create child nodes directly.
-	 */
 
-	for (i = 0, j = 0; i < PMP_COUNT; i++) {
-		pmp_get(i, &prot, &addr, &size);
+	for (i = 0, j = 0; i < sbi_hart_pmp_count(scratch); i++) {
+		err = sbi_hart_pmp_get(scratch, i, &prot, &addr, &size);
+		if (err)
+			continue;
 		if (!(prot & PMP_A))
 			continue;
-		if (!(prot & (PMP_R | PMP_W | PMP_X))) {
-			return fdt_resv_memory_update_node(fdt, addr, size,
-							   j, parent);
-			j++;
-		}
+		if (prot & (PMP_R | PMP_W | PMP_X))
+			continue;
+
+		fdt_resv_memory_update_node(fdt, addr, size, j, parent);
+		j++;
 	}
 
 	return 0;

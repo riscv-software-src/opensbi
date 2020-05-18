@@ -68,6 +68,7 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 	sbi_printf("Boot HART ISA       : %s\n", str);
 	sbi_hart_get_features_str(scratch, str, sizeof(str));
 	sbi_printf("BOOT HART Features  : %s\n", str);
+	sbi_printf("BOOT HART PMP Count : %d\n", sbi_hart_pmp_count(scratch));
 
 	/* Firmware details */
 	sbi_printf("Firmware Base       : 0x%lx\n", scratch->fw_start);
