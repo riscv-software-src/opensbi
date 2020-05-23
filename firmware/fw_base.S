@@ -268,13 +268,11 @@ _scratch_init:
 	/* Store firmware options in scratch space */
 	MOV_3R	s0, a0, s1, a1, s2, a2
 #ifdef FW_OPTIONS
-	li	a4, FW_OPTIONS
+	li	a0, FW_OPTIONS
 #else
-	add	a4, zero, zero
-#endif
 	call	fw_options
-	or	a4, a4, a0
-	REG_S	a4, SBI_SCRATCH_OPTIONS_OFFSET(tp)
+#endif
+	REG_S	a0, SBI_SCRATCH_OPTIONS_OFFSET(tp)
 	MOV_3R	a0, s0, a1, s1, a2, s2
 	/* Move to next scratch space */
 	add	t1, t1, t2
