@@ -348,6 +348,9 @@ $(platform_build_dir)/%.dep: $(platform_src_dir)/%.S
 $(platform_build_dir)/%.o: $(platform_src_dir)/%.S
 	$(call compile_as,$@,$<)
 
+$(platform_build_dir)/%.dtb: $(platform_src_dir)/%.dts
+	$(call compile_dts,$@,$<)
+
 $(platform_build_dir)/%.dep: $(src_dir)/%.c
 	$(call compile_cc_dep,$@,$<)
 
@@ -359,9 +362,6 @@ $(platform_build_dir)/%.dep: $(src_dir)/%.S
 
 $(platform_build_dir)/%.o: $(src_dir)/%.S
 	$(call compile_as,$@,$<)
-
-$(build_dir)/%.dtb: $(src_dir)/%.dts
-	$(call compile_dts,$@,$<)
 
 # Rule for "make docs"
 $(build_dir)/docs/latex/refman.pdf: $(build_dir)/docs/latex/refman.tex
