@@ -177,6 +177,20 @@ _bss_zero:
 	li	s5, (SBI_SCRATCH_SIZE * 2)
 	add	sp, s4, s5
 
+	/* Allow main firmware to save info */
+	MOV_5R	s0, a0, s1, a1, s2, a2, s3, a3, s4, a4
+	call	fw_save_info
+	MOV_5R	a0, s0, a1, s1, a2, s2, a3, s3, a4, s4
+
+	/* Override previous arg1 */
+	MOV_3R	s0, a0, s1, a1, s2, a2
+	call	fw_prev_arg1
+	add	t1, a0, zero
+	MOV_3R	a0, s0, a1, s1, a2, s2
+	beqz	t1, _prev_arg1_override_done
+	add	a1, t1, zero
+_prev_arg1_override_done:
+
 	/*
 	 * Initialize platform
 	 * Note: The a0 to a4 registers passed to the
@@ -184,11 +198,6 @@ _bss_zero:
 	 */
 	MOV_5R	s0, a0, s1, a1, s2, a2, s3, a3, s4, a4
 	call	fw_platform_init
-	MOV_5R	a0, s0, a1, s1, a2, s2, a3, s3, a4, s4
-
-	/* Allow main firmware to save info */
-	MOV_5R	s0, a0, s1, a1, s2, a2, s3, a3, s4, a4
-	call	fw_save_info
 	MOV_5R	a0, s0, a1, s1, a2, s2, a3, s3, a4, s4
 
 	/* Preload HART details
@@ -270,15 +279,6 @@ _scratch_init:
 	/* Move to next scratch space */
 	add	t1, t1, t2
 	blt	t1, s7, _scratch_init
-
-	/* Override previous arg1 */
-	MOV_3R	s0, a0, s1, a1, s2, a2
-	call	fw_prev_arg1
-	add	t1, a0, zero
-	MOV_3R	a0, s0, a1, s1, a2, s2
-	beqz	t1, _prev_arg1_override_done
-	add	a1, t1, zero
-_prev_arg1_override_done:
 
 	/*
 	 * Relocate Flatened Device Tree (FDT)
