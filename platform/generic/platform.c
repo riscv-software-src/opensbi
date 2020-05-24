@@ -62,10 +62,14 @@ static u32 generic_hart_index2id[SBI_HARTMASK_MAX_BITS] = { 0 };
  * The arguments passed to fw_platform_init() function are boot time state
  * of A0 to A4 register. The "arg0" will be boot HART id and "arg1" will
  * be address of FDT passed by previous booting stage.
+ *
+ * The return value of fw_platform_init() function is the FDT location. If
+ * FDT is unchanged (or FDT is modified in-place) then fw_platform_init()
+ * can always return the original FDT location (i.e. 'arg1') unmodified.
  */
-void fw_platform_init(unsigned long arg0, unsigned long arg1,
-		      unsigned long arg2, unsigned long arg3,
-		      unsigned long arg4)
+unsigned long fw_platform_init(unsigned long arg0, unsigned long arg1,
+				unsigned long arg2, unsigned long arg3,
+				unsigned long arg4)
 {
 	const char *model, *mmu_type;
 	void *fdt = (void *)arg1;
@@ -106,7 +110,8 @@ void fw_platform_init(unsigned long arg0, unsigned long arg1,
 
 	platform.hart_count = hart_count;
 
-	return;
+	/* Return original FDT pointer */
+	return arg1;
 
 fail:
 	while (1)

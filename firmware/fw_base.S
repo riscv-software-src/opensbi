@@ -198,7 +198,9 @@ _prev_arg1_override_done:
 	 */
 	MOV_5R	s0, a0, s1, a1, s2, a2, s3, a3, s4, a4
 	call	fw_platform_init
+	add	t0, a0, zero
 	MOV_5R	a0, s0, a1, s1, a2, s2, a3, s3, a4, s4
+	add	a1, t0, zero
 
 	/* Preload HART details
 	 * s7 -> HART Count
@@ -475,6 +477,7 @@ _start_hang:
 	.globl fw_platform_init
 	.weak fw_platform_init
 fw_platform_init:
+	add	a0, a1, zero
 	ret
 
 	.section .entry, "ax", %progbits
