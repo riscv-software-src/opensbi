@@ -227,7 +227,7 @@ MERGEFLAGS	+=	-r
 MERGEFLAGS	+=	-b elf$(PLATFORM_RISCV_XLEN)-littleriscv
 MERGEFLAGS	+=	-m elf$(PLATFORM_RISCV_XLEN)lriscv
 
-DTCFLAGS	=	-O dtb
+DTSCPPFLAGS	=	$(CPPFLAGS) -nostdinc -nostdlib -fno-builtin -D__DTS__ -x assembler-with-cpp
 
 # Setup functions for compilation
 define dynamic_flags
@@ -289,7 +289,7 @@ compile_objcopy = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     $(OBJCOPY) -S -O binary $(2) $(1)
 compile_dts = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " DTC       $(subst $(build_dir)/,,$(1))"; \
-	     $(DTC) $(DTCFLAGS) -o $(1) $(2)
+	     $(CPP) $(DTSCPPFLAGS) $(2) | $(DTC) -O dtb -i `dirname $(2)` -o $(1)
 
 targets-y  = $(build_dir)/lib/libsbi.a
 targets-y  += $(build_dir)/lib/libsbiutils.a
