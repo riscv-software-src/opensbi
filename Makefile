@@ -130,7 +130,6 @@ libsbi-objs-path-y=$(foreach obj,$(libsbi-objs-y),$(build_dir)/lib/sbi/$(obj))
 libsbiutils-objs-path-y=$(foreach obj,$(libsbiutils-objs-y),$(build_dir)/lib/utils/$(obj))
 ifdef PLATFORM
 platform-objs-path-y=$(foreach obj,$(platform-objs-y),$(platform_build_dir)/$(obj))
-platform-dtb-path-y=$(foreach obj,$(platform-dtb-y),$(platform_build_dir)/$(obj))
 firmware-bins-path-y=$(foreach bin,$(firmware-bins-y),$(platform_build_dir)/firmware/$(bin))
 endif
 firmware-elfs-path-y=$(firmware-bins-path-y:.bin=.elf)
@@ -301,7 +300,6 @@ targets-y  = $(build_dir)/lib/libsbi.a
 targets-y  += $(build_dir)/lib/libsbiutils.a
 ifdef PLATFORM
 targets-y += $(platform_build_dir)/lib/libplatsbi.a
-targets-y += $(platform-dtb-path-y)
 endif
 targets-y += $(firmware-bins-path-y)
 

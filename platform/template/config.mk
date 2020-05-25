@@ -72,5 +72,4 @@ endif
 # FW_PAYLOAD_ALIGN=0x1000
 # FW_PAYLOAD_PATH="path to next boot stage binary image file"
 # FW_PAYLOAD_FDT_PATH="path to platform flattened device tree file"
-# FW_PAYLOAD_FDT="name of the platform defined flattened device tree file"
 # FW_PAYLOAD_FDT_ADDR=0x82200000

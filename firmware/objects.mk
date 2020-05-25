@@ -41,11 +41,6 @@ ifdef FW_PAYLOAD_ALIGN
 firmware-genflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_ALIGN=$(FW_PAYLOAD_ALIGN)
 endif
 
-ifndef FW_PAYLOAD_FDT_PATH
-ifdef FW_PAYLOAD_FDT
-FW_PAYLOAD_FDT_PATH=$(platform_build_dir)/$(FW_PAYLOAD_FDT)
-endif
-endif
 ifdef FW_PAYLOAD_FDT_PATH
 firmware-genflags-$(FW_PAYLOAD) += -DFW_PAYLOAD_FDT_PATH=\"$(FW_PAYLOAD_FDT_PATH)\"
 endif
