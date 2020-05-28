@@ -120,12 +120,10 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 
 	/* Update HSTATUS for VS/VU-mode to HS-mode transition */
 	if (misa_extension('H') && prev_virt && !next_virt) {
-		/* Update HSTATUS SP2P, SP2V, and SPV bits */
+		/* Update HSTATUS SPVP and SPV bits */
 		hstatus = csr_read(CSR_HSTATUS);
-		hstatus &= ~HSTATUS_SP2P;
-		hstatus |= (regs->mstatus & MSTATUS_SPP) ? HSTATUS_SP2P : 0;
-		hstatus &= ~HSTATUS_SP2V;
-		hstatus |= (hstatus & HSTATUS_SPV) ? HSTATUS_SP2V : 0;
+		hstatus &= ~HSTATUS_SPVP;
+		hstatus |= (regs->mstatus & MSTATUS_SPP) ? HSTATUS_SPVP : 0;
 		hstatus &= ~HSTATUS_SPV;
 		hstatus |= (prev_virt) ? HSTATUS_SPV : 0;
 		csr_write(CSR_HSTATUS, hstatus);
