@@ -17,6 +17,15 @@
 #include <sbi_utils/sys/clint.h>
 #include "platform.h"
 
+extern const char dt_k210_start[];
+
+unsigned long fw_platform_init(unsigned long arg0, unsigned long arg1,
+				unsigned long arg2, unsigned long arg3,
+				unsigned long arg4)
+{
+	return (unsigned long)&dt_k210_start[0];
+}
+
 static struct plic_data plic = {
 	.addr = K210_PLIC_BASE_ADDR,
 	.num_src = K210_PLIC_NUM_SOURCES,
