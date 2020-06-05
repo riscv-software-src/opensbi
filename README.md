@@ -1,4 +1,4 @@
-RISC-V Open Source Supervisor Binary Interface (OpenSBI) {#mainpage}
+RISC-V Open Source Supervisor Binary Interface (OpenSBI)
 ========================================================
 
 Copyright and License
