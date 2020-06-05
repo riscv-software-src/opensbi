@@ -49,29 +49,6 @@ The detailed U-Boot booting guide is avaialble at [U-Boot].
 make PLATFORM=sifive/fu540 FW_PAYLOAD_PATH=<u-boot_build_dir>/u-boot-dtb.bin
 ```
 
-**U-Boot & Linux Kernel as a single payload**
-
-A single monolithic image containing both U-Boot & Linux can also be used if
-network boot setup is not available.
-
-1. Create a temporary image with u-boot-dtb.bin as the first payload. The
-command-line example here assumes that U-Boot was compiled using
-sifive_fu540_defconfig configuration.
-```
-dd if=~/workspace/u-boot-riscv/u-boot-dtb.bin of=/tmp/temp.bin bs=1M
-```
-2. Append the Linux Kernel image.
-```
-dd if=<linux_build_directory>/arch/riscv/boot/Image of=/tmp/temp.bin bs=1M seek=4
-```
-3. Compile OpenSBI with temp.bin (generated in step 2) as payload.
-```
-make PLATFORM=sifive/fu540 FW_PAYLOAD_PATH=/tmp/temp.bin
-or
-(For U-Boot which follows Linux v5.2 (or higher) DT bindings)
-make PLATFORM=sifive/fu540 FW_PAYLOAD_PATH=/tmp/temp.bin
-```
-
 Flashing the OpenSBI firmware binary to storage media:
 ------------------------------------------------------
 The first stage boot loader ([FSBL]) expects the storage media to have a GPT
