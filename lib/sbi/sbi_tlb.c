@@ -112,7 +112,7 @@ static void sbi_tlb_hfence_vvma_asid(struct sbi_tlb_info *tinfo)
 	}
 
 	for (i = 0; i < size; i += PAGE_SIZE) {
-		__sbi_hfence_vvma_asid_va(asid, start + i);
+		__sbi_hfence_vvma_asid_va(start + i, asid);
 	}
 
 done:
@@ -137,7 +137,7 @@ static void sbi_tlb_hfence_gvma_vmid(struct sbi_tlb_info *tinfo)
 	}
 
 	for (i = 0; i < size; i += PAGE_SIZE) {
-		__sbi_hfence_gvma_vmid_gpa(vmid, start+i);
+		__sbi_hfence_gvma_vmid_gpa(start + i, vmid);
 	}
 }
 
