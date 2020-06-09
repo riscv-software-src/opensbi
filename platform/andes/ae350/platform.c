@@ -19,6 +19,7 @@
 #include "platform.h"
 #include "plicsw.h"
 #include "plmt.h"
+#include "cache.h"
 
 static struct plic_data plic = {
 	.addr = AE350_PLIC_ADDR,
@@ -128,6 +129,36 @@ static int ae350_vendor_ext_provider(long extid, long funcid,
 {
 	int ret = 0;
 	switch (funcid) {
+	case SBI_EXT_ANDES_GET_MCACHE_CTL_STATUS:
+		*out_value = csr_read(CSR_MCACHECTL);
+		break;
+	case SBI_EXT_ANDES_GET_MMISC_CTL_STATUS:
+		*out_value = csr_read(CSR_MMISCCTL);
+		break;
+	case SBI_EXT_ANDES_SET_MCACHE_CTL:
+		ret = mcall_set_mcache_ctl(args[0]);
+		break;
+	case SBI_EXT_ANDES_SET_MMISC_CTL:
+		ret = mcall_set_mmisc_ctl(args[0]);
+		break;
+	case SBI_EXT_ANDES_ICACHE_OP:
+		ret = mcall_icache_op(args[0]);
+		break;
+	case SBI_EXT_ANDES_DCACHE_OP:
+		ret = mcall_dcache_op(args[0]);
+		break;
+	case SBI_EXT_ANDES_L1CACHE_I_PREFETCH:
+		ret = mcall_l1_cache_i_prefetch_op(args[0]);
+		break;
+	case SBI_EXT_ANDES_L1CACHE_D_PREFETCH:
+		ret = mcall_l1_cache_d_prefetch_op(args[0]);
+		break;
+	case SBI_EXT_ANDES_NON_BLOCKING_LOAD_STORE:
+		ret = mcall_non_blocking_load_store(args[0]);
+		break;
+	case SBI_EXT_ANDES_WRITE_AROUND:
+		ret = mcall_write_around(args[0]);
+		break;
 	default:
 		sbi_printf("Unsupported vendor sbi call : %ld\n", funcid);
 		asm volatile("ebreak");
