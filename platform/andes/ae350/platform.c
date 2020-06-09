@@ -121,6 +121,20 @@ static int ae350_system_reset(u32 type)
 	return 0;
 }
 
+/* Vendor-Specific SBI handler */
+static int ae350_vendor_ext_provider(long extid, long funcid,
+	unsigned long *args, unsigned long *out_value,
+	struct sbi_trap_info *out_trap)
+{
+	int ret = 0;
+	switch (funcid) {
+	default:
+		sbi_printf("Unsupported vendor sbi call : %ld\n", funcid);
+		asm volatile("ebreak");
+	}
+	return ret;
+}
+
 /* Platform descriptor. */
 const struct sbi_platform_operations platform_ops = {
 	.final_init = ae350_final_init,
@@ -140,7 +154,9 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_event_start = plmt_timer_event_start,
 	.timer_event_stop  = plmt_timer_event_stop,
 
-	.system_reset	 = ae350_system_reset
+	.system_reset	 = ae350_system_reset,
+
+	.vendor_ext_provider = ae350_vendor_ext_provider
 };
 
 const struct sbi_platform platform = {
