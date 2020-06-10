@@ -13,7 +13,7 @@
 /* clang-format off */
 
 /* SBI Extension IDs */
-#define	SBI_EXT_0_1_SET_TIMER			0x0
+#define SBI_EXT_0_1_SET_TIMER			0x0
 #define SBI_EXT_0_1_CONSOLE_PUTCHAR		0x1
 #define SBI_EXT_0_1_CONSOLE_GETCHAR		0x2
 #define SBI_EXT_0_1_CLEAR_IPI			0x3
@@ -69,6 +69,18 @@
 #define SBI_EXT_VENDOR_END			0x09FFFFFF
 #define SBI_EXT_FIRMWARE_START			0x0A000000
 #define SBI_EXT_FIRMWARE_END			0x0AFFFFFF
+
+/* SBI return error codes */
+#define SBI_SUCCESS				0
+#define SBI_ERR_FAILED				-1
+#define SBI_ERR_NOT_SUPPORTED			-2
+#define SBI_ERR_INVALID_PARAM			-3
+#define SBI_ERR_DENIED				-4
+#define SBI_ERR_INVALID_ADDRESS			-5
+#define SBI_ERR_ALREADY_AVAILABLE		-6
+
+#define SBI_LAST_ERR				SBI_ERR_ALREADY_AVAILABLE
+
 /* clang-format on */
 
 #endif

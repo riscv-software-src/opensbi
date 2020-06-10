@@ -10,25 +10,28 @@
 #ifndef __SBI_ERROR_H__
 #define __SBI_ERROR_H__
 
+#include <sbi/sbi_ecall_interface.h>
+
 /* clang-format off */
 
 #define SBI_OK			0
-#define SBI_EFAIL		-1
-#define SBI_ENOTSUPP		-2
-#define SBI_EINVAL		-3
-#define SBI_DENIED		-4
-#define SBI_INVALID_ADDR	-5
-#define SBI_ENODEV		-6
-#define SBI_ENOSYS		-7
-#define SBI_ETIMEDOUT		-8
-#define SBI_EIO			-9
-#define SBI_EILL		-10
-#define SBI_ENOSPC		-11
-#define SBI_ENOMEM		-12
-#define SBI_ETRAP		-13
-#define SBI_EUNKNOWN		-14
-#define SBI_ENOENT		-15
-#define SBI_EALREADY_STARTED	-16
+#define SBI_EFAIL		SBI_ERR_FAILED
+#define SBI_ENOTSUPP		SBI_ERR_NOT_SUPPORTED
+#define SBI_EINVAL		SBI_ERR_INVALID_PARAM
+#define SBI_EDENIED		SBI_ERR_DENIED
+#define SBI_EINVALID_ADDR	SBI_ERR_INVALID_ADDRESS
+#define SBI_EALREADY		SBI_ERR_ALREADY_AVAILABLE
+
+#define SBI_ENODEV		-1000
+#define SBI_ENOSYS		-1001
+#define SBI_ETIMEDOUT		-1002
+#define SBI_EIO			-1003
+#define SBI_EILL		-1004
+#define SBI_ENOSPC		-1005
+#define SBI_ENOMEM		-1006
+#define SBI_ETRAP		-1007
+#define SBI_EUNKNOWN		-1008
+#define SBI_ENOENT		-1009
 
 /* clang-format on */
 

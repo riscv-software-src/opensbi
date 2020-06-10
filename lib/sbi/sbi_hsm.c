@@ -219,7 +219,7 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch, u32 hartid,
 	hstate = atomic_cmpxchg(&hdata->state, SBI_HART_STOPPED,
 				SBI_HART_STARTING);
 	if (hstate == SBI_HART_STARTED)
-		return SBI_EALREADY_STARTED;
+		return SBI_EALREADY;
 
 	/**
 	 * if a hart is already transition to start or stop, another start call
@@ -263,7 +263,7 @@ int sbi_hsm_hart_stop(struct sbi_scratch *scratch, bool exitnow)
 	if (oldstate != SBI_HART_STARTED) {
 		sbi_printf("%s: ERR: The hart is in invalid state [%u]\n",
 			   __func__, oldstate);
-		return SBI_DENIED;
+		return SBI_EDENIED;
 	}
 
 	if (exitnow)

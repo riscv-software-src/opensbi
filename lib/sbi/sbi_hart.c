@@ -200,7 +200,7 @@ int sbi_hart_pmp_check_addr(struct sbi_scratch *scratch, unsigned long addr,
 			continue;
 		if (tempaddr <= addr && addr <= tempaddr + size)
 			if (!(prot & attr))
-				return SBI_INVALID_ADDR;
+				return SBI_EINVALID_ADDR;
 	}
 
 	return SBI_OK;

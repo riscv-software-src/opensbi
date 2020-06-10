@@ -7,6 +7,7 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
+#include <sbi/sbi_console.h>
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_error.h>
@@ -124,6 +125,13 @@ int sbi_ecall_handler(struct sbi_trap_regs *regs)
 		trap.epc = regs->mepc;
 		sbi_trap_redirect(regs, &trap);
 	} else {
+		if (ret < SBI_LAST_ERR) {
+			sbi_printf("%s: Invalid error %d for ext=0x%lx "
+				   "func=0x%lx\n", __func__, ret,
+				   extension_id, func_id);
+			ret = SBI_ERR_FAILED;
+		}
+
 		/*
 		 * This function should return non-zero value only in case of
 		 * fatal error. However, there is no good way to distinguish
