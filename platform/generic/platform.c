@@ -153,6 +153,12 @@ static int generic_final_init(bool cold_boot)
 	fdt_cpu_fixup(fdt);
 	fdt_fixups(fdt);
 
+	if (generic_plat && generic_plat->fdt_fixup) {
+		rc = generic_plat->fdt_fixup(fdt, generic_plat_match);
+		if (rc)
+			return rc;
+	}
+
 	return 0;
 }
 

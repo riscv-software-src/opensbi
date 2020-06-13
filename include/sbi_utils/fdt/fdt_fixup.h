@@ -48,6 +48,20 @@ void fdt_plic_fixup(void *fdt, const char *compat);
 int fdt_reserved_memory_fixup(void *fdt);
 
 /**
+ * Fix up the reserved memory subnodes in the device tree
+ *
+ * This routine adds the no-map property to the reserved memory subnodes so
+ * that the OS does not map those PMP protected memory regions.
+ *
+ * Platform codes must call this helper in their final_init() after fdt_fixups()
+ * if the OS should not map the PMP protected reserved regions.
+ *
+ * @param fdt: device tree blob
+ * @return zero on success and -ve on failure
+ */
+int fdt_reserved_memory_nomap_fixup(void *fdt);
+
+/**
  * General device tree fix-up
  *
  * This routine do all required device tree fix-ups for a typical platform.

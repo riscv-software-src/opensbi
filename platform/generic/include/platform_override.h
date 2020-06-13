@@ -21,6 +21,7 @@ struct platform_override {
 	void (*early_exit)(const struct fdt_match *match);
 	void (*final_exit)(const struct fdt_match *match);
 	int (*system_reset)(u32 reset_type, const struct fdt_match *match);
+	int (*fdt_fixup)(void *fdt, const struct fdt_match *match);
 };
 
 #endif

@@ -63,6 +63,13 @@ static void fu540_modify_dt(void *fdt)
 	fdt_cpu_fixup(fdt);
 
 	fdt_fixups(fdt);
+
+	/*
+	 * SiFive Freedom U540 has an erratum that prevents S-mode software
+	 * to access a PMP protected region using 1GB page table mapping, so
+	 * always add the no-map attribute on this platform.
+	 */
+	fdt_reserved_memory_nomap_fixup(fdt);
 }
 
 static int fu540_final_init(bool cold_boot)
