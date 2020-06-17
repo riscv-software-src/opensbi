@@ -47,6 +47,8 @@ RISC-V Platforms Using Generic Platform
 
 * **QEMU RISC-V Virt Machine** (*[qemu_virt.md]*)
 * **Spike** (*[spike.md]*)
+* **Shakti C-class SoC Platform** (*[shakti_cclass.md]*)
 
 [qemu_virt.md]: qemu_virt.md
 [spike.md]: spike.md
+[shakti_cclass.md]: shakti_cclass.md

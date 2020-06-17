@@ -38,6 +38,10 @@ OpenSBI currently supports the following virtual and hardware platforms:
   on ariane core. More details on this platform can be found in the file
   *[fpga_openpiton.md]*.
 
+* **Shakti C-class SoC Platform**: Platform support for Shakti C-class
+  processor based SOCs. More details on this platform can be found in the
+  file *[shakti_cclass.md]*.
+
 The code for these supported platforms can be used as example to implement
 support for other platforms. The *platform/template* directory also provides
 template files for implementing support for a new platform. The *object.mk*,
@@ -52,3 +56,4 @@ facilitate the implementation.
 [thead-c910.md]: thead-c910.md
 [spike.md]: spike.md
 [fpga_openpiton.md]: fpga_openpiton.md
+[shakti_cclass.md]: shakti_cclass.md

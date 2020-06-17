@@ -26,6 +26,9 @@
 #define DEFAULT_SIFIVE_UART_REG_SHIFT		0
 #define DEFAULT_SIFIVE_UART_REG_IO_WIDTH	4
 
+#define DEFAULT_SHAKTI_UART_FREQ		50000000
+#define DEFAULT_SHAKTI_UART_BAUD		115200
+
 const struct fdt_match *fdt_match_node(void *fdt, int nodeoff,
 				       const struct fdt_match *match_table)
 {
@@ -160,6 +163,40 @@ int fdt_parse_max_hart_id(void *fdt, u32 *max_hartid)
 		if (hartid > *max_hartid)
 			*max_hartid = hartid;
 	}
+
+	return 0;
+}
+
+int fdt_parse_shakti_uart_node(void *fdt, int nodeoffset,
+			       struct platform_uart_data *uart)
+{
+	int len, rc;
+	const fdt32_t *val;
+	unsigned long reg_addr, reg_size;
+
+	if (nodeoffset < 0 || !uart || !fdt)
+		return SBI_ENODEV;
+
+	rc = fdt_get_node_addr_size(fdt, nodeoffset, &reg_addr, &reg_size);
+	if (rc < 0 || !reg_addr || !reg_size)
+		return SBI_ENODEV;
+	uart->addr = reg_addr;
+
+	/**
+	 * UART address is mandaotry. clock-frequency and current-speed
+	 * may not be present. Don't return error.
+	 */
+	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "clock-frequency", &len);
+	if (len > 0 && val)
+		uart->freq = fdt32_to_cpu(*val);
+	else
+		uart->freq = DEFAULT_SHAKTI_UART_FREQ;
+
+	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "current-speed", &len);
+	if (len > 0 && val)
+		uart->baud = fdt32_to_cpu(*val);
+	else
+		uart->baud = DEFAULT_SHAKTI_UART_BAUD;
 
 	return 0;
 }
