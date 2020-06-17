@@ -49,7 +49,7 @@ static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
 	if (misa_extension('S') &&
 	    sbi_hart_has_feature(scratch, SBI_HART_HAS_SCOUNTEREN))
 		csr_write(CSR_SCOUNTEREN, -1);
-	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTEREN))
+	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTEREN))
 		csr_write(CSR_MCOUNTEREN, -1);
 
 	/* Disable all interrupts */
