@@ -122,6 +122,10 @@ static int delegate_traps(struct sbi_scratch *scratch, u32 hartid)
 
 void sbi_hart_delegation_dump(struct sbi_scratch *scratch)
 {
+	if (!misa_extension('S'))
+		/* No delegation possible as mideleg does not exist*/
+		return;
+
 #if __riscv_xlen == 32
 	sbi_printf("MIDELEG : 0x%08lx\n", csr_read(CSR_MIDELEG));
 	sbi_printf("MEDELEG : 0x%08lx\n", csr_read(CSR_MEDELEG));
