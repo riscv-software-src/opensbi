@@ -151,8 +151,14 @@ int fdt_reserved_memory_fixup(void *fdt)
 	int na = fdt_address_cells(fdt, 0);
 	int ns = fdt_size_cells(fdt, 0);
 
-	/* expand the device tree to accommodate new node */
-	err  = fdt_open_into(fdt, fdt, fdt_totalsize(fdt) + 256);
+	/*
+	 * Expand the device tree to accommodate new node
+	 * by the following estimated size:
+	 *
+	 * Each PMP memory region entry occupies 64 bytes.
+	 * With 16 PMP memory regions we need 64 * 16 = 1024 bytes.
+	 */
+	err = fdt_open_into(fdt, fdt, fdt_totalsize(fdt) + 1024);
 	if (err < 0)
 		return err;
 
