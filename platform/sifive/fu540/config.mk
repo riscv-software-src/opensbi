@@ -15,7 +15,7 @@ platform-ldflags-y =
 
 # Command for platform specific "make run"
 platform-runcmd = qemu-system-riscv$(PLATFORM_RISCV_XLEN) -M sifive_u -m 256M \
-  -nographic -kernel $(build_dir)/platform/sifive/fu540/firmware/fw_payload.elf
+  -nographic -bios $(build_dir)/platform/sifive/fu540/firmware/fw_payload.elf
 
 # Blobs to build
 FW_TEXT_START=0x80000000
