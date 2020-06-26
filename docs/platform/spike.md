@@ -59,7 +59,7 @@ make PLATFORM=generic
 Run:
 ```
 qemu-system-riscv64 -M spike -m 256M -nographic \
-	-kernel build/platform/generic/firmware/fw_payload.elf
+	-bios build/platform/generic/firmware/fw_payload.elf
 ```
 
 **Linux Kernel Payload**
@@ -75,7 +75,7 @@ make PLATFORM=generic FW_PAYLOAD_PATH=<linux_build_directory>/arch/riscv/boot/Im
 Run:
 ```
 qemu-system-riscv64 -M spike -m 256M -nographic \
-	-kernel build/platform/generic/firmware/fw_payload.elf \
+	-bios build/platform/generic/firmware/fw_payload.elf \
 	-initrd <path_to_cpio_ramdisk> \
 	-append "root=/dev/ram rw console=hvc0 earlycon=sbi"
 ```
