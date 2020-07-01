@@ -45,7 +45,7 @@ between:
    executing in VS-mode.
 
 The *RISC-V SBI specification* is maintained as an independent project by the
-RISC-V Foundation on [Github] (https://github.com/riscv/riscv-sbi-doc).
+RISC-V Foundation on [Github].
 
 The goal of the OpenSBI project is to provide an open-source reference
 implementation of the RISC-V SBI specifications for platform-specific firmwares
@@ -69,7 +69,7 @@ platform-dependent hardware manipulation functions. For all supported platforms,
 OpenSBI also provides several runtime firmware examples built using the platform
 *libplatsbi.a*. These example firmwares can be used to replace the legacy
 *riscv-pk* bootloader (aka BBL) and enable the use of well-known bootloaders
-such as [U-Boot] (https://git.denx.de/u-boot.git).
+such as [U-Boot].
 
 Supported SBI version
 ---------------------
@@ -97,8 +97,7 @@ Required Toolchain
 
 OpenSBI can be compiled natively or cross-compiled on a x86 host. For
 cross-compilation, you can build your own toolchain or just download
-a prebuilt one from the
-[Bootlin toolchain repository] (https://toolchains.bootlin.com/).
+a prebuilt one from the [Bootlin toolchain repository].
 
 Please note that only a 64-bit version of the toolchain is available in
 the Bootlin toolchain repository for now.
@@ -269,6 +268,7 @@ make I=<install_directory> install_docs
 
 [Github]: https://github.com/riscv/riscv-sbi-doc
 [U-Boot]: https://www.denx.de/wiki/U-Boot/SourceCode
+[Bootlin toolchain repository]: https://toolchains.bootlin.com/
 [COPYING.BSD]: COPYING.BSD
 [SPDX]: http://spdx.org/licenses/
 [Contribution Guideline]: docs/contributing.md
