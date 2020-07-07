@@ -66,10 +66,8 @@ static inline int ffs(int x)
 		x >>= 2;
 		r += 2;
 	}
-	if (!(x & 1)) {
-		x >>= 1;
+	if (!(x & 1))
 		r += 1;
-	}
 	return r;
 }
 
@@ -148,10 +146,8 @@ static inline int fls(int x)
 		x <<= 2;
 		r -= 2;
 	}
-	if (!(x & 0x80000000u)) {
-		x <<= 1;
+	if (!(x & 0x80000000u))
 		r -= 1;
-	}
 	return r;
 }
 
