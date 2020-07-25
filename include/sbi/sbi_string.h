@@ -12,7 +12,14 @@
 
 #include <sbi/sbi_types.h>
 
+/*
+  Provides sbi_strcmp for the completeness of supporting string functions.
+  it is not recommended to use sbi_strcmp() but use sbi_strncmp instead.
+*/
+
 int sbi_strcmp(const char *a, const char *b);
+
+int sbi_strncmp(const char *a, const char *b, size_t count);
 
 size_t sbi_strlen(const char *str);
 
