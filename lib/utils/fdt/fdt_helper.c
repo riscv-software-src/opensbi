@@ -123,7 +123,7 @@ int fdt_parse_hart_id(void *fdt, int cpu_offset, u32 *hartid)
 	prop = fdt_getprop(fdt, cpu_offset, "device_type", &len);
 	if (!prop || !len)
 		return SBI_EINVAL;
-	if (sbi_strcmp(prop, "cpu"))
+	if (strncmp (prop, "cpu", strlen ("cpu")))
 		return SBI_EINVAL;
 
 	val = fdt_getprop(fdt, cpu_offset, "reg", &len);
