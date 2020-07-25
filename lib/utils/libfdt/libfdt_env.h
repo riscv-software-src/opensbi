@@ -32,6 +32,7 @@
 #define strrchr		sbi_strrchr
 #define strcpy		sbi_strcpy
 #define strcmp		sbi_strcmp
+#define strncmp		sbi_strncmp
 #define strlen		sbi_strlen
 #define strnlen		sbi_strnlen
 
