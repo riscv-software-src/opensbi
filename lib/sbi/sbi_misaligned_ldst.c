@@ -24,7 +24,7 @@ union reg_data {
 int sbi_misaligned_load_handler(ulong addr, ulong tval2, ulong tinst,
 				struct sbi_trap_regs *regs)
 {
-	ulong insn;
+	ulong insn, insn_len;
 	union reg_data val;
 	struct sbi_trap_info uptrap;
 	int i, fp = 0, shift = 0, len = 0;
@@ -35,6 +35,7 @@ int sbi_misaligned_load_handler(ulong addr, ulong tval2, ulong tinst,
 		 * transformed instruction or custom instruction.
 		 */
 		insn = tinst | INSN_16BIT_MASK;
+		insn_len = (tinst & 0x2) ? INSN_LEN(insn) : 2;
 	} else {
 		/*
 		 * Bit[0] == 0 implies trapped instruction value is
@@ -45,6 +46,7 @@ int sbi_misaligned_load_handler(ulong addr, ulong tval2, ulong tinst,
 			uptrap.epc = regs->mepc;
 			return sbi_trap_redirect(regs, &uptrap);
 		}
+		insn_len = INSN_LEN(insn);
 	}
 
 	if ((insn & INSN_MASK_LW) == INSN_MATCH_LW) {
@@ -134,7 +136,7 @@ int sbi_misaligned_load_handler(ulong addr, ulong tval2, ulong tinst,
 		SET_F32_RD(insn, regs, val.data_ulong);
 #endif
 
-	regs->mepc += INSN_LEN(insn);
+	regs->mepc += insn_len;
 
 	return 0;
 }
@@ -142,7 +144,7 @@ int sbi_misaligned_load_handler(ulong addr, ulong tval2, ulong tinst,
 int sbi_misaligned_store_handler(ulong addr, ulong tval2, ulong tinst,
 				 struct sbi_trap_regs *regs)
 {
-	ulong insn;
+	ulong insn, insn_len;
 	union reg_data val;
 	struct sbi_trap_info uptrap;
 	int i, len = 0;
@@ -153,6 +155,7 @@ int sbi_misaligned_store_handler(ulong addr, ulong tval2, ulong tinst,
 		 * transformed instruction or custom instruction.
 		 */
 		insn = tinst | INSN_16BIT_MASK;
+		insn_len = (tinst & 0x2) ? INSN_LEN(insn) : 2;
 	} else {
 		/*
 		 * Bit[0] == 0 implies trapped instruction value is
@@ -163,6 +166,7 @@ int sbi_misaligned_store_handler(ulong addr, ulong tval2, ulong tinst,
 			uptrap.epc = regs->mepc;
 			return sbi_trap_redirect(regs, &uptrap);
 		}
+		insn_len = INSN_LEN(insn);
 	}
 
 	val.data_ulong = GET_RS2(insn, regs);
@@ -233,7 +237,7 @@ int sbi_misaligned_store_handler(ulong addr, ulong tval2, ulong tinst,
 		}
 	}
 
-	regs->mepc += INSN_LEN(insn);
+	regs->mepc += insn_len;
 
 	return 0;
 }
