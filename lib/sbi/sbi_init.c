@@ -106,14 +106,14 @@ static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	sbi_hartmask_set_hart(hartid, &coldboot_wait_hmask);
 
 	/* Wait for coldboot to finish using WFI */
+	spin_unlock(&coldboot_lock);
 	while (!coldboot_done) {
-		spin_unlock(&coldboot_lock);
 		do {
 			wfi();
 			cmip = csr_read(CSR_MIP);
 		 } while (!(cmip & MIP_MSIP));
-		spin_lock(&coldboot_lock);
 	};
+	spin_lock(&coldboot_lock);
 
 	/* Unmark current HART as waiting */
 	sbi_hartmask_clear_hart(hartid, &coldboot_wait_hmask);
