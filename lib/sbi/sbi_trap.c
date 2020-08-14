@@ -123,7 +123,7 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 		/* Update HSTATUS SPVP and SPV bits */
 		hstatus = csr_read(CSR_HSTATUS);
 		hstatus &= ~HSTATUS_SPVP;
-		hstatus |= (regs->mstatus & MSTATUS_SPP) ? HSTATUS_SPVP : 0;
+		hstatus |= (prev_mode == PRV_S) ? HSTATUS_SPVP : 0;
 		hstatus &= ~HSTATUS_SPV;
 		hstatus |= (prev_virt) ? HSTATUS_SPV : 0;
 		csr_write(CSR_HSTATUS, hstatus);
