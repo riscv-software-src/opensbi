@@ -9,6 +9,7 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_atomic.h>
+#include <sbi/riscv_barrier.h>
 #include <sbi/riscv_locks.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_ecall.h>
@@ -85,8 +86,9 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 }
 
 static spinlock_t coldboot_lock = SPIN_LOCK_INITIALIZER;
-static unsigned long coldboot_done = 0;
 static struct sbi_hartmask coldboot_wait_hmask = { 0 };
+
+static unsigned long coldboot_done;
 
 static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 {
@@ -105,15 +107,19 @@ static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	/* Mark current HART as waiting */
 	sbi_hartmask_set_hart(hartid, &coldboot_wait_hmask);
 
+	/* Release coldboot lock */
+	spin_unlock(&coldboot_lock);
+
 	/* Wait for coldboot to finish using WFI */
-	while (!coldboot_done) {
-		spin_unlock(&coldboot_lock);
+	while (!__smp_load_acquire(&coldboot_done)) {
 		do {
 			wfi();
 			cmip = csr_read(CSR_MIP);
 		 } while (!(cmip & MIP_MSIP));
-		spin_lock(&coldboot_lock);
 	};
+
+	/* Acquire coldboot lock */
+	spin_lock(&coldboot_lock);
 
 	/* Unmark current HART as waiting */
 	sbi_hartmask_clear_hart(hartid, &coldboot_wait_hmask);
@@ -132,11 +138,11 @@ static void wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 {
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
+	/* Mark coldboot done */
+	__smp_store_release(&coldboot_done, 1);
+
 	/* Acquire coldboot lock */
 	spin_lock(&coldboot_lock);
-
-	/* Mark coldboot done */
-	coldboot_done = 1;
 
 	/* Send an IPI to all HARTs waiting for coldboot */
 	for (int i = 0; i <= sbi_scratch_last_hartid(); i++) {
