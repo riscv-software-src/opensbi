@@ -118,13 +118,22 @@ int sbi_illegal_insn_handler(ulong insn, struct sbi_trap_regs *regs)
 {
 	struct sbi_trap_info uptrap;
 
+	/*
+	 * We only deal with 32-bit (or longer) illegal instructions. If we
+	 * see instruction is zero OR instruction is 16-bit then we fetch and
+	 * check the instruction encoding using unprivilege access.
+	 *
+	 * The program counter (PC) in RISC-V world is always 2-byte aligned
+	 * so handling only 32-bit (or longer) illegal instructions also help
+	 * the case where MTVAL CSR contains instruction address for illegal
+	 * instruction trap.
+	 */
+
 	if (unlikely((insn & 3) != 3)) {
-		if (insn == 0) {
-			insn = sbi_get_insn(regs->mepc, &uptrap);
-			if (uptrap.cause) {
-				uptrap.epc = regs->mepc;
-				return sbi_trap_redirect(regs, &uptrap);
-			}
+		insn = sbi_get_insn(regs->mepc, &uptrap);
+		if (uptrap.cause) {
+			uptrap.epc = regs->mepc;
+			return sbi_trap_redirect(regs, &uptrap);
 		}
 		if ((insn & 3) != 3)
 			return truly_illegal_insn(insn, regs);
