@@ -12,6 +12,7 @@
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_const.h>
 #include <sbi/sbi_platform.h>
+#include <sbi_utils/fdt/fdt_fixup.h>
 #include <sbi_utils/irqchip/plic.h>
 #include <sbi_utils/serial/sifive-uart.h>
 #include <sbi_utils/sys/clint.h>
@@ -65,6 +66,21 @@ static u32 k210_get_clk_freq(void)
 	div = 2ULL << ((clksel0 & 0x00000006) >> 1);
 
 	return pll0_freq / div;
+}
+
+static int k210_final_init(bool cold_boot)
+{
+	void *fdt;
+
+	if (!cold_boot)
+		return 0;
+
+	fdt = sbi_scratch_thishart_arg1_ptr();
+
+	fdt_cpu_fixup(fdt);
+	fdt_fixups(fdt);
+
+	return 0;
 }
 
 static int k210_console_init(void)
@@ -122,6 +138,8 @@ static int k210_system_reset(u32 type)
 }
 
 const struct sbi_platform_operations platform_ops = {
+	.final_init	= k210_final_init,
+
 	.console_init	= k210_console_init,
 	.console_putc	= sifive_uart_putc,
 	.console_getc	= sifive_uart_getc,
