@@ -90,142 +90,88 @@ void misa_string(int xlen, char *out, unsigned int out_sz)
 
 unsigned long csr_read_num(int csr_num)
 {
+#define switchcase_csr_read(__csr_num, __val)		\
+	case __csr_num:					\
+		__val = csr_read(__csr_num);		\
+		break;
+#define switchcase_csr_read_2(__csr_num, __val)	\
+	switchcase_csr_read(__csr_num + 0, __val)	\
+	switchcase_csr_read(__csr_num + 1, __val)
+#define switchcase_csr_read_4(__csr_num, __val)	\
+	switchcase_csr_read_2(__csr_num + 0, __val)	\
+	switchcase_csr_read_2(__csr_num + 2, __val)
+#define switchcase_csr_read_8(__csr_num, __val)	\
+	switchcase_csr_read_4(__csr_num + 0, __val)	\
+	switchcase_csr_read_4(__csr_num + 4, __val)
+#define switchcase_csr_read_16(__csr_num, __val)	\
+	switchcase_csr_read_8(__csr_num + 0, __val)	\
+	switchcase_csr_read_8(__csr_num + 8, __val)
+#define switchcase_csr_read_32(__csr_num, __val)	\
+	switchcase_csr_read_16(__csr_num + 0, __val)	\
+	switchcase_csr_read_16(__csr_num + 16, __val)
+#define switchcase_csr_read_64(__csr_num, __val)	\
+	switchcase_csr_read_32(__csr_num + 0, __val)	\
+	switchcase_csr_read_32(__csr_num + 32, __val)
+
 	unsigned long ret = 0;
 
 	switch (csr_num) {
-	case CSR_PMPCFG0:
-		ret = csr_read(CSR_PMPCFG0);
-		break;
-	case CSR_PMPCFG1:
-		ret = csr_read(CSR_PMPCFG1);
-		break;
-	case CSR_PMPCFG2:
-		ret = csr_read(CSR_PMPCFG2);
-		break;
-	case CSR_PMPCFG3:
-		ret = csr_read(CSR_PMPCFG3);
-		break;
-	case CSR_PMPADDR0:
-		ret = csr_read(CSR_PMPADDR0);
-		break;
-	case CSR_PMPADDR1:
-		ret = csr_read(CSR_PMPADDR1);
-		break;
-	case CSR_PMPADDR2:
-		ret = csr_read(CSR_PMPADDR2);
-		break;
-	case CSR_PMPADDR3:
-		ret = csr_read(CSR_PMPADDR3);
-		break;
-	case CSR_PMPADDR4:
-		ret = csr_read(CSR_PMPADDR4);
-		break;
-	case CSR_PMPADDR5:
-		ret = csr_read(CSR_PMPADDR5);
-		break;
-	case CSR_PMPADDR6:
-		ret = csr_read(CSR_PMPADDR6);
-		break;
-	case CSR_PMPADDR7:
-		ret = csr_read(CSR_PMPADDR7);
-		break;
-	case CSR_PMPADDR8:
-		ret = csr_read(CSR_PMPADDR8);
-		break;
-	case CSR_PMPADDR9:
-		ret = csr_read(CSR_PMPADDR9);
-		break;
-	case CSR_PMPADDR10:
-		ret = csr_read(CSR_PMPADDR10);
-		break;
-	case CSR_PMPADDR11:
-		ret = csr_read(CSR_PMPADDR11);
-		break;
-	case CSR_PMPADDR12:
-		ret = csr_read(CSR_PMPADDR12);
-		break;
-	case CSR_PMPADDR13:
-		ret = csr_read(CSR_PMPADDR13);
-		break;
-	case CSR_PMPADDR14:
-		ret = csr_read(CSR_PMPADDR14);
-		break;
-	case CSR_PMPADDR15:
-		ret = csr_read(CSR_PMPADDR15);
-		break;
+	switchcase_csr_read_16(CSR_PMPCFG0, ret)
+	switchcase_csr_read_64(CSR_PMPADDR0, ret)
 	default:
 		break;
 	};
 
 	return ret;
+
+#undef switchcase_csr_read_64
+#undef switchcase_csr_read_32
+#undef switchcase_csr_read_16
+#undef switchcase_csr_read_8
+#undef switchcase_csr_read_4
+#undef switchcase_csr_read_2
+#undef switchcase_csr_read
 }
 
 void csr_write_num(int csr_num, unsigned long val)
 {
+#define switchcase_csr_write(__csr_num, __val)		\
+	case __csr_num:					\
+		csr_write(__csr_num, __val);		\
+		break;
+#define switchcase_csr_write_2(__csr_num, __val)	\
+	switchcase_csr_write(__csr_num + 0, __val)	\
+	switchcase_csr_write(__csr_num + 1, __val)
+#define switchcase_csr_write_4(__csr_num, __val)	\
+	switchcase_csr_write_2(__csr_num + 0, __val)	\
+	switchcase_csr_write_2(__csr_num + 2, __val)
+#define switchcase_csr_write_8(__csr_num, __val)	\
+	switchcase_csr_write_4(__csr_num + 0, __val)	\
+	switchcase_csr_write_4(__csr_num + 4, __val)
+#define switchcase_csr_write_16(__csr_num, __val)	\
+	switchcase_csr_write_8(__csr_num + 0, __val)	\
+	switchcase_csr_write_8(__csr_num + 8, __val)
+#define switchcase_csr_write_32(__csr_num, __val)	\
+	switchcase_csr_write_16(__csr_num + 0, __val)	\
+	switchcase_csr_write_16(__csr_num + 16, __val)
+#define switchcase_csr_write_64(__csr_num, __val)	\
+	switchcase_csr_write_32(__csr_num + 0, __val)	\
+	switchcase_csr_write_32(__csr_num + 32, __val)
+
 	switch (csr_num) {
-	case CSR_PMPCFG0:
-		csr_write(CSR_PMPCFG0, val);
-		break;
-	case CSR_PMPCFG1:
-		csr_write(CSR_PMPCFG1, val);
-		break;
-	case CSR_PMPCFG2:
-		csr_write(CSR_PMPCFG2, val);
-		break;
-	case CSR_PMPCFG3:
-		csr_write(CSR_PMPCFG3, val);
-		break;
-	case CSR_PMPADDR0:
-		csr_write(CSR_PMPADDR0, val);
-		break;
-	case CSR_PMPADDR1:
-		csr_write(CSR_PMPADDR1, val);
-		break;
-	case CSR_PMPADDR2:
-		csr_write(CSR_PMPADDR2, val);
-		break;
-	case CSR_PMPADDR3:
-		csr_write(CSR_PMPADDR3, val);
-		break;
-	case CSR_PMPADDR4:
-		csr_write(CSR_PMPADDR4, val);
-		break;
-	case CSR_PMPADDR5:
-		csr_write(CSR_PMPADDR5, val);
-		break;
-	case CSR_PMPADDR6:
-		csr_write(CSR_PMPADDR6, val);
-		break;
-	case CSR_PMPADDR7:
-		csr_write(CSR_PMPADDR7, val);
-		break;
-	case CSR_PMPADDR8:
-		csr_write(CSR_PMPADDR8, val);
-		break;
-	case CSR_PMPADDR9:
-		csr_write(CSR_PMPADDR9, val);
-		break;
-	case CSR_PMPADDR10:
-		csr_write(CSR_PMPADDR10, val);
-		break;
-	case CSR_PMPADDR11:
-		csr_write(CSR_PMPADDR11, val);
-		break;
-	case CSR_PMPADDR12:
-		csr_write(CSR_PMPADDR12, val);
-		break;
-	case CSR_PMPADDR13:
-		csr_write(CSR_PMPADDR13, val);
-		break;
-	case CSR_PMPADDR14:
-		csr_write(CSR_PMPADDR14, val);
-		break;
-	case CSR_PMPADDR15:
-		csr_write(CSR_PMPADDR15, val);
-		break;
+	switchcase_csr_write_16(CSR_PMPCFG0, val)
+	switchcase_csr_write_64(CSR_PMPADDR0, val)
 	default:
 		break;
 	};
+
+#undef switchcase_csr_write_64
+#undef switchcase_csr_write_32
+#undef switchcase_csr_write_16
+#undef switchcase_csr_write_8
+#undef switchcase_csr_write_4
+#undef switchcase_csr_write_2
+#undef switchcase_csr_write
 }
 
 static unsigned long ctz(unsigned long x)

@@ -340,31 +340,55 @@ static void hart_detect_features(struct sbi_scratch *scratch)
 	hfeatures->features = 0;
 	hfeatures->pmp_count = 0;
 
-	/* Detect if hart supports PMP feature */
-#define __detect_pmp(__pmp_csr)					\
-	val = csr_read_allowed(__pmp_csr, (ulong)&trap);	\
-	if (!trap.cause) {					\
-		csr_write_allowed(__pmp_csr, (ulong)&trap, val);\
-		if (!trap.cause)				\
-			hfeatures->pmp_count++;			\
+#define __check_csr(__csr, __rdonly, __wrval, __field, __skip)	\
+	val = csr_read_allowed(__csr, (ulong)&trap);			\
+	if (!trap.cause) {						\
+		if (__rdonly) {						\
+			(hfeatures->__field)++;				\
+		} else {						\
+			csr_write_allowed(__csr, (ulong)&trap, __wrval);\
+			if (!trap.cause) {				\
+				if (csr_swap(__csr, val) == __wrval)	\
+					(hfeatures->__field)++;		\
+				else					\
+					goto __skip;			\
+			} else {					\
+				goto __skip;				\
+			}						\
+		}							\
+	} else {							\
+		goto __skip;						\
 	}
-	__detect_pmp(CSR_PMPADDR0);
-	__detect_pmp(CSR_PMPADDR1);
-	__detect_pmp(CSR_PMPADDR2);
-	__detect_pmp(CSR_PMPADDR3);
-	__detect_pmp(CSR_PMPADDR4);
-	__detect_pmp(CSR_PMPADDR5);
-	__detect_pmp(CSR_PMPADDR6);
-	__detect_pmp(CSR_PMPADDR7);
-	__detect_pmp(CSR_PMPADDR8);
-	__detect_pmp(CSR_PMPADDR9);
-	__detect_pmp(CSR_PMPADDR10);
-	__detect_pmp(CSR_PMPADDR11);
-	__detect_pmp(CSR_PMPADDR12);
-	__detect_pmp(CSR_PMPADDR13);
-	__detect_pmp(CSR_PMPADDR14);
-	__detect_pmp(CSR_PMPADDR15);
-#undef __detect_pmp
+#define __check_csr_2(__csr, __rdonly, __wrval, __field, __skip)	\
+	__check_csr(__csr + 0, __rdonly, __wrval, __field, __skip)	\
+	__check_csr(__csr + 1, __rdonly, __wrval, __field, __skip)
+#define __check_csr_4(__csr, __rdonly, __wrval, __field, __skip)	\
+	__check_csr_2(__csr + 0, __rdonly, __wrval, __field, __skip)	\
+	__check_csr_2(__csr + 2, __rdonly, __wrval, __field, __skip)
+#define __check_csr_8(__csr, __rdonly, __wrval, __field, __skip)	\
+	__check_csr_4(__csr + 0, __rdonly, __wrval, __field, __skip)	\
+	__check_csr_4(__csr + 4, __rdonly, __wrval, __field, __skip)
+#define __check_csr_16(__csr, __rdonly, __wrval, __field, __skip)	\
+	__check_csr_8(__csr + 0, __rdonly, __wrval, __field, __skip)	\
+	__check_csr_8(__csr + 8, __rdonly, __wrval, __field, __skip)
+#define __check_csr_32(__csr, __rdonly, __wrval, __field, __skip)	\
+	__check_csr_16(__csr + 0, __rdonly, __wrval, __field, __skip)	\
+	__check_csr_16(__csr + 16, __rdonly, __wrval, __field, __skip)
+#define __check_csr_64(__csr, __rdonly, __wrval, __field, __skip)	\
+	__check_csr_32(__csr + 0, __rdonly, __wrval, __field, __skip)	\
+	__check_csr_32(__csr + 32, __rdonly, __wrval, __field, __skip)
+
+	/* Detect number of PMP regions */
+	__check_csr_64(CSR_PMPADDR0, 0, PMP_ADDR_MASK, pmp_count, __pmp_skip);
+__pmp_skip:
+
+#undef __check_csr_64
+#undef __check_csr_32
+#undef __check_csr_16
+#undef __check_csr_8
+#undef __check_csr_4
+#undef __check_csr_2
+#undef __check_csr
 
 	/* Detect if hart supports SCOUNTEREN feature */
 	trap.cause = 0;
