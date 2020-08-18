@@ -158,9 +158,6 @@ void sbi_hart_pmp_dump(struct sbi_scratch *scratch)
 	unsigned long prot, addr, size;
 	unsigned int i, pmp_count;
 
-	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_PMP))
-		return;
-
 	pmp_count = sbi_hart_pmp_count(scratch);
 	for (i = 0; i < pmp_count; i++) {
 		pmp_get(i, &prot, &addr, &size);
@@ -190,9 +187,6 @@ int sbi_hart_pmp_check_addr(struct sbi_scratch *scratch, unsigned long addr,
 	unsigned long prot, size, tempaddr;
 	unsigned int i, pmp_count;
 
-	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_PMP))
-		return SBI_OK;
-
 	pmp_count = sbi_hart_pmp_count(scratch);
 	for (i = 0; i < pmp_count; i++) {
 		pmp_get(i, &prot, &tempaddr, &size);
@@ -213,7 +207,7 @@ static int pmp_init(struct sbi_scratch *scratch, u32 hartid)
 	ulong prot, addr, log2size;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_PMP))
+	if (!sbi_hart_pmp_count(scratch))
 		return 0;
 
 	/* Firmware PMP region to protect OpenSBI firmware */
@@ -276,9 +270,6 @@ static inline char *sbi_hart_feature_id2string(unsigned long feature)
 		return NULL;
 
 	switch (feature) {
-	case SBI_HART_HAS_PMP:
-		fstr = "pmp";
-		break;
 	case SBI_HART_HAS_SCOUNTEREN:
 		fstr = "scounteren";
 		break;
@@ -374,10 +365,6 @@ static void hart_detect_features(struct sbi_scratch *scratch)
 	__detect_pmp(CSR_PMPADDR14);
 	__detect_pmp(CSR_PMPADDR15);
 #undef __detect_pmp
-
-	/* Set hart PMP feature if we have at least one PMP region */
-	if (hfeatures->pmp_count)
-		hfeatures->features |= SBI_HART_HAS_PMP;
 
 	/* Detect if hart supports SCOUNTEREN feature */
 	trap.cause = 0;

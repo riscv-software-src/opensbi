@@ -199,7 +199,7 @@ int fdt_reserved_memory_fixup(void *fdt)
 	 * With above assumption, we create child nodes directly.
 	 */
 
-	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_PMP)) {
+	if (!sbi_hart_pmp_count(scratch)) {
 		/*
 		 * Update the DT with firmware start & size even if PMP is not
 		 * supported. This makes sure that supervisor OS is always

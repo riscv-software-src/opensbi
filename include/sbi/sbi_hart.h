@@ -14,14 +14,12 @@
 
 /** Possible feature flags of a hart */
 enum sbi_hart_features {
-	/** Hart has PMP support */
-	SBI_HART_HAS_PMP = (1 << 0),
 	/** Hart has S-mode counter enable */
-	SBI_HART_HAS_SCOUNTEREN = (1 << 1),
+	SBI_HART_HAS_SCOUNTEREN = (1 << 0),
 	/** Hart has M-mode counter enable */
-	SBI_HART_HAS_MCOUNTEREN = (1 << 2),
+	SBI_HART_HAS_MCOUNTEREN = (1 << 1),
 	/** HART has timer csr implementation in hardware */
-	SBI_HART_HAS_TIME = (1 << 3),
+	SBI_HART_HAS_TIME = (1 << 2),
 
 	/** Last index of Hart features*/
 	SBI_HART_HAS_LAST_FEATURE = SBI_HART_HAS_TIME,
