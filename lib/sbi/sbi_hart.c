@@ -28,6 +28,7 @@ void (*sbi_hart_expected_trap)(void) = &__sbi_expected_trap;
 struct hart_features {
 	unsigned long features;
 	unsigned int pmp_count;
+	unsigned int mhpm_count;
 };
 static unsigned long hart_features_offset;
 
@@ -133,6 +134,14 @@ void sbi_hart_delegation_dump(struct sbi_scratch *scratch)
 	sbi_printf("MIDELEG : 0x%016lx\n", csr_read(CSR_MIDELEG));
 	sbi_printf("MEDELEG : 0x%016lx\n", csr_read(CSR_MEDELEG));
 #endif
+}
+
+unsigned int sbi_hart_mhpm_count(struct sbi_scratch *scratch)
+{
+	struct hart_features *hfeatures =
+			sbi_scratch_offset_ptr(scratch, hart_features_offset);
+
+	return hfeatures->mhpm_count;
 }
 
 unsigned int sbi_hart_pmp_count(struct sbi_scratch *scratch)
@@ -339,6 +348,7 @@ static void hart_detect_features(struct sbi_scratch *scratch)
 	hfeatures = sbi_scratch_offset_ptr(scratch, hart_features_offset);
 	hfeatures->features = 0;
 	hfeatures->pmp_count = 0;
+	hfeatures->mhpm_count = 0;
 
 #define __check_csr(__csr, __rdonly, __wrval, __field, __skip)	\
 	val = csr_read_allowed(__csr, (ulong)&trap);			\
@@ -381,6 +391,13 @@ static void hart_detect_features(struct sbi_scratch *scratch)
 	/* Detect number of PMP regions */
 	__check_csr_64(CSR_PMPADDR0, 0, PMP_ADDR_MASK, pmp_count, __pmp_skip);
 __pmp_skip:
+
+	/* Detect number of MHPM counters */
+	__check_csr(CSR_MHPMCOUNTER3, 0, 1UL, mhpm_count, __mhpm_skip);
+	__check_csr_4(CSR_MHPMCOUNTER4, 0, 1UL, mhpm_count, __mhpm_skip);
+	__check_csr_8(CSR_MHPMCOUNTER8, 0, 1UL, mhpm_count, __mhpm_skip);
+	__check_csr_16(CSR_MHPMCOUNTER16, 0, 1UL, mhpm_count, __mhpm_skip);
+__mhpm_skip:
 
 #undef __check_csr_64
 #undef __check_csr_32
