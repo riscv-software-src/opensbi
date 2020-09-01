@@ -108,7 +108,7 @@ static int delegate_traps(struct sbi_scratch *scratch, u32 hartid)
 	 * from VS-mode), Guest page faults and Virtual interrupts.
 	 */
 	if (misa_extension('H')) {
-		exceptions |= (1U << CAUSE_SUPERVISOR_ECALL);
+		exceptions |= (1U << CAUSE_VIRTUAL_SUPERVISOR_ECALL);
 		exceptions |= (1U << CAUSE_FETCH_GUEST_PAGE_FAULT);
 		exceptions |= (1U << CAUSE_LOAD_GUEST_PAGE_FAULT);
 		exceptions |= (1U << CAUSE_VIRTUAL_INST_FAULT);
