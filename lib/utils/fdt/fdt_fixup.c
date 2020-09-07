@@ -21,7 +21,8 @@ void fdt_cpu_fixup(void *fdt)
 {
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
-	int err, cpu_offset, cpus_offset;
+	int err, cpu_offset, cpus_offset, len;
+	const char *mmu_type;
 	u32 hartid;
 
 	err = fdt_open_into(fdt, fdt, fdt_totalsize(fdt) + 32);
@@ -37,7 +38,15 @@ void fdt_cpu_fixup(void *fdt)
 		if (err)
 			continue;
 
-		if (sbi_platform_hart_invalid(plat, hartid))
+		/*
+		 * Disable a HART DT node if one of the following is true:
+		 * 1. The HART is marked invalid by platform support
+		 * 2. MMU is not available for the HART
+		 */
+
+		mmu_type = fdt_getprop(fdt, cpu_offset, "mmu-type", &len);
+		if (sbi_platform_hart_invalid(plat, hartid) ||
+		    !mmu_type || !len)
 			fdt_setprop_string(fdt, cpu_offset, "status",
 					   "disabled");
 	}
