@@ -239,16 +239,16 @@ int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
 }
 
 int pmp_get(unsigned int n, unsigned long *prot_out, unsigned long *addr_out,
-	    unsigned long *size)
+	    unsigned long *log2len)
 {
 	int pmpcfg_csr, pmpcfg_shift, pmpaddr_csr;
 	unsigned long cfgmask, pmpcfg, prot;
-	unsigned long t1, addr, log2len;
+	unsigned long t1, addr, len;
 
 	/* check parameters */
-	if (n >= PMP_COUNT || !prot_out || !addr_out || !size)
+	if (n >= PMP_COUNT || !prot_out || !addr_out || !log2len)
 		return SBI_EINVAL;
-	*prot_out = *addr_out = *size = 0;
+	*prot_out = *addr_out = *log2len = 0;
 
 	/* calculate PMP register and offset */
 #if __riscv_xlen == 32
@@ -275,23 +275,21 @@ int pmp_get(unsigned int n, unsigned long *prot_out, unsigned long *addr_out,
 		addr = csr_read_num(pmpaddr_csr);
 		if (addr == -1UL) {
 			addr	= 0;
-			log2len = __riscv_xlen;
+			len	= __riscv_xlen;
 		} else {
 			t1	= ctz(~addr);
 			addr	= (addr & ~((1UL << t1) - 1)) << PMP_SHIFT;
-			log2len = (t1 + PMP_SHIFT + 1);
+			len	= (t1 + PMP_SHIFT + 1);
 		}
 	} else {
 		addr	= csr_read_num(pmpaddr_csr) << PMP_SHIFT;
-		log2len = PMP_SHIFT;
+		len	= PMP_SHIFT;
 	}
 
 	/* return details */
 	*prot_out    = prot;
 	*addr_out    = addr;
-
-	if (log2len < __riscv_xlen)
-		*size = (1UL << log2len);
+	*log2len     = len;
 
 	return 0;
 }

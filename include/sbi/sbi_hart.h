@@ -42,7 +42,8 @@ int sbi_hart_pmp_get(struct sbi_scratch *scratch, unsigned int n,
 		     unsigned long *prot_out, unsigned long *addr_out,
 		     unsigned long *size);
 void sbi_hart_pmp_dump(struct sbi_scratch *scratch);
-int  sbi_hart_pmp_check_addr(struct sbi_scratch *scratch, unsigned long daddr,
+int  sbi_hart_pmp_check_addr(struct sbi_scratch *scratch,
+			     unsigned long daddr, unsigned long mode,
 			     unsigned long attr);
 bool sbi_hart_has_feature(struct sbi_scratch *scratch, unsigned long feature);
 void sbi_hart_get_features_str(struct sbi_scratch *scratch,

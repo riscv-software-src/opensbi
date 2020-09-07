@@ -231,7 +231,7 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch, u32 hartid,
 	if (hstate != SBI_HART_STOPPED)
 		return SBI_EINVAL;
 
-	rc = sbi_hart_pmp_check_addr(scratch, saddr, PMP_X);
+	rc = sbi_hart_pmp_check_addr(scratch, saddr, smode, PMP_X);
 	if (rc)
 		return rc;
 	//TODO: We also need to check saddr for valid physical address as well.
