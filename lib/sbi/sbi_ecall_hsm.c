@@ -19,12 +19,16 @@ static int sbi_ecall_hsm_handler(unsigned long extid, unsigned long funcid,
 				 unsigned long *args, unsigned long *out_val,
 				 struct sbi_trap_info *out_trap)
 {
+	ulong smode;
 	int ret = 0, hstate;
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	switch (funcid) {
 	case SBI_EXT_HSM_HART_START:
-		ret = sbi_hsm_hart_start(scratch, args[0], args[1], args[2]);
+		smode = csr_read(CSR_MSTATUS);
+		smode = (smode & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
+		ret = sbi_hsm_hart_start(scratch, args[0], args[1],
+					 smode, args[2]);
 		break;
 	case SBI_EXT_HSM_HART_STOP:
 		ret = sbi_hsm_hart_stop(scratch, TRUE);

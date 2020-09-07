@@ -203,7 +203,7 @@ fail_exit:
 }
 
 int sbi_hsm_hart_start(struct sbi_scratch *scratch, u32 hartid,
-		       ulong saddr, ulong priv)
+		       ulong saddr, ulong smode, ulong priv)
 {
 	int rc;
 	unsigned long init_count;
@@ -211,6 +211,9 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch, u32 hartid,
 	struct sbi_scratch *rscratch;
 	struct sbi_hsm_data *hdata;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+
+	if (smode != PRV_M && smode != PRV_S && smode != PRV_U)
+		return SBI_EINVAL;
 
 	rscratch = sbi_hartid_to_scratch(hartid);
 	if (!rscratch)
@@ -236,6 +239,7 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch, u32 hartid,
 	init_count = sbi_init_count(hartid);
 	rscratch->next_arg1 = priv;
 	rscratch->next_addr = saddr;
+	rscratch->next_mode = smode;
 
 	if (sbi_platform_has_hart_hotplug(plat) ||
 	   (sbi_platform_has_hart_secondary_boot(plat) && !init_count)) {
