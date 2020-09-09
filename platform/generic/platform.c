@@ -71,7 +71,7 @@ unsigned long fw_platform_init(unsigned long arg0, unsigned long arg1,
 				unsigned long arg2, unsigned long arg3,
 				unsigned long arg4)
 {
-	const char *model, *mmu_type;
+	const char *model;
 	void *fdt = (void *)arg1;
 	u32 hartid, hart_count = 0;
 	int rc, root_offset, cpus_offset, cpu_offset, len;
@@ -100,10 +100,6 @@ unsigned long fw_platform_init(unsigned long arg0, unsigned long arg1,
 
 		if (SBI_HARTMASK_MAX_BITS <= hartid)
 			continue;
-
-		mmu_type = fdt_getprop(fdt, cpu_offset, "mmu-type", &len);
-		if (!mmu_type || !len)
-			hartid = -1U;
 
 		generic_hart_index2id[hart_count++] = hartid;
 	}
