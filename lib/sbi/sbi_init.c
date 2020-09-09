@@ -295,6 +295,7 @@ static atomic_t coldboot_lottery = ATOMIC_INITIALIZER(0);
  */
 void __noreturn sbi_init(struct sbi_scratch *scratch)
 {
+	bool next_mode_supported	= FALSE;
 	bool coldboot			= FALSE;
 	u32 hartid			= current_hartid();
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
@@ -303,7 +304,33 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 	    sbi_platform_hart_invalid(plat, hartid))
 		sbi_hart_hang();
 
-	if (atomic_xchg(&coldboot_lottery, 1) == 0)
+	switch (scratch->next_mode) {
+	case PRV_M:
+		next_mode_supported = TRUE;
+		break;
+	case PRV_S:
+		if (misa_extension('S'))
+			next_mode_supported = TRUE;
+		break;
+	case PRV_U:
+		if (misa_extension('U'))
+			next_mode_supported = TRUE;
+		break;
+	default:
+		sbi_hart_hang();
+	}
+
+	/*
+	 * Only the HART supporting privilege mode specified in the
+	 * scratch->next_mode should be allowed to become the coldboot
+	 * HART because the coldboot HART will be directly jumping to
+	 * the next booting stage.
+	 *
+	 * We use a lottery mechanism to select coldboot HART among
+	 * HARTs which satisfy above condition.
+	 */
+
+	if (next_mode_supported && atomic_xchg(&coldboot_lottery, 1) == 0)
 		coldboot = TRUE;
 
 	if (coldboot)
