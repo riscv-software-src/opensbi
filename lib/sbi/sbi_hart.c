@@ -226,10 +226,8 @@ int sbi_hart_pmp_check_addr(struct sbi_scratch *scratch,
 
 static int pmp_init(struct sbi_scratch *scratch, u32 hartid)
 {
-	u32 i, pmp_idx = 0, pmp_count, count;
+	u32 pmp_idx = 0;
 	unsigned long fw_start, fw_size_log2;
-	ulong prot, addr, log2size;
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if (!sbi_hart_pmp_count(scratch))
 		return 0;
@@ -238,16 +236,6 @@ static int pmp_init(struct sbi_scratch *scratch, u32 hartid)
 	fw_size_log2 = log2roundup(scratch->fw_size);
 	fw_start = scratch->fw_start & ~((1UL << fw_size_log2) - 1UL);
 	pmp_set(pmp_idx++, 0, fw_start, fw_size_log2);
-
-	/* Platform specific PMP regions */
-	count = sbi_platform_pmp_region_count(plat, hartid);
-	pmp_count = sbi_hart_pmp_count(scratch);
-	for (i = 0; i < count && pmp_idx < (pmp_count - 1); i++) {
-		if (sbi_platform_pmp_region_info(plat, hartid, i, &prot, &addr,
-						 &log2size))
-			continue;
-		pmp_set(pmp_idx++, prot, addr, log2size);
-	}
 
 	/*
 	 * Default PMP region for allowing S-mode and U-mode access to

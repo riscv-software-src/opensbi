@@ -89,15 +89,6 @@ struct sbi_platform_operations {
 	 */
 	int (*misa_get_xlen)(void);
 
-	/** Get number of PMP regions for given HART */
-	u32 (*pmp_region_count)(u32 hartid);
-	/**
-	 * Get PMP regions details (namely: protection, base address,
-	 * and size) for given HART
-	 */
-	int (*pmp_region_info)(u32 hartid, u32 index, ulong *prot, ulong *addr,
-			       ulong *log2size);
-
 	/** Write a character to the platform console output */
 	void (*console_putc)(char ch);
 	/** Read a character from the platform console input */
@@ -454,47 +445,6 @@ static inline int sbi_platform_misa_xlen(const struct sbi_platform *plat)
 	if (plat && sbi_platform_ops(plat)->misa_get_xlen)
 		return sbi_platform_ops(plat)->misa_get_xlen();
 	return -1;
-}
-
-/**
- * Get the number of PMP regions of a HART
- *
- * @param plat pointer to struct sbi_platform
- * @param hartid HART ID
- *
- * @return number of PMP regions
- */
-static inline u32 sbi_platform_pmp_region_count(const struct sbi_platform *plat,
-						u32 hartid)
-{
-	if (plat && sbi_platform_ops(plat)->pmp_region_count)
-		return sbi_platform_ops(plat)->pmp_region_count(hartid);
-	return 0;
-}
-
-/**
- * Get PMP regions details (namely: protection, base address,
- * and size) of a HART
- *
- * @param plat pointer to struct sbi_platform
- * @param hartid HART ID
- * @param index index of PMP region for which we want details
- * @param prot output pointer for PMP region protection
- * @param addr output pointer for PMP region base address
- * @param log2size output pointer for log-of-2 PMP region size
- *
- * @return 0 on success and negative error code on failure
- */
-static inline int sbi_platform_pmp_region_info(const struct sbi_platform *plat,
-						u32 hartid, u32 index,
-						ulong *prot, ulong *addr,
-						ulong *log2size)
-{
-	if (plat && sbi_platform_ops(plat)->pmp_region_info)
-		return sbi_platform_ops(plat)->pmp_region_info(hartid, index,
-							       prot, addr,
-							       log2size);
-	return 0;
 }
 
 /**
