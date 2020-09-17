@@ -40,11 +40,11 @@
 
 #ifndef __ASSEMBLY__
 
-#include <sbi/sbi_ecall.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_scratch.h>
-#include <sbi/sbi_trap.h>
 #include <sbi/sbi_version.h>
+
+struct sbi_trap_info;
 
 /** Possible feature flags of a platform */
 enum sbi_platform_features {
