@@ -15,6 +15,7 @@ libsbi-objs-y += riscv_locks.o
 libsbi-objs-y += sbi_bitmap.o
 libsbi-objs-y += sbi_bitops.o
 libsbi-objs-y += sbi_console.o
+libsbi-objs-y += sbi_domain.o
 libsbi-objs-y += sbi_ecall.o
 libsbi-objs-y += sbi_ecall_base.o
 libsbi-objs-y += sbi_ecall_hsm.o

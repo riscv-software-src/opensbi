@@ -12,6 +12,7 @@
 #include <sbi/riscv_barrier.h>
 #include <sbi/riscv_locks.h>
 #include <sbi/sbi_console.h>
+#include <sbi/sbi_domain.h>
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_hartmask.h>
@@ -169,6 +170,11 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
+	/* Note: This has to be second thing in coldboot init sequence */
+	rc = sbi_domain_init(scratch, hartid);
+	if (rc)
+		sbi_hart_hang();
+
 	init_count_offset = sbi_scratch_alloc_offset(__SIZEOF_POINTER__,
 						     "INIT_COUNT");
 	if (!init_count_offset)
@@ -210,10 +216,24 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
+	/*
+	 * Note: Finalize domains after HSM initialization so that we
+	 * can startup non-root domains.
+	 * Note: Finalize domains before HART PMP configuration so
+	 * that we use correct domain for configuring PMP.
+	 */
+	rc = sbi_domain_finalize(scratch, hartid);
+	if (rc)
+		sbi_hart_hang();
+
 	rc = sbi_hart_pmp_configure(scratch);
 	if (rc)
 		sbi_hart_hang();
 
+	/*
+	 * Note: Platform final initialization should be last so that
+	 * it sees correct domain assignment and PMP configuration.
+	 */
 	rc = sbi_platform_final_init(plat, TRUE);
 	if (rc)
 		sbi_hart_hang();
