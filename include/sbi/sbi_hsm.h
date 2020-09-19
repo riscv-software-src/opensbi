@@ -25,8 +25,9 @@ struct sbi_scratch;
 int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot);
 void __noreturn sbi_hsm_exit(struct sbi_scratch *scratch);
 
-int sbi_hsm_hart_start(struct sbi_scratch *scratch, u32 hartid,
-		       ulong saddr, ulong smode, ulong priv);
+int sbi_hsm_hart_start(struct sbi_scratch *scratch,
+		       const struct sbi_domain *dom,
+		       u32 hartid, ulong saddr, ulong smode, ulong priv);
 int sbi_hsm_hart_stop(struct sbi_scratch *scratch, bool exitnow);
 int sbi_hsm_hart_get_state(const struct sbi_domain *dom, u32 hartid);
 int sbi_hsm_hart_state_to_status(int state);

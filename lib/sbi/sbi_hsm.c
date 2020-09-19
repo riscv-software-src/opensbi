@@ -205,17 +205,23 @@ fail_exit:
 	sbi_hart_hang();
 }
 
-int sbi_hsm_hart_start(struct sbi_scratch *scratch, u32 hartid,
-		       ulong saddr, ulong smode, ulong priv)
+int sbi_hsm_hart_start(struct sbi_scratch *scratch,
+		       const struct sbi_domain *dom,
+		       u32 hartid, ulong saddr, ulong smode, ulong priv)
 {
-	int rc;
 	unsigned long init_count;
 	unsigned int hstate;
 	struct sbi_scratch *rscratch;
 	struct sbi_hsm_data *hdata;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	if (smode != PRV_M && smode != PRV_S && smode != PRV_U)
+	/* For now, we only allow start mode to be S-mode or U-mode. */
+	if (smode != PRV_S && smode != PRV_U)
+		return SBI_EINVAL;
+	if (dom && !sbi_domain_is_assigned_hart(dom, hartid))
+		return SBI_EINVAL;
+	if (dom && !sbi_domain_check_addr(dom, saddr, smode,
+					  SBI_DOMAIN_EXECUTE))
 		return SBI_EINVAL;
 
 	rscratch = sbi_hartid_to_scratch(hartid);
@@ -233,11 +239,6 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch, u32 hartid,
 	 */
 	if (hstate != SBI_HART_STOPPED)
 		return SBI_EINVAL;
-
-	rc = sbi_hart_pmp_check_addr(scratch, saddr, smode, PMP_X);
-	if (rc)
-		return rc;
-	//TODO: We also need to check saddr for valid physical address as well.
 
 	init_count = sbi_init_count(hartid);
 	rscratch->next_arg1 = priv;

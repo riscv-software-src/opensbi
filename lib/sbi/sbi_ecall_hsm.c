@@ -28,8 +28,8 @@ static int sbi_ecall_hsm_handler(unsigned long extid, unsigned long funcid,
 	case SBI_EXT_HSM_HART_START:
 		smode = csr_read(CSR_MSTATUS);
 		smode = (smode & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
-		ret = sbi_hsm_hart_start(scratch, args[0], args[1],
-					 smode, args[2]);
+		ret = sbi_hsm_hart_start(scratch, sbi_domain_thishart_ptr(),
+					 args[0], args[1], smode, args[2]);
 		break;
 	case SBI_EXT_HSM_HART_STOP:
 		ret = sbi_hsm_hart_stop(scratch, TRUE);

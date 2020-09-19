@@ -324,8 +324,10 @@ int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 			scratch->next_mode = dom->next_mode;
 			scratch->next_arg1 = dom->next_arg1;
 		} else {
-			rc = sbi_hsm_hart_start(scratch, dhart, dom->next_addr,
-					dom->next_mode, dom->next_arg1);
+			rc = sbi_hsm_hart_start(scratch, NULL, dhart,
+						dom->next_addr,
+						dom->next_mode,
+						dom->next_arg1);
 			if (rc)
 				return rc;
 		}
