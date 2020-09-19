@@ -37,9 +37,10 @@ void __noreturn sbi_system_reset(u32 platform_reset_type)
 	/* Stop current HART */
 	sbi_hsm_hart_stop(scratch, FALSE);
 
-	/* Platform specific reset */
-	sbi_platform_system_reset(sbi_platform_ptr(scratch),
-				  platform_reset_type);
+	/* Platform specific reset if domain allowed system reset */
+	if (dom->system_reset_allowed)
+		sbi_platform_system_reset(sbi_platform_ptr(scratch),
+					  platform_reset_type);
 
 	/* If platform specific reset did not work then do sbi_exit() */
 	sbi_exit(scratch);
