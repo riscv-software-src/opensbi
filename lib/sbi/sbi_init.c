@@ -182,7 +182,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_hart_init(scratch, hartid, TRUE);
+	rc = sbi_hart_init(scratch, TRUE);
 	if (rc)
 		sbi_hart_hang();
 
@@ -250,7 +250,7 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_hart_init(scratch, hartid, FALSE);
+	rc = sbi_hart_init(scratch, FALSE);
 	if (rc)
 		sbi_hart_hang();
 

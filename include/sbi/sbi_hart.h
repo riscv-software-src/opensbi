@@ -27,7 +27,7 @@ enum sbi_hart_features {
 
 struct sbi_scratch;
 
-int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot);
+int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot);
 
 extern void (*sbi_hart_expected_trap)(void);
 static inline ulong sbi_hart_expected_trap_addr(void)

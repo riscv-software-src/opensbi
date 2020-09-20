@@ -33,7 +33,7 @@ struct hart_features {
 };
 static unsigned long hart_features_offset;
 
-static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
+static void mstatus_init(struct sbi_scratch *scratch)
 {
 	unsigned long mstatus_val = 0;
 
@@ -62,7 +62,7 @@ static void mstatus_init(struct sbi_scratch *scratch, u32 hartid)
 		csr_write(CSR_SATP, 0);
 }
 
-static int fp_init(u32 hartid)
+static int fp_init(struct sbi_scratch *scratch)
 {
 #ifdef __riscv_flen
 	int i;
@@ -83,7 +83,7 @@ static int fp_init(u32 hartid)
 	return 0;
 }
 
-static int delegate_traps(struct sbi_scratch *scratch, u32 hartid)
+static int delegate_traps(struct sbi_scratch *scratch)
 {
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	unsigned long interrupts, exceptions;
@@ -435,7 +435,7 @@ __mhpm_skip:
 		hfeatures->features |= SBI_HART_HAS_TIME;
 }
 
-int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
+int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot)
 {
 	int rc;
 
@@ -452,13 +452,13 @@ int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 
 	hart_detect_features(scratch);
 
-	mstatus_init(scratch, hartid);
+	mstatus_init(scratch);
 
-	rc = fp_init(hartid);
+	rc = fp_init(scratch);
 	if (rc)
 		return rc;
 
-	rc = delegate_traps(scratch, hartid);
+	rc = delegate_traps(scratch);
 	if (rc)
 		return rc;
 
