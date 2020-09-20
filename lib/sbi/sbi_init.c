@@ -210,6 +210,10 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
+	rc = sbi_hart_pmp_configure(scratch);
+	if (rc)
+		sbi_hart_hang();
+
 	rc = sbi_platform_final_init(plat, TRUE);
 	if (rc)
 		sbi_hart_hang();
@@ -263,6 +267,10 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 
 	rc = sbi_timer_init(scratch, FALSE);
+	if (rc)
+		sbi_hart_hang();
+
+	rc = sbi_hart_pmp_configure(scratch);
 	if (rc)
 		sbi_hart_hang();
 

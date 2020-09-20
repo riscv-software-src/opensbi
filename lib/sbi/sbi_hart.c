@@ -224,7 +224,7 @@ int sbi_hart_pmp_check_addr(struct sbi_scratch *scratch,
 	return SBI_OK;
 }
 
-static int pmp_init(struct sbi_scratch *scratch, u32 hartid)
+int sbi_hart_pmp_configure(struct sbi_scratch *scratch)
 {
 	u32 pmp_idx = 0;
 	unsigned long fw_start, fw_size_log2;
@@ -462,7 +462,7 @@ int sbi_hart_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 	if (rc)
 		return rc;
 
-	return pmp_init(scratch, hartid);
+	return 0;
 }
 
 void __attribute__((noreturn)) sbi_hart_hang(void)
