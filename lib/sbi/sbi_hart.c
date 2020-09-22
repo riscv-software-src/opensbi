@@ -153,24 +153,6 @@ unsigned int sbi_hart_pmp_count(struct sbi_scratch *scratch)
 	return hfeatures->pmp_count;
 }
 
-int sbi_hart_pmp_get(struct sbi_scratch *scratch, unsigned int n,
-		     unsigned long *prot_out, unsigned long *addr_out,
-		     unsigned long *size)
-{
-	int err;
-	unsigned long log2size;
-
-	if (sbi_hart_pmp_count(scratch) <= n)
-		return SBI_EINVAL;
-
-	err = pmp_get(n, prot_out, addr_out, &log2size);
-	if (err)
-		return err;
-	*size = (log2size < __riscv_xlen) ? 1UL << log2size : 0;
-
-	return 0;
-}
-
 void sbi_hart_pmp_dump(struct sbi_scratch *scratch)
 {
 	unsigned long prot, addr, size, log2size;
@@ -198,30 +180,6 @@ void sbi_hart_pmp_dump(struct sbi_scratch *scratch)
 			sbi_printf(",X");
 		sbi_printf(")\n");
 	}
-}
-
-int sbi_hart_pmp_check_addr(struct sbi_scratch *scratch,
-			    unsigned long addr, unsigned long mode,
-			    unsigned long attr)
-{
-	unsigned long prot, size, log2size, tempaddr;
-	unsigned int i, pmp_count;
-
-	pmp_count = sbi_hart_pmp_count(scratch);
-	for (i = 0; i < pmp_count; i++) {
-		pmp_get(i, &prot, &tempaddr, &log2size);
-		if (!(prot & PMP_A))
-			continue;
-		if (mode == PRV_M && !(prot & PMP_L))
-			continue;
-		size = 1UL << log2size;
-		if ((log2size >= __riscv_xlen) ||
-		    ((tempaddr <= addr && addr <= tempaddr + size)))
-			if (!(prot & attr))
-				return SBI_EINVALID_ADDR;
-	}
-
-	return SBI_OK;
 }
 
 int sbi_hart_pmp_configure(struct sbi_scratch *scratch)

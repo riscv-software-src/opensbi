@@ -38,13 +38,7 @@ static inline ulong sbi_hart_expected_trap_addr(void)
 unsigned int sbi_hart_mhpm_count(struct sbi_scratch *scratch);
 void sbi_hart_delegation_dump(struct sbi_scratch *scratch);
 unsigned int sbi_hart_pmp_count(struct sbi_scratch *scratch);
-int sbi_hart_pmp_get(struct sbi_scratch *scratch, unsigned int n,
-		     unsigned long *prot_out, unsigned long *addr_out,
-		     unsigned long *size);
 void sbi_hart_pmp_dump(struct sbi_scratch *scratch);
-int  sbi_hart_pmp_check_addr(struct sbi_scratch *scratch,
-			     unsigned long daddr, unsigned long mode,
-			     unsigned long attr);
 int sbi_hart_pmp_configure(struct sbi_scratch *scratch);
 bool sbi_hart_has_feature(struct sbi_scratch *scratch, unsigned long feature);
 void sbi_hart_get_features_str(struct sbi_scratch *scratch,
