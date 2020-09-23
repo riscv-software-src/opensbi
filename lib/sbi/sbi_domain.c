@@ -8,6 +8,7 @@
  */
 
 #include <sbi/riscv_asm.h>
+#include <sbi/sbi_console.h>
 #include <sbi/sbi_domain.h>
 #include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_hsm.h>
@@ -241,6 +242,99 @@ static int sanitize_domain(const struct sbi_platform *plat,
 		return SBI_EINVAL;
 
 	return 0;
+}
+
+void sbi_domain_dump(const struct sbi_domain *dom, const char *suffix)
+{
+	u32 i, k;
+	unsigned long rstart, rend;
+	struct sbi_domain_memregion *reg;
+
+	sbi_printf("Domain%d Name        %s: %s\n",
+		   dom->index, suffix, dom->name);
+
+	sbi_printf("Domain%d Boot HART   %s: %d\n",
+		   dom->index, suffix, dom->boot_hartid);
+
+	k = 0;
+	sbi_printf("Domain%d HARTs       %s: ", dom->index, suffix);
+	sbi_hartmask_for_each_hart(i, dom->possible_harts)
+		sbi_printf("%s%d%s", (k++) ? "," : "",
+			   i, sbi_domain_is_assigned_hart(dom, i) ? "*" : "");
+	sbi_printf("\n");
+
+	i = 0;
+	sbi_domain_for_each_memregion(dom, reg) {
+		rstart = reg->base;
+		rend = (reg->order < __riscv_xlen) ?
+			rstart + ((1UL << reg->order) - 1) : -1UL;
+
+#if __riscv_xlen == 32
+		sbi_printf("Domain%d Region%02d    %s: 0x%08lx-0x%08lx ",
+#else
+		sbi_printf("Domain%d Region%02d    %s: 0x%016lx-0x%016lx ",
+#endif
+			   dom->index, i, suffix, rstart, rend);
+
+		k = 0;
+		if (reg->flags & SBI_DOMAIN_MEMREGION_MMODE)
+			sbi_printf("%cM", (k++) ? ',' : '(');
+		if (reg->flags & SBI_DOMAIN_MEMREGION_MMIO)
+			sbi_printf("%cI", (k++) ? ',' : '(');
+		if (reg->flags & SBI_DOMAIN_MEMREGION_READABLE)
+			sbi_printf("%cR", (k++) ? ',' : '(');
+		if (reg->flags & SBI_DOMAIN_MEMREGION_WRITEABLE)
+			sbi_printf("%cW", (k++) ? ',' : '(');
+		if (reg->flags & SBI_DOMAIN_MEMREGION_EXECUTABLE)
+			sbi_printf("%cX", (k++) ? ',' : '(');
+		sbi_printf("%s\n", (k++) ? ")" : "()");
+
+		i++;
+	}
+
+#if __riscv_xlen == 32
+	sbi_printf("Domain%d Next Address%s: 0x%08lx\n",
+#else
+	sbi_printf("Domain%d Next Address%s: 0x%016lx\n",
+#endif
+		   dom->index, suffix, dom->next_addr);
+
+#if __riscv_xlen == 32
+	sbi_printf("Domain%d Next Arg1   %s: 0x%08lx\n",
+#else
+	sbi_printf("Domain%d Next Arg1   %s: 0x%016lx\n",
+#endif
+		   dom->index, suffix, dom->next_arg1);
+
+	sbi_printf("Domain%d Next Mode   %s: ", dom->index, suffix);
+	switch (dom->next_mode) {
+	case PRV_M:
+		sbi_printf("M-mode\n");
+		break;
+	case PRV_S:
+		sbi_printf("S-mode\n");
+		break;
+	case PRV_U:
+		sbi_printf("U-mode\n");
+		break;
+	default:
+		sbi_printf("Unknown\n");
+		break;
+	};
+
+	sbi_printf("Domain%d SysReset    %s: %s\n",
+		   dom->index, suffix, (dom->system_reset_allowed) ? "yes" : "no");
+}
+
+void sbi_domain_dump_all(const char *suffix)
+{
+	u32 i;
+	const struct sbi_domain *dom;
+
+	sbi_domain_for_each(i, dom) {
+		sbi_domain_dump(dom, suffix);
+		sbi_printf("\n");
+	}
 }
 
 int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)

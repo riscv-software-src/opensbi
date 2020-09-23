@@ -123,18 +123,23 @@ static int delegate_traps(struct sbi_scratch *scratch)
 	return 0;
 }
 
-void sbi_hart_delegation_dump(struct sbi_scratch *scratch)
+void sbi_hart_delegation_dump(struct sbi_scratch *scratch,
+			      const char *prefix, const char *suffix)
 {
 	if (!misa_extension('S'))
 		/* No delegation possible as mideleg does not exist*/
 		return;
 
 #if __riscv_xlen == 32
-	sbi_printf("MIDELEG : 0x%08lx\n", csr_read(CSR_MIDELEG));
-	sbi_printf("MEDELEG : 0x%08lx\n", csr_read(CSR_MEDELEG));
+	sbi_printf("%sMIDELEG%s: 0x%08lx\n",
+		   prefix, suffix, csr_read(CSR_MIDELEG));
+	sbi_printf("%sMEDELEG%s: 0x%08lx\n",
+		   prefix, suffix, csr_read(CSR_MEDELEG));
 #else
-	sbi_printf("MIDELEG : 0x%016lx\n", csr_read(CSR_MIDELEG));
-	sbi_printf("MEDELEG : 0x%016lx\n", csr_read(CSR_MEDELEG));
+	sbi_printf("%sMIDELEG%s: 0x%016lx\n",
+		   prefix, suffix, csr_read(CSR_MIDELEG));
+	sbi_printf("%sMEDELEG%s: 0x%016lx\n",
+		   prefix, suffix, csr_read(CSR_MEDELEG));
 #endif
 }
 
@@ -152,35 +157,6 @@ unsigned int sbi_hart_pmp_count(struct sbi_scratch *scratch)
 			sbi_scratch_offset_ptr(scratch, hart_features_offset);
 
 	return hfeatures->pmp_count;
-}
-
-void sbi_hart_pmp_dump(struct sbi_scratch *scratch)
-{
-	unsigned long prot, addr, size, log2size;
-	unsigned int i, pmp_count;
-
-	pmp_count = sbi_hart_pmp_count(scratch);
-	for (i = 0; i < pmp_count; i++) {
-		pmp_get(i, &prot, &addr, &log2size);
-		if (!(prot & PMP_A))
-			continue;
-		size = (log2size < __riscv_xlen) ? 1UL << log2size : 0;
-#if __riscv_xlen == 32
-		sbi_printf("PMP%d    : 0x%08lx-0x%08lx (A",
-#else
-		sbi_printf("PMP%d    : 0x%016lx-0x%016lx (A",
-#endif
-			   i, addr, addr + size - 1);
-		if (prot & PMP_L)
-			sbi_printf(",L");
-		if (prot & PMP_R)
-			sbi_printf(",R");
-		if (prot & PMP_W)
-			sbi_printf(",W");
-		if (prot & PMP_X)
-			sbi_printf(",X");
-		sbi_printf(")\n");
-	}
 }
 
 int sbi_hart_pmp_configure(struct sbi_scratch *scratch)

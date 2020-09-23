@@ -39,6 +39,7 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 {
 	int xlen;
 	char str[128];
+	const struct sbi_domain *dom = sbi_domain_thishart_ptr();
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 #ifdef OPENSBI_VERSION_GIT
@@ -64,27 +65,29 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 	sbi_printf("Platform HART Count : %u\n",
 		   sbi_platform_hart_count(plat));
 
-	/* Boot HART details */
-	sbi_printf("Boot HART ID        : %u\n", hartid);
-	misa_string(xlen, str, sizeof(str));
-	sbi_printf("Boot HART ISA       : %s\n", str);
-	sbi_hart_get_features_str(scratch, str, sizeof(str));
-	sbi_printf("BOOT HART Features  : %s\n", str);
-	sbi_printf("BOOT HART PMP Count : %d\n", sbi_hart_pmp_count(scratch));
-	sbi_printf("BOOT HART MHPM Count: %d\n", sbi_hart_mhpm_count(scratch));
-
 	/* Firmware details */
 	sbi_printf("Firmware Base       : 0x%lx\n", scratch->fw_start);
 	sbi_printf("Firmware Size       : %d KB\n",
 		   (u32)(scratch->fw_size / 1024));
 
-	/* Generic details */
+	/* SBI details */
 	sbi_printf("Runtime SBI Version : %d.%d\n",
 		   sbi_ecall_version_major(), sbi_ecall_version_minor());
 	sbi_printf("\n");
 
-	sbi_hart_delegation_dump(scratch);
-	sbi_hart_pmp_dump(scratch);
+	/* Domain details */
+	sbi_domain_dump_all("");
+
+	/* Boot HART details */
+	sbi_printf("Boot HART ID        : %u\n", hartid);
+	sbi_printf("Boot HART Domain    : %s\n", dom->name);
+	misa_string(xlen, str, sizeof(str));
+	sbi_printf("Boot HART ISA       : %s\n", str);
+	sbi_hart_get_features_str(scratch, str, sizeof(str));
+	sbi_printf("Boot HART Features  : %s\n", str);
+	sbi_printf("Boot HART PMP Count : %d\n", sbi_hart_pmp_count(scratch));
+	sbi_printf("Boot HART MHPM Count: %d\n", sbi_hart_mhpm_count(scratch));
+	sbi_hart_delegation_dump(scratch, "Boot HART ", "   ");
 }
 
 static spinlock_t coldboot_lock = SPIN_LOCK_INITIALIZER;

@@ -138,6 +138,12 @@ bool sbi_domain_check_addr(const struct sbi_domain *dom,
 			   unsigned long addr, unsigned long mode,
 			   unsigned long access_flags);
 
+/** Dump domain details on the console */
+void sbi_domain_dump(const struct sbi_domain *dom, const char *suffix);
+
+/** Dump all domain details on the console */
+void sbi_domain_dump_all(const char *suffix);
+
 /** Finalize domain tables and startup non-root domains */
 int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid);
 
