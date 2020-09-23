@@ -403,7 +403,7 @@ static void hart_detect_features(struct sbi_scratch *scratch)
 	__check_csr_32(__csr + 32, __rdonly, __wrval, __field, __skip)
 
 	/* Detect number of PMP regions */
-	__check_csr_64(CSR_PMPADDR0, 0, PMP_ADDR_MASK, pmp_count, __pmp_skip);
+	__check_csr_64(CSR_PMPADDR0, 0, 1UL, pmp_count, __pmp_skip);
 __pmp_skip:
 
 	/* Detect number of MHPM counters */
