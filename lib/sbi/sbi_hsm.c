@@ -13,6 +13,7 @@
 #include <sbi/riscv_atomic.h>
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_console.h>
+#include <sbi/sbi_domain.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_hart.h>
@@ -56,13 +57,13 @@ int sbi_hsm_hart_state_to_status(int state)
 	return ret;
 }
 
-int sbi_hsm_hart_get_state(u32 hartid)
+int sbi_hsm_hart_get_state(const struct sbi_domain *dom, u32 hartid)
 {
 	struct sbi_hsm_data *hdata;
 	struct sbi_scratch *scratch;
 
 	scratch = sbi_hartid_to_scratch(hartid);
-	if (!scratch)
+	if (!scratch || !sbi_domain_is_assigned_hart(dom, hartid))
 		return SBI_HART_UNKNOWN;
 
 	hdata = sbi_scratch_offset_ptr(scratch, hart_data_offset);
@@ -70,9 +71,9 @@ int sbi_hsm_hart_get_state(u32 hartid)
 	return atomic_read(&hdata->state);
 }
 
-bool sbi_hsm_hart_started(u32 hartid)
+static bool sbi_hsm_hart_started(const struct sbi_domain *dom, u32 hartid)
 {
-	if (sbi_hsm_hart_get_state(hartid) == SBI_HART_STARTED)
+	if (sbi_hsm_hart_get_state(dom, hartid) == SBI_HART_STARTED)
 		return TRUE;
 	else
 		return FALSE;
@@ -80,12 +81,14 @@ bool sbi_hsm_hart_started(u32 hartid)
 
 /**
  * Get ulong HART mask for given HART base ID
+ * @param dom the domain to be used for output HART mask
  * @param hbase the HART base ID
  * @param out_hmask the output ulong HART mask
  * @return 0 on success and SBI_Exxx (< 0) on failure
  * Note: the output HART mask will be set to zero on failure as well.
  */
-int sbi_hsm_hart_started_mask(ulong hbase, ulong *out_hmask)
+int sbi_hsm_hart_started_mask(const struct sbi_domain *dom,
+			      ulong hbase, ulong *out_hmask)
 {
 	ulong i;
 	ulong hcount = sbi_scratch_last_hartid() + 1;
@@ -97,7 +100,7 @@ int sbi_hsm_hart_started_mask(ulong hbase, ulong *out_hmask)
 		hcount = BITS_PER_LONG;
 
 	for (i = hbase; i < hcount; i++) {
-		if (sbi_hsm_hart_get_state(i) == SBI_HART_STARTED)
+		if (sbi_hsm_hart_get_state(dom, i) == SBI_HART_STARTED)
 			*out_hmask |= 1UL << (i - hbase);
 	}
 
@@ -259,7 +262,7 @@ int sbi_hsm_hart_stop(struct sbi_scratch *scratch, bool exitnow)
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
 							    hart_data_offset);
 
-	if (!sbi_hsm_hart_started(hartid))
+	if (!sbi_hsm_hart_started(sbi_domain_thishart_ptr(), hartid))
 		return SBI_EINVAL;
 
 	oldstate = atomic_cmpxchg(&hdata->state, SBI_HART_STARTED,

@@ -10,6 +10,7 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/sbi_console.h>
+#include <sbi/sbi_domain.h>
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_error.h>
@@ -33,7 +34,8 @@ static int sbi_load_hart_mask_unpriv(ulong *pmask, ulong *hmask,
 		if (uptrap->cause)
 			return SBI_ETRAP;
 	} else {
-		sbi_hsm_hart_started_mask(0, &mask);
+		sbi_hsm_hart_started_mask(sbi_domain_thishart_ptr(),
+					  0, &mask);
 	}
 	*hmask = mask;
 

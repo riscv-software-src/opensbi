@@ -7,6 +7,7 @@
  *   Atish Patra <atish.patra@wdc.com>
  */
 
+#include <sbi/sbi_domain.h>
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_error.h>
@@ -34,7 +35,8 @@ static int sbi_ecall_hsm_handler(unsigned long extid, unsigned long funcid,
 		ret = sbi_hsm_hart_stop(scratch, TRUE);
 		break;
 	case SBI_EXT_HSM_HART_GET_STATUS:
-		hstate = sbi_hsm_hart_get_state(args[0]);
+		hstate = sbi_hsm_hart_get_state(sbi_domain_thishart_ptr(),
+						args[0]);
 		ret = sbi_hsm_hart_state_to_status(hstate);
 		break;
 	default:

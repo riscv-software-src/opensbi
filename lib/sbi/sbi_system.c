@@ -10,6 +10,7 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/sbi_bitops.h>
+#include <sbi/sbi_domain.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_hsm.h>
 #include <sbi/sbi_platform.h>
@@ -21,10 +22,11 @@ void __noreturn sbi_system_reset(u32 platform_reset_type)
 {
 	ulong hbase = 0, hmask;
 	u32 cur_hartid = current_hartid();
+	struct sbi_domain *dom = sbi_domain_thishart_ptr();
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	/* Send HALT IPI to every hart other than the current hart */
-	while (!sbi_hsm_hart_started_mask(hbase, &hmask)) {
+	while (!sbi_hsm_hart_started_mask(dom, hbase, &hmask)) {
 		if (hbase <= cur_hartid)
 			hmask &= ~(1UL << (cur_hartid - hbase));
 		if (hmask)
