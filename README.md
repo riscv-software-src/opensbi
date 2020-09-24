@@ -225,6 +225,8 @@ Detailed documentation of various aspects of OpenSBI can be found under the
 * [Platform Documentation]: Documentation of the platforms currently supported.
 * [Firmware Documentation]: Documentation for the different types of firmware
   examples build supported by OpenSBI.
+* [Domain Support]: Documentation for the OpenSBI domain support which helps
+  users achieve system-level partitioning using OpenSBI.
 
 OpenSBI source code is also well documented. For source level documentation,
 doxygen style is used. Please refer to the [Doxygen manual] for details on this
@@ -278,6 +280,7 @@ make I=<install_directory> install_docs
 [Platform Support Guide]: docs/platform_guide.md
 [Platform Documentation]: docs/platform/platform.md
 [Firmware Documentation]: docs/firmware/fw.md
+[Domain Support]: docs/domain_support.md
 [Doxygen manual]: http://www.doxygen.nl/manual/index.html
 [Kendryte standalone SDK]: https://github.com/kendryte/kendryte-standalone-sdk
 [third party notices]: ThirdPartyNotices.md
