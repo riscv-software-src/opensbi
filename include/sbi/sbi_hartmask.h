@@ -67,7 +67,7 @@ static inline void sbi_hartmask_clear_hart(u32 h, struct sbi_hartmask *m)
  * @param h HART id to test
  * @param m the hartmask pointer
  */
-static inline int sbi_hartmask_test_hart(u32 h, struct sbi_hartmask *m)
+static inline int sbi_hartmask_test_hart(u32 h, const struct sbi_hartmask *m)
 {
 	if (h < SBI_HARTMASK_MAX_BITS)
 		return __test_bit(h, m->bits);
