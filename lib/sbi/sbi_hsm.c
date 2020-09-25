@@ -57,18 +57,25 @@ int sbi_hsm_hart_state_to_status(int state)
 	return ret;
 }
 
-int sbi_hsm_hart_get_state(const struct sbi_domain *dom, u32 hartid)
+static inline int __sbi_hsm_hart_get_state(u32 hartid)
 {
 	struct sbi_hsm_data *hdata;
 	struct sbi_scratch *scratch;
 
 	scratch = sbi_hartid_to_scratch(hartid);
-	if (!scratch || !sbi_domain_is_assigned_hart(dom, hartid))
+	if (!scratch)
 		return SBI_HART_UNKNOWN;
 
 	hdata = sbi_scratch_offset_ptr(scratch, hart_data_offset);
-
 	return atomic_read(&hdata->state);
+}
+
+int sbi_hsm_hart_get_state(const struct sbi_domain *dom, u32 hartid)
+{
+	if (!sbi_domain_is_assigned_hart(dom, hartid))
+		return SBI_HART_UNKNOWN;
+
+	return __sbi_hsm_hart_get_state(hartid);
 }
 
 static bool sbi_hsm_hart_started(const struct sbi_domain *dom, u32 hartid)
@@ -90,18 +97,21 @@ static bool sbi_hsm_hart_started(const struct sbi_domain *dom, u32 hartid)
 int sbi_hsm_hart_started_mask(const struct sbi_domain *dom,
 			      ulong hbase, ulong *out_hmask)
 {
-	ulong i;
-	ulong hcount = sbi_scratch_last_hartid() + 1;
+	ulong i, hmask, dmask;
+	ulong hend = sbi_scratch_last_hartid() + 1;
 
 	*out_hmask = 0;
-	if (hcount <= hbase)
+	if (hend <= hbase)
 		return SBI_EINVAL;
-	if (BITS_PER_LONG < (hcount - hbase))
-		hcount = BITS_PER_LONG;
+	if (BITS_PER_LONG < (hend - hbase))
+		hend = hbase + BITS_PER_LONG;
 
-	for (i = hbase; i < hcount; i++) {
-		if (sbi_hsm_hart_get_state(dom, i) == SBI_HART_STARTED)
-			*out_hmask |= 1UL << (i - hbase);
+	dmask = sbi_domain_get_assigned_hartmask(dom, hbase);
+	for (i = hbase; i < hend; i++) {
+		hmask = 1UL << (i - hbase);
+		if ((dmask & hmask) &&
+		    (__sbi_hsm_hart_get_state(i) == SBI_HART_STARTED))
+			*out_hmask |= hmask;
 	}
 
 	return 0;
