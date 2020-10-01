@@ -85,7 +85,7 @@ enum sbi_scratch_options {
 #define sbi_scratch_thishart_arg1_ptr() \
 	((void *)(sbi_scratch_thishart_ptr()->next_arg1))
 
-/** Initialize scatch table and allocator */
+/** Initialize scratch table and allocator */
 int sbi_scratch_init(struct sbi_scratch *scratch);
 
 /**
