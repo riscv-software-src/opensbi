@@ -18,6 +18,7 @@
 #include <sbi_utils/irqchip/plic.h>
 #include <sbi_utils/serial/sifive-uart.h>
 #include <sbi_utils/sys/clint.h>
+#include <sbi_utils/experimental/keystone/sm.h>
 
 /* clang-format off */
 
@@ -81,6 +82,8 @@ static int fu540_final_init(bool cold_boot)
 
 	fdt = sbi_scratch_thishart_arg1_ptr();
 	fu540_modify_dt(fdt);
+
+  sm_init();
 
 	return 0;
 }

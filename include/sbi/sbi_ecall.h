@@ -26,6 +26,7 @@ struct sbi_ecall_extension {
 	unsigned long extid_end;
 	int (* probe)(unsigned long extid, unsigned long *out_val);
 	int (* handle)(unsigned long extid, unsigned long funcid,
+           struct sbi_trap_regs* regs,
 		       unsigned long *args, unsigned long *out_val,
 		       struct sbi_trap_info *out_trap);
 };

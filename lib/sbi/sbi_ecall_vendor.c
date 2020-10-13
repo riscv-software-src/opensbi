@@ -22,6 +22,7 @@ static int sbi_ecall_vendor_probe(unsigned long extid,
 }
 
 static int sbi_ecall_vendor_handler(unsigned long extid, unsigned long funcid,
+            struct sbi_trap_regs* regs,
 				    unsigned long *args, unsigned long *out_val,
 				    struct sbi_trap_info *out_trap)
 {

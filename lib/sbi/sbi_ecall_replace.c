@@ -19,6 +19,7 @@
 #include <sbi/sbi_tlb.h>
 
 static int sbi_ecall_time_handler(unsigned long extid, unsigned long funcid,
+          struct sbi_trap_regs *regs,
 				  unsigned long *args, unsigned long *out_val,
 				  struct sbi_trap_info *out_trap)
 {
@@ -43,6 +44,7 @@ struct sbi_ecall_extension ecall_time = {
 };
 
 static int sbi_ecall_rfence_handler(unsigned long extid, unsigned long funcid,
+            struct sbi_trap_regs *regs,
 				    unsigned long *args, unsigned long *out_val,
 				    struct sbi_trap_info *out_trap)
 {
@@ -110,6 +112,7 @@ struct sbi_ecall_extension ecall_rfence = {
 };
 
 static int sbi_ecall_ipi_handler(unsigned long extid, unsigned long funcid,
+         struct sbi_trap_regs *regs,
 				 unsigned long *args, unsigned long *out_val,
 				 struct sbi_trap_info *out_trap)
 {
@@ -130,6 +133,7 @@ struct sbi_ecall_extension ecall_ipi = {
 };
 
 static int sbi_ecall_srst_handler(unsigned long extid, unsigned long funcid,
+          struct sbi_trap_regs *regs,
 				  unsigned long *args, unsigned long *out_val,
 				  struct sbi_trap_info *out_trap)
 {

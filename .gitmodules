@@ -1,0 +1,4 @@
+[submodule "lib/utils/experimental/keystone"]
+	path = lib/utils/experimental/keystone
+	url = https://github.com/keystone-enclave/sm
+	branch = master
