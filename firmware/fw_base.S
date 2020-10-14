@@ -187,15 +187,6 @@ _bss_zero:
 	la	a1, fw_fdt_bin
 #endif
 
-	/* Override previous arg1 */
-	MOV_3R	s0, a0, s1, a1, s2, a2
-	call	fw_prev_arg1
-	add	t1, a0, zero
-	MOV_3R	a0, s0, a1, s1, a2, s2
-	beqz	t1, _prev_arg1_override_done
-	add	a1, t1, zero
-_prev_arg1_override_done:
-
 	/*
 	 * Initialize platform
 	 * Note: The a0 to a4 registers passed to the

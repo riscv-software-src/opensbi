@@ -55,14 +55,9 @@ file. The parameters currently defined are as follows:
   automatically generated and used as a payload. This test payload executes
   an infinite `while (1)` loop after printing a message on the platform console.
 
-* **FW_PAYLOAD_FDT_PATH** - Path to an external flattened device tree binary
-  file to be embedded in the *.text* section of the final firmware. If this
-  option is not provided then the firmware will expect the FDT to be passed
-  as an argument by the prior booting stage.
-
 * **FW_PAYLOAD_FDT_ADDR** - Address where the FDT passed by the prior booting
-  stage or specified by the *FW_PAYLOAD_FDT_PATH* parameter and embedded in
-  the *.text* section will be placed before executing the next booting stage,
+  stage or specified by the *FW_FDT_PATH* parameter and embedded in the
+  *.rodata* section will be placed before executing the next booting stage,
   that is, the payload firmware. If this option is not provided, then the
   firmware will pass the FDT address passed by the previous booting stage
   to the next booting stage.

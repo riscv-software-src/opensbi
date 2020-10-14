@@ -29,13 +29,13 @@ DT (device tree) is not backward compatible with the DT passed from FSBL.
 
 To use Linux v5.2 (or higher, the pre-built DTB (DT binary) from Linux v5.2
 (or higher) should be used to build SiFive FU540 OpenSBI binaries by using
-the compile time option *FW_PAYLOAD_FDT_PATH*.
+the compile time option *FW_FDT_PATH*.
 
 ```
 make PLATFORM=sifive/fu540 FW_PAYLOAD_PATH=<linux_build_directory>/arch/riscv/boot/Image
 or
 (For Linux v5.2 or higher)
-make PLATFORM=sifive/fu540 FW_PAYLOAD_PATH=<linux_build_directory>/arch/riscv/boot/Image FW_PAYLOAD_FDT_PATH=<hifive-unleashed-a00.dtb path from Linux kernel>
+make PLATFORM=sifive/fu540 FW_PAYLOAD_PATH=<linux_build_directory>/arch/riscv/boot/Image FW_FDT_PATH=<hifive-unleashed-a00.dtb path from Linux kernel>
 ```
 
 **U-Boot Payload**
@@ -147,7 +147,7 @@ booti ${kernel_addr_r} - ${fdt_addr_r}
 QEMU Specific Instructions
 --------------------------
 If you want to test OpenSBI with QEMU 'sifive_u' machine, please follow the
-same instructions above, with the exception of not passing FW_PAYLOAD_FDT_PATH.
+same instructions above, with the exception of not passing FW_FDT_PATH.
 
 This is because QEMU generates a device tree blob on the fly based on the
 command line parameters and it's compatible with the one used in the upstream

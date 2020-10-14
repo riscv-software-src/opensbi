@@ -23,11 +23,11 @@ Building Shakti C-class Platform
 **Linux Kernel Payload**
 
 ```
-make PLATFORM=generic FW_PAYLOAD_PATH=<linux_build_directory>/arch/riscv/boot/Image FW_PAYLOAD_FDT_PATH=<shakti.dtb path>
+make PLATFORM=generic FW_PAYLOAD_PATH=<linux_build_directory>/arch/riscv/boot/Image FW_FDT_PATH=<shakti.dtb path>
 ```
 
 **Test Payload**
 
 ```
-make PLATFORM=generic FW_PAYLOAD_FDT_PATH=<shakti.dtb path>
+make PLATFORM=generic FW_FDT_PATH=<shakti.dtb path>
 ```

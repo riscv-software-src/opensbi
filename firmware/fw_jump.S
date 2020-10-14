@@ -36,19 +36,6 @@ fw_save_info:
 
 	.section .entry, "ax", %progbits
 	.align 3
-	.global fw_prev_arg1
-	/*
-	 * We can only use a0, a1, and a2 registers here.
-	 * The a0, a1, and a2 registers will be same as passed by
-	 * previous booting stage.
-	 * The previous arg1 should be returned in 'a0'.
-	 */
-fw_prev_arg1:
-	add	a0, zero, zero
-	ret
-
-	.section .entry, "ax", %progbits
-	.align 3
 	.global fw_next_arg1
 	/*
 	 * We can only use a0, a1, and a2 registers here.

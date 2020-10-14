@@ -19,12 +19,12 @@ Building Andes AE350 Platform
 -----------------------------
 
 To use Linux v5.2 should be used to build Andes AE350 OpenSBI binaries by using
-the compile time option FW_PAYLOAD_FDT_PATH.
+the compile time option FW_FDT_PATH.
 
 AE350's dts is included in https://github.com/andestech/linux/tree/ast-v3_2_0-release-public
 
 **Linux Kernel Payload**
 
 ```
-make PLATFORM=andes/ae350 FW_PAYLOAD_PATH=<linux_build_directory>/arch/riscv/boot/Image FW_PAYLOAD_FDT_PATH=<ae350.dtb path>
+make PLATFORM=andes/ae350 FW_PAYLOAD_PATH=<linux_build_directory>/arch/riscv/boot/Image FW_FDT_PATH=<ae350.dtb path>
 ```

@@ -36,23 +36,6 @@ fw_save_info:
 
 	.section .entry, "ax", %progbits
 	.align 3
-	.global fw_prev_arg1
-	/*
-	 * We can only use a0, a1, and a2 registers here.
-	 * The a0, a1, and a2 registers will be same as passed by
-	 * previous booting stage.
-	 * The previous arg1 should be returned in 'a0'.
-	 */
-fw_prev_arg1:
-#ifdef FW_PAYLOAD_FDT_PATH
-	la	a0, fdt_bin
-#else
-	add	a0, zero, zero
-#endif
-	ret
-
-	.section .entry, "ax", %progbits
-	.align 3
 	.global fw_next_arg1
 	/*
 	 * We can only use a0, a1, and a2 registers here.
@@ -101,14 +84,6 @@ fw_next_mode:
 fw_options:
 	add	a0, zero, zero
 	ret
-
-#ifdef FW_PAYLOAD_FDT_PATH
-	.section .text, "ax", %progbits
-	.align 4
-	.globl fdt_bin
-fdt_bin:
-	.incbin	FW_PAYLOAD_FDT_PATH
-#endif
 
 	.section .payload, "ax", %progbits
 	.align 4
