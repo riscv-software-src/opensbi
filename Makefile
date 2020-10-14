@@ -291,7 +291,10 @@ compile_dts = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     $(CPP) $(DTSCPPFLAGS) $(2) | $(DTC) -O dtb -i `dirname $(2)` -o $(1)
 compile_d2c = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " D2C       $(subst $(build_dir)/,,$(1))"; \
-	     $(src_dir)/scripts/d2c.sh -i $(4) -a $(3) -p $(2) > $(1)
+	     $(if $($(2)-varalign-$(3)),$(eval D2C_ALIGN_BYTES := $($(2)-varalign-$(3))),$(eval D2C_ALIGN_BYTES := $(4))) \
+	     $(if $($(2)-varprefix-$(3)),$(eval D2C_NAME_PREFIX := $($(2)-varprefix-$(3))),$(eval D2C_NAME_PREFIX := $(5))) \
+	     $(if $($(2)-padding-$(3)),$(eval D2C_PADDING_BYTES := $($(2)-padding-$(3))),$(eval D2C_PADDING_BYTES := 0)) \
+	     $(src_dir)/scripts/d2c.sh -i $(6) -a $(D2C_ALIGN_BYTES) -p $(D2C_NAME_PREFIX) -t $(D2C_PADDING_BYTES) > $(1)
 compile_gen_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " GEN-DEP   $(subst $(build_dir)/,,$(1))"; \
 	     echo "$(1:.dep=$(2)): $(3)" >> $(1)
@@ -361,7 +364,7 @@ $(platform_build_dir)/%.dep: $(platform_src_dir)/%.dts
 	$(call compile_gen_dep,$@,.o,$(@:.dep=.c))
 
 $(platform_build_dir)/%.c: $(platform_build_dir)/%.dtb
-	$(call compile_d2c,$@,$(platform-varprefix-$(subst .dtb,.o,$(subst /,-,$(subst $(platform_build_dir)/,,$<)))),16,$<)
+	$(call compile_d2c,$@,platform,$(subst .dtb,.o,$(subst /,-,$(subst $(platform_build_dir)/,,$<))),16,dt,$<)
 
 $(platform_build_dir)/%.dtb: $(platform_src_dir)/%.dts
 	$(call compile_dts,$@,$<)
