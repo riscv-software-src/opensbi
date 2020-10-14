@@ -182,6 +182,11 @@ _bss_zero:
 	call	fw_save_info
 	MOV_5R	a0, s0, a1, s1, a2, s2, a3, s3, a4, s4
 
+#ifdef FW_FDT_PATH
+	/* Override previous arg1 */
+	la	a1, fw_fdt_bin
+#endif
+
 	/* Override previous arg1 */
 	MOV_3R	s0, a0, s1, a1, s2, a2
 	call	fw_prev_arg1
@@ -668,3 +673,14 @@ _reset_regs:
 	csrw CSR_MSCRATCH, 0
 
 	ret
+
+#ifdef FW_FDT_PATH
+	.section .rodata
+	.align 4
+	.globl fw_fdt_bin
+fw_fdt_bin:
+	.incbin FW_FDT_PATH
+#ifdef FW_FDT_PADDING
+	.fill FW_FDT_PADDING, 1, 0
+#endif
+#endif

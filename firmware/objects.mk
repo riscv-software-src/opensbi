@@ -17,6 +17,13 @@ ifdef FW_TEXT_START
 firmware-genflags-y += -DFW_TEXT_START=$(FW_TEXT_START)
 endif
 
+ifdef FW_FDT_PATH
+firmware-genflags-y += -DFW_FDT_PATH=\"$(FW_FDT_PATH)\"
+ifdef FW_FDT_PADDING
+firmware-genflags-y += -DFW_FDT_PADDING=$(FW_FDT_PADDING)
+endif
+endif
+
 firmware-bins-$(FW_DYNAMIC) += fw_dynamic.bin
 
 firmware-bins-$(FW_JUMP) += fw_jump.bin

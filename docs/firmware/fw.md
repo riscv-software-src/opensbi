@@ -51,11 +51,17 @@ case, a *FW_PAYLOAD* firmware allows embedding a flattened device tree in the
 Firmware Configuration and Compilation
 --------------------------------------
 
-All firmware types mandate the definition of the following compile time
-configuration parameter.
+All firmware types support the following common compile time configuration
+parameters:
 
-* **FW_TEXT_ADDR** - Defines the address at which the previous booting stage
-  loads OpenSBI firmware.
+* **FW_TEXT_ADDR** - Defines the execution address of the OpenSBI firmware.
+  This configuration parameter is mandatory.
+* **FW_FDT_PATH** - Path to an external flattened device tree binary file to
+  be embedded in the *.rodata* section of the final firmware. If this option
+  is not provided then the firmware will expect the FDT to be passed as an
+  argument by the prior booting stage.
+* **FW_FDT_PADDING** - Optional zero bytes padding to the embedded flattened
+  device tree binary file specified by **FW_FDT_PATH** option.
 
 Additionally, each firmware type as a set of type specific configuration
 parameters. Detailed information for each firmware type can be found in the
