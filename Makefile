@@ -94,6 +94,8 @@ DTC		=	dtc
 
 # Guess the compillers xlen
 OPENSBI_CC_XLEN := $(shell TMP=`$(CC) -dumpmachine | sed 's/riscv\([0-9][0-9]\).*/\1/'`; echo $${TMP})
+OPENSBI_CC_ABI := $(shell TMP=`$(CC) -v 2>&1 | sed -n 's/.*\(with\-abi=\([a-zA-Z0-9]*\)\).*/\2/p'`; echo $${TMP})
+OPENSBI_CC_ISA := $(shell TMP=`$(CC) -v 2>&1 | sed -n 's/.*\(with\-arch=\([a-zA-Z0-9]*\)\).*/\2/p'`; echo $${TMP})
 
 # Setup platform XLEN
 ifndef PLATFORM_RISCV_XLEN
@@ -143,14 +145,22 @@ deps-y+=$(firmware-objs-path-y:.o=.dep)
 
 # Setup platform ABI, ISA and Code Model
 ifndef PLATFORM_RISCV_ABI
-  ifeq ($(PLATFORM_RISCV_XLEN), 32)
-    PLATFORM_RISCV_ABI = ilp$(PLATFORM_RISCV_XLEN)
+  ifneq ($(PLATFORM_RISCV_TOOLCHAIN_DEFAULT), 1)
+    ifeq ($(PLATFORM_RISCV_XLEN), 32)
+      PLATFORM_RISCV_ABI = ilp$(PLATFORM_RISCV_XLEN)
+    else
+      PLATFORM_RISCV_ABI = lp$(PLATFORM_RISCV_XLEN)
+    endif
   else
-    PLATFORM_RISCV_ABI = lp$(PLATFORM_RISCV_XLEN)
+    PLATFORM_RISCV_ABI = $(OPENSBI_CC_ABI)
   endif
 endif
 ifndef PLATFORM_RISCV_ISA
-  PLATFORM_RISCV_ISA = rv$(PLATFORM_RISCV_XLEN)imafdc
+  ifneq ($(PLATFORM_RISCV_TOOLCHAIN_DEFAULT), 1)
+    PLATFORM_RISCV_ISA = rv$(PLATFORM_RISCV_XLEN)imafdc
+  else
+    PLATFORM_RISCV_ISA = $(OPENSBI_CC_ISA)
+  endif
 endif
 ifndef PLATFORM_RISCV_CODE_MODEL
   PLATFORM_RISCV_CODE_MODEL = medany
