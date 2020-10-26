@@ -30,6 +30,8 @@ void (*sbi_hart_expected_trap)(void) = &__sbi_expected_trap;
 struct hart_features {
 	unsigned long features;
 	unsigned int pmp_count;
+	unsigned int pmp_addr_bits;
+	unsigned long pmp_gran;
 	unsigned int mhpm_count;
 };
 static unsigned long hart_features_offset;
@@ -159,15 +161,36 @@ unsigned int sbi_hart_pmp_count(struct sbi_scratch *scratch)
 	return hfeatures->pmp_count;
 }
 
+unsigned long sbi_hart_pmp_granularity(struct sbi_scratch *scratch)
+{
+	struct hart_features *hfeatures =
+			sbi_scratch_offset_ptr(scratch, hart_features_offset);
+
+	return hfeatures->pmp_gran;
+}
+
+unsigned int sbi_hart_pmp_addrbits(struct sbi_scratch *scratch)
+{
+	struct hart_features *hfeatures =
+			sbi_scratch_offset_ptr(scratch, hart_features_offset);
+
+	return hfeatures->pmp_addr_bits;
+}
+
 int sbi_hart_pmp_configure(struct sbi_scratch *scratch)
 {
 	struct sbi_domain_memregion *reg;
 	struct sbi_domain *dom = sbi_domain_thishart_ptr();
-	unsigned int pmp_idx = 0, pmp_flags;
+	unsigned int pmp_idx = 0, pmp_flags, pmp_bits, pmp_gran_log2;
 	unsigned int pmp_count = sbi_hart_pmp_count(scratch);
+	unsigned long pmp_addr = 0, pmp_addr_max = 0;
 
 	if (!pmp_count)
 		return 0;
+
+	pmp_gran_log2 = log2roundup(sbi_hart_pmp_granularity(scratch));
+	pmp_bits = sbi_hart_pmp_addrbits(scratch) - 1;
+	pmp_addr_max = (1UL << pmp_bits) | ((1UL << pmp_bits) - 1);
 
 	sbi_domain_for_each_memregion(dom, reg) {
 		if (pmp_count <= pmp_idx)
@@ -183,7 +206,14 @@ int sbi_hart_pmp_configure(struct sbi_scratch *scratch)
 		if (reg->flags & SBI_DOMAIN_MEMREGION_MMODE)
 			pmp_flags |= PMP_L;
 
-		pmp_set(pmp_idx++, pmp_flags, reg->base, reg->order);
+		pmp_addr =  reg->base >> PMP_SHIFT;
+		if (pmp_gran_log2 <= reg->order && pmp_addr < pmp_addr_max)
+			pmp_set(pmp_idx++, pmp_flags, reg->base, reg->order);
+		else {
+			sbi_printf("Can not configure pmp for domain %s", dom->name);
+			sbi_printf("because memory region address %lx or size %lx is not in range\n",
+				    reg->base, reg->order);
+		}
 	}
 
 	return 0;
@@ -282,6 +312,21 @@ done:
 		sbi_strncpy(features_str, "none", nfstr);
 }
 
+static unsigned long hart_pmp_get_allowed_addr(void)
+{
+	unsigned long val = 0;
+	struct sbi_trap_info trap = {0};
+
+	csr_write_allowed(CSR_PMPADDR0, (ulong)&trap, PMP_ADDR_MASK);			\
+	if (!trap.cause) {
+		val = csr_read_allowed(CSR_PMPADDR0, (ulong)&trap);
+		if (trap.cause)
+			val = 0;
+	}
+
+	return val;
+}
+
 static void hart_detect_features(struct sbi_scratch *scratch)
 {
 	struct sbi_trap_info trap = {0};
@@ -332,8 +377,17 @@ static void hart_detect_features(struct sbi_scratch *scratch)
 	__check_csr_32(__csr + 0, __rdonly, __wrval, __field, __skip)	\
 	__check_csr_32(__csr + 32, __rdonly, __wrval, __field, __skip)
 
-	/* Detect number of PMP regions */
-	__check_csr_64(CSR_PMPADDR0, 0, 1UL, pmp_count, __pmp_skip);
+	/**
+	 * Detect the allowed address bits & granularity. At least PMPADDR0
+	 * should be implemented.
+	 */
+	val = hart_pmp_get_allowed_addr();
+	if (val) {
+		hfeatures->pmp_gran =  1 << (__ffs(val) + 2);
+		hfeatures->pmp_addr_bits = __fls(val) + 1;
+		/* Detect number of PMP regions. At least PMPADDR0 should be implemented*/
+		__check_csr_64(CSR_PMPADDR0, 0, val, pmp_count, __pmp_skip);
+	}
 __pmp_skip:
 
 	/* Detect number of MHPM counters */
