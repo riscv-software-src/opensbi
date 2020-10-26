@@ -59,35 +59,44 @@ static void sbi_boot_prints(struct sbi_scratch *scratch, u32 hartid)
 	}
 
 	/* Platform details */
-	sbi_printf("Platform Name       : %s\n", sbi_platform_name(plat));
+	sbi_printf("Platform Name             : %s\n",
+		   sbi_platform_name(plat));
 	sbi_platform_get_features_str(plat, str, sizeof(str));
-	sbi_printf("Platform Features   : %s\n", str);
-	sbi_printf("Platform HART Count : %u\n",
+	sbi_printf("Platform Features         : %s\n", str);
+	sbi_printf("Platform HART Count       : %u\n",
 		   sbi_platform_hart_count(plat));
 
 	/* Firmware details */
-	sbi_printf("Firmware Base       : 0x%lx\n", scratch->fw_start);
-	sbi_printf("Firmware Size       : %d KB\n",
+	sbi_printf("Firmware Base             : 0x%lx\n", scratch->fw_start);
+	sbi_printf("Firmware Size             : %d KB\n",
 		   (u32)(scratch->fw_size / 1024));
 
 	/* SBI details */
-	sbi_printf("Runtime SBI Version : %d.%d\n",
+	sbi_printf("Runtime SBI Version       : %d.%d\n",
 		   sbi_ecall_version_major(), sbi_ecall_version_minor());
 	sbi_printf("\n");
 
 	/* Domain details */
-	sbi_domain_dump_all("");
+	sbi_domain_dump_all("      ");
 
 	/* Boot HART details */
-	sbi_printf("Boot HART ID        : %u\n", hartid);
-	sbi_printf("Boot HART Domain    : %s\n", dom->name);
+	sbi_printf("Boot HART ID              : %u\n", hartid);
+	sbi_printf("Boot HART Domain          : %s\n", dom->name);
 	misa_string(xlen, str, sizeof(str));
-	sbi_printf("Boot HART ISA       : %s\n", str);
+	sbi_printf("Boot HART ISA             : %s\n", str);
 	sbi_hart_get_features_str(scratch, str, sizeof(str));
-	sbi_printf("Boot HART Features  : %s\n", str);
-	sbi_printf("Boot HART PMP Count : %d\n", sbi_hart_pmp_count(scratch));
-	sbi_printf("Boot HART MHPM Count: %d\n", sbi_hart_mhpm_count(scratch));
-	sbi_hart_delegation_dump(scratch, "Boot HART ", "   ");
+	sbi_printf("Boot HART Features        : %s\n", str);
+	sbi_printf("Boot HART PMP Count       : %d\n",
+		   sbi_hart_pmp_count(scratch));
+	sbi_printf("Boot HART PMP Granularity : %lu\n",
+		   sbi_hart_pmp_granularity(scratch));
+	sbi_printf("Boot HART PMP Address Bits: %d\n",
+		   sbi_hart_pmp_addrbits(scratch));
+	sbi_printf("Boot HART MHPM Count      : %d\n",
+		   sbi_hart_mhpm_count(scratch));
+	sbi_printf("Boot HART MHPM Count      : %d\n",
+		   sbi_hart_mhpm_count(scratch));
+	sbi_hart_delegation_dump(scratch, "Boot HART ", "         ");
 }
 
 static spinlock_t coldboot_lock = SPIN_LOCK_INITIALIZER;
