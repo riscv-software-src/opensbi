@@ -404,12 +404,12 @@ int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 		dhart = dom->boot_hartid;
 
 		/* Ignore if boot HART not possible for this domain */
-		if (!sbi_hartmask_test_hart(i, dom->possible_harts))
+		if (!sbi_hartmask_test_hart(dhart, dom->possible_harts))
 			continue;
 
 		/* Ignore if boot HART assigned different domain */
 		if (sbi_hartid_to_domain(dhart) != dom ||
-		    !sbi_hartmask_test_hart(i, &dom->assigned_harts))
+		    !sbi_hartmask_test_hart(dhart, &dom->assigned_harts))
 			continue;
 
 		/* Startup boot HART of domain */
