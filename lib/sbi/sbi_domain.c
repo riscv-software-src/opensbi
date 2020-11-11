@@ -403,6 +403,10 @@ int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 		/* Domain boot HART */
 		dhart = dom->boot_hartid;
 
+		/* Ignore of boot HART is off limits */
+		if (SBI_HARTMASK_MAX_BITS <= dhart)
+			continue;
+
 		/* Ignore if boot HART not possible for this domain */
 		if (!sbi_hartmask_test_hart(dhart, dom->possible_harts))
 			continue;
