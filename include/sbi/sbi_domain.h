@@ -39,8 +39,10 @@ struct sbi_domain_memregion {
 #define SBI_DOMAIN_MEMREGION_READABLE		(1UL << 0)
 #define SBI_DOMAIN_MEMREGION_WRITEABLE		(1UL << 1)
 #define SBI_DOMAIN_MEMREGION_EXECUTABLE		(1UL << 2)
-#define SBI_DOMAIN_MEMREGION_MMIO		(1UL << 3)
-#define SBI_DOMAIN_MEMREGION_MMODE		(1UL << 4)
+#define SBI_DOMAIN_MEMREGION_MMODE		(1UL << 3)
+#define SBI_DOMAIN_MEMREGION_ACCESS_MASK	(0xfUL)
+
+#define SBI_DOMAIN_MEMREGION_MMIO		(1UL << 31)
 	unsigned long flags;
 };
 
