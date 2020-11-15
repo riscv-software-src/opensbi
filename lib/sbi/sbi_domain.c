@@ -395,6 +395,17 @@ int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 						&tdom->assigned_harts);
 			hartid_to_domain_table[i] = dom;
 			sbi_hartmask_set_hart(i, &dom->assigned_harts);
+
+			/*
+			 * If cold boot HART is assigned to this domain then
+			 * override boot HART of this domain.
+			 */
+			if (i == cold_hartid &&
+			    dom->boot_hartid != cold_hartid) {
+				sbi_printf("Domain%d Boot HARTID forced to"
+					   " %d\n", dom->index, cold_hartid);
+				dom->boot_hartid = cold_hartid;
+			}
 		}
 	}
 
