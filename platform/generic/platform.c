@@ -13,6 +13,7 @@
 #include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_string.h>
+#include <sbi_utils/fdt/fdt_domain.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/irqchip/fdt_irqchip.h>
@@ -148,6 +149,7 @@ static int generic_final_init(bool cold_boot)
 
 	fdt_cpu_fixup(fdt);
 	fdt_fixups(fdt);
+	fdt_domain_fixup(fdt);
 
 	if (generic_plat && generic_plat->fdt_fixup) {
 		rc = generic_plat->fdt_fixup(fdt, generic_plat_match);
@@ -168,6 +170,11 @@ static void generic_final_exit(void)
 {
 	if (generic_plat && generic_plat->final_exit)
 		generic_plat->final_exit(generic_plat_match);
+}
+
+static int generic_domains_init(void)
+{
+	return fdt_domains_populate(sbi_scratch_thishart_arg1_ptr());
 }
 
 static u64 generic_tlbr_flush_limit(void)
@@ -202,6 +209,8 @@ const struct sbi_platform_operations platform_ops = {
 	.final_init		= generic_final_init,
 	.early_exit		= generic_early_exit,
 	.final_exit		= generic_final_exit,
+	.domains_init		= generic_domains_init,
+	.domain_get		= fdt_domain_get,
 	.console_putc		= fdt_serial_putc,
 	.console_getc		= fdt_serial_getc,
 	.console_init		= fdt_serial_init,
