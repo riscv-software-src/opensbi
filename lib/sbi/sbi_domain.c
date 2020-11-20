@@ -375,6 +375,14 @@ int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 	struct sbi_domain *dom, *tdom;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
+	/* Initialize domains for the platform */
+	rc = sbi_platform_domains_init(plat);
+	if (rc) {
+		sbi_printf("%s: platform domains_init() failed (error %d)\n",
+			   __func__, rc);
+		return rc;
+	}
+
 	/* Discover domains */
 	for (i = 0; i < SBI_HARTMASK_MAX_BITS; i++) {
 		/* Ignore invalid HART */
