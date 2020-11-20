@@ -371,7 +371,7 @@ int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 			 * Ensure that we have room for Domain Index to
 			 * HART ID mapping
 			 */
-			if (domain_count <= SBI_DOMAIN_MAX_INDEX)
+			if (SBI_DOMAIN_MAX_INDEX <= domain_count)
 				return SBI_ENOSPC;
 
 			/* Sanitize discovered domain */
