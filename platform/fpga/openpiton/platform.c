@@ -174,16 +174,6 @@ static int openpiton_timer_init(bool cold_boot)
 }
 
 /*
- * Reset the openpiton.
- */
-static int openpiton_system_reset(u32 type)
-{
-	/* For now nothing to do. */
-	sbi_printf("System reset\n");
-	return 0;
-}
-
-/*
  * Platform descriptor.
  */
 const struct sbi_platform_operations platform_ops = {
@@ -200,7 +190,6 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_value = clint_timer_value,
 	.timer_event_start = clint_timer_event_start,
 	.timer_event_stop = clint_timer_event_stop,
-	.system_reset = openpiton_system_reset
 };
 
 const struct sbi_platform platform = {

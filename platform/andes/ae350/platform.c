@@ -114,14 +114,6 @@ static int ae350_timer_init(bool cold_boot)
 	return plmt_warm_timer_init();
 }
 
-/* Reset the platform. */
-static int ae350_system_reset(u32 type)
-{
-	/* For now nothing to do. */
-	sbi_printf("System reset\n");
-	return 0;
-}
-
 /* Vendor-Specific SBI handler */
 static int ae350_vendor_ext_provider(long extid, long funcid,
 	unsigned long *args, unsigned long *out_value,
@@ -184,8 +176,6 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_value	   = plmt_timer_value,
 	.timer_event_start = plmt_timer_event_start,
 	.timer_event_stop  = plmt_timer_event_stop,
-
-	.system_reset	 = ae350_system_reset,
 
 	.vendor_ext_provider = ae350_vendor_ext_provider
 };

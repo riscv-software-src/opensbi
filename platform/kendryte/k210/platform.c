@@ -129,14 +129,6 @@ static int k210_timer_init(bool cold_boot)
 	return clint_warm_timer_init();
 }
 
-static int k210_system_reset(u32 type)
-{
-	/* For now nothing to do. */
-	sbi_printf("System reset\n");
-
-	return 0;
-}
-
 const struct sbi_platform_operations platform_ops = {
 	.final_init	= k210_final_init,
 
@@ -154,8 +146,6 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_value	   = clint_timer_value,
 	.timer_event_stop  = clint_timer_event_stop,
 	.timer_event_start = clint_timer_event_start,
-
-	.system_reset	 = k210_system_reset
 };
 
 const struct sbi_platform platform = {
