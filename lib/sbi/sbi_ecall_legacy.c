@@ -103,7 +103,7 @@ static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
 		}
 		break;
 	case SBI_EXT_0_1_SHUTDOWN:
-		sbi_system_reset(SBI_PLATFORM_RESET_SHUTDOWN);
+		sbi_system_reset(SBI_SRST_RESET_TYPE_SHUTDOWN);
 		break;
 	default:
 		ret = SBI_ENOTSUPP;

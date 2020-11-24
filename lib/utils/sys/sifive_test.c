@@ -24,11 +24,11 @@ int sifive_test_system_reset(u32 type)
 	 * was successful so that QEMU exits
 	 */
 	switch (type) {
-	case SBI_PLATFORM_RESET_SHUTDOWN:
+	case SBI_SRST_RESET_TYPE_SHUTDOWN:
 		writew(FINISHER_PASS, sifive_test_base);
 		break;
-	case SBI_PLATFORM_RESET_COLD:
-	case SBI_PLATFORM_RESET_WARM:
+	case SBI_SRST_RESET_TYPE_COLD_REBOOT:
+	case SBI_SRST_RESET_TYPE_WARM_REBOOT:
 		writew(FINISHER_RESET, sifive_test_base);
 		break;
 	}

@@ -18,7 +18,7 @@
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_init.h>
 
-void __noreturn sbi_system_reset(u32 platform_reset_type)
+void __noreturn sbi_system_reset(u32 reset_type)
 {
 	ulong hbase = 0, hmask;
 	u32 cur_hartid = current_hartid();
@@ -40,7 +40,7 @@ void __noreturn sbi_system_reset(u32 platform_reset_type)
 	/* Platform specific reset if domain allowed system reset */
 	if (dom->system_reset_allowed)
 		sbi_platform_system_reset(sbi_platform_ptr(scratch),
-					  platform_reset_type);
+					  reset_type);
 
 	/* If platform specific reset did not work then do sbi_exit() */
 	sbi_exit(scratch);

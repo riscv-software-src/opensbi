@@ -40,6 +40,7 @@
 
 #ifndef __ASSEMBLY__
 
+#include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_version.h>
@@ -137,9 +138,6 @@ struct sbi_platform_operations {
 	int (*hart_stop)(void);
 
 	/** Reset the platform */
-#define SBI_PLATFORM_RESET_SHUTDOWN	0
-#define SBI_PLATFORM_RESET_COLD		1
-#define SBI_PLATFORM_RESET_WARM		2
 	int (*system_reset)(u32 reset_type);
 
 	/** platform specific SBI extension implementation probe function */
