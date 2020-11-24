@@ -12,6 +12,8 @@
 
 #include <sbi/sbi_types.h>
 
-void __noreturn sbi_system_reset(u32 reset_type);
+bool sbi_system_reset_supported(u32 reset_type, u32 reset_reason);
+
+void __noreturn sbi_system_reset(u32 reset_type, u32 reset_reason);
 
 #endif

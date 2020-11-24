@@ -137,8 +137,10 @@ struct sbi_platform_operations {
 	 */
 	int (*hart_stop)(void);
 
+	/* Check whether reset type and reason supported by the platform */
+	int (*system_reset_check)(u32 reset_type, u32 reset_reason);
 	/** Reset the platform */
-	int (*system_reset)(u32 reset_type);
+	void (*system_reset)(u32 reset_type, u32 reset_reason);
 
 	/** platform specific SBI extension implementation probe function */
 	int (*vendor_ext_check)(long extid);
@@ -653,19 +655,38 @@ static inline void sbi_platform_timer_exit(const struct sbi_platform *plat)
 }
 
 /**
- * Reset the platform
+ * Check whether reset type and reason supported by the platform
  *
  * @param plat pointer to struct sbi_platform
  * @param reset_type type of reset
+ * @param reset_reason reason for reset
  *
- * @return 0 on success and negative error code on failure
+ * @return 0 if reset type and reason not supported and 1 if supported
  */
-static inline int sbi_platform_system_reset(const struct sbi_platform *plat,
-					    u32 reset_type)
+static inline int sbi_platform_system_reset_check(
+					    const struct sbi_platform *plat,
+					    u32 reset_type, u32 reset_reason)
+{
+	if (plat && sbi_platform_ops(plat)->system_reset_check)
+		return sbi_platform_ops(plat)->system_reset_check(reset_type,
+								  reset_reason);
+	return 0;
+}
+
+/**
+ * Reset the platform
+ *
+ * This function will not return for supported reset type and reset reason
+ *
+ * @param plat pointer to struct sbi_platform
+ * @param reset_type type of reset
+ * @param reset_reason reason for reset
+ */
+static inline void sbi_platform_system_reset(const struct sbi_platform *plat,
+					     u32 reset_type, u32 reset_reason)
 {
 	if (plat && sbi_platform_ops(plat)->system_reset)
-		return sbi_platform_ops(plat)->system_reset(reset_type);
-	return 0;
+		sbi_platform_ops(plat)->system_reset(reset_type, reset_reason);
 }
 
 /**

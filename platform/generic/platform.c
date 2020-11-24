@@ -177,12 +177,24 @@ static u64 generic_tlbr_flush_limit(void)
 	return SBI_PLATFORM_TLB_RANGE_FLUSH_LIMIT_DEFAULT;
 }
 
-static int generic_system_reset(u32 reset_type)
+static int generic_system_reset_check(u32 reset_type, u32 reset_reason)
 {
-	if (generic_plat && generic_plat->system_reset)
-		return generic_plat->system_reset(reset_type,
-						  generic_plat_match);
-	return fdt_system_reset(reset_type);
+	if (generic_plat && generic_plat->system_reset_check)
+		return generic_plat->system_reset_check(reset_type,
+							reset_reason,
+							generic_plat_match);
+	return fdt_system_reset_check(reset_type, reset_reason);
+}
+
+static void generic_system_reset(u32 reset_type, u32 reset_reason)
+{
+	if (generic_plat && generic_plat->system_reset) {
+		generic_plat->system_reset(reset_type, reset_reason,
+					   generic_plat_match);
+		return;
+	}
+
+	fdt_system_reset(reset_type, reset_reason);
 }
 
 const struct sbi_platform_operations platform_ops = {
@@ -205,6 +217,7 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_event_start	= fdt_timer_event_start,
 	.timer_init		= fdt_timer_init,
 	.timer_exit		= fdt_timer_exit,
+	.system_reset_check	= generic_system_reset_check,
 	.system_reset		= generic_system_reset,
 };
 

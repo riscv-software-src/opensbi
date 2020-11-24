@@ -33,5 +33,6 @@ static const struct fdt_match sifive_test_reset_match[] = {
 struct fdt_reset fdt_reset_sifive = {
 	.match_table = sifive_test_reset_match,
 	.init = sifive_test_reset_init,
+	.system_reset_check = sifive_test_system_reset_check,
 	.system_reset = sifive_test_system_reset
 };

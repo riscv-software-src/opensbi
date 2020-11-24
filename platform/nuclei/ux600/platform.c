@@ -186,13 +186,17 @@ static int ux600_timer_init(bool cold_boot)
 	return clint_warm_timer_init();
 }
 
-static int ux600_system_reset(u32 type)
+static int ux600_system_reset_check(u32 type, u32 reason)
+{
+	return 1;
+}
+
+static void ux600_system_reset(u32 type, u32 reason)
 {
 	/* Reset system using MSFTRST register in Nuclei Timer. */
 	writel(UX600_NUCLEI_TIMER_MSFTRST_KEY, (void *)(UX600_NUCLEI_TIMER_ADDR
 					+ UX600_NUCLEI_TIMER_MSFTRST_OFS));
 	while(1);
-	return 0;
 }
 
 const struct sbi_platform_operations platform_ops = {
@@ -209,6 +213,7 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_event_stop	= clint_timer_event_stop,
 	.timer_event_start	= clint_timer_event_start,
 	.timer_init		= ux600_timer_init,
+	.system_reset_check	= ux600_system_reset_check,
 	.system_reset		= ux600_system_reset
 };
 

@@ -140,7 +140,12 @@ int htif_getc(void)
 	return ch - 1;
 }
 
-int htif_system_reset(u32 type)
+int htif_system_reset_check(u32 type, u32 reason)
+{
+	return 1;
+}
+
+void htif_system_reset(u32 type, u32 reason)
 {
 	while (1) {
 		fromhost = 0;

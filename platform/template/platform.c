@@ -178,11 +178,18 @@ static void platform_timer_event_stop(void)
 }
 
 /*
- * Reset the platform.
+ * Check reset type and reason supported by the platform.
  */
-static int platform_system_reset(u32 type)
+static int platform_system_reset_check(u32 type, u32 reason)
 {
 	return 0;
+}
+
+/*
+ * Reset the platform.
+ */
+static void platform_system_reset(u32 type, u32 reason)
+{
 }
 
 /*
@@ -202,6 +209,7 @@ const struct sbi_platform_operations platform_ops = {
 	.timer_event_stop	= platform_timer_event_stop,
 	.timer_event_start	= platform_timer_event_start,
 	.timer_init		= platform_timer_init,
+	.system_reset_check	= platform_system_reset_check,
 	.system_reset		= platform_system_reset
 };
 const struct sbi_platform platform = {

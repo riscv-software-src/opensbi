@@ -18,5 +18,6 @@ static const struct fdt_match htif_reset_match[] = {
 
 struct fdt_reset fdt_reset_htif = {
 	.match_table = htif_reset_match,
+	.system_reset_check = htif_system_reset_check,
 	.system_reset = htif_system_reset
 };
