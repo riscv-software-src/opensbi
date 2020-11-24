@@ -169,6 +169,9 @@ int sbi_ecall_init(void)
 	ret = sbi_ecall_register_extension(&ecall_hsm);
 	if (ret)
 		return ret;
+	ret = sbi_ecall_register_extension(&ecall_srst);
+	if (ret)
+		return ret;
 	ret = sbi_ecall_register_extension(&ecall_legacy);
 	if (ret)
 		return ret;

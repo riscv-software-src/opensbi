@@ -14,6 +14,7 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_ipi.h>
+#include <sbi/sbi_system.h>
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_tlb.h>
 
@@ -126,4 +127,63 @@ struct sbi_ecall_extension ecall_ipi = {
 	.extid_start = SBI_EXT_IPI,
 	.extid_end = SBI_EXT_IPI,
 	.handle = sbi_ecall_ipi_handler,
+};
+
+static int sbi_ecall_srst_handler(unsigned long extid, unsigned long funcid,
+				  unsigned long *args, unsigned long *out_val,
+				  struct sbi_trap_info *out_trap)
+{
+	if (funcid == SBI_EXT_SRST_RESET) {
+		if ((((u32)-1U) <= ((u64)args[0])) ||
+		    (((u32)-1U) <= ((u64)args[1])))
+			return SBI_EINVAL;
+
+		switch (args[0]) {
+		case SBI_SRST_RESET_TYPE_SHUTDOWN:
+		case SBI_SRST_RESET_TYPE_COLD_REBOOT:
+		case SBI_SRST_RESET_TYPE_WARM_REBOOT:
+			break;
+		default:
+			return SBI_ENOTSUPP;
+		}
+
+		switch (args[1]) {
+		case SBI_SRST_RESET_REASON_NONE:
+		case SBI_SRST_RESET_REASON_SYSFAIL:
+			break;
+		default:
+			return SBI_ENOTSUPP;
+		}
+
+		if (sbi_system_reset_supported(args[0], args[1]))
+			sbi_system_reset(args[0], args[1]);
+	}
+
+	return SBI_ENOTSUPP;
+}
+
+static int sbi_ecall_srst_probe(unsigned long extid, unsigned long *out_val)
+{
+	u32 type, count = 0;
+
+	/*
+	 * At least one standard reset types should be supported by
+	 * the platform for SBI SRST extension to be usable.
+	 */
+
+	for (type = 0; type <= SBI_SRST_RESET_TYPE_LAST; type++) {
+		if (sbi_system_reset_supported(type,
+					SBI_SRST_RESET_REASON_NONE))
+			count++;
+	}
+
+	*out_val = (count) ? 1 : 0;
+	return 0;
+}
+
+struct sbi_ecall_extension ecall_srst = {
+	.extid_start = SBI_EXT_SRST,
+	.extid_end = SBI_EXT_SRST,
+	.handle = sbi_ecall_srst_handler,
+	.probe = sbi_ecall_srst_probe,
 };
