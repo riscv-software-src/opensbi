@@ -27,7 +27,7 @@ U-Boot v2020.01 (or higher) should be used.
 The HiFive Unleashed device tree(DT) is merged in Linux v5.2 release. This
 DT (device tree) is not backward compatible with the DT passed from FSBL.
 
-To use Linux v5.2 (or higher, the pre-built DTB (DT binary) from Linux v5.2
+To use Linux v5.2 (or higher), the pre-built DTB (DT binary) from Linux v5.2
 (or higher) should be used to build SiFive FU540 OpenSBI binaries by using
 the compile time option *FW_FDT_PATH*.
 
