@@ -752,7 +752,7 @@ static int overlay_symbol_update(void *fdt, void *fdto)
 		if ((e - s) > len && (memcmp(s, "/__overlay__/", len) == 0)) {
 			/* /<fragment-name>/__overlay__/<relative-subnode-path> */
 			rel_path = s + len;
-			rel_path_len = e - rel_path;
+			rel_path_len = e - rel_path - 1;
 		} else if ((e - s) == len
 			   && (memcmp(s, "/__overlay__", len - 1) == 0)) {
 			/* /<fragment-name>/__overlay__ */

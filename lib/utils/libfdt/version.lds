@@ -20,6 +20,7 @@ LIBFDT_1.2 {
 		fdt_get_alias_namelen;
 		fdt_get_alias;
 		fdt_get_path;
+                fdt_header_size;
 		fdt_supernode_atdepth_offset;
 		fdt_node_depth;
 		fdt_parent_offset;
