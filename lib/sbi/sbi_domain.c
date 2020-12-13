@@ -441,88 +441,16 @@ int sbi_domain_register(struct sbi_domain *dom,
 int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 {
 	int rc;
-	u32 i, j, dhart;
-	bool dom_exists;
-	struct sbi_domain *dom, *tdom;
+	u32 i, dhart;
+	struct sbi_domain *dom;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	/* Initialize domains for the platform */
+	/* Initialize and populate domains for the platform */
 	rc = sbi_platform_domains_init(plat);
 	if (rc) {
 		sbi_printf("%s: platform domains_init() failed (error %d)\n",
 			   __func__, rc);
 		return rc;
-	}
-
-	/* Discover domains */
-	for (i = 0; i < SBI_HARTMASK_MAX_BITS; i++) {
-		/* Ignore invalid HART */
-		if (sbi_platform_hart_invalid(plat, i))
-			continue;
-
-		/* Get domain assigned to HART */
-		dom = sbi_platform_domain_get(plat, i);
-		if (!dom)
-			continue;
-
-		/* Check if domain already discovered */
-		dom_exists = FALSE;
-		sbi_domain_for_each(j, tdom) {
-			if (tdom == dom) {
-				dom_exists = TRUE;
-				break;
-			}
-		}
-
-		/* Newly discovered domain */
-		if (!dom_exists) {
-			/*
-			 * Ensure that we have room for Domain Index to
-			 * HART ID mapping
-			 */
-			if (SBI_DOMAIN_MAX_INDEX <= domain_count) {
-				sbi_printf("%s: No room for %s\n",
-					   __func__, dom->name);
-				return SBI_ENOSPC;
-			}
-
-			/* Sanitize discovered domain */
-			rc = sanitize_domain(plat, dom);
-			if (rc) {
-				sbi_printf("%s: sanity checks failed for"
-					   " %s (error %d)\n", __func__,
-					   dom->name, rc);
-				return rc;
-			}
-
-			/* Assign index to domain */
-			dom->index = domain_count++;
-			domidx_to_domain_table[dom->index] = dom;
-
-			/* Clear assigned HARTs of domain */
-			sbi_hartmask_clear_all(&dom->assigned_harts);
-		}
-
-		/* Assign domain to HART if HART is a possible HART */
-		if (sbi_hartmask_test_hart(i, dom->possible_harts)) {
-			tdom = hartid_to_domain_table[i];
-			if (tdom)
-				sbi_hartmask_clear_hart(i,
-						&tdom->assigned_harts);
-			hartid_to_domain_table[i] = dom;
-			sbi_hartmask_set_hart(i, &dom->assigned_harts);
-
-			/*
-			 * If cold boot HART is assigned to this domain then
-			 * override boot HART of this domain.
-			 */
-			if (i == cold_hartid &&
-			    dom->boot_hartid != cold_hartid) {
-				sbi_printf("Domain%d Boot HARTID forced to"
-					   " %d\n", dom->index, cold_hartid);
-				dom->boot_hartid = cold_hartid;
-			}
-		}
 	}
 
 	/* Startup boot HART of domains */

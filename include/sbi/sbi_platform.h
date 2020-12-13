@@ -93,8 +93,6 @@ struct sbi_platform_operations {
 
 	/** Initialize (or populate) domains for the platform */
 	int (*domains_init)(void);
-	/** Get domain pointer for given HART id */
-	struct sbi_domain *(*domain_get)(u32 hartid);
 
 	/** Write a character to the platform console output */
 	void (*console_putc)(char ch);
@@ -465,22 +463,6 @@ static inline int sbi_platform_domains_init(const struct sbi_platform *plat)
 	if (plat && sbi_platform_ops(plat)->domains_init)
 		return sbi_platform_ops(plat)->domains_init();
 	return 0;
-}
-
-/**
- * Get domain pointer for given HART
- *
- * @param plat pointer to struct sbi_platform
- * @param hartid shorthand letter for CPU extensions
- *
- * @return non-NULL domain pointer on success and NULL on failure
- */
-static inline struct sbi_domain *sbi_platform_domain_get(
-				const struct sbi_platform *plat, u32 hartid)
-{
-	if (plat && sbi_platform_ops(plat)->domain_get)
-		return sbi_platform_ops(plat)->domain_get(hartid);
-	return NULL;
 }
 
 /**
