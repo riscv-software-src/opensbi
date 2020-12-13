@@ -215,8 +215,6 @@ skip_device_disable:
 	fdt_nop_node(fdt, poffset);
 }
 
-static struct sbi_domain *fdt_hartid_to_domain[SBI_HARTMASK_MAX_BITS];
-
 #define FDT_DOMAIN_MAX_COUNT		8
 #define FDT_DOMAIN_REGION_MAX_COUNT	16
 
@@ -225,13 +223,6 @@ static struct sbi_domain fdt_domains[FDT_DOMAIN_MAX_COUNT];
 static struct sbi_hartmask fdt_masks[FDT_DOMAIN_MAX_COUNT];
 static struct sbi_domain_memregion
 	fdt_regions[FDT_DOMAIN_MAX_COUNT][FDT_DOMAIN_REGION_MAX_COUNT + 2];
-
-struct sbi_domain *fdt_domain_get(u32 hartid)
-{
-	if (SBI_HARTMASK_MAX_BITS <= hartid)
-		return NULL;
-	return fdt_hartid_to_domain[hartid];
-}
 
 static int __fdt_parse_region(void *fdt, int domain_offset,
 			      int region_offset, u32 region_access,
@@ -283,9 +274,10 @@ static int __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 	const u32 *val;
 	struct sbi_domain *dom;
 	struct sbi_hartmask *mask;
-	int i, err, len, cpu_offset;
+	struct sbi_hartmask assign_mask;
 	int *cold_domain_offset = opaque;
 	struct sbi_domain_memregion *regions;
+	int i, err, len, cpus_offset, cpu_offset, doffset;
 
 	/* Sanity check on maximum domains we can handle */
 	if (FDT_DOMAIN_MAX_COUNT <= fdt_domains_count)
@@ -388,18 +380,46 @@ static int __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 	else
 		dom->system_reset_allowed = FALSE;
 
+	/* Find /cpus DT node */
+	cpus_offset = fdt_path_offset(fdt, "/cpus");
+	if (cpus_offset < 0)
+		return cpus_offset;
+
+	/* HART to domain assignment mask based on CPU DT nodes */
+	sbi_hartmask_clear_all(&assign_mask);
+	fdt_for_each_subnode(cpu_offset, fdt, cpus_offset) {
+		err = fdt_parse_hart_id(fdt, cpu_offset, &val32);
+		if (err)
+			continue;
+
+		if (SBI_HARTMASK_MAX_BITS <= val32)
+			continue;
+
+		val = fdt_getprop(fdt, cpu_offset, "opensbi-domain", &len);
+		if (!val || len < 4)
+			return SBI_EINVAL;
+
+		doffset = fdt_node_offset_by_phandle(fdt, fdt32_to_cpu(*val));
+		if (doffset < 0)
+			return doffset;
+
+		if (doffset == domain_offset)
+			sbi_hartmask_set_hart(val32, &assign_mask);
+	}
+
 	/* Increment domains count */
 	fdt_domains_count++;
 
-	return 0;
+	/* Register the domain */
+	return sbi_domain_register(dom, &assign_mask);
 }
 
 int fdt_domains_populate(void *fdt)
 {
 	const u32 *val;
-	int rc, cold_domain_offset;
-	u32 i, hartid, cold_hartid;
-	int err, len, cpus_offset, cpu_offset, domain_offset;
+	int cold_domain_offset;
+	u32 hartid, cold_hartid;
+	int err, len, cpus_offset, cpu_offset;
 
 	/* Sanity checks */
 	if (!fdt)
@@ -430,37 +450,6 @@ int fdt_domains_populate(void *fdt)
 	}
 
 	/* Iterate over each domain in FDT and populate details */
-	rc = fdt_iterate_each_domain(fdt, &cold_domain_offset,
-				     __fdt_parse_domain);
-	if (rc)
-		return rc;
-
-	/* HART to domain assignment based on CPU DT nodes*/
-	fdt_for_each_subnode(cpu_offset, fdt, cpus_offset) {
-		err = fdt_parse_hart_id(fdt, cpu_offset, &hartid);
-		if (err)
-			continue;
-
-		if (SBI_HARTMASK_MAX_BITS <= hartid)
-			continue;
-
-		val = fdt_getprop(fdt, cpu_offset, "opensbi-domain", &len);
-		if (!val || len < 4)
-			continue;
-
-		domain_offset = fdt_node_offset_by_phandle(fdt,
-							   fdt32_to_cpu(*val));
-		if (domain_offset < 0)
-			continue;
-
-		for (i = 0; i < fdt_domains_count; i++) {
-			if (!sbi_strcmp(fdt_domains[i].name,
-				fdt_get_name(fdt, domain_offset, NULL))) {
-				fdt_hartid_to_domain[hartid] = &fdt_domains[i];
-				break;
-			}
-		}
-	}
-
-	return 0;
+	return fdt_iterate_each_domain(fdt, &cold_domain_offset,
+				       __fdt_parse_domain);
 }

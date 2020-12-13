@@ -59,17 +59,6 @@ int fdt_iterate_each_memregion(void *fdt, int domain_offset, void *opaque,
 void fdt_domain_fixup(void *fdt);
 
 /**
- * Get domain instance for given HART
- *
- * Note: Domains should be populated before using this function.
- *
- * @param hartid the HART for which domain instance is needed
- *
- * @return pointer to domain instance on success and NULL on failure
- */
-struct sbi_domain *fdt_domain_get(u32 hartid);
-
-/**
  * Populate domains from device tree
  *
  * It is recommended that platform support call this function in
