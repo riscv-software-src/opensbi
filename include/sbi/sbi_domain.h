@@ -146,6 +146,16 @@ void sbi_domain_dump(const struct sbi_domain *dom, const char *suffix);
 /** Dump all domain details on the console */
 void sbi_domain_dump_all(const char *suffix);
 
+/**
+ * Register a new domain
+ * @param dom pointer to domain
+ * @param assign_mask pointer to HART mask of HARTs assigned to the domain
+ *
+ * @return 0 on success and negative error code on failure
+ */
+int sbi_domain_register(struct sbi_domain *dom,
+			const struct sbi_hartmask *assign_mask);
+
 /** Finalize domain tables and startup non-root domains */
 int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid);
 

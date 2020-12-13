@@ -367,6 +367,77 @@ void sbi_domain_dump_all(const char *suffix)
 	}
 }
 
+int sbi_domain_register(struct sbi_domain *dom,
+			const struct sbi_hartmask *assign_mask)
+{
+	u32 i;
+	int rc;
+	struct sbi_domain *tdom;
+	u32 cold_hartid = current_hartid();
+	const struct sbi_platform *plat = sbi_platform_thishart_ptr();
+
+	if (!dom || !assign_mask)
+		return SBI_EINVAL;
+
+	/* Check if domain already discovered */
+	sbi_domain_for_each(i, tdom) {
+		if (tdom == dom)
+			return SBI_EALREADY;
+	}
+
+	/*
+	 * Ensure that we have room for Domain Index to
+	 * HART ID mapping
+	 */
+	if (SBI_DOMAIN_MAX_INDEX <= domain_count) {
+		sbi_printf("%s: No room for %s\n",
+			   __func__, dom->name);
+		return SBI_ENOSPC;
+	}
+
+	/* Sanitize discovered domain */
+	rc = sanitize_domain(plat, dom);
+	if (rc) {
+		sbi_printf("%s: sanity checks failed for"
+			   " %s (error %d)\n", __func__,
+			   dom->name, rc);
+		return rc;
+	}
+
+	/* Assign index to domain */
+	dom->index = domain_count++;
+	domidx_to_domain_table[dom->index] = dom;
+
+	/* Clear assigned HARTs of domain */
+	sbi_hartmask_clear_all(&dom->assigned_harts);
+
+	/* Assign domain to HART if HART is a possible HART */
+	sbi_hartmask_for_each_hart(i, assign_mask) {
+		if (!sbi_hartmask_test_hart(i, dom->possible_harts))
+			continue;
+
+		tdom = hartid_to_domain_table[i];
+		if (tdom)
+			sbi_hartmask_clear_hart(i,
+					&tdom->assigned_harts);
+		hartid_to_domain_table[i] = dom;
+		sbi_hartmask_set_hart(i, &dom->assigned_harts);
+
+		/*
+		 * If cold boot HART is assigned to this domain then
+		 * override boot HART of this domain.
+		 */
+		if (i == cold_hartid &&
+		    dom->boot_hartid != cold_hartid) {
+			sbi_printf("Domain%d Boot HARTID forced to"
+				   " %d\n", dom->index, cold_hartid);
+			dom->boot_hartid = cold_hartid;
+		}
+	}
+
+	return 0;
+}
+
 int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 {
 	int rc;
