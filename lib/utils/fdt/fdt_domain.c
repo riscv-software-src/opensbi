@@ -16,66 +16,74 @@
 #include <sbi_utils/fdt/fdt_domain.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 
-void fdt_iterate_each_domain(void *fdt, void *opaque,
-			     void (*fn)(void *fdt, int domain_offset,
-					void *opaque))
+int fdt_iterate_each_domain(void *fdt, void *opaque,
+			    int (*fn)(void *fdt, int domain_offset,
+				       void *opaque))
 {
-	int doffset, poffset;
+	int rc, doffset, poffset;
 
 	if (!fdt || !fn)
-		return;
+		return SBI_EINVAL;
 
 	poffset = fdt_path_offset(fdt, "/chosen");
 	if (poffset < 0)
-		return;
+		return 0;
 	poffset = fdt_node_offset_by_compatible(fdt, poffset,
 						"opensbi,domain,config");
 	if (poffset < 0)
-		return;
+		return 0;
 
 	fdt_for_each_subnode(doffset, fdt, poffset) {
 		if (fdt_node_check_compatible(fdt, doffset,
 					      "opensbi,domain,instance"))
 			continue;
 
-		fn(fdt, doffset, opaque);
+		rc = fn(fdt, doffset, opaque);
+		if (rc)
+			return rc;
 	}
+
+	return 0;
 }
 
-void fdt_iterate_each_memregion(void *fdt, int domain_offset, void *opaque,
-				void (*fn)(void *fdt, int domain_offset,
-					   int region_offset, u32 region_access,
-					   void *opaque))
+int fdt_iterate_each_memregion(void *fdt, int domain_offset, void *opaque,
+			       int (*fn)(void *fdt, int domain_offset,
+					 int region_offset, u32 region_access,
+					 void *opaque))
 {
 	u32 i, rcount;
-	int len, region_offset;
+	int rc, len, region_offset;
 	const u32 *regions;
 
 	if (!fdt || (domain_offset < 0) || !fn)
-		return;
+		return SBI_EINVAL;
 
 	if (fdt_node_check_compatible(fdt, domain_offset,
 				      "opensbi,domain,instance"))
-		return;
+		return SBI_EINVAL;
 
 	regions = fdt_getprop(fdt, domain_offset, "regions", &len);
 	if (!regions)
-		return;
+		return 0;
 
 	rcount = (u32)len / (sizeof(u32) * 2);
 	for (i = 0; i < rcount; i++) {
 		region_offset = fdt_node_offset_by_phandle(fdt,
 						fdt32_to_cpu(regions[2 * i]));
 		if (region_offset < 0)
-			continue;
+			return region_offset;
 
 		if (fdt_node_check_compatible(fdt, region_offset,
 					      "opensbi,domain,memregion"))
-			continue;
+			return SBI_EINVAL;
 
-		fn(fdt, domain_offset, region_offset,
-		   fdt32_to_cpu(regions[(2 * i) + 1]), opaque);
+		rc = fn(fdt, domain_offset, region_offset,
+			fdt32_to_cpu(regions[(2 * i) + 1]), opaque);
+		if (rc)
+			return rc;
 	}
+
+	return 0;
 }
 
 struct __fixup_find_domain_offset_info {
@@ -83,57 +91,61 @@ struct __fixup_find_domain_offset_info {
 	int *doffset;
 };
 
-static void __fixup_find_domain_offset(void *fdt, int doff, void *p)
+static int __fixup_find_domain_offset(void *fdt, int doff, void *p)
 {
 	struct __fixup_find_domain_offset_info *fdo = p;
 
-	if (sbi_strcmp(fdo->name, fdt_get_name(fdt, doff, NULL)))
-		return;
+	if (!sbi_strcmp(fdo->name, fdt_get_name(fdt, doff, NULL)))
+		*fdo->doffset = doff;
 
-	*fdo->doffset = doff;
+	return 0;
 }
 
 #define DISABLE_DEVICES_MASK	(SBI_DOMAIN_MEMREGION_READABLE | \
 				 SBI_DOMAIN_MEMREGION_WRITEABLE | \
 				 SBI_DOMAIN_MEMREGION_EXECUTABLE)
 
-static void __fixup_count_disable_devices(void *fdt, int doff, int roff,
-					  u32 perm, void *p)
+static int __fixup_count_disable_devices(void *fdt, int doff, int roff,
+					 u32 perm, void *p)
 {
 	int len;
 	u32 *dcount = p;
 
 	if (perm & DISABLE_DEVICES_MASK)
-		return;
+		return 0;
 
 	len = 0;
 	if (fdt_getprop(fdt, roff, "devices", &len))
 		*dcount += len / sizeof(u32);
+
+	return 0;
 }
 
-static void __fixup_disable_devices(void *fdt, int doff, int roff,
-				    u32 raccess, void *p)
+static int __fixup_disable_devices(void *fdt, int doff, int roff,
+				   u32 raccess, void *p)
 {
 	int i, len, coff;
 	const u32 *devices;
 
 	if (raccess & DISABLE_DEVICES_MASK)
-		return;
+		return 0;
 
 	len = 0;
 	devices = fdt_getprop(fdt, roff, "devices", &len);
 	if (!devices)
-		return;
+		return 0;
 	len = len / sizeof(u32);
 
 	for (i = 0; i < len; i++) {
 		coff = fdt_node_offset_by_phandle(fdt,
 					fdt32_to_cpu(devices[i]));
 		if (coff < 0)
-			continue;
+			return coff;
 
 		fdt_setprop_string(fdt, coff, "status", "disabled");
 	}
+
+	return 0;
 }
 
 void fdt_domain_fixup(void *fdt)
@@ -221,9 +233,9 @@ struct sbi_domain *fdt_domain_get(u32 hartid)
 	return fdt_hartid_to_domain[hartid];
 }
 
-static void __fdt_parse_region(void *fdt, int domain_offset,
-			       int region_offset, u32 region_access,
-			       void *opaque)
+static int __fdt_parse_region(void *fdt, int domain_offset,
+			      int region_offset, u32 region_access,
+			      void *opaque)
 {
 	int len;
 	u32 val32;
@@ -234,13 +246,13 @@ static void __fdt_parse_region(void *fdt, int domain_offset,
 
 	/* Find next region of the domain */
 	if (FDT_DOMAIN_REGION_MAX_COUNT <= *region_count)
-		return;
+		return SBI_EINVAL;
 	region = &fdt_regions[fdt_domains_count][*region_count];
 
 	/* Read "base" DT property */
 	val = fdt_getprop(fdt, region_offset, "base", &len);
 	if (!val && len >= 8)
-		return;
+		return SBI_EINVAL;
 	val64 = fdt32_to_cpu(val[0]);
 	val64 = (val64 << 32) | fdt32_to_cpu(val[1]);
 	region->base = val64;
@@ -248,10 +260,10 @@ static void __fdt_parse_region(void *fdt, int domain_offset,
 	/* Read "order" DT property */
 	val = fdt_getprop(fdt, region_offset, "order", &len);
 	if (!val && len >= 4)
-		return;
+		return SBI_EINVAL;
 	val32 = fdt32_to_cpu(*val);
 	if (val32 < 3 || __riscv_xlen < val32)
-		return;
+		return SBI_EINVAL;
 	region->order = val32;
 
 	/* Read "mmio" DT property */
@@ -260,9 +272,11 @@ static void __fdt_parse_region(void *fdt, int domain_offset,
 		region->flags |= SBI_DOMAIN_MEMREGION_MMIO;
 
 	(*region_count)++;
+
+	return 0;
 }
 
-static void __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
+static int __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 {
 	u32 val32;
 	u64 val64;
@@ -275,7 +289,7 @@ static void __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 
 	/* Sanity check on maximum domains we can handle */
 	if (FDT_DOMAIN_MAX_COUNT <= fdt_domains_count)
-		return;
+		return SBI_EINVAL;
 	dom = &fdt_domains[fdt_domains_count];
 	mask = &fdt_masks[fdt_domains_count];
 	regions = &fdt_regions[fdt_domains_count][0];
@@ -295,11 +309,11 @@ static void __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 			cpu_offset = fdt_node_offset_by_phandle(fdt,
 							fdt32_to_cpu(val[i]));
 			if (cpu_offset < 0)
-				continue;
+				return cpu_offset;
 
 			err = fdt_parse_hart_id(fdt, cpu_offset, &val32);
 			if (err)
-				continue;
+				return err;
 
 			sbi_hartmask_set_hart(val32, mask);
 		}
@@ -310,8 +324,10 @@ static void __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 	sbi_memset(regions, 0,
 		   sizeof(*regions) * (FDT_DOMAIN_REGION_MAX_COUNT + 2));
 	dom->regions = regions;
-	fdt_iterate_each_memregion(fdt, domain_offset, &val32,
-				   __fdt_parse_region);
+	err = fdt_iterate_each_memregion(fdt, domain_offset, &val32,
+					 __fdt_parse_region);
+	if (err)
+		return err;
 	sbi_domain_memregion_initfw(&regions[val32]);
 
 	/* Read "boot-hart" DT property */
@@ -374,12 +390,14 @@ static void __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 
 	/* Increment domains count */
 	fdt_domains_count++;
+
+	return 0;
 }
 
 int fdt_domains_populate(void *fdt)
 {
 	const u32 *val;
-	int cold_domain_offset;
+	int rc, cold_domain_offset;
 	u32 i, hartid, cold_hartid;
 	int err, len, cpus_offset, cpu_offset, domain_offset;
 
@@ -412,7 +430,10 @@ int fdt_domains_populate(void *fdt)
 	}
 
 	/* Iterate over each domain in FDT and populate details */
-	fdt_iterate_each_domain(fdt, &cold_domain_offset, __fdt_parse_domain);
+	rc = fdt_iterate_each_domain(fdt, &cold_domain_offset,
+				     __fdt_parse_domain);
+	if (rc)
+		return rc;
 
 	/* HART to domain assignment based on CPU DT nodes*/
 	fdt_for_each_subnode(cpu_offset, fdt, cpus_offset) {

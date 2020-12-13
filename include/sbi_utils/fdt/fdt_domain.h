@@ -21,10 +21,12 @@ struct sbi_domain;
  * @param fdt device tree blob
  * @param opaque private pointer for each iteration
  * @param fn callback function for each iteration
+ *
+ * @return 0 on success and negative error code on failure
  */
-void fdt_iterate_each_domain(void *fdt, void *opaque,
-			     void (*fn)(void *fdt, int domain_offset,
-					void *opaque));
+int fdt_iterate_each_domain(void *fdt, void *opaque,
+			    int (*fn)(void *fdt, int domain_offset,
+				      void *opaque));
 
 /**
  * Iterate over each memregion of a domain in device tree
@@ -33,11 +35,13 @@ void fdt_iterate_each_domain(void *fdt, void *opaque,
  * @param domain_offset domain DT node offset
  * @param opaque private pointer for each iteration
  * @param fn callback function for each iteration
+ *
+ * @return 0 on success and negative error code on failure
  */
-void fdt_iterate_each_memregion(void *fdt, int domain_offset, void *opaque,
-				void (*fn)(void *fdt, int domain_offset,
-					   int region_offset, u32 region_access,
-					   void *opaque));
+int fdt_iterate_each_memregion(void *fdt, int domain_offset, void *opaque,
+			       int (*fn)(void *fdt, int domain_offset,
+					 int region_offset, u32 region_access,
+					 void *opaque));
 
 /**
  * Fix up the domain configuration in the device tree
