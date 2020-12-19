@@ -128,7 +128,7 @@ int sbi_misaligned_load_handler(ulong addr, ulong tval2, ulong tinst,
 	}
 
 	if (!fp)
-		SET_RD(insn, regs, val.data_ulong << shift >> shift);
+		SET_RD(insn, regs, ((long)(val.data_ulong << shift)) >> shift);
 #ifdef __riscv_flen
 	else if (len == 8)
 		SET_F64_RD(insn, regs, val.data_u64);
