@@ -59,4 +59,8 @@ int sbi_tlb_request(ulong hmask, ulong hbase, struct sbi_tlb_info *tinfo);
 
 int sbi_tlb_init(struct sbi_scratch *scratch, bool cold_boot);
 
+extern unsigned long tlb_sync_off;
+extern unsigned long tlb_fifo_off;
+extern unsigned long tlb_fifo_mem_off;
+
 #endif

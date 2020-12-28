@@ -22,9 +22,9 @@
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_platform.h>
 
-static unsigned long tlb_sync_off;
-static unsigned long tlb_fifo_off;
-static unsigned long tlb_fifo_mem_off;
+unsigned long tlb_sync_off;
+unsigned long tlb_fifo_off;
+unsigned long tlb_fifo_mem_off;
 static unsigned long tlb_range_flush_limit;
 
 static void sbi_tlb_flush_all(void)
