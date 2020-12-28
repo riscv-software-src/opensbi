@@ -17,18 +17,20 @@
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_tlb.h>
+#include <sbi/sbi_trap.h>
 
 static int sbi_ecall_time_handler(unsigned long extid, unsigned long funcid,
-				  unsigned long *args, unsigned long *out_val,
+				  const struct sbi_trap_regs *regs,
+				  unsigned long *out_val,
 				  struct sbi_trap_info *out_trap)
 {
 	int ret = 0;
 
 	if (funcid == SBI_EXT_TIME_SET_TIMER) {
 #if __riscv_xlen == 32
-		sbi_timer_event_start((((u64)args[1] << 32) | (u64)args[0]));
+		sbi_timer_event_start((((u64)regs->a1 << 32) | (u64)regs->a0));
 #else
-		sbi_timer_event_start((u64)args[0]);
+		sbi_timer_event_start((u64)regs->a0);
 #endif
 	} else
 		ret = SBI_ENOTSUPP;
@@ -43,7 +45,8 @@ struct sbi_ecall_extension ecall_time = {
 };
 
 static int sbi_ecall_rfence_handler(unsigned long extid, unsigned long funcid,
-				    unsigned long *args, unsigned long *out_val,
+				    const struct sbi_trap_regs *regs,
+				    unsigned long *out_val,
 				    struct sbi_trap_info *out_trap)
 {
 	int ret = 0;
@@ -60,41 +63,41 @@ static int sbi_ecall_rfence_handler(unsigned long extid, unsigned long funcid,
 	case SBI_EXT_RFENCE_REMOTE_FENCE_I:
 		SBI_TLB_INFO_INIT(&tlb_info, 0, 0, 0, 0,
 				  SBI_ITLB_FLUSH, source_hart);
-		ret = sbi_tlb_request(args[0], args[1], &tlb_info);
+		ret = sbi_tlb_request(regs->a0, regs->a1, &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA:
-		SBI_TLB_INFO_INIT(&tlb_info, args[2], args[3], 0, 0,
+		SBI_TLB_INFO_INIT(&tlb_info, regs->a2, regs->a3, 0, 0,
 				  SBI_TLB_FLUSH_GVMA, source_hart);
-		ret = sbi_tlb_request(args[0], args[1], &tlb_info);
+		ret = sbi_tlb_request(regs->a0, regs->a1, &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA_VMID:
-		SBI_TLB_INFO_INIT(&tlb_info, args[2], args[3], 0, args[4],
+		SBI_TLB_INFO_INIT(&tlb_info, regs->a2, regs->a3, 0, regs->a4,
 				  SBI_TLB_FLUSH_GVMA_VMID, source_hart);
-		ret = sbi_tlb_request(args[0], args[1], &tlb_info);
+		ret = sbi_tlb_request(regs->a0, regs->a1, &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA:
 		vmid = (csr_read(CSR_HGATP) & HGATP_VMID_MASK);
 		vmid = vmid >> HGATP_VMID_SHIFT;
-		SBI_TLB_INFO_INIT(&tlb_info, args[2], args[3], 0, vmid,
+		SBI_TLB_INFO_INIT(&tlb_info, regs->a2, regs->a3, 0, vmid,
 				  SBI_TLB_FLUSH_VVMA, source_hart);
-		ret = sbi_tlb_request(args[0], args[1], &tlb_info);
+		ret = sbi_tlb_request(regs->a0, regs->a1, &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA_ASID:
 		vmid = (csr_read(CSR_HGATP) & HGATP_VMID_MASK);
 		vmid = vmid >> HGATP_VMID_SHIFT;
-		SBI_TLB_INFO_INIT(&tlb_info, args[2], args[3], args[4], vmid,
-				  SBI_TLB_FLUSH_VVMA_ASID, source_hart);
-		ret = sbi_tlb_request(args[0], args[1], &tlb_info);
+		SBI_TLB_INFO_INIT(&tlb_info, regs->a2, regs->a3, regs->a4,
+				  vmid, SBI_TLB_FLUSH_VVMA_ASID, source_hart);
+		ret = sbi_tlb_request(regs->a0, regs->a1, &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_SFENCE_VMA:
-		SBI_TLB_INFO_INIT(&tlb_info, args[2], args[3], 0, 0,
+		SBI_TLB_INFO_INIT(&tlb_info, regs->a2, regs->a3, 0, 0,
 				  SBI_TLB_FLUSH_VMA, source_hart);
-		ret = sbi_tlb_request(args[0], args[1], &tlb_info);
+		ret = sbi_tlb_request(regs->a0, regs->a1, &tlb_info);
 		break;
 	case SBI_EXT_RFENCE_REMOTE_SFENCE_VMA_ASID:
-		SBI_TLB_INFO_INIT(&tlb_info, args[2], args[3], args[4], 0,
+		SBI_TLB_INFO_INIT(&tlb_info, regs->a2, regs->a3, regs->a4, 0,
 				  SBI_TLB_FLUSH_VMA_ASID, source_hart);
-		ret = sbi_tlb_request(args[0], args[1], &tlb_info);
+		ret = sbi_tlb_request(regs->a0, regs->a1, &tlb_info);
 		break;
 	default:
 		ret = SBI_ENOTSUPP;
@@ -110,13 +113,14 @@ struct sbi_ecall_extension ecall_rfence = {
 };
 
 static int sbi_ecall_ipi_handler(unsigned long extid, unsigned long funcid,
-				 unsigned long *args, unsigned long *out_val,
+				 const struct sbi_trap_regs *regs,
+				 unsigned long *out_val,
 				 struct sbi_trap_info *out_trap)
 {
 	int ret = 0;
 
 	if (funcid == SBI_EXT_IPI_SEND_IPI)
-		ret = sbi_ipi_send_smode(args[0], args[1]);
+		ret = sbi_ipi_send_smode(regs->a0, regs->a1);
 	else
 		ret = SBI_ENOTSUPP;
 
@@ -130,15 +134,16 @@ struct sbi_ecall_extension ecall_ipi = {
 };
 
 static int sbi_ecall_srst_handler(unsigned long extid, unsigned long funcid,
-				  unsigned long *args, unsigned long *out_val,
+				  const struct sbi_trap_regs *regs,
+				  unsigned long *out_val,
 				  struct sbi_trap_info *out_trap)
 {
 	if (funcid == SBI_EXT_SRST_RESET) {
-		if ((((u32)-1U) <= ((u64)args[0])) ||
-		    (((u32)-1U) <= ((u64)args[1])))
+		if ((((u32)-1U) <= ((u64)regs->a0)) ||
+		    (((u32)-1U) <= ((u64)regs->a1)))
 			return SBI_EINVAL;
 
-		switch (args[0]) {
+		switch (regs->a0) {
 		case SBI_SRST_RESET_TYPE_SHUTDOWN:
 		case SBI_SRST_RESET_TYPE_COLD_REBOOT:
 		case SBI_SRST_RESET_TYPE_WARM_REBOOT:
@@ -147,7 +152,7 @@ static int sbi_ecall_srst_handler(unsigned long extid, unsigned long funcid,
 			return SBI_ENOTSUPP;
 		}
 
-		switch (args[1]) {
+		switch (regs->a1) {
 		case SBI_SRST_RESET_REASON_NONE:
 		case SBI_SRST_RESET_REASON_SYSFAIL:
 			break;
@@ -155,8 +160,8 @@ static int sbi_ecall_srst_handler(unsigned long extid, unsigned long funcid,
 			return SBI_ENOTSUPP;
 		}
 
-		if (sbi_system_reset_supported(args[0], args[1]))
-			sbi_system_reset(args[0], args[1]);
+		if (sbi_system_reset_supported(regs->a0, regs->a1))
+			sbi_system_reset(regs->a0, regs->a1);
 	}
 
 	return SBI_ENOTSUPP;

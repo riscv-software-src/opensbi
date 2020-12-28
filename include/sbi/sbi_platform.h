@@ -47,6 +47,7 @@
 
 struct sbi_domain;
 struct sbi_trap_info;
+struct sbi_trap_regs;
 
 /** Possible feature flags of a platform */
 enum sbi_platform_features {
@@ -146,7 +147,7 @@ struct sbi_platform_operations {
 	int (*vendor_ext_check)(long extid);
 	/** platform specific SBI extension implementation provider */
 	int (*vendor_ext_provider)(long extid, long funcid,
-				   unsigned long *args,
+				   const struct sbi_trap_regs *regs,
 				   unsigned long *out_value,
 				   struct sbi_trap_info *out_trap);
 } __packed;
@@ -710,7 +711,7 @@ static inline int sbi_platform_vendor_ext_check(const struct sbi_platform *plat,
  * @param plat pointer to struct sbi_platform
  * @param extid	vendor SBI extension id
  * @param funcid SBI function id within the extension id
- * @param args pointer to arguments passed by the caller
+ * @param regs pointer to trap registers passed by the caller
  * @param out_value output value that can be filled by the callee
  * @param out_trap trap info that can be filled by the callee
  *
@@ -719,13 +720,13 @@ static inline int sbi_platform_vendor_ext_check(const struct sbi_platform *plat,
 static inline int sbi_platform_vendor_ext_provider(
 					const struct sbi_platform *plat,
 					long extid, long funcid,
-					unsigned long *args,
+					const struct sbi_trap_regs *regs,
 					unsigned long *out_value,
 					struct sbi_trap_info *out_trap)
 {
 	if (plat && sbi_platform_ops(plat)->vendor_ext_provider) {
 		return sbi_platform_ops(plat)->vendor_ext_provider(extid,
-								funcid, args,
+								funcid, regs,
 								out_value,
 								out_trap);
 	}

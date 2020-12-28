@@ -12,6 +12,7 @@
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_platform.h>
+#include <sbi/sbi_trap.h>
 
 static int sbi_ecall_vendor_probe(unsigned long extid,
 				  unsigned long *out_val)
@@ -22,11 +23,12 @@ static int sbi_ecall_vendor_probe(unsigned long extid,
 }
 
 static int sbi_ecall_vendor_handler(unsigned long extid, unsigned long funcid,
-				    unsigned long *args, unsigned long *out_val,
+				    const struct sbi_trap_regs *regs,
+				    unsigned long *out_val,
 				    struct sbi_trap_info *out_trap)
 {
 	return sbi_platform_vendor_ext_provider(sbi_platform_thishart_ptr(),
-						extid, funcid, args,
+						extid, funcid, regs,
 						out_val, out_trap);
 }
 

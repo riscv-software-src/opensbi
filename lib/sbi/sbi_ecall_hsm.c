@@ -11,13 +11,15 @@
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_trap.h>
 #include <sbi/sbi_version.h>
 #include <sbi/sbi_hsm.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/riscv_asm.h>
 
 static int sbi_ecall_hsm_handler(unsigned long extid, unsigned long funcid,
-				 unsigned long *args, unsigned long *out_val,
+				 const struct sbi_trap_regs *regs,
+				 unsigned long *out_val,
 				 struct sbi_trap_info *out_trap)
 {
 	ulong smode;
@@ -29,14 +31,14 @@ static int sbi_ecall_hsm_handler(unsigned long extid, unsigned long funcid,
 		smode = csr_read(CSR_MSTATUS);
 		smode = (smode & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
 		ret = sbi_hsm_hart_start(scratch, sbi_domain_thishart_ptr(),
-					 args[0], args[1], smode, args[2]);
+					 regs->a0, regs->a1, smode, regs->a2);
 		break;
 	case SBI_EXT_HSM_HART_STOP:
 		ret = sbi_hsm_hart_stop(scratch, TRUE);
 		break;
 	case SBI_EXT_HSM_HART_GET_STATUS:
 		hstate = sbi_hsm_hart_get_state(sbi_domain_thishart_ptr(),
-						args[0]);
+						regs->a0);
 		ret = sbi_hsm_hart_state_to_status(hstate);
 		break;
 	default:
