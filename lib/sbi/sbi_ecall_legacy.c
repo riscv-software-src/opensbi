@@ -80,7 +80,8 @@ static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
 						&hmask, out_trap);
 		if (ret != SBI_ETRAP) {
 			SBI_TLB_INFO_INIT(&tlb_info, 0, 0, 0, 0,
-					  SBI_ITLB_FLUSH, source_hart);
+					  sbi_tlb_local_fence_i,
+					  source_hart);
 			ret = sbi_tlb_request(hmask, 0, &tlb_info);
 		}
 		break;
@@ -89,7 +90,8 @@ static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
 						&hmask, out_trap);
 		if (ret != SBI_ETRAP) {
 			SBI_TLB_INFO_INIT(&tlb_info, regs->a1, regs->a2, 0, 0,
-					  SBI_TLB_FLUSH_VMA, source_hart);
+					  sbi_tlb_local_sfence_vma,
+					  source_hart);
 			ret = sbi_tlb_request(hmask, 0, &tlb_info);
 		}
 		break;
@@ -99,7 +101,8 @@ static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
 		if (ret != SBI_ETRAP) {
 			SBI_TLB_INFO_INIT(&tlb_info, regs->a1,
 					  regs->a2, regs->a3, 0,
-					  SBI_TLB_FLUSH_VMA_ASID, source_hart);
+					  sbi_tlb_local_sfence_vma_asid,
+					  source_hart);
 			ret = sbi_tlb_request(hmask, 0, &tlb_info);
 		}
 		break;
