@@ -261,6 +261,9 @@ _scratch_init:
 	/* Store hartid-to-scratch function address in scratch space */
 	la	a4, _hartid_to_scratch
 	REG_S	a4, SBI_SCRATCH_HARTID_TO_SCRATCH_OFFSET(tp)
+	/* Store trap-exit function address in scratch space */
+	la	a4, _trap_exit
+	REG_S	a4, SBI_SCRATCH_TRAP_EXIT_OFFSET(tp)
 	/* Clear tmp0 in scratch space */
 	REG_S	zero, SBI_SCRATCH_TMP0_OFFSET(tp)
 	/* Store firmware options in scratch space */
@@ -422,6 +425,18 @@ _start_warm:
 _skip_trap_handler_rv32_hyp:
 #endif
 	csrw	CSR_MTVEC, a4
+
+#if __riscv_xlen == 32
+	/* Override trap exit for H-extension */
+	csrr	a5, CSR_MISA
+	srli	a5, a5, ('H' - 'A')
+	andi	a5, a5, 0x1
+	beq	a5, zero, _skip_trap_exit_rv32_hyp
+	la	a4, _trap_exit_rv32_hyp
+	csrr	a5, CSR_MSCRATCH
+	REG_S	a4, SBI_SCRATCH_TRAP_EXIT_OFFSET(a5)
+_skip_trap_exit_rv32_hyp:
+#endif
 
 	/* Initialize SBI runtime */
 	csrr	a0, CSR_MSCRATCH
@@ -653,6 +668,20 @@ _trap_handler:
 
 	mret
 
+	.section .entry, "ax", %progbits
+	.align 3
+	.globl _trap_exit
+_trap_exit:
+	add	sp, a0, zero
+
+	TRAP_RESTORE_GENERAL_REGS_EXCEPT_SP_T0
+
+	TRAP_RESTORE_MEPC_MSTATUS 0
+
+	TRAP_RESTORE_SP_T0
+
+	mret
+
 #if __riscv_xlen == 32
 	.section .entry, "ax", %progbits
 	.align 3
@@ -665,6 +694,20 @@ _trap_handler_rv32_hyp:
 	TRAP_SAVE_GENERAL_REGS_EXCEPT_SP_T0
 
 	TRAP_CALL_C_ROUTINE
+
+	TRAP_RESTORE_GENERAL_REGS_EXCEPT_SP_T0
+
+	TRAP_RESTORE_MEPC_MSTATUS 1
+
+	TRAP_RESTORE_SP_T0
+
+	mret
+
+	.section .entry, "ax", %progbits
+	.align 3
+	.globl _trap_exit_rv32_hyp
+_trap_exit_rv32_hyp:
+	add	sp, a0, zero
 
 	TRAP_RESTORE_GENERAL_REGS_EXCEPT_SP_T0
 
