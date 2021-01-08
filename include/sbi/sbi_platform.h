@@ -45,7 +45,7 @@
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_version.h>
 
-struct sbi_domain;
+struct sbi_domain_memregion;
 struct sbi_trap_info;
 struct sbi_trap_regs;
 
@@ -92,6 +92,8 @@ struct sbi_platform_operations {
 	 */
 	int (*misa_get_xlen)(void);
 
+	/** Get platform specific root domain memory regions */
+	struct sbi_domain_memregion *(*domains_root_regions)(void);
 	/** Initialize (or populate) domains for the platform */
 	int (*domains_init)(void);
 
@@ -450,6 +452,22 @@ static inline int sbi_platform_misa_xlen(const struct sbi_platform *plat)
 	if (plat && sbi_platform_ops(plat)->misa_get_xlen)
 		return sbi_platform_ops(plat)->misa_get_xlen();
 	return -1;
+}
+
+/**
+ * Get platform specific root domain memory regions
+ *
+ * @param plat pointer to struct sbi_platform
+ *
+ * @return an array of memory regions terminated by a region with order zero
+ * or NULL for no memory regions
+ */
+static inline struct sbi_domain_memregion *
+sbi_platform_domains_root_regions(const struct sbi_platform *plat)
+{
+	if (plat && sbi_platform_ops(plat)->domains_root_regions)
+		return sbi_platform_ops(plat)->domains_root_regions();
+	return NULL;
 }
 
 /**

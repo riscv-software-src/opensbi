@@ -496,6 +496,7 @@ int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 {
 	u32 i;
+	struct sbi_domain_memregion *memregs;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	/* Root domain firmware memory region */
@@ -514,6 +515,11 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 	/* Root domain memory region end */
 	root_memregs[ROOT_END_REGION].order = 0;
 
+	/* Use platform specific root memory regions when available */
+	memregs = sbi_platform_domains_root_regions(plat);
+	if (memregs)
+		root.regions = memregs;
+
 	/* Root domain boot HART id is same as coldboot HART id */
 	root.boot_hartid = cold_hartid;
 
@@ -522,18 +528,12 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 	root.next_addr = scratch->next_addr;
 	root.next_mode = scratch->next_mode;
 
-	/* Select root domain for all valid HARTs */
+	/* Root domain possible and assigned HARTs */
 	for (i = 0; i < SBI_HARTMASK_MAX_BITS; i++) {
 		if (sbi_platform_hart_invalid(plat, i))
 			continue;
 		sbi_hartmask_set_hart(i, &root_hmask);
-		hartid_to_domain_table[i] = &root;
-		sbi_hartmask_set_hart(i, &root.assigned_harts);
 	}
 
-	/* Set root domain index */
-	root.index = domain_count++;
-	domidx_to_domain_table[root.index] = &root;
-
-	return 0;
+	return sbi_domain_register(&root, &root_hmask);
 }
