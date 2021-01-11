@@ -152,7 +152,7 @@ struct sbi_platform_operations {
 				   const struct sbi_trap_regs *regs,
 				   unsigned long *out_value,
 				   struct sbi_trap_info *out_trap);
-} __packed;
+};
 
 /** Platform default per-HART stack size for exception/interrupt handling */
 #define SBI_PLATFORM_DEFAULT_HART_STACK_SIZE	8192
@@ -199,7 +199,7 @@ struct sbi_platform {
 	 * 2. HART id < SBI_HARTMASK_MAX_BITS
 	 */
 	const u32 *hart_index2id;
-} __packed;
+};
 
 /** Get pointer to sbi_platform for sbi_scratch pointer */
 #define sbi_platform_ptr(__s) \
