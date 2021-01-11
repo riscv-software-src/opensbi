@@ -186,7 +186,7 @@ struct sbi_trap_regs {
 	unsigned long mstatus;
 	/** mstatusH register state (only for 32-bit) */
 	unsigned long mstatusH;
-} __packed;
+};
 
 /** Representation of trap details */
 struct sbi_trap_info {
