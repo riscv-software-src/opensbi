@@ -107,7 +107,7 @@ static int platform_ipi_init(bool cold_boot)
 
 	/* Example if the generic CLINT driver is used */
 	if (cold_boot) {
-		ret = clint_cold_ipi_init(&clint, NULL);
+		ret = clint_cold_ipi_init(&clint);
 		if (ret)
 			return ret;
 	}
@@ -142,7 +142,7 @@ static int platform_timer_init(bool cold_boot)
 
 	/* Example if the generic CLINT driver is used */
 	if (cold_boot) {
-		ret = clint_cold_timer_init(&clint);
+		ret = clint_cold_timer_init(&clint, NULL);
 		if (ret)
 			return ret;
 	}
