@@ -15,3 +15,4 @@ libsbiutils-objs-y += serial/fdt_serial_uart8250.o
 libsbiutils-objs-y += serial/shakti-uart.o
 libsbiutils-objs-y += serial/sifive-uart.o
 libsbiutils-objs-y += serial/uart8250.o
+libsbiutils-objs-y += serial/rv32xsoc_uart.o
