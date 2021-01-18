@@ -11,7 +11,7 @@
 #define __SBI_VERSION_H__
 
 #define OPENSBI_VERSION_MAJOR 0
-#define OPENSBI_VERSION_MINOR 8
+#define OPENSBI_VERSION_MINOR 9
 
 /**
  * OpenSBI 32-bit version with:
