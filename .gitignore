@@ -9,3 +9,9 @@ install/
 
 # Development friendly files
 tags
+
+# Bazel files
+bazel-bin
+bazel-opensbi
+bazel-out
+bazel-testlogs
