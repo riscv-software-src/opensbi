@@ -33,30 +33,6 @@ struct sbi_hsm_data {
 	atomic_t state;
 };
 
-int sbi_hsm_hart_state_to_status(int state)
-{
-	int ret;
-
-	switch (state) {
-	case SBI_HART_STOPPED:
-		ret = SBI_HSM_STATE_STOPPED;
-		break;
-	case SBI_HART_STOPPING:
-		ret = SBI_HSM_STATE_STOP_PENDING;
-		break;
-	case SBI_HART_STARTING:
-		ret = SBI_HSM_STATE_START_PENDING;
-		break;
-	case SBI_HART_STARTED:
-		ret = SBI_HSM_STATE_STARTED;
-		break;
-	default:
-		ret = SBI_EINVAL;
-	}
-
-	return ret;
-}
-
 static inline int __sbi_hsm_hart_get_state(u32 hartid)
 {
 	struct sbi_hsm_data *hdata;
@@ -64,7 +40,7 @@ static inline int __sbi_hsm_hart_get_state(u32 hartid)
 
 	scratch = sbi_hartid_to_scratch(hartid);
 	if (!scratch)
-		return SBI_HART_UNKNOWN;
+		return SBI_EINVAL;
 
 	hdata = sbi_scratch_offset_ptr(scratch, hart_data_offset);
 	return atomic_read(&hdata->state);
@@ -73,14 +49,14 @@ static inline int __sbi_hsm_hart_get_state(u32 hartid)
 int sbi_hsm_hart_get_state(const struct sbi_domain *dom, u32 hartid)
 {
 	if (!sbi_domain_is_assigned_hart(dom, hartid))
-		return SBI_HART_UNKNOWN;
+		return SBI_EINVAL;
 
 	return __sbi_hsm_hart_get_state(hartid);
 }
 
 static bool sbi_hsm_hart_started(const struct sbi_domain *dom, u32 hartid)
 {
-	if (sbi_hsm_hart_get_state(dom, hartid) == SBI_HART_STARTED)
+	if (sbi_hsm_hart_get_state(dom, hartid) == SBI_HSM_STATE_STARTED)
 		return TRUE;
 	else
 		return FALSE;
@@ -110,7 +86,7 @@ int sbi_hsm_hart_started_mask(const struct sbi_domain *dom,
 	for (i = hbase; i < hend; i++) {
 		hmask = 1UL << (i - hbase);
 		if ((dmask & hmask) &&
-		    (__sbi_hsm_hart_get_state(i) == SBI_HART_STARTED))
+		    (__sbi_hsm_hart_get_state(i) == SBI_HSM_STATE_STARTED))
 			*out_hmask |= hmask;
 	}
 
@@ -123,9 +99,9 @@ void sbi_hsm_prepare_next_jump(struct sbi_scratch *scratch, u32 hartid)
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
 							    hart_data_offset);
 
-	oldstate = atomic_cmpxchg(&hdata->state, SBI_HART_STARTING,
-				  SBI_HART_STARTED);
-	if (oldstate != SBI_HART_STARTING)
+	oldstate = atomic_cmpxchg(&hdata->state, SBI_HSM_STATE_START_PENDING,
+				  SBI_HSM_STATE_STARTED);
+	if (oldstate != SBI_HSM_STATE_START_PENDING)
 		sbi_hart_hang();
 }
 
@@ -142,7 +118,7 @@ static void sbi_hsm_hart_wait(struct sbi_scratch *scratch, u32 hartid)
 	csr_set(CSR_MIE, MIP_MSIP);
 
 	/* Wait for hart_add call*/
-	while (atomic_read(&hdata->state) != SBI_HART_STARTING) {
+	while (atomic_read(&hdata->state) != SBI_HSM_STATE_START_PENDING) {
 		wfi();
 	};
 
@@ -174,7 +150,9 @@ int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 			hdata = sbi_scratch_offset_ptr(rscratch,
 						       hart_data_offset);
 			ATOMIC_INIT(&hdata->state,
-			(i == hartid) ? SBI_HART_STARTING : SBI_HART_STOPPED);
+				    (i == hartid) ?
+				    SBI_HSM_STATE_START_PENDING :
+				    SBI_HSM_STATE_STOPPED);
 		}
 	} else {
 		sbi_hsm_hart_wait(scratch, hartid);
@@ -191,9 +169,9 @@ void __noreturn sbi_hsm_exit(struct sbi_scratch *scratch)
 							    hart_data_offset);
 	void (*jump_warmboot)(void) = (void (*)(void))scratch->warmboot_addr;
 
-	hstate = atomic_cmpxchg(&hdata->state, SBI_HART_STOPPING,
-				SBI_HART_STOPPED);
-	if (hstate != SBI_HART_STOPPING)
+	hstate = atomic_cmpxchg(&hdata->state, SBI_HSM_STATE_STOP_PENDING,
+				SBI_HSM_STATE_STOPPED);
+	if (hstate != SBI_HSM_STATE_STOP_PENDING)
 		goto fail_exit;
 
 	if (sbi_platform_has_hart_hotplug(plat)) {
@@ -238,16 +216,16 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 	if (!rscratch)
 		return SBI_EINVAL;
 	hdata = sbi_scratch_offset_ptr(rscratch, hart_data_offset);
-	hstate = atomic_cmpxchg(&hdata->state, SBI_HART_STOPPED,
-				SBI_HART_STARTING);
-	if (hstate == SBI_HART_STARTED)
+	hstate = atomic_cmpxchg(&hdata->state, SBI_HSM_STATE_STOPPED,
+				SBI_HSM_STATE_START_PENDING);
+	if (hstate == SBI_HSM_STATE_STARTED)
 		return SBI_EALREADY;
 
 	/**
 	 * if a hart is already transition to start or stop, another start call
 	 * is considered as invalid request.
 	 */
-	if (hstate != SBI_HART_STOPPED)
+	if (hstate != SBI_HSM_STATE_STOPPED)
 		return SBI_EINVAL;
 
 	init_count = sbi_init_count(hartid);
@@ -276,9 +254,9 @@ int sbi_hsm_hart_stop(struct sbi_scratch *scratch, bool exitnow)
 	if (!sbi_hsm_hart_started(sbi_domain_thishart_ptr(), hartid))
 		return SBI_EINVAL;
 
-	oldstate = atomic_cmpxchg(&hdata->state, SBI_HART_STARTED,
-				  SBI_HART_STOPPING);
-	if (oldstate != SBI_HART_STARTED) {
+	oldstate = atomic_cmpxchg(&hdata->state, SBI_HSM_STATE_STARTED,
+				  SBI_HSM_STATE_STOP_PENDING);
+	if (oldstate != SBI_HSM_STATE_STARTED) {
 		sbi_printf("%s: ERR: The hart is in invalid state [%u]\n",
 			   __func__, oldstate);
 		return SBI_EDENIED;

@@ -23,7 +23,7 @@ static int sbi_ecall_hsm_handler(unsigned long extid, unsigned long funcid,
 				 struct sbi_trap_info *out_trap)
 {
 	ulong smode;
-	int ret = 0, hstate;
+	int ret = 0;
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	switch (funcid) {
@@ -37,9 +37,8 @@ static int sbi_ecall_hsm_handler(unsigned long extid, unsigned long funcid,
 		ret = sbi_hsm_hart_stop(scratch, TRUE);
 		break;
 	case SBI_EXT_HSM_HART_GET_STATUS:
-		hstate = sbi_hsm_hart_get_state(sbi_domain_thishart_ptr(),
-						regs->a0);
-		ret = sbi_hsm_hart_state_to_status(hstate);
+		ret = sbi_hsm_hart_get_state(sbi_domain_thishart_ptr(),
+					     regs->a0);
 		break;
 	default:
 		ret = SBI_ENOTSUPP;
