@@ -39,16 +39,16 @@ int sbi_hsm_hart_state_to_status(int state)
 
 	switch (state) {
 	case SBI_HART_STOPPED:
-		ret = SBI_HSM_HART_STATUS_STOPPED;
+		ret = SBI_HSM_STATE_STOPPED;
 		break;
 	case SBI_HART_STOPPING:
-		ret = SBI_HSM_HART_STATUS_STOP_PENDING;
+		ret = SBI_HSM_STATE_STOP_PENDING;
 		break;
 	case SBI_HART_STARTING:
-		ret = SBI_HSM_HART_STATUS_START_PENDING;
+		ret = SBI_HSM_STATE_START_PENDING;
 		break;
 	case SBI_HART_STARTED:
-		ret = SBI_HSM_HART_STATUS_STARTED;
+		ret = SBI_HSM_STATE_STARTED;
 		break;
 	default:
 		ret = SBI_EINVAL;
