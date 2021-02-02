@@ -82,7 +82,7 @@ int sbi_ipi_send_many(ulong hmask, ulong hbase, u32 event, void *data)
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	if (hbase != -1UL) {
-		rc = sbi_hsm_hart_started_mask(dom, hbase, &m);
+		rc = sbi_hsm_hart_interruptible_mask(dom, hbase, &m);
 		if (rc)
 			return rc;
 		m &= hmask;
@@ -94,7 +94,7 @@ int sbi_ipi_send_many(ulong hmask, ulong hbase, u32 event, void *data)
 		}
 	} else {
 		hbase = 0;
-		while (!sbi_hsm_hart_started_mask(dom, hbase, &m)) {
+		while (!sbi_hsm_hart_interruptible_mask(dom, hbase, &m)) {
 			/* Send IPIs */
 			for (i = hbase; m; i++, m >>= 1) {
 				if (m & 1UL)

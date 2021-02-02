@@ -70,8 +70,8 @@ static bool sbi_hsm_hart_started(const struct sbi_domain *dom, u32 hartid)
  * @return 0 on success and SBI_Exxx (< 0) on failure
  * Note: the output HART mask will be set to zero on failure as well.
  */
-int sbi_hsm_hart_started_mask(const struct sbi_domain *dom,
-			      ulong hbase, ulong *out_hmask)
+int sbi_hsm_hart_interruptible_mask(const struct sbi_domain *dom,
+				    ulong hbase, ulong *out_hmask)
 {
 	ulong i, hmask, dmask;
 	ulong hend = sbi_scratch_last_hartid() + 1;

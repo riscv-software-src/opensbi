@@ -35,7 +35,7 @@ void __noreturn sbi_system_reset(u32 reset_type, u32 reset_reason)
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	/* Send HALT IPI to every hart other than the current hart */
-	while (!sbi_hsm_hart_started_mask(dom, hbase, &hmask)) {
+	while (!sbi_hsm_hart_interruptible_mask(dom, hbase, &hmask)) {
 		if (hbase <= cur_hartid)
 			hmask &= ~(1UL << (cur_hartid - hbase));
 		if (hmask)
