@@ -54,14 +54,6 @@ int sbi_hsm_hart_get_state(const struct sbi_domain *dom, u32 hartid)
 	return __sbi_hsm_hart_get_state(hartid);
 }
 
-static bool sbi_hsm_hart_started(const struct sbi_domain *dom, u32 hartid)
-{
-	if (sbi_hsm_hart_get_state(dom, hartid) == SBI_HSM_STATE_STARTED)
-		return TRUE;
-	else
-		return FALSE;
-}
-
 /**
  * Get ulong HART mask for given HART base ID
  * @param dom the domain to be used for output HART mask
@@ -247,12 +239,12 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 int sbi_hsm_hart_stop(struct sbi_scratch *scratch, bool exitnow)
 {
 	int oldstate;
-	u32 hartid = current_hartid();
+	const struct sbi_domain *dom = sbi_domain_thishart_ptr();
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
 							    hart_data_offset);
 
-	if (!sbi_hsm_hart_started(sbi_domain_thishart_ptr(), hartid))
-		return SBI_EINVAL;
+	if (!dom)
+		return SBI_EFAIL;
 
 	oldstate = atomic_cmpxchg(&hdata->state, SBI_HSM_STATE_STARTED,
 				  SBI_HSM_STATE_STOP_PENDING);
