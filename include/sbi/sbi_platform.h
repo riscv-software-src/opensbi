@@ -139,6 +139,11 @@ struct sbi_platform_operations {
 	 * return if success.
 	 */
 	int (*hart_stop)(void);
+	/**
+	 * Put the current hart in platform specific suspend (or low-power)
+	 * state.
+	 */
+	int (*hart_suspend)(u32 suspend_type, ulong raddr);
 
 	/* Check whether reset type and reason supported by the platform */
 	int (*system_reset_check)(u32 reset_type, u32 reset_reason);
@@ -367,6 +372,31 @@ static inline int sbi_platform_hart_stop(const struct sbi_platform *plat)
 {
 	if (plat && sbi_platform_ops(plat)->hart_stop)
 		return sbi_platform_ops(plat)->hart_stop();
+	return SBI_ENOTSUPP;
+}
+
+/**
+ * Put the current hart in platform specific suspend (or low-power) state.
+ *
+ * For successful retentive suspend, the call will return 0 when the hart
+ * resumes normal execution.
+ *
+ * For successful non-retentive suspend, the hart will resume from specified
+ * resume address
+ *
+ * @param plat pointer to struct sbi_platform
+ * @param suspend_type the type of suspend
+ * @param raddr physical address where the hart can resume in M-mode after
+ * non-retantive suspend
+ *
+ * @return 0 if successful and negative error code on failure
+ */
+static inline int sbi_platform_hart_suspend(const struct sbi_platform *plat,
+					    u32 suspend_type, ulong raddr)
+{
+	if (plat && sbi_platform_ops(plat)->hart_suspend)
+		return sbi_platform_ops(plat)->hart_suspend(suspend_type,
+							    raddr);
 	return SBI_ENOTSUPP;
 }
 
