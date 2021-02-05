@@ -430,10 +430,25 @@ __mhpm_skip:
 		hfeatures->features |= SBI_HART_HAS_TIME;
 }
 
-int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot)
+int sbi_hart_reinit(struct sbi_scratch *scratch)
 {
 	int rc;
 
+	mstatus_init(scratch);
+
+	rc = fp_init(scratch);
+	if (rc)
+		return rc;
+
+	rc = delegate_traps(scratch);
+	if (rc)
+		return rc;
+
+	return 0;
+}
+
+int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot)
+{
 	if (cold_boot) {
 		if (misa_extension('H'))
 			sbi_hart_expected_trap = &__sbi_expected_trap_hext;
@@ -447,17 +462,7 @@ int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot)
 
 	hart_detect_features(scratch);
 
-	mstatus_init(scratch);
-
-	rc = fp_init(scratch);
-	if (rc)
-		return rc;
-
-	rc = delegate_traps(scratch);
-	if (rc)
-		return rc;
-
-	return 0;
+	return sbi_hart_reinit(scratch);
 }
 
 void __attribute__((noreturn)) sbi_hart_hang(void)

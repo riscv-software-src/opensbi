@@ -27,6 +27,7 @@ enum sbi_hart_features {
 
 struct sbi_scratch;
 
+int sbi_hart_reinit(struct sbi_scratch *scratch);
 int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot);
 
 extern void (*sbi_hart_expected_trap)(void);
