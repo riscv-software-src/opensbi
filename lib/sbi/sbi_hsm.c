@@ -107,7 +107,6 @@ void sbi_hsm_prepare_next_jump(struct sbi_scratch *scratch, u32 hartid)
 static void sbi_hsm_hart_wait(struct sbi_scratch *scratch, u32 hartid)
 {
 	unsigned long saved_mie;
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
 							    hart_data_offset);
 	/* Save MIE CSR */
@@ -124,8 +123,10 @@ static void sbi_hsm_hart_wait(struct sbi_scratch *scratch, u32 hartid)
 	/* Restore MIE CSR */
 	csr_write(CSR_MIE, saved_mie);
 
-	/* Clear current HART IPI */
-	sbi_platform_ipi_clear(plat, hartid);
+	/*
+	 * No need to clear IPI here because the sbi_ipi_init() will
+	 * clear it for current HART via sbi_platform_ipi_init().
+	 */
 }
 
 int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)

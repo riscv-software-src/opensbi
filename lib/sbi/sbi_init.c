@@ -130,7 +130,6 @@ static unsigned long coldboot_done;
 static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 {
 	unsigned long saved_mie, cmip;
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	/* Save MIE CSR */
 	saved_mie = csr_read(CSR_MIE);
@@ -167,8 +166,14 @@ static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	/* Restore MIE CSR */
 	csr_write(CSR_MIE, saved_mie);
 
-	/* Clear current HART IPI */
-	sbi_platform_ipi_clear(plat, hartid);
+	/*
+	 * The wait for coldboot is common for both warm startup and
+	 * warm resume path so clearing IPI here would result in losing
+	 * an IPI in warm resume path.
+	 *
+	 * Also, the sbi_platform_ipi_init() called from sbi_ipi_init()
+	 * will automatically clear IPI for current HART.
+	 */
 }
 
 static void wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
