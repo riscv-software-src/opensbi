@@ -202,7 +202,7 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 		return SBI_EINVAL;
 	if (dom && !sbi_domain_check_addr(dom, saddr, smode,
 					  SBI_DOMAIN_EXECUTE))
-		return SBI_EINVAL;
+		return SBI_EINVALID_ADDR;
 
 	rscratch = sbi_hartid_to_scratch(hartid);
 	if (!rscratch)
@@ -251,7 +251,7 @@ int sbi_hsm_hart_stop(struct sbi_scratch *scratch, bool exitnow)
 	if (oldstate != SBI_HSM_STATE_STARTED) {
 		sbi_printf("%s: ERR: The hart is in invalid state [%u]\n",
 			   __func__, oldstate);
-		return SBI_EDENIED;
+		return SBI_EFAIL;
 	}
 
 	if (exitnow)
