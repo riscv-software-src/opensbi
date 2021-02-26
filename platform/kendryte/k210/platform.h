@@ -27,10 +27,19 @@
 /* Registers */
 #define K210_PLL0		0x08
 #define K210_CLKSEL0		0x20
+#define K210_RESET		0x30
+
+/* Register bit masks */
+#define K210_RESET_MASK		0x01
 
 static inline u32 k210_read_sysreg(u32 reg)
 {
 	return readl((volatile void *)(K210_SYSCTL_BASE_ADDR + reg));
+}
+
+static inline void k210_write_sysreg(u32 val, u32 reg)
+{
+	writel(val, (volatile void *)(K210_SYSCTL_BASE_ADDR + reg));
 }
 
 #endif /* _K210_PLATFORM_H_ */

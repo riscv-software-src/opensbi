@@ -129,6 +129,22 @@ static int k210_timer_init(bool cold_boot)
 	return clint_warm_timer_init();
 }
 
+static int k210_system_reset_check(u32 type, u32 reason)
+{
+	return 1;
+}
+
+static void k210_system_reset(u32 type, u32 reason)
+{
+	u32 val;
+
+	val = k210_read_sysreg(K210_RESET);
+	val |= K210_RESET_MASK;
+	k210_write_sysreg(val, K210_RESET);
+
+	while (1);
+}
+
 const struct sbi_platform_operations platform_ops = {
 	.final_init	= k210_final_init,
 
@@ -141,6 +157,9 @@ const struct sbi_platform_operations platform_ops = {
 	.ipi_init  = k210_ipi_init,
 	.ipi_send  = clint_ipi_send,
 	.ipi_clear = clint_ipi_clear,
+
+	.system_reset_check	= k210_system_reset_check,
+	.system_reset		= k210_system_reset,
 
 	.timer_init	   = k210_timer_init,
 	.timer_value	   = clint_timer_value,
