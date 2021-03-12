@@ -38,7 +38,7 @@
 
 #define SBI_PLATFORM_TLB_RANGE_FLUSH_LIMIT_DEFAULT		(1UL << 12)
 
-#ifndef __ASSEMBLY__
+#ifndef __ASSEMBLER__
 
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_error.h>

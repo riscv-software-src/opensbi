@@ -110,7 +110,7 @@
 /** Size (in bytes) of sbi_trap_info */
 #define SBI_TRAP_INFO_SIZE SBI_TRAP_INFO_OFFSET(last)
 
-#ifndef __ASSEMBLY__
+#ifndef __ASSEMBLER__
 
 #include <sbi/sbi_types.h>
 

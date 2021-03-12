@@ -14,7 +14,7 @@
 
 /* clang-format off */
 
-#ifdef __ASSEMBLY__
+#ifdef __ASSEMBLER__
 #define __ASM_STR(x)	x
 #else
 #define __ASM_STR(x)	#x
@@ -38,7 +38,7 @@
 #define LGREG		__REG_SEL(3, 2)
 
 #if __SIZEOF_POINTER__ == 8
-#ifdef __ASSEMBLY__
+#ifdef __ASSEMBLER__
 #define RISCV_PTR		.dword
 #define RISCV_SZPTR		8
 #define RISCV_LGPTR		3
@@ -48,7 +48,7 @@
 #define RISCV_LGPTR		"3"
 #endif
 #elif __SIZEOF_POINTER__ == 4
-#ifdef __ASSEMBLY__
+#ifdef __ASSEMBLER__
 #define RISCV_PTR		.word
 #define RISCV_SZPTR		4
 #define RISCV_LGPTR		2
@@ -79,7 +79,7 @@
 
 /* clang-format on */
 
-#ifndef __ASSEMBLY__
+#ifndef __ASSEMBLER__
 
 #define csr_swap(csr, val)                                              \
 	({                                                              \
@@ -182,6 +182,6 @@ int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
 int pmp_get(unsigned int n, unsigned long *prot_out, unsigned long *addr_out,
 	    unsigned long *log2len);
 
-#endif /* !__ASSEMBLY__ */
+#endif /* !__ASSEMBLER__ */
 
 #endif
