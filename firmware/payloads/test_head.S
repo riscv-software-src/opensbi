@@ -28,20 +28,20 @@
 	.globl _start
 _start:
 	/* Pick one hart to run the main boot sequence */
-	la	a3, _hart_lottery
+	lla	a3, _hart_lottery
 	li	a2, 1
 	amoadd.w a3, a2, (a3)
 	bnez	a3, _start_hang
 
 	/* Save a0 and a1 */
-	la	a3, _boot_a0
+	lla	a3, _boot_a0
 	REG_S	a0, 0(a3)
-	la	a3, _boot_a1
+	lla	a3, _boot_a1
 	REG_S	a1, 0(a3)
 
 	/* Zero-out BSS */
-	la	a4, _bss_start
-	la	a5, _bss_end
+	lla	a4, _bss_start
+	lla	a5, _bss_end
 _bss_zero:
 	REG_S	zero, (a4)
 	add	a4, a4, __SIZEOF_POINTER__
@@ -53,18 +53,18 @@ _start_warm:
 	csrw	CSR_SIP, zero
 
 	/* Setup exception vectors */
-	la	a3, _start_hang
+	lla	a3, _start_hang
 	csrw	CSR_STVEC, a3
 
 	/* Setup stack */
-	la	a3, _payload_end
+	lla	a3, _payload_end
 	li	a4, 0x2000
 	add	sp, a3, a4
 
 	/* Jump to C main */
-	la	a3, _boot_a0
+	lla	a3, _boot_a0
 	REG_L	a0, 0(a3)
-	la	a3, _boot_a1
+	lla	a3, _boot_a1
 	REG_L	a1, 0(a3)
 	call	test_main
 

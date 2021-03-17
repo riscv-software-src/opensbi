@@ -59,7 +59,7 @@ fw_next_arg1:
 	 * The next address should be returned in 'a0'.
 	 */
 fw_next_addr:
-	la	a0, _jump_addr
+	lla	a0, _jump_addr
 	REG_L	a0, (a0)
 	ret
 
