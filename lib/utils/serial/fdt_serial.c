@@ -16,12 +16,14 @@ extern struct fdt_serial fdt_serial_uart8250;
 extern struct fdt_serial fdt_serial_sifive;
 extern struct fdt_serial fdt_serial_htif;
 extern struct fdt_serial fdt_serial_shakti;
+extern struct fdt_serial fdt_serial_xilinx;
 
 static struct fdt_serial *serial_drivers[] = {
 	&fdt_serial_uart8250,
 	&fdt_serial_sifive,
 	&fdt_serial_htif,
 	&fdt_serial_shakti,
+	&fdt_serial_xilinx,
 };
 
 static void dummy_putc(char ch)
