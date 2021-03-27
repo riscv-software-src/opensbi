@@ -51,13 +51,13 @@ void fdt_cpu_fixup(void *fdt)
 	}
 }
 
-void fdt_plic_fixup(void *fdt, const char *compat)
+void fdt_plic_fixup(void *fdt)
 {
 	u32 *cells;
 	int i, cells_count;
 	int plic_off;
 
-	plic_off = fdt_node_offset_by_compatible(fdt, 0, compat);
+	plic_off = fdt_node_offset_by_compatible(fdt, 0, "riscv,plic0");
 	if (plic_off < 0)
 		return;
 
@@ -257,7 +257,7 @@ int fdt_reserved_memory_nomap_fixup(void *fdt)
 
 void fdt_fixups(void *fdt)
 {
-	fdt_plic_fixup(fdt, "riscv,plic0");
+	fdt_plic_fixup(fdt);
 
 	fdt_reserved_memory_fixup(fdt);
 }

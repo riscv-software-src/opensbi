@@ -30,9 +30,8 @@ void fdt_cpu_fixup(void *fdt);
  * It is recommended that platform codes call this helper in their final_init()
  *
  * @param fdt: device tree blob
- * @param compat: PLIC node compatible string
  */
-void fdt_plic_fixup(void *fdt, const char *compat);
+void fdt_plic_fixup(void *fdt);
 
 /**
  * Fix up the reserved memory node in the device tree
