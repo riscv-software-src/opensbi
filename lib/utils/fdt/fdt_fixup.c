@@ -57,9 +57,12 @@ void fdt_plic_fixup(void *fdt)
 	int i, cells_count;
 	int plic_off;
 
-	plic_off = fdt_node_offset_by_compatible(fdt, 0, "riscv,plic0");
-	if (plic_off < 0)
-		return;
+	plic_off = fdt_node_offset_by_compatible(fdt, 0, "sifive,plic-1.0.0");
+	if (plic_off < 0) {
+		plic_off = fdt_node_offset_by_compatible(fdt, 0, "riscv,plic0");
+		if (plic_off < 0)
+			return;
+	}
 
 	cells = (u32 *)fdt_getprop(fdt, plic_off,
 				   "interrupts-extended", &cells_count);
