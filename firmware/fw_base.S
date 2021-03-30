@@ -711,6 +711,7 @@ fw_platform_init:
 	.section .entry, "ax", %progbits
 	.align 3
 	.globl _trap_handler
+	.globl _trap_exit
 _trap_handler:
 	TRAP_SAVE_AND_SETUP_SP_T0
 
@@ -720,17 +721,6 @@ _trap_handler:
 
 	TRAP_CALL_C_ROUTINE
 
-	TRAP_RESTORE_GENERAL_REGS_EXCEPT_SP_T0
-
-	TRAP_RESTORE_MEPC_MSTATUS 0
-
-	TRAP_RESTORE_SP_T0
-
-	mret
-
-	.section .entry, "ax", %progbits
-	.align 3
-	.globl _trap_exit
 _trap_exit:
 	add	sp, a0, zero
 
@@ -746,6 +736,7 @@ _trap_exit:
 	.section .entry, "ax", %progbits
 	.align 3
 	.globl _trap_handler_rv32_hyp
+	.globl _trap_exit_rv32_hyp
 _trap_handler_rv32_hyp:
 	TRAP_SAVE_AND_SETUP_SP_T0
 
@@ -755,17 +746,6 @@ _trap_handler_rv32_hyp:
 
 	TRAP_CALL_C_ROUTINE
 
-	TRAP_RESTORE_GENERAL_REGS_EXCEPT_SP_T0
-
-	TRAP_RESTORE_MEPC_MSTATUS 1
-
-	TRAP_RESTORE_SP_T0
-
-	mret
-
-	.section .entry, "ax", %progbits
-	.align 3
-	.globl _trap_exit_rv32_hyp
 _trap_exit_rv32_hyp:
 	add	sp, a0, zero
 
