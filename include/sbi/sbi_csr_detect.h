@@ -12,6 +12,7 @@
 
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_trap.h>
 
 #define csr_read_allowed(csr_num, trap)					\
 	({								\
@@ -19,6 +20,7 @@
 	register ulong ttmp asm("a4");					\
 	register ulong mtvec = sbi_hart_expected_trap_addr();		\
 	register ulong ret = 0;						\
+	((struct sbi_trap_info *)(trap))->cause = 0;			\
 	asm volatile(							\
 		"add %[ttmp], %[tinfo], zero\n"				\
 		"csrrw %[mtvec], " STR(CSR_MTVEC) ", %[mtvec]\n"	\
@@ -36,6 +38,7 @@
 	register ulong tinfo asm("a3") = (ulong)trap;			\
 	register ulong ttmp asm("a4");					\
 	register ulong mtvec = sbi_hart_expected_trap_addr();		\
+	((struct sbi_trap_info *)(trap))->cause = 0;			\
 	asm volatile(							\
 		"add %[ttmp], %[tinfo], zero\n"				\
 		"csrrw %[mtvec], " STR(CSR_MTVEC) ", %[mtvec]\n"	\
