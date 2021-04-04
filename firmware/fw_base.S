@@ -56,13 +56,14 @@ _start:
 	beq	a6, a7, _try_lottery
 	/* Jump to relocation wait loop if we are not boot hart */
 	bne	a0, a6, _wait_relocate_copy_done
+	j   _skip_lottery
 _try_lottery:
 	/* Jump to relocation wait loop if we don't get relocation lottery */
 	lla	a6, _relocate_lottery
 	li	a7, 1
 	amoadd.w a6, a7, (a6)
 	bnez	a6, _wait_relocate_copy_done
-
+_skip_lottery:
 	/* Save load address */
 	lla	t0, _load_start
 	lla	t1, _start
