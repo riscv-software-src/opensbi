@@ -18,7 +18,7 @@ void sbi_fifo_init(struct sbi_fifo *fifo, void *queue_mem, u16 entries,
 	fifo->queue	  = queue_mem;
 	fifo->num_entries = entries;
 	fifo->entry_size  = entry_size;
-	SPIN_LOCK_INIT(&fifo->qlock);
+	SPIN_LOCK_INIT(fifo->qlock);
 	fifo->avail = fifo->tail = 0;
 	sbi_memset(fifo->queue, 0, (size_t)entries * entry_size);
 }

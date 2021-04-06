@@ -16,7 +16,7 @@ typedef struct {
 
 #define __RISCV_SPIN_UNLOCKED 0
 
-#define SPIN_LOCK_INIT(_lptr) (_lptr)->lock = __RISCV_SPIN_UNLOCKED
+#define SPIN_LOCK_INIT(x) (x).lock = __RISCV_SPIN_UNLOCKED
 
 #define SPIN_LOCK_INITIALIZER                  \
 	{                                      \
