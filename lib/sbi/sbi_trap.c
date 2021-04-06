@@ -195,6 +195,27 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 	return 0;
 }
 
+static int default_irqfn(struct sbi_trap_regs *regs)
+{
+	return SBI_ENODEV;
+}
+
+static int (*ext_irqfn)(struct sbi_trap_regs *regs) = default_irqfn;
+
+/**
+ * Set external irq handler function
+ *
+ * This function is called by OpenSBI platform code to set a handler for
+ * external interrupts
+ *
+ * @param fn function pointer for handling external irqs
+ */
+void sbi_trap_set_external_irqfn(int (*fn)(struct sbi_trap_regs *regs))
+{
+	if (fn)
+		ext_irqfn = fn;
+}
+
 static int sbi_trap_nonaia_irq(struct sbi_trap_regs *regs, ulong mcause)
 {
 	mcause &= ~(1UL << (__riscv_xlen - 1));
@@ -205,6 +226,8 @@ static int sbi_trap_nonaia_irq(struct sbi_trap_regs *regs, ulong mcause)
 	case IRQ_M_SOFT:
 		sbi_ipi_process();
 		break;
+	case IRQ_M_EXT:
+		return ext_irqfn(regs);
 	default:
 		return SBI_ENOENT;
 	};
@@ -214,6 +237,7 @@ static int sbi_trap_nonaia_irq(struct sbi_trap_regs *regs, ulong mcause)
 
 static int sbi_trap_aia_irq(struct sbi_trap_regs *regs, ulong mcause)
 {
+	int rc;
 	unsigned long mtopi;
 
 	while ((mtopi = csr_read(CSR_MTOPI))) {
@@ -224,6 +248,11 @@ static int sbi_trap_aia_irq(struct sbi_trap_regs *regs, ulong mcause)
 			break;
 		case IRQ_M_SOFT:
 			sbi_ipi_process();
+			break;
+		case IRQ_M_EXT:
+			rc = ext_irqfn(regs);
+			if (rc)
+				return rc;
 			break;
 		default:
 			return SBI_ENOENT;
