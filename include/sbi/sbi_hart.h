@@ -24,9 +24,11 @@ enum sbi_hart_features {
 	SBI_HART_HAS_SSCOFPMF = (1 << 3),
 	/** HART has timer csr implementation in hardware */
 	SBI_HART_HAS_TIME = (1 << 4),
+	/** HART has AIA local interrupt CSRs */
+	SBI_HART_HAS_AIA = (1 << 5),
 
 	/** Last index of Hart features*/
-	SBI_HART_HAS_LAST_FEATURE = SBI_HART_HAS_TIME,
+	SBI_HART_HAS_LAST_FEATURE = SBI_HART_HAS_AIA,
 };
 
 struct sbi_scratch;
