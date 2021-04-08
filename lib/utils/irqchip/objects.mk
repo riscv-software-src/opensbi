@@ -8,6 +8,7 @@
 #
 
 libsbiutils-objs-y += irqchip/fdt_irqchip.o
+libsbiutils-objs-y += irqchip/fdt_irqchip_aplic.o
 libsbiutils-objs-y += irqchip/fdt_irqchip_imsic.o
 libsbiutils-objs-y += irqchip/fdt_irqchip_plic.o
 libsbiutils-objs-y += irqchip/aplic.o

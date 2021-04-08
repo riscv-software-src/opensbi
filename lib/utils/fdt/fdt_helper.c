@@ -13,6 +13,7 @@
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi_utils/fdt/fdt_helper.h>
+#include <sbi_utils/irqchip/aplic.h>
 #include <sbi_utils/irqchip/imsic.h>
 #include <sbi_utils/irqchip/plic.h>
 
@@ -464,6 +465,164 @@ int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
 		return nodeoffset;
 
 	return fdt_parse_uart8250_node(fdt, nodeoffset, uart);
+}
+
+int fdt_parse_aplic_node(void *fdt, int nodeoff, struct aplic_data *aplic)
+{
+	bool child_found;
+	const fdt32_t *val;
+	const fdt32_t *del;
+	struct imsic_data imsic;
+	int i, j, d, dcnt, len, noff, rc;
+	uint64_t reg_addr, reg_size;
+	struct aplic_delegate_data *deleg;
+
+	if (nodeoff < 0 || !aplic || !fdt)
+		return SBI_ENODEV;
+	memset(aplic, 0, sizeof(*aplic));
+
+	rc = fdt_get_node_addr_size(fdt, nodeoff, 0, &reg_addr, &reg_size);
+	if (rc < 0 || !reg_addr || !reg_size)
+		return SBI_ENODEV;
+	aplic->addr = reg_addr;
+	aplic->size = reg_size;
+
+	val = fdt_getprop(fdt, nodeoff, "riscv,num-sources", &len);
+	if (len > 0)
+		aplic->num_source = fdt32_to_cpu(*val);
+
+	val = fdt_getprop(fdt, nodeoff, "interrupts-extended", &len);
+	if (val && len > sizeof(fdt32_t)) {
+		len = len / sizeof(fdt32_t);
+		for (i = 0; i < len; i += 2) {
+			if (fdt32_to_cpu(val[i + 1]) == IRQ_M_EXT) {
+				aplic->targets_mmode = true;
+				break;
+			}
+		}
+		aplic->num_idc = len / 2;
+		goto aplic_msi_parent_done;
+	}
+
+	val = fdt_getprop(fdt, nodeoff, "msi-parent", &len);
+	if (val && len >= sizeof(fdt32_t)) {
+		noff = fdt_node_offset_by_phandle(fdt, fdt32_to_cpu(*val));
+		if (noff < 0)
+			return noff;
+
+		rc = fdt_parse_imsic_node(fdt, noff, &imsic);
+		if (rc)
+			return rc;
+
+		rc = imsic_data_check(&imsic);
+		if (rc)
+			return rc;
+
+		aplic->targets_mmode = imsic.targets_mmode;
+
+		if (imsic.targets_mmode) {
+			aplic->has_msicfg_mmode = true;
+			aplic->msicfg_mmode.lhxs = imsic.guest_index_bits;
+			aplic->msicfg_mmode.lhxw = imsic.hart_index_bits;
+			aplic->msicfg_mmode.hhxw = imsic.group_index_bits;
+			aplic->msicfg_mmode.hhxs = imsic.group_index_shift;
+			if (aplic->msicfg_mmode.hhxs <
+					(2 * IMSIC_MMIO_PAGE_SHIFT))
+				return SBI_EINVAL;
+			aplic->msicfg_mmode.hhxs -= 24;
+			aplic->msicfg_mmode.base_addr = imsic.regs[0].addr;
+		} else {
+			goto aplic_msi_parent_done;
+		}
+
+		val = fdt_getprop(fdt, nodeoff, "riscv,children", &len);
+		if (!val || len < sizeof(fdt32_t))
+			goto aplic_msi_parent_done;
+
+		noff = fdt_node_offset_by_phandle(fdt, fdt32_to_cpu(*val));
+		if (noff < 0)
+			return noff;
+
+		val = fdt_getprop(fdt, noff, "msi-parent", &len);
+		if (!val || len < sizeof(fdt32_t))
+			goto aplic_msi_parent_done;
+
+		noff = fdt_node_offset_by_phandle(fdt, fdt32_to_cpu(*val));
+		if (noff < 0)
+			return noff;
+
+		rc = fdt_parse_imsic_node(fdt, noff, &imsic);
+		if (rc)
+			return rc;
+
+		rc = imsic_data_check(&imsic);
+		if (rc)
+			return rc;
+
+		if (!imsic.targets_mmode) {
+			aplic->has_msicfg_smode = true;
+			aplic->msicfg_smode.lhxs = imsic.guest_index_bits;
+			aplic->msicfg_smode.lhxw = imsic.hart_index_bits;
+			aplic->msicfg_smode.hhxw = imsic.group_index_bits;
+			aplic->msicfg_smode.hhxs = imsic.group_index_shift;
+			if (aplic->msicfg_smode.hhxs <
+					(2 * IMSIC_MMIO_PAGE_SHIFT))
+				return SBI_EINVAL;
+			aplic->msicfg_smode.hhxs -= 24;
+			aplic->msicfg_smode.base_addr = imsic.regs[0].addr;
+		}
+	}
+aplic_msi_parent_done:
+
+	for (d = 0; d < APLIC_MAX_DELEGATE; d++) {
+		deleg = &aplic->delegate[d];
+		deleg->first_irq = 0;
+		deleg->last_irq = 0;
+		deleg->child_index = 0;
+	}
+
+	del = fdt_getprop(fdt, nodeoff, "riscv,delegate", &len);
+	if (!del || len < (3 * sizeof(fdt32_t)))
+		goto skip_delegate_parse;
+	d = 0;
+	dcnt = len / sizeof(fdt32_t);
+	for (i = 0; i < dcnt; i += 3) {
+		if (d >= APLIC_MAX_DELEGATE)
+			break;
+		deleg = &aplic->delegate[d];
+
+		deleg->first_irq = fdt32_to_cpu(del[i + 1]);
+		deleg->last_irq = fdt32_to_cpu(del[i + 2]);
+		deleg->child_index = 0;
+
+		child_found = false;
+		val = fdt_getprop(fdt, nodeoff, "riscv,children", &len);
+		if (!val || len < sizeof(fdt32_t)) {
+			deleg->first_irq = 0;
+			deleg->last_irq = 0;
+			deleg->child_index = 0;
+			continue;
+		}
+		len = len / sizeof(fdt32_t);
+		for (j = 0; j < len; j++) {
+			if (del[i] != val[j])
+				continue;
+			deleg->child_index = j;
+			child_found = true;
+			break;
+		}
+
+		if (child_found) {
+			d++;
+		} else {
+			deleg->first_irq = 0;
+			deleg->last_irq = 0;
+			deleg->child_index = 0;
+		}
+	}
+skip_delegate_parse:
+
+	return 0;
 }
 
 bool fdt_check_imsic_mlevel(void *fdt)
