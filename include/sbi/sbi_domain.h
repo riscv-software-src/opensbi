@@ -170,6 +170,14 @@ void sbi_domain_dump_all(const char *suffix);
 int sbi_domain_register(struct sbi_domain *dom,
 			const struct sbi_hartmask *assign_mask);
 
+/**
+ * Add a memory region to the root domain
+ * @param reg pointer to the memory region to be added
+ *
+ * @return 0 on success and negative error code on failure
+ */
+int sbi_domain_root_add_memregion(const struct sbi_domain_memregion *reg);
+
 /** Finalize domain tables and startup non-root domains */
 int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid);
 

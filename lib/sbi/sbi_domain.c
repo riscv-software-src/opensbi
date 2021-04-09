@@ -24,10 +24,10 @@ static bool domain_finalized = false;
 
 static struct sbi_hartmask root_hmask = { 0 };
 
-#define ROOT_FW_REGION		0
-#define ROOT_ALL_REGION	1
-#define ROOT_END_REGION	2
-static struct sbi_domain_memregion root_memregs[ROOT_END_REGION + 1] = { 0 };
+#define ROOT_REGION_MAX	16
+static u32 root_memregs_count = 0;
+static struct sbi_domain_memregion root_fw_region;
+static struct sbi_domain_memregion root_memregs[ROOT_REGION_MAX + 1] = { 0 };
 
 static struct sbi_domain root = {
 	.name = "root",
@@ -69,7 +69,7 @@ void sbi_domain_memregion_initfw(struct sbi_domain_memregion *reg)
 	if (!reg)
 		return;
 
-	sbi_memcpy(reg, &root_memregs[ROOT_FW_REGION], sizeof(*reg));
+	sbi_memcpy(reg, &root_fw_region, sizeof(*reg));
 }
 
 void sbi_domain_memregion_init(unsigned long addr,
@@ -236,9 +236,9 @@ static int sanitize_domain(const struct sbi_platform *plat,
 	count = 0;
 	have_fw_reg = FALSE;
 	sbi_domain_for_each_memregion(dom, reg) {
-		if (reg->order == root_memregs[ROOT_FW_REGION].order &&
-		    reg->base == root_memregs[ROOT_FW_REGION].base &&
-		    reg->flags == root_memregs[ROOT_FW_REGION].flags)
+		if (reg->order == root_fw_region.order &&
+		    reg->base == root_fw_region.base &&
+		    reg->flags == root_fw_region.flags)
 			have_fw_reg = TRUE;
 		count++;
 	}
@@ -468,6 +468,66 @@ int sbi_domain_register(struct sbi_domain *dom,
 	return 0;
 }
 
+int sbi_domain_root_add_memregion(const struct sbi_domain_memregion *reg)
+{
+	int rc;
+	bool reg_merged;
+	struct sbi_domain_memregion *nreg, *nreg1, *nreg2;
+	const struct sbi_platform *plat = sbi_platform_thishart_ptr();
+
+	/* Sanity checks */
+	if (!reg || domain_finalized ||
+	    (root.regions != root_memregs) ||
+	    (ROOT_REGION_MAX <= root_memregs_count))
+		return SBI_EINVAL;
+
+	/* Check for conflicts */
+	sbi_domain_for_each_memregion(&root, nreg) {
+		if (is_region_conflict(reg, nreg))
+			return SBI_EINVAL;
+	}
+
+	/* Append the memregion to root memregions */
+	nreg = &root_memregs[root_memregs_count];
+	sbi_memcpy(nreg, reg, sizeof(*reg));
+	root_memregs_count++;
+	root_memregs[root_memregs_count].order = 0;
+
+	/* Sort and optimize root regions */
+	do {
+		/* Sanitize the root domain so that memregions are sorted */
+		rc = sanitize_domain(plat, &root);
+		if (rc) {
+			sbi_printf("%s: sanity checks failed for"
+				   " %s (error %d)\n", __func__,
+				   root.name, rc);
+			return rc;
+		}
+
+		/* Merge consecutive memregions with same order and flags */
+		reg_merged = false;
+		sbi_domain_for_each_memregion(&root, nreg) {
+			nreg1 = nreg + 1;
+			if (!nreg1->order)
+				continue;
+
+			if ((nreg->base + BIT(nreg->order)) == nreg1->base &&
+			    nreg->order == nreg1->order &&
+			    nreg->flags == nreg1->flags) {
+				nreg->order++;
+				while (nreg1->order) {
+					nreg2 = nreg1 + 1;
+					sbi_memcpy(nreg1, nreg2, sizeof(*nreg1));
+					nreg1++;
+				}
+				reg_merged = true;
+			}
+		}
+	} while (reg_merged);
+
+	return 0;
+}
+
 int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 {
 	int rc;
@@ -537,17 +597,18 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 
 	/* Root domain firmware memory region */
 	sbi_domain_memregion_init(scratch->fw_start, scratch->fw_size, 0,
-				  &root_memregs[ROOT_FW_REGION]);
+				  &root_fw_region);
+	sbi_domain_memregion_initfw(&root_memregs[root_memregs_count++]);
 
 	/* Root domain allow everything memory region */
 	sbi_domain_memregion_init(0, ~0UL,
 				  (SBI_DOMAIN_MEMREGION_READABLE |
 				   SBI_DOMAIN_MEMREGION_WRITEABLE |
 				   SBI_DOMAIN_MEMREGION_EXECUTABLE),
-				  &root_memregs[ROOT_ALL_REGION]);
+				  &root_memregs[root_memregs_count++]);
 
 	/* Root domain memory region end */
-	root_memregs[ROOT_END_REGION].order = 0;
+	root_memregs[root_memregs_count].order = 0;
 
 	/* Use platform specific root memory regions when available */
 	memregs = sbi_platform_domains_root_regions(plat);
