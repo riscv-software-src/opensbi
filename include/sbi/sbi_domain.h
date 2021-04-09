@@ -128,6 +128,20 @@ ulong sbi_domain_get_assigned_hartmask(const struct sbi_domain *dom,
 void sbi_domain_memregion_initfw(struct sbi_domain_memregion *reg);
 
 /**
+ * Initialize a domain memory region based on it's physical
+ * address and size.
+ *
+ * @param addr start physical address of memory region
+ * @param size physical size of memory region
+ * @param flags memory region flags
+ * @param reg pointer to memory region being initialized
+ */
+void sbi_domain_memregion_init(unsigned long addr,
+				unsigned long size,
+				unsigned long flags,
+				struct sbi_domain_memregion *reg);
+
+/**
  * Check whether we can access specified address for given mode and
  * memory region flags under a domain
  * @param dom pointer to domain
