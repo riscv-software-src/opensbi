@@ -19,8 +19,8 @@
 
 struct sbi_domain *hartid_to_domain_table[SBI_HARTMASK_MAX_BITS] = { 0 };
 struct sbi_domain *domidx_to_domain_table[SBI_DOMAIN_MAX_INDEX] = { 0 };
-
 static u32 domain_count = 0;
+static bool domain_finalized = false;
 
 static struct sbi_hartmask root_hmask = { 0 };
 
@@ -376,7 +376,8 @@ int sbi_domain_register(struct sbi_domain *dom,
 	u32 cold_hartid = current_hartid();
 	const struct sbi_platform *plat = sbi_platform_thishart_ptr();
 
-	if (!dom || !assign_mask)
+	/* Sanity checks */
+	if (!dom || !assign_mask || domain_finalized)
 		return SBI_EINVAL;
 
 	/* Check if domain already discovered */
@@ -489,6 +490,12 @@ int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 			}
 		}
 	}
+
+	/*
+	 * Set the finalized flag so that the root domain
+	 * regions can't be changed.
+	 */
+	domain_finalized = true;
 
 	return 0;
 }
