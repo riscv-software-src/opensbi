@@ -29,7 +29,7 @@ static u32 root_memregs_count = 0;
 static struct sbi_domain_memregion root_fw_region;
 static struct sbi_domain_memregion root_memregs[ROOT_REGION_MAX + 1] = { 0 };
 
-static struct sbi_domain root = {
+struct sbi_domain root = {
 	.name = "root",
 	.possible_harts = &root_hmask,
 	.regions = root_memregs,

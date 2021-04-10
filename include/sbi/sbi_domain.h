@@ -80,6 +80,9 @@ struct sbi_domain {
 	bool system_reset_allowed;
 };
 
+/** The root domain instance */
+extern struct sbi_domain root;
+
 /** HART id to domain table */
 extern struct sbi_domain *hartid_to_domain_table[];
 
