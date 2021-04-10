@@ -127,9 +127,6 @@ bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartid);
 ulong sbi_domain_get_assigned_hartmask(const struct sbi_domain *dom,
 				       ulong hbase);
 
-/** Initialize a domain memory region as firmware region */
-void sbi_domain_memregion_initfw(struct sbi_domain_memregion *reg);
-
 /**
  * Initialize a domain memory region based on it's physical
  * address and size.

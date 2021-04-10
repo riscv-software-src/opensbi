@@ -64,7 +64,7 @@ ulong sbi_domain_get_assigned_hartmask(const struct sbi_domain *dom,
 	return ret;
 }
 
-void sbi_domain_memregion_initfw(struct sbi_domain_memregion *reg)
+static void domain_memregion_initfw(struct sbi_domain_memregion *reg)
 {
 	if (!reg)
 		return;
@@ -598,7 +598,7 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 	/* Root domain firmware memory region */
 	sbi_domain_memregion_init(scratch->fw_start, scratch->fw_size, 0,
 				  &root_fw_region);
-	sbi_domain_memregion_initfw(&root_memregs[root_memregs_count++]);
+	domain_memregion_initfw(&root_memregs[root_memregs_count++]);
 
 	/* Root domain allow everything memory region */
 	sbi_domain_memregion_init(0, ~0UL,
