@@ -67,16 +67,26 @@ static u32 k210_get_clk_freq(void)
 
 	return pll0_freq / div;
 }
+volatile static u64 MMUTable[4096 / sizeof(u64)] __attribute__((aligned(4 * 1024))) = {0};
 
 static int k210_final_init(bool cold_boot)
 {
 	void *fdt;
 
+	u64 ms = csr_read(mstatus);
+	ms &= ~(0xf << 24);
+	ms |= 9 << 24;
+	csr_write(mstatus,ms);
+	MMUTable[0] = 0x0000002fULL;
+	MMUTable[1] = 0x1000002fULL;
+	MMUTable[2] = 0x2000002fULL;
+	MMUTable[3] = 0x3000002fULL;
+	csr_write(sptbr,((u64)MMUTable) >> 12);
+	
 	if (!cold_boot)
 		return 0;
-
+	
 	fdt = sbi_scratch_thishart_arg1_ptr();
-
 	fdt_cpu_fixup(fdt);
 	fdt_fixups(fdt);
 
