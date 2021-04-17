@@ -442,8 +442,9 @@ int fdt_parse_clint_node(void *fdt, int nodeoffset, bool for_timer,
 	if (clint->hart_count < count)
 		clint->hart_count = count;
 
-	/* TODO: We should figure-out CLINT has_64bit_mmio from DT node */
 	clint->has_64bit_mmio = TRUE;
+	if (fdt_getprop(fdt, nodeoffset, "clint,has-no-64bit-mmio", &count))
+		clint->has_64bit_mmio = FALSE;
 
 	return 0;
 }
