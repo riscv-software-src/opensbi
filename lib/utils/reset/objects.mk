@@ -10,3 +10,5 @@
 libsbiutils-objs-y += reset/fdt_reset.o
 libsbiutils-objs-y += reset/fdt_reset_htif.o
 libsbiutils-objs-y += reset/fdt_reset_sifive.o
+libsbiutils-objs-y += reset/fdt_reset_thead.o
+libsbiutils-objs-y += reset/fdt_reset_thead_asm.o

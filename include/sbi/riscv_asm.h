@@ -157,6 +157,11 @@ void csr_write_num(int csr_num, unsigned long val);
 		__asm__ __volatile__("wfi" ::: "memory"); \
 	} while (0)
 
+#define ebreak()                                             \
+	do {                                              \
+		__asm__ __volatile__("ebreak" ::: "memory"); \
+	} while (0)
+
 /* Get current HART id */
 #define current_hartid()	((unsigned int)csr_read(CSR_MHARTID))
 

@@ -13,10 +13,12 @@
 
 extern struct fdt_reset fdt_reset_sifive;
 extern struct fdt_reset fdt_reset_htif;
+extern struct fdt_reset fdt_reset_thead;
 
 static struct fdt_reset *reset_drivers[] = {
 	&fdt_reset_sifive,
 	&fdt_reset_htif,
+	&fdt_reset_thead,
 };
 
 static struct fdt_reset *current_driver = NULL;

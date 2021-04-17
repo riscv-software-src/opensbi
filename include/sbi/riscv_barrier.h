@@ -18,6 +18,9 @@
 #define RISCV_FENCE(p, s) \
 	__asm__ __volatile__ ("fence " #p "," #s : : : "memory")
 
+#define RISCV_FENCE_I \
+	__asm__ __volatile__ ("fence.i" : : : "memory")
+
 /* Read & Write Memory barrier */
 #define mb()			RISCV_FENCE(iorw,iorw)
 
