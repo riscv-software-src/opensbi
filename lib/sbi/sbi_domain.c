@@ -593,7 +593,6 @@ int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 {
 	u32 i;
-	struct sbi_domain_memregion *memregs;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	/* Root domain firmware memory region */
@@ -610,11 +609,6 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 
 	/* Root domain memory region end */
 	root_memregs[root_memregs_count].order = 0;
-
-	/* Use platform specific root memory regions when available */
-	memregs = sbi_platform_domains_root_regions(plat);
-	if (memregs)
-		root.regions = memregs;
 
 	/* Root domain boot HART id is same as coldboot HART id */
 	root.boot_hartid = cold_hartid;
