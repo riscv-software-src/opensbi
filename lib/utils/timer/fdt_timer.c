@@ -17,45 +17,14 @@ static struct fdt_timer *timer_drivers[] = {
 	&fdt_timer_clint
 };
 
-static u64 dummy_value(void)
-{
-	return 0;
-}
-
-static void dummy_event_stop(void)
-{
-}
-
-static void dummy_event_start(u64 next_event)
-{
-}
-
 static struct fdt_timer dummy = {
 	.match_table = NULL,
 	.cold_init = NULL,
 	.warm_init = NULL,
 	.exit = NULL,
-	.value = dummy_value,
-	.event_stop = dummy_event_stop,
-	.event_start = dummy_event_start
 };
 
 static struct fdt_timer *current_driver = &dummy;
-
-u64 fdt_timer_value(void)
-{
-	return current_driver->value();
-}
-
-void fdt_timer_event_stop(void)
-{
-	current_driver->event_stop();
-}
-
-void fdt_timer_event_start(u64 next_event)
-{
-	current_driver->event_start(next_event);
-}
 
 void fdt_timer_exit(void)
 {

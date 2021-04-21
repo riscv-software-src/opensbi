@@ -12,6 +12,21 @@
 
 #include <sbi/sbi_types.h>
 
+/** Timer hardware device */
+struct sbi_timer_device {
+	/** Name of the timer operations */
+	char name[32];
+
+	/** Get free-running timer value */
+	u64 (*timer_value)(void);
+
+	/** Start timer event for current HART */
+	void (*timer_event_start)(u64 next_event);
+
+	/** Stop timer event for current HART */
+	void (*timer_event_stop)(void);
+};
+
 struct sbi_scratch;
 
 /** Get timer value for current HART */
@@ -34,6 +49,12 @@ void sbi_timer_event_start(u64 next_event);
 
 /** Process timer event for current HART */
 void sbi_timer_process(void);
+
+/** Get current timer device */
+const struct sbi_timer_device *sbi_timer_get_device(void);
+
+/** Register timer device */
+void sbi_timer_set_device(const struct sbi_timer_device *dev);
 
 /* Initialize timer */
 int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot);

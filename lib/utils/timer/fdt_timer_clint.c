@@ -47,7 +47,4 @@ struct fdt_timer fdt_timer_clint = {
 	.cold_init = timer_clint_cold_init,
 	.warm_init = clint_warm_timer_init,
 	.exit = NULL,
-	.value = clint_timer_value,
-	.event_stop = clint_timer_event_stop,
-	.event_start = clint_timer_event_start,
 };

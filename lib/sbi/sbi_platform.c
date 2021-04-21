@@ -19,9 +19,6 @@ static inline char *sbi_platform_feature_id2string(unsigned long feature)
 		return NULL;
 
 	switch (feature) {
-	case SBI_PLATFORM_HAS_TIMER_VALUE:
-		fstr = "timer";
-		break;
 	case SBI_PLATFORM_HAS_HART_HOTPLUG:
 		fstr = "hotplug";
 		break;

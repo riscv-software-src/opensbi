@@ -160,16 +160,13 @@ const struct sbi_platform_operations platform_ops = {
 	.system_reset		= k210_system_reset,
 
 	.timer_init	   = k210_timer_init,
-	.timer_value	   = clint_timer_value,
-	.timer_event_stop  = clint_timer_event_stop,
-	.timer_event_start = clint_timer_event_start,
 };
 
 const struct sbi_platform platform = {
 	.opensbi_version	= OPENSBI_VERSION,
 	.platform_version   	= SBI_PLATFORM_VERSION(0x0, 0x01),
 	.name			= "Kendryte K210",
-	.features		= SBI_PLATFORM_HAS_TIMER_VALUE,
+	.features		= 0,
 	.hart_count		= K210_HART_COUNT,
 	.hart_stack_size	= SBI_PLATFORM_DEFAULT_HART_STACK_SIZE,
 	.platform_ops_addr	= (unsigned long)&platform_ops

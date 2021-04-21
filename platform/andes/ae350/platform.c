@@ -172,9 +172,6 @@ const struct sbi_platform_operations platform_ops = {
 	.ipi_clear    = plicsw_ipi_clear,
 
 	.timer_init	   = ae350_timer_init,
-	.timer_value	   = plmt_timer_value,
-	.timer_event_start = plmt_timer_event_start,
-	.timer_event_stop  = plmt_timer_event_stop,
 
 	.vendor_ext_provider = ae350_vendor_ext_provider
 };

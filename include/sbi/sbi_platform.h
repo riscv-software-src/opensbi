@@ -51,14 +51,12 @@ struct sbi_trap_regs;
 
 /** Possible feature flags of a platform */
 enum sbi_platform_features {
-	/** Platform has timer value */
-	SBI_PLATFORM_HAS_TIMER_VALUE = (1 << 0),
 	/** Platform has HART hotplug support */
-	SBI_PLATFORM_HAS_HART_HOTPLUG = (1 << 1),
+	SBI_PLATFORM_HAS_HART_HOTPLUG = (1 << 0),
 	/** Platform has fault delegation support */
-	SBI_PLATFORM_HAS_MFAULTS_DELEGATION = (1 << 2),
+	SBI_PLATFORM_HAS_MFAULTS_DELEGATION = (1 << 1),
 	/** Platform has custom secondary hart booting support */
-	SBI_PLATFORM_HAS_HART_SECONDARY_BOOT = (1 << 3),
+	SBI_PLATFORM_HAS_HART_SECONDARY_BOOT = (1 << 2),
 
 	/** Last index of Platform features*/
 	SBI_PLATFORM_HAS_LAST_FEATURE = SBI_PLATFORM_HAS_HART_SECONDARY_BOOT,
@@ -66,7 +64,7 @@ enum sbi_platform_features {
 
 /** Default feature set for a platform */
 #define SBI_PLATFORM_DEFAULT_FEATURES                                \
-	(SBI_PLATFORM_HAS_TIMER_VALUE | SBI_PLATFORM_HAS_MFAULTS_DELEGATION)
+	(SBI_PLATFORM_HAS_MFAULTS_DELEGATION)
 
 /** Platform functions */
 struct sbi_platform_operations {
@@ -115,12 +113,6 @@ struct sbi_platform_operations {
 	/** Get tlb flush limit value **/
 	u64 (*get_tlbr_flush_limit)(void);
 
-	/** Get platform timer value */
-	u64 (*timer_value)(void);
-	/** Start platform timer event for current HART */
-	void (*timer_event_start)(u64 next_event);
-	/** Stop platform timer event for current HART */
-	void (*timer_event_stop)(void);
 	/** Initialize platform timer for current HART */
 	int (*timer_init)(bool cold_boot);
 	/** Exit platform timer for current HART */
@@ -210,9 +202,6 @@ struct sbi_platform {
 #define sbi_platform_ops(__p) \
 	((const struct sbi_platform_operations *)(__p)->platform_ops_addr)
 
-/** Check whether the platform supports timer value */
-#define sbi_platform_has_timer_value(__p) \
-	((__p)->features & SBI_PLATFORM_HAS_TIMER_VALUE)
 /** Check whether the platform supports HART hotplug */
 #define sbi_platform_has_hart_hotplug(__p) \
 	((__p)->features & SBI_PLATFORM_HAS_HART_HOTPLUG)
@@ -584,45 +573,6 @@ static inline void sbi_platform_ipi_exit(const struct sbi_platform *plat)
 {
 	if (plat && sbi_platform_ops(plat)->ipi_exit)
 		sbi_platform_ops(plat)->ipi_exit();
-}
-
-/**
- * Get platform timer value
- *
- * @param plat pointer to struct sbi_platform
- *
- * @return 64-bit timer value
- */
-static inline u64 sbi_platform_timer_value(const struct sbi_platform *plat)
-{
-	if (plat && sbi_platform_ops(plat)->timer_value)
-		return sbi_platform_ops(plat)->timer_value();
-	return 0;
-}
-
-/**
- * Start platform timer event for current HART
- *
- * @param plat pointer to struct struct sbi_platform
- * @param next_event timer value when timer event will happen
- */
-static inline void
-sbi_platform_timer_event_start(const struct sbi_platform *plat, u64 next_event)
-{
-	if (plat && sbi_platform_ops(plat)->timer_event_start)
-		sbi_platform_ops(plat)->timer_event_start(next_event);
-}
-
-/**
- * Stop platform timer event for current HART
- *
- * @param plat pointer to struct sbi_platform
- */
-static inline void
-sbi_platform_timer_event_stop(const struct sbi_platform *plat)
-{
-	if (plat && sbi_platform_ops(plat)->timer_event_stop)
-		sbi_platform_ops(plat)->timer_event_stop();
 }
 
 /**

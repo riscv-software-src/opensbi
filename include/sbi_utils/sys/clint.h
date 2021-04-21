@@ -37,12 +37,6 @@ int clint_warm_ipi_init(void);
 
 int clint_cold_ipi_init(struct clint_data *clint);
 
-u64 clint_timer_value(void);
-
-void clint_timer_event_stop(void);
-
-void clint_timer_event_start(u64 next_event);
-
 int clint_warm_timer_init(void);
 
 int clint_cold_timer_init(struct clint_data *clint,

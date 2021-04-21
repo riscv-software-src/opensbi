@@ -13,6 +13,7 @@
 #include <sbi/sbi_domain.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hartmask.h>
+#include <sbi/sbi_timer.h>
 #include <sbi_utils/sys/clint.h>
 
 #define CLINT_IPI_OFF		0
@@ -118,7 +119,7 @@ static void clint_time_wr32(u64 value, volatile u64 *addr)
 	writel_relaxed(value >> 32, (void *)(addr) + 0x04);
 }
 
-u64 clint_timer_value(void)
+static u64 clint_timer_value(void)
 {
 	struct clint_data *clint = clint_timer_hartid2data[current_hartid()];
 
@@ -126,7 +127,7 @@ u64 clint_timer_value(void)
 	return clint->time_rd(clint->time_val) + clint->time_delta;
 }
 
-void clint_timer_event_stop(void)
+static void clint_timer_event_stop(void)
 {
 	u32 target_hart = current_hartid();
 	struct clint_data *clint = clint_timer_hartid2data[target_hart];
@@ -136,7 +137,7 @@ void clint_timer_event_stop(void)
 			&clint->time_cmp[target_hart - clint->first_hartid]);
 }
 
-void clint_timer_event_start(u64 next_event)
+static void clint_timer_event_start(u64 next_event)
 {
 	u32 target_hart = current_hartid();
 	struct clint_data *clint = clint_timer_hartid2data[target_hart];
@@ -145,6 +146,13 @@ void clint_timer_event_start(u64 next_event)
 	clint->time_wr(next_event - clint->time_delta,
 		       &clint->time_cmp[target_hart - clint->first_hartid]);
 }
+
+static struct sbi_timer_device clint_timer = {
+	.name = "clint",
+	.timer_value = clint_timer_value,
+	.timer_event_start = clint_timer_event_start,
+	.timer_event_stop = clint_timer_event_stop
+};
 
 int clint_warm_timer_init(void)
 {
@@ -224,5 +232,11 @@ int clint_cold_timer_init(struct clint_data *clint,
 	sbi_domain_memregion_init(clint->addr + CLINT_TIME_CMP_OFF,
 				  CLINT_TIME_CMP_SIZE,
 				  SBI_DOMAIN_MEMREGION_MMIO, &reg);
-	return sbi_domain_root_add_memregion(&reg);
+	rc = sbi_domain_root_add_memregion(&reg);
+	if (rc)
+		return rc;
+
+	sbi_timer_set_device(&clint_timer);
+
+	return 0;
 }

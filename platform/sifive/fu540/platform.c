@@ -162,9 +162,6 @@ const struct sbi_platform_operations platform_ops = {
 	.ipi_clear		= clint_ipi_clear,
 	.ipi_init		= fu540_ipi_init,
 	.get_tlbr_flush_limit	= fu540_get_tlbr_flush_limit,
-	.timer_value		= clint_timer_value,
-	.timer_event_stop	= clint_timer_event_stop,
-	.timer_event_start	= clint_timer_event_start,
 	.timer_init		= fu540_timer_init,
 };
 
