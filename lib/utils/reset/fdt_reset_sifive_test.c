@@ -18,7 +18,7 @@ static int sifive_test_reset_init(void *fdt, int nodeoff,
 	int rc;
 	uint64_t addr;
 
-	rc = fdt_get_node_addr_size(fdt, nodeoff, &addr, NULL);
+	rc = fdt_get_node_addr_size(fdt, nodeoff, 0, &addr, NULL);
 	if (rc)
 		return rc;
 

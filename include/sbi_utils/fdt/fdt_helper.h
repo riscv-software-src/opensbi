@@ -43,8 +43,8 @@ int fdt_parse_phandle_with_args(void *fdt, int nodeoff,
 				const char *prop, const char *cells_prop,
 				int index, struct fdt_phandle_args *out_args);
 
-int fdt_get_node_addr_size(void *fdt, int node, uint64_t *addr,
-			   uint64_t *size);
+int fdt_get_node_addr_size(void *fdt, int node, int index,
+			   uint64_t *addr, uint64_t *size);
 
 int fdt_parse_hart_id(void *fdt, int cpu_offset, u32 *hartid);
 

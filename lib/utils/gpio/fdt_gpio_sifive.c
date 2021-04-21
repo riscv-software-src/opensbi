@@ -77,7 +77,7 @@ static int sifive_gpio_init(void *fdt, int nodeoff, u32 phandle,
 		return SBI_ENOSPC;
 	chip = &sifive_gpio_chip_array[sifive_gpio_chip_count];
 
-	rc = fdt_get_node_addr_size(fdt, nodeoff, &addr, NULL);
+	rc = fdt_get_node_addr_size(fdt, nodeoff, 0, &addr, NULL);
 	if (rc)
 		return rc;
 

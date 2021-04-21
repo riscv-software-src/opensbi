@@ -157,12 +157,16 @@ static int fdt_translate_address(void *fdt, uint64_t reg, int parent,
 	return 0;
 }
 
-int fdt_get_node_addr_size(void *fdt, int node, uint64_t *addr, uint64_t *size)
+int fdt_get_node_addr_size(void *fdt, int node, int index,
+			   uint64_t *addr, uint64_t *size)
 {
 	int parent, len, i, rc;
 	int cell_addr, cell_size;
 	const fdt32_t *prop_addr, *prop_size;
 	uint64_t temp = 0;
+
+	if (!fdt || node < 0 || index < 0)
+		return SBI_EINVAL;
 
 	parent = fdt_parent_offset(fdt, node);
 	if (parent < 0)
@@ -178,6 +182,11 @@ int fdt_get_node_addr_size(void *fdt, int node, uint64_t *addr, uint64_t *size)
 	prop_addr = fdt_getprop(fdt, node, "reg", &len);
 	if (!prop_addr)
 		return SBI_ENODEV;
+
+	if ((len / sizeof(u32)) <= (index * (cell_addr + cell_size)))
+		return SBI_EINVAL;
+
+	prop_addr = prop_addr + (index * (cell_addr + cell_size));
 	prop_size = prop_addr + cell_addr;
 
 	if (addr) {
@@ -270,7 +279,8 @@ int fdt_parse_gaisler_uart_node(void *fdt, int nodeoffset,
 	if (nodeoffset < 0 || !uart || !fdt)
 		return SBI_ENODEV;
 
-	rc = fdt_get_node_addr_size(fdt, nodeoffset, &reg_addr, &reg_size);
+	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
+				    &reg_addr, &reg_size);
 	if (rc < 0 || !reg_addr || !reg_size)
 		return SBI_ENODEV;
 	uart->addr = reg_addr;
@@ -308,7 +318,8 @@ int fdt_parse_shakti_uart_node(void *fdt, int nodeoffset,
 	if (nodeoffset < 0 || !uart || !fdt)
 		return SBI_ENODEV;
 
-	rc = fdt_get_node_addr_size(fdt, nodeoffset, &reg_addr, &reg_size);
+	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
+				    &reg_addr, &reg_size);
 	if (rc < 0 || !reg_addr || !reg_size)
 		return SBI_ENODEV;
 	uart->addr = reg_addr;
@@ -342,7 +353,8 @@ int fdt_parse_sifive_uart_node(void *fdt, int nodeoffset,
 	if (nodeoffset < 0 || !uart || !fdt)
 		return SBI_ENODEV;
 
-	rc = fdt_get_node_addr_size(fdt, nodeoffset, &reg_addr, &reg_size);
+	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
+				    &reg_addr, &reg_size);
 	if (rc < 0 || !reg_addr || !reg_size)
 		return SBI_ENODEV;
 	uart->addr = reg_addr;
@@ -380,7 +392,8 @@ int fdt_parse_uart8250_node(void *fdt, int nodeoffset,
 	if (nodeoffset < 0 || !uart || !fdt)
 		return SBI_ENODEV;
 
-	rc = fdt_get_node_addr_size(fdt, nodeoffset, &reg_addr, &reg_size);
+	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
+				    &reg_addr, &reg_size);
 	if (rc < 0 || !reg_addr || !reg_size)
 		return SBI_ENODEV;
 	uart->addr = reg_addr;
@@ -440,7 +453,8 @@ int fdt_parse_plic_node(void *fdt, int nodeoffset, struct plic_data *plic)
 	if (nodeoffset < 0 || !plic || !fdt)
 		return SBI_ENODEV;
 
-	rc = fdt_get_node_addr_size(fdt, nodeoffset, &reg_addr, &reg_size);
+	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
+				    &reg_addr, &reg_size);
 	if (rc < 0 || !reg_addr || !reg_size)
 		return SBI_ENODEV;
 	plic->addr = reg_addr;
@@ -481,7 +495,8 @@ int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
 	    !out_first_hartid || !out_hart_count)
 		return SBI_EINVAL;
 
-	rc = fdt_get_node_addr_size(fdt, nodeoffset, &reg_addr, &reg_size);
+	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
+				    &reg_addr, &reg_size);
 	if (rc < 0 || !reg_addr || !reg_size)
 		return SBI_ENODEV;
 	*out_addr = reg_addr;
@@ -543,7 +558,7 @@ int fdt_parse_compat_addr(void *fdt, uint64_t *addr,
 	if (nodeoffset < 0)
 		return nodeoffset;
 
-	rc = fdt_get_node_addr_size(fdt, nodeoffset, addr, NULL);
+	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0, addr, NULL);
 	if (rc < 0 || !addr)
 		return SBI_ENODEV;
 
