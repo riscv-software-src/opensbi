@@ -12,9 +12,11 @@
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/irqchip/fdt_irqchip.h>
 
+extern struct fdt_irqchip fdt_irqchip_imsic;
 extern struct fdt_irqchip fdt_irqchip_plic;
 
 static struct fdt_irqchip *irqchip_drivers[] = {
+	&fdt_irqchip_imsic,
 	&fdt_irqchip_plic
 };
 

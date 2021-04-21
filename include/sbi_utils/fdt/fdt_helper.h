@@ -68,6 +68,12 @@ int fdt_parse_uart8250_node(void *fdt, int nodeoffset,
 int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
 		       const char *compatible);
 
+struct imsic_data;
+
+bool fdt_check_imsic_mlevel(void *fdt);
+
+int fdt_parse_imsic_node(void *fdt, int nodeoff, struct imsic_data *imsic);
+
 struct plic_data;
 
 int fdt_parse_plic_node(void *fdt, int nodeoffset, struct plic_data *plic);

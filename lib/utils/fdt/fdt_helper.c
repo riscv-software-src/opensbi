@@ -13,6 +13,7 @@
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi_utils/fdt/fdt_helper.h>
+#include <sbi_utils/irqchip/imsic.h>
 #include <sbi_utils/irqchip/plic.h>
 
 #define DEFAULT_UART_FREQ		0
@@ -463,6 +464,108 @@ int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
 		return nodeoffset;
 
 	return fdt_parse_uart8250_node(fdt, nodeoffset, uart);
+}
+
+bool fdt_check_imsic_mlevel(void *fdt)
+{
+	const fdt32_t *val;
+	int i, len, noff = 0;
+
+	if (!fdt)
+		return false;
+
+	while ((noff = fdt_node_offset_by_compatible(fdt, noff,
+						     "riscv,imsics")) >= 0) {
+		val = fdt_getprop(fdt, noff, "interrupts-extended", &len);
+		if (val && len > sizeof(fdt32_t)) {
+			len = len / sizeof(fdt32_t);
+			for (i = 0; i < len; i += 2) {
+				if (fdt32_to_cpu(val[i + 1]) == IRQ_M_EXT)
+					return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+int fdt_parse_imsic_node(void *fdt, int nodeoff, struct imsic_data *imsic)
+{
+	const fdt32_t *val;
+	struct imsic_regs *regs;
+	uint64_t reg_addr, reg_size;
+	int i, rc, len, nr_parent_irqs;
+
+	if (nodeoff < 0 || !imsic || !fdt)
+		return SBI_ENODEV;
+
+	imsic->targets_mmode = false;
+	val = fdt_getprop(fdt, nodeoff, "interrupts-extended", &len);
+	if (val && len > sizeof(fdt32_t)) {
+		len = len / sizeof(fdt32_t);
+		nr_parent_irqs = len / 2;
+		for (i = 0; i < len; i += 2) {
+			if (fdt32_to_cpu(val[i + 1]) == IRQ_M_EXT) {
+				imsic->targets_mmode = true;
+				break;
+			}
+		}
+	} else
+		return SBI_EINVAL;
+
+	val = fdt_getprop(fdt, nodeoff, "riscv,guest-index-bits", &len);
+	if (val && len > 0)
+		imsic->guest_index_bits = fdt32_to_cpu(*val);
+	else
+		imsic->guest_index_bits = 0;
+
+	val = fdt_getprop(fdt, nodeoff, "riscv,hart-index-bits", &len);
+	if (val && len > 0) {
+		imsic->hart_index_bits = fdt32_to_cpu(*val);
+	} else {
+		imsic->hart_index_bits = sbi_fls(nr_parent_irqs);
+		if ((1UL << imsic->hart_index_bits) < nr_parent_irqs)
+			imsic->hart_index_bits++;
+	}
+
+	val = fdt_getprop(fdt, nodeoff, "riscv,group-index-bits", &len);
+	if (val && len > 0)
+		imsic->group_index_bits = fdt32_to_cpu(*val);
+	else
+		imsic->group_index_bits = 0;
+
+	val = fdt_getprop(fdt, nodeoff, "riscv,group-index-shift", &len);
+	if (val && len > 0)
+		imsic->group_index_shift = fdt32_to_cpu(*val);
+	else
+		imsic->group_index_shift = 2 * IMSIC_MMIO_PAGE_SHIFT;
+
+	val = fdt_getprop(fdt, nodeoff, "riscv,num-ids", &len);
+	if (val && len > 0)
+		imsic->num_ids = fdt32_to_cpu(*val);
+	else
+		return SBI_EINVAL;
+
+	for (i = 0; i < IMSIC_MAX_REGS; i++) {
+		regs = &imsic->regs[i];
+		regs->addr = 0;
+		regs->size = 0;
+	}
+
+	for (i = 0; i < (IMSIC_MAX_REGS - 1); i++) {
+		regs = &imsic->regs[i];
+
+		rc = fdt_get_node_addr_size(fdt, nodeoff, i,
+					    &reg_addr, &reg_size);
+		if (rc < 0 || !reg_addr || !reg_size)
+			break;
+		regs->addr = reg_addr;
+		regs->size = reg_size;
+	};
+	if (!imsic->regs[0].size)
+		return SBI_EINVAL;
+
+	return 0;
 }
 
 int fdt_parse_plic_node(void *fdt, int nodeoffset, struct plic_data *plic)

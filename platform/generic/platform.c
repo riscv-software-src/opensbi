@@ -18,6 +18,7 @@
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/fdt/fdt_pmu.h>
 #include <sbi_utils/irqchip/fdt_irqchip.h>
+#include <sbi_utils/irqchip/imsic.h>
 #include <sbi_utils/serial/fdt_serial.h>
 #include <sbi_utils/timer/fdt_timer.h>
 #include <sbi_utils/ipi/fdt_ipi.h>
@@ -56,6 +57,7 @@ static void fw_platform_lookup_special(void *fdt, int root_offset)
 }
 
 extern struct sbi_platform platform;
+static bool platform_has_mlevel_imsic = false;
 static u32 generic_hart_index2id[SBI_HARTMASK_MAX_BITS] = { 0 };
 
 /*
@@ -110,12 +112,21 @@ unsigned long fw_platform_init(unsigned long arg0, unsigned long arg1,
 
 	platform.hart_count = hart_count;
 
+	platform_has_mlevel_imsic = fdt_check_imsic_mlevel(fdt);
+
 	/* Return original FDT pointer */
 	return arg1;
 
 fail:
 	while (1)
 		wfi();
+}
+
+static int generic_nascent_init(void)
+{
+	if (platform_has_mlevel_imsic)
+		imsic_local_irqchip_init();
+	return 0;
 }
 
 static int generic_early_init(bool cold_boot)
@@ -210,6 +221,7 @@ static uint64_t generic_pmu_xlate_to_mhpmevent(uint32_t event_idx,
 }
 
 const struct sbi_platform_operations platform_ops = {
+	.nascent_init		= generic_nascent_init,
 	.early_init		= generic_early_init,
 	.final_init		= generic_final_init,
 	.early_exit		= generic_early_exit,
