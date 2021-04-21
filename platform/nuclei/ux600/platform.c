@@ -202,8 +202,6 @@ static void ux600_system_reset(u32 type, u32 reason)
 const struct sbi_platform_operations platform_ops = {
 	.early_init		= ux600_early_init,
 	.final_init		= ux600_final_init,
-	.console_putc		= sifive_uart_putc,
-	.console_getc		= sifive_uart_getc,
 	.console_init		= ux600_console_init,
 	.irqchip_init		= ux600_irqchip_init,
 	.ipi_send		= clint_ipi_send,

@@ -16,9 +16,13 @@ static const struct fdt_match serial_htif_match[] = {
 	{ },
 };
 
+static int serial_htif_init(void *fdt, int nodeoff,
+			    const struct fdt_match *match)
+{
+	return htif_serial_init();
+}
+
 struct fdt_serial fdt_serial_htif = {
 	.match_table = serial_htif_match,
-	.init = NULL,
-	.getc = htif_getc,
-	.putc = htif_putc
+	.init = serial_htif_init
 };

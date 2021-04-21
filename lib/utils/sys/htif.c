@@ -6,6 +6,7 @@
  */
 
 #include <sbi/riscv_locks.h>
+#include <sbi/sbi_console.h>
 #include <sbi_utils/sys/htif.h>
 
 #define HTIF_DATA_BITS		48
@@ -98,7 +99,7 @@ static void do_tohost_fromhost(uint64_t dev, uint64_t cmd, uint64_t data)
 	spin_unlock(&htif_lock);
 }
 
-void htif_putc(char ch)
+static void htif_putc(char ch)
 {
 	/* HTIF devices are not supported on RV32, so do a proxy write call */
 	volatile uint64_t magic_mem[8];
@@ -109,7 +110,7 @@ void htif_putc(char ch)
 	do_tohost_fromhost(HTIF_DEV_SYSTEM, 0, (uint64_t)(uintptr_t)magic_mem);
 }
 #else
-void htif_putc(char ch)
+static void htif_putc(char ch)
 {
 	spin_lock(&htif_lock);
 	__set_tohost(HTIF_DEV_CONSOLE, HTIF_CONSOLE_CMD_PUTC, ch);
@@ -117,7 +118,7 @@ void htif_putc(char ch)
 }
 #endif
 
-int htif_getc(void)
+static int htif_getc(void)
 {
 	int ch;
 
@@ -138,6 +139,19 @@ int htif_getc(void)
 	spin_unlock(&htif_lock);
 
 	return ch - 1;
+}
+
+static struct sbi_console_device htif_console = {
+	.name = "htif",
+	.console_putc = htif_putc,
+	.console_getc = htif_getc
+};
+
+int htif_serial_init(void)
+{
+	sbi_console_set_device(&htif_console);
+
+	return 0;
 }
 
 int htif_system_reset_check(u32 type, u32 reason)

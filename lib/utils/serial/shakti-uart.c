@@ -23,14 +23,14 @@
 
 static volatile void *uart_base;
 
-void shakti_uart_putc(char ch)
+static void shakti_uart_putc(char ch)
 {
 	while((readw(uart_base + REG_STATUS) & UART_TX_FULL))
 		;
 	writeb(ch, uart_base + REG_TX);
 }
 
-int shakti_uart_getc(void)
+static int shakti_uart_getc(void)
 {
 	u16 status = readw(uart_base + REG_STATUS);
 	if (status & UART_RX_FULL)
@@ -38,11 +38,19 @@ int shakti_uart_getc(void)
 	return -1;
 }
 
+static struct sbi_console_device shakti_console = {
+	.name = "shakti_uart",
+	.console_putc = shakti_uart_putc,
+	.console_getc = shakti_uart_getc
+};
+
 int shakti_uart_init(unsigned long base, u32 in_freq, u32 baudrate)
 {
 	uart_base = (volatile void *)base;
 	u16 baud = (u16)(in_freq/(16 * baudrate));
 	writew(baud, uart_base + REG_BAUD);
+
+	sbi_console_set_device(&shakti_console);
 
 	return 0;
 }

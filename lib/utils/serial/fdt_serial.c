@@ -24,33 +24,12 @@ static struct fdt_serial *serial_drivers[] = {
 	&fdt_serial_shakti,
 };
 
-static void dummy_putc(char ch)
-{
-}
-
-static int dummy_getc(void)
-{
-	return -1;
-}
-
 static struct fdt_serial dummy = {
 	.match_table = NULL,
 	.init = NULL,
-	.putc = dummy_putc,
-	.getc = dummy_getc,
 };
 
 static struct fdt_serial *current_driver = &dummy;
-
-void fdt_serial_putc(char ch)
-{
-	current_driver->putc(ch);
-}
-
-int fdt_serial_getc(void)
-{
-	return current_driver->getc();
-}
 
 int fdt_serial_init(void)
 {

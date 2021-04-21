@@ -95,10 +95,6 @@ struct sbi_platform_operations {
 	/** Initialize (or populate) domains for the platform */
 	int (*domains_init)(void);
 
-	/** Write a character to the platform console output */
-	void (*console_putc)(char ch);
-	/** Read a character from the platform console input */
-	int (*console_getc)(void);
 	/** Initialize the platform console */
 	int (*console_init)(void);
 
@@ -494,33 +490,6 @@ static inline int sbi_platform_domains_init(const struct sbi_platform *plat)
 	if (plat && sbi_platform_ops(plat)->domains_init)
 		return sbi_platform_ops(plat)->domains_init();
 	return 0;
-}
-
-/**
- * Write a character to the platform console output
- *
- * @param plat pointer to struct sbi_platform
- * @param ch character to write
- */
-static inline void sbi_platform_console_putc(const struct sbi_platform *plat,
-						char ch)
-{
-	if (plat && sbi_platform_ops(plat)->console_putc)
-		sbi_platform_ops(plat)->console_putc(ch);
-}
-
-/**
- * Read a character from the platform console input
- *
- * @param plat pointer to struct sbi_platform
- *
- * @return character read from console input
- */
-static inline int sbi_platform_console_getc(const struct sbi_platform *plat)
-{
-	if (plat && sbi_platform_ops(plat)->console_getc)
-		return sbi_platform_ops(plat)->console_getc();
-	return -1;
 }
 
 /**

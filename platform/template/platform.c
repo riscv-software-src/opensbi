@@ -64,23 +64,6 @@ static int platform_console_init(void)
 }
 
 /*
- * Write a character to the platform console output.
- */
-static void platform_console_putc(char ch)
-{
-	/* Example if the generic UART8250 driver is used */
-	uart8250_putc(ch);
-}
-
-/*
- * Read a character from the platform console input.
- */
-static int platform_console_getc(void)
-{
-	return uart8250_getc();
-}
-
-/*
  * Initialize the platform interrupt controller for current HART.
  */
 static int platform_irqchip_init(bool cold_boot)
@@ -198,8 +181,6 @@ static void platform_system_reset(u32 type, u32 reason)
 const struct sbi_platform_operations platform_ops = {
 	.early_init		= platform_early_init,
 	.final_init		= platform_final_init,
-	.console_putc		= platform_console_putc,
-	.console_getc		= platform_console_getc,
 	.console_init		= platform_console_init,
 	.irqchip_init		= platform_irqchip_init,
 	.ipi_send		= platform_ipi_send,

@@ -149,8 +149,6 @@ const struct sbi_platform_operations platform_ops = {
 	.final_init	= k210_final_init,
 
 	.console_init	= k210_console_init,
-	.console_putc	= sifive_uart_putc,
-	.console_getc	= sifive_uart_getc,
 
 	.irqchip_init = k210_irqchip_init,
 

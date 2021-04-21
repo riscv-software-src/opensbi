@@ -10,9 +10,7 @@
 
 #include <sbi/sbi_types.h>
 
-void htif_putc(char ch);
-
-int htif_getc(void);
+int htif_serial_init(void);
 
 int htif_system_reset_check(u32 type, u32 reason);
 

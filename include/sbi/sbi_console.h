@@ -12,6 +12,17 @@
 
 #include <sbi/sbi_types.h>
 
+struct sbi_console_device {
+	/** Name of the console device */
+	char name[32];
+
+	/** Write a character to the console output */
+	void (*console_putc)(char ch);
+
+	/** Read a character from the console input */
+	int (*console_getc)(void);
+};
+
 #define __printf(a, b) __attribute__((format(printf, a, b)))
 
 bool sbi_isprintable(char ch);
@@ -31,6 +42,10 @@ int __printf(3, 4) sbi_snprintf(char *out, u32 out_sz, const char *format, ...);
 int __printf(1, 2) sbi_printf(const char *format, ...);
 
 int __printf(1, 2) sbi_dprintf(const char *format, ...);
+
+const struct sbi_console_device *sbi_console_get_device(void);
+
+void sbi_console_set_device(const struct sbi_console_device *dev);
 
 struct sbi_scratch;
 

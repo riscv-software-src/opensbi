@@ -164,8 +164,6 @@ const struct sbi_platform_operations platform_ops = {
 	.final_init = ae350_final_init,
 
 	.console_init = ae350_console_init,
-	.console_putc = uart8250_putc,
-	.console_getc = uart8250_getc,
 
 	.irqchip_init = ae350_irqchip_init,
 

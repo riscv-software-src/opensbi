@@ -15,13 +15,7 @@
 struct fdt_serial {
 	const struct fdt_match *match_table;
 	int (*init)(void *fdt, int nodeoff, const struct fdt_match *match);
-	void (*putc)(char ch);
-	int (*getc)(void);
 };
-
-void fdt_serial_putc(char ch);
-
-int fdt_serial_getc(void);
 
 int fdt_serial_init(void);
 

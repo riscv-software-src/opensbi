@@ -29,7 +29,5 @@ static const struct fdt_match serial_shakti_match[] = {
 
 struct fdt_serial fdt_serial_shakti = {
 	.match_table = serial_shakti_match,
-	.init = serial_shakti_init,
-	.getc = shakti_uart_getc,
-	.putc = shakti_uart_putc
+	.init = serial_shakti_init
 };

@@ -156,8 +156,6 @@ static u32 fu540_hart_index2id[FU540_HART_COUNT - 1] = {
 
 const struct sbi_platform_operations platform_ops = {
 	.final_init		= fu540_final_init,
-	.console_putc		= sifive_uart_putc,
-	.console_getc		= sifive_uart_getc,
 	.console_init		= fu540_console_init,
 	.irqchip_init		= fu540_irqchip_init,
 	.ipi_send		= clint_ipi_send,
