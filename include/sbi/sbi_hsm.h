@@ -12,8 +12,39 @@
 
 #include <sbi/sbi_types.h>
 
+/** Hart state managment device */
+struct sbi_hsm_device {
+	/** Name of the hart state managment device */
+	char name[32];
+
+	/** Start (or power-up) the given hart */
+	int (*hart_start)(u32 hartid, ulong saddr);
+
+	/**
+	 * Stop (or power-down) the current hart from running. This call
+	 * doesn't expect to return if success.
+	 */
+	int (*hart_stop)(void);
+
+	/**
+	 * Put the current hart in platform specific suspend (or low-power)
+	 * state.
+	 *
+	 * For successful retentive suspend, the call will return 0 when
+	 * the hart resumes normal execution.
+	 *
+	 * For successful non-retentive suspend, the hart will resume from
+	 * specified resume address
+	 */
+	int (*hart_suspend)(u32 suspend_type, ulong raddr);
+};
+
 struct sbi_domain;
 struct sbi_scratch;
+
+const struct sbi_hsm_device *sbi_hsm_get_device(void);
+
+void sbi_hsm_set_device(const struct sbi_hsm_device *dev);
 
 int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot);
 void __noreturn sbi_hsm_exit(struct sbi_scratch *scratch);

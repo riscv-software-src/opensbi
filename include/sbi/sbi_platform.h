@@ -51,15 +51,11 @@ struct sbi_trap_regs;
 
 /** Possible feature flags of a platform */
 enum sbi_platform_features {
-	/** Platform has HART hotplug support */
-	SBI_PLATFORM_HAS_HART_HOTPLUG = (1 << 0),
 	/** Platform has fault delegation support */
 	SBI_PLATFORM_HAS_MFAULTS_DELEGATION = (1 << 1),
-	/** Platform has custom secondary hart booting support */
-	SBI_PLATFORM_HAS_HART_SECONDARY_BOOT = (1 << 2),
 
 	/** Last index of Platform features*/
-	SBI_PLATFORM_HAS_LAST_FEATURE = SBI_PLATFORM_HAS_HART_SECONDARY_BOOT,
+	SBI_PLATFORM_HAS_LAST_FEATURE = SBI_PLATFORM_HAS_MFAULTS_DELEGATION,
 };
 
 /** Default feature set for a platform */
@@ -113,19 +109,6 @@ struct sbi_platform_operations {
 	int (*timer_init)(bool cold_boot);
 	/** Exit platform timer for current HART */
 	void (*timer_exit)(void);
-
-	/** Bringup the given hart */
-	int (*hart_start)(u32 hartid, ulong saddr);
-	/**
-	 * Stop the current hart from running. This call doesn't expect to
-	 * return if success.
-	 */
-	int (*hart_stop)(void);
-	/**
-	 * Put the current hart in platform specific suspend (or low-power)
-	 * state.
-	 */
-	int (*hart_suspend)(u32 suspend_type, ulong raddr);
 
 	/** platform specific SBI extension implementation probe function */
 	int (*vendor_ext_check)(long extid);
@@ -193,15 +176,9 @@ struct sbi_platform {
 #define sbi_platform_ops(__p) \
 	((const struct sbi_platform_operations *)(__p)->platform_ops_addr)
 
-/** Check whether the platform supports HART hotplug */
-#define sbi_platform_has_hart_hotplug(__p) \
-	((__p)->features & SBI_PLATFORM_HAS_HART_HOTPLUG)
 /** Check whether the platform supports fault delegation */
 #define sbi_platform_has_mfaults_delegation(__p) \
 	((__p)->features & SBI_PLATFORM_HAS_MFAULTS_DELEGATION)
-/** Check whether the platform supports custom secondary hart booting support */
-#define sbi_platform_has_hart_secondary_boot(__p) \
-	((__p)->features & SBI_PLATFORM_HAS_HART_SECONDARY_BOOT)
 
 /**
  * Get HART index for the given HART
@@ -314,64 +291,6 @@ static inline bool sbi_platform_hart_invalid(const struct sbi_platform *plat,
 	if (plat->hart_count <= sbi_platform_hart_index(plat, hartid))
 		return TRUE;
 	return FALSE;
-}
-
-/**
- * Bringup a given hart from previous stage. Platform should implement this
- * operation if they support a custom mechanism to start a hart. Otherwise,
- * a generic WFI based approach will be used to start/stop a hart in OpenSBI.
- *
- * @param plat pointer to struct sbi_platform
- * @param hartid HART id
- * @param saddr M-mode start physical address for the HART
- *
- * @return 0 if sucessful and negative error code on failure
- */
-static inline int sbi_platform_hart_start(const struct sbi_platform *plat,
-					  u32 hartid, ulong saddr)
-{
-	if (plat && sbi_platform_ops(plat)->hart_start)
-		return sbi_platform_ops(plat)->hart_start(hartid, saddr);
-	return SBI_ENOTSUPP;
-}
-
-/**
- * Stop the current hart in OpenSBI.
- *
- * @param plat pointer to struct sbi_platform
- *
- * @return Negative error code on failure. It doesn't return on success.
- */
-static inline int sbi_platform_hart_stop(const struct sbi_platform *plat)
-{
-	if (plat && sbi_platform_ops(plat)->hart_stop)
-		return sbi_platform_ops(plat)->hart_stop();
-	return SBI_ENOTSUPP;
-}
-
-/**
- * Put the current hart in platform specific suspend (or low-power) state.
- *
- * For successful retentive suspend, the call will return 0 when the hart
- * resumes normal execution.
- *
- * For successful non-retentive suspend, the hart will resume from specified
- * resume address
- *
- * @param plat pointer to struct sbi_platform
- * @param suspend_type the type of suspend
- * @param raddr physical address where the hart can resume in M-mode after
- * non-retantive suspend
- *
- * @return 0 if successful and negative error code on failure
- */
-static inline int sbi_platform_hart_suspend(const struct sbi_platform *plat,
-					    u32 suspend_type, ulong raddr)
-{
-	if (plat && sbi_platform_ops(plat)->hart_suspend)
-		return sbi_platform_ops(plat)->hart_suspend(suspend_type,
-							    raddr);
-	return SBI_ENOTSUPP;
 }
 
 /**
