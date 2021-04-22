@@ -53,6 +53,11 @@ static void sbi_boot_print_banner(struct sbi_scratch *scratch)
 static void sbi_boot_print_general(struct sbi_scratch *scratch)
 {
 	char str[128];
+	const struct sbi_hsm_device *hdev;
+	const struct sbi_ipi_device *idev;
+	const struct sbi_timer_device *tdev;
+	const struct sbi_console_device *cdev;
+	const struct sbi_system_reset_device *srdev;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if (scratch->options & SBI_SCRATCH_NO_BOOT_PRINTS)
@@ -65,6 +70,21 @@ static void sbi_boot_print_general(struct sbi_scratch *scratch)
 	sbi_printf("Platform Features         : %s\n", str);
 	sbi_printf("Platform HART Count       : %u\n",
 		   sbi_platform_hart_count(plat));
+	idev = sbi_ipi_get_device();
+	sbi_printf("Platform IPI Device       : %s\n",
+		   (idev) ? idev->name : "---");
+	tdev = sbi_timer_get_device();
+	sbi_printf("Platform Timer Device     : %s\n",
+		   (tdev) ? tdev->name : "---");
+	cdev = sbi_console_get_device();
+	sbi_printf("Platform Console Device   : %s\n",
+		   (cdev) ? cdev->name : "---");
+	hdev = sbi_hsm_get_device();
+	sbi_printf("Platform HSM Device       : %s\n",
+		   (hdev) ? hdev->name : "---");
+	srdev = sbi_system_reset_get_device();
+	sbi_printf("Platform SysReset Device  : %s\n",
+		   (srdev) ? srdev->name : "---");
 
 	/* Firmware details */
 	sbi_printf("Firmware Base             : 0x%lx\n", scratch->fw_start);
