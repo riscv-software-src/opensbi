@@ -182,8 +182,6 @@ const struct sbi_platform_operations platform_ops = {
 	.console_init = openpiton_console_init,
 	.irqchip_init = openpiton_irqchip_init,
 	.ipi_init = openpiton_ipi_init,
-	.ipi_send = clint_ipi_send,
-	.ipi_clear = clint_ipi_clear,
 	.timer_init = openpiton_timer_init,
 };
 

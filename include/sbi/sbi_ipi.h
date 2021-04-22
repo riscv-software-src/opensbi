@@ -18,6 +18,18 @@
 
 /* clang-format on */
 
+/** IPI hardware device */
+struct sbi_ipi_device {
+	/** Name of the IPI device */
+	char name[32];
+
+	/** Send IPI to a target HART */
+	void (*ipi_send)(u32 target_hart);
+
+	/** Clear IPI for a target HART */
+	void (*ipi_clear)(u32 target_hart);
+};
+
 struct sbi_scratch;
 
 /** IPI event operations or callbacks */
@@ -62,6 +74,12 @@ void sbi_ipi_clear_smode(void);
 int sbi_ipi_send_halt(ulong hmask, ulong hbase);
 
 void sbi_ipi_process(void);
+
+void sbi_ipi_raw_send(u32 target_hart);
+
+const struct sbi_ipi_device *sbi_ipi_get_device(void);
+
+void sbi_ipi_set_device(const struct sbi_ipi_device *dev);
 
 int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot);
 

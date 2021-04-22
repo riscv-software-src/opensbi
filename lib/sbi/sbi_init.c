@@ -178,8 +178,6 @@ static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 
 static void wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 {
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
-
 	/* Mark coldboot done */
 	__smp_store_release(&coldboot_done, 1);
 
@@ -190,7 +188,7 @@ static void wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 	for (int i = 0; i <= sbi_scratch_last_hartid(); i++) {
 		if ((i != hartid) &&
 		    sbi_hartmask_test_hart(i, &coldboot_wait_hmask))
-			sbi_platform_ipi_send(plat, i);
+			sbi_ipi_raw_send(i);
 	}
 
 	/* Release coldboot lock */

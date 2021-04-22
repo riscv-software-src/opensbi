@@ -153,8 +153,6 @@ const struct sbi_platform_operations platform_ops = {
 	.irqchip_init = k210_irqchip_init,
 
 	.ipi_init  = k210_ipi_init,
-	.ipi_send  = clint_ipi_send,
-	.ipi_clear = clint_ipi_clear,
 
 	.system_reset_check	= k210_system_reset_check,
 	.system_reset		= k210_system_reset,

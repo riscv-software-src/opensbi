@@ -45,6 +45,4 @@ struct fdt_ipi fdt_ipi_clint = {
 	.cold_init = ipi_clint_cold_init,
 	.warm_init = clint_warm_ipi_init,
 	.exit = NULL,
-	.send = clint_ipi_send,
-	.clear = clint_ipi_clear,
 };

@@ -13,6 +13,7 @@
 #include <sbi/sbi_domain.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hartmask.h>
+#include <sbi/sbi_ipi.h>
 #include <sbi/sbi_timer.h>
 #include <sbi_utils/sys/clint.h>
 
@@ -27,7 +28,7 @@
 
 static struct clint_data *clint_ipi_hartid2data[SBI_HARTMASK_MAX_BITS];
 
-void clint_ipi_send(u32 target_hart)
+static void clint_ipi_send(u32 target_hart)
 {
 	struct clint_data *clint;
 
@@ -41,7 +42,7 @@ void clint_ipi_send(u32 target_hart)
 	writel(1, &clint->ipi[target_hart - clint->first_hartid]);
 }
 
-void clint_ipi_clear(u32 target_hart)
+static void clint_ipi_clear(u32 target_hart)
 {
 	struct clint_data *clint;
 
@@ -55,6 +56,12 @@ void clint_ipi_clear(u32 target_hart)
 	writel(0, &clint->ipi[target_hart - clint->first_hartid]);
 }
 
+static struct sbi_ipi_device clint_ipi = {
+	.name = "clint",
+	.ipi_send = clint_ipi_send,
+	.ipi_clear = clint_ipi_clear
+};
+
 int clint_warm_ipi_init(void)
 {
 	/* Clear CLINT IPI for current HART */
@@ -66,6 +73,7 @@ int clint_warm_ipi_init(void)
 int clint_cold_ipi_init(struct clint_data *clint)
 {
 	u32 i;
+	int rc;
 	struct sbi_domain_memregion reg;
 
 	if (!clint)
@@ -82,7 +90,13 @@ int clint_cold_ipi_init(struct clint_data *clint)
 	sbi_domain_memregion_init(clint->addr + CLINT_IPI_OFF,
 				  CLINT_IPI_SIZE,
 				  SBI_DOMAIN_MEMREGION_MMIO, &reg);
-	return sbi_domain_root_add_memregion(&reg);
+	rc = sbi_domain_root_add_memregion(&reg);
+	if (rc)
+		return rc;
+
+	sbi_ipi_set_device(&clint_ipi);
+
+	return 0;
 }
 
 static struct clint_data *clint_timer_hartid2data[SBI_HARTMASK_MAX_BITS];

@@ -99,24 +99,6 @@ static int platform_ipi_init(bool cold_boot)
 }
 
 /*
- * Send IPI to a target HART
- */
-static void platform_ipi_send(u32 target_hart)
-{
-	/* Example if the generic CLINT driver is used */
-	clint_ipi_send(target_hart);
-}
-
-/*
- * Clear IPI for a target HART.
- */
-static void platform_ipi_clear(u32 target_hart)
-{
-	/* Example if the generic CLINT driver is used */
-	clint_ipi_clear(target_hart);
-}
-
-/*
  * Initialize platform timer for current HART.
  */
 static int platform_timer_init(bool cold_boot)
@@ -156,8 +138,6 @@ const struct sbi_platform_operations platform_ops = {
 	.final_init		= platform_final_init,
 	.console_init		= platform_console_init,
 	.irqchip_init		= platform_irqchip_init,
-	.ipi_send		= platform_ipi_send,
-	.ipi_clear		= platform_ipi_clear,
 	.ipi_init		= platform_ipi_init,
 	.timer_init		= platform_timer_init,
 	.system_reset_check	= platform_system_reset_check,

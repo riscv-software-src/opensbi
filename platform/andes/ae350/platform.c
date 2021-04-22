@@ -12,6 +12,7 @@
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_const.h>
+#include <sbi/sbi_ipi.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_trap.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
@@ -85,6 +86,12 @@ static int ae350_irqchip_init(bool cold_boot)
 	return plic_warm_irqchip_init(&plic, 2 * hartid, 2 * hartid + 1);
 }
 
+static struct sbi_ipi_device plicsw_ipi = {
+	.name = "ae350_plicsw",
+	.ipi_send = plicsw_ipi_send,
+	.ipi_clear = plicsw_ipi_clear
+};
+
 /* Initialize IPI for current HART. */
 static int ae350_ipi_init(bool cold_boot)
 {
@@ -95,6 +102,8 @@ static int ae350_ipi_init(bool cold_boot)
 					   AE350_HART_COUNT);
 		if (ret)
 			return ret;
+
+		sbi_ipi_set_device(&plicsw_ipi);
 	}
 
 	return plicsw_warm_ipi_init();
@@ -168,8 +177,6 @@ const struct sbi_platform_operations platform_ops = {
 	.irqchip_init = ae350_irqchip_init,
 
 	.ipi_init     = ae350_ipi_init,
-	.ipi_send     = plicsw_ipi_send,
-	.ipi_clear    = plicsw_ipi_clear,
 
 	.timer_init	   = ae350_timer_init,
 

@@ -17,34 +17,14 @@ static struct fdt_ipi *ipi_drivers[] = {
 	&fdt_ipi_clint
 };
 
-static void dummy_send(u32 target_hart)
-{
-}
-
-static void dummy_clear(u32 target_hart)
-{
-}
-
 static struct fdt_ipi dummy = {
 	.match_table = NULL,
 	.cold_init = NULL,
 	.warm_init = NULL,
 	.exit = NULL,
-	.send = dummy_send,
-	.clear = dummy_clear
 };
 
 static struct fdt_ipi *current_driver = &dummy;
-
-void fdt_ipi_send(u32 target_hart)
-{
-	current_driver->send(target_hart);
-}
-
-void fdt_ipi_clear(u32 target_hart)
-{
-	current_driver->clear(target_hart);
-}
 
 void fdt_ipi_exit(void)
 {

@@ -29,10 +29,6 @@ struct clint_data {
 	void (*time_wr)(u64 value, volatile u64 *addr);
 };
 
-void clint_ipi_send(u32 target_hart);
-
-void clint_ipi_clear(u32 target_hart);
-
 int clint_warm_ipi_init(void);
 
 int clint_cold_ipi_init(struct clint_data *clint);

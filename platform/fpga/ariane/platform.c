@@ -156,8 +156,6 @@ const struct sbi_platform_operations platform_ops = {
 	.console_init = ariane_console_init,
 	.irqchip_init = ariane_irqchip_init,
 	.ipi_init = ariane_ipi_init,
-	.ipi_send = clint_ipi_send,
-	.ipi_clear = clint_ipi_clear,
 	.timer_init = ariane_timer_init,
 };
 

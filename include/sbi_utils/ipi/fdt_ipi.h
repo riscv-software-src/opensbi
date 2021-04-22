@@ -17,13 +17,7 @@ struct fdt_ipi {
 	int (*cold_init)(void *fdt, int nodeoff, const struct fdt_match *match);
 	int (*warm_init)(void);
 	void (*exit)(void);
-	void (*send)(u32 target_hart);
-	void (*clear)(u32 target_hart);
 };
-
-void fdt_ipi_send(u32 target_hart);
-
-void fdt_ipi_clear(u32 target_hart);
 
 void fdt_ipi_exit(void);
 
