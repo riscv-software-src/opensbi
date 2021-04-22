@@ -7,6 +7,7 @@
 
 #include <sbi/riscv_locks.h>
 #include <sbi/sbi_console.h>
+#include <sbi/sbi_system.h>
 #include <sbi_utils/sys/htif.h>
 
 #define HTIF_DATA_BITS		48
@@ -154,15 +155,28 @@ int htif_serial_init(void)
 	return 0;
 }
 
-int htif_system_reset_check(u32 type, u32 reason)
+static int htif_system_reset_check(u32 type, u32 reason)
 {
 	return 1;
 }
 
-void htif_system_reset(u32 type, u32 reason)
+static void htif_system_reset(u32 type, u32 reason)
 {
 	while (1) {
 		fromhost = 0;
 		tohost = 1;
 	}
+}
+
+static struct sbi_system_reset_device htif_reset = {
+	.name = "htif",
+	.system_reset_check = htif_system_reset_check,
+	.system_reset = htif_system_reset
+};
+
+int htif_system_reset_init(void)
+{
+	sbi_system_reset_set_device(&htif_reset);
+
+	return 0;
 }

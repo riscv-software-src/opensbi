@@ -116,21 +116,6 @@ static int platform_timer_init(bool cold_boot)
 }
 
 /*
- * Check reset type and reason supported by the platform.
- */
-static int platform_system_reset_check(u32 type, u32 reason)
-{
-	return 0;
-}
-
-/*
- * Reset the platform.
- */
-static void platform_system_reset(u32 type, u32 reason)
-{
-}
-
-/*
  * Platform descriptor.
  */
 const struct sbi_platform_operations platform_ops = {
@@ -139,9 +124,7 @@ const struct sbi_platform_operations platform_ops = {
 	.console_init		= platform_console_init,
 	.irqchip_init		= platform_irqchip_init,
 	.ipi_init		= platform_ipi_init,
-	.timer_init		= platform_timer_init,
-	.system_reset_check	= platform_system_reset_check,
-	.system_reset		= platform_system_reset
+	.timer_init		= platform_timer_init
 };
 const struct sbi_platform platform = {
 	.opensbi_version	= OPENSBI_VERSION,

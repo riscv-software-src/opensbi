@@ -18,10 +18,25 @@
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_init.h>
 
+static const struct sbi_system_reset_device *reset_dev = NULL;
+
+const struct sbi_system_reset_device *sbi_system_reset_get_device(void)
+{
+	return reset_dev;
+}
+
+void sbi_system_reset_set_device(const struct sbi_system_reset_device *dev)
+{
+	if (!dev || reset_dev)
+		return;
+
+	reset_dev = dev;
+}
+
 bool sbi_system_reset_supported(u32 reset_type, u32 reset_reason)
 {
-	if (sbi_platform_system_reset_check(sbi_platform_thishart_ptr(),
-					    reset_type, reset_reason))
+	if (reset_dev && reset_dev->system_reset_check &&
+	    reset_dev->system_reset_check(reset_type, reset_reason))
 		return TRUE;
 
 	return FALSE;
@@ -47,9 +62,9 @@ void __noreturn sbi_system_reset(u32 reset_type, u32 reset_reason)
 	sbi_hsm_hart_stop(scratch, FALSE);
 
 	/* Platform specific reset if domain allowed system reset */
-	if (dom->system_reset_allowed)
-		sbi_platform_system_reset(sbi_platform_ptr(scratch),
-					  reset_type, reset_reason);
+	if (dom->system_reset_allowed &&
+	    reset_dev && reset_dev->system_reset)
+		reset_dev->system_reset(reset_type, reset_reason);
 
 	/* If platform specific reset did not work then do sbi_exit() */
 	sbi_exit(scratch);

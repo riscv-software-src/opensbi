@@ -7,8 +7,10 @@
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_scratch.h>
+#include <sbi/sbi_system.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/reset/fdt_reset.h>
+
 #include "fdt_reset_thead.h"
 
 struct custom_csr custom_csr[MAX_CUSTOM_CSR];
@@ -36,6 +38,22 @@ static void clone_csrs(int cnt)
 		custom_csr[i].value = __fdt_reset_thead_csrr();
 	}
 }
+
+static int thead_system_reset_check(u32 type, u32 reason)
+{
+	return 1;
+}
+
+static void thead_system_reset(u32 type, u32 reason)
+{
+	ebreak();
+}
+
+static struct sbi_system_reset_device thead_reset = {
+	.name = "thead_reset",
+	.system_reset_check = thead_system_reset_check,
+	.system_reset = thead_system_reset
+};
 
 extern void __thead_pre_start_warm(void);
 static int thead_reset_init(void *fdt, int nodeoff,
@@ -106,17 +124,9 @@ static int thead_reset_init(void *fdt, int nodeoff,
 		}
 	}
 
+	sbi_system_reset_set_device(&thead_reset);
+
 	return 0;
-}
-
-int thead_system_reset_check(u32 type, u32 reason)
-{
-	return 1;
-}
-
-void thead_system_reset(u32 type, u32 reason)
-{
-	ebreak();
 }
 
 static const struct fdt_match thead_reset_match[] = {
@@ -126,7 +136,5 @@ static const struct fdt_match thead_reset_match[] = {
 
 struct fdt_reset fdt_reset_thead = {
 	.match_table = thead_reset_match,
-	.init = thead_reset_init,
-	.system_reset_check = thead_system_reset_check,
-	.system_reset = thead_system_reset
+	.init = thead_reset_init
 };

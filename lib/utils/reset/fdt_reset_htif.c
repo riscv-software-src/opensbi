@@ -11,6 +11,12 @@
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/sys/htif.h>
 
+static int htif_reset_init(void *fdt, int nodeoff,
+			   const struct fdt_match *match)
+{
+	return htif_system_reset_init();
+}
+
 static const struct fdt_match htif_reset_match[] = {
 	{ .compatible = "ucb,htif0" },
 	{ },
@@ -18,6 +24,5 @@ static const struct fdt_match htif_reset_match[] = {
 
 struct fdt_reset fdt_reset_htif = {
 	.match_table = htif_reset_match,
-	.system_reset_check = htif_system_reset_check,
-	.system_reset = htif_system_reset
+	.init = htif_reset_init
 };
