@@ -521,6 +521,7 @@ int sbi_domain_root_add_memregion(const struct sbi_domain_memregion *reg)
 					nreg1++;
 				}
 				reg_merged = true;
+				root_memregs_count--;
 			}
 		}
 	} while (reg_merged);
