@@ -28,9 +28,6 @@ OpenSBI currently supports the following virtual and hardware platforms:
 * **Andes AE350 SoC**: Platform support for the Andes's SoC (AE350). More
   details on this platform can be found in the file *[andes-ae350.md]*.
 
-* **T-HEAD C910**: Platform support for the T-HEAD C910 Processor. More
-  details on this platform can be found in the file *[thead-c910.md]*.
-
 * **Spike**: Platform support for the Spike emulator. More
   details on this platform can be found in the file *[spike.md]*.
 
