@@ -142,7 +142,7 @@ static int __fixup_disable_devices(void *fdt, int doff, int roff,
 		if (coff < 0)
 			return coff;
 
-		fdt_setprop_string(fdt, coff, "status", "disabled");
+		fdt_setprop_string(fdt, coff, "status", "");
 	}
 
 	return 0;

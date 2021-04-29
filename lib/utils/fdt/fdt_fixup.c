@@ -46,8 +46,7 @@ void fdt_cpu_fixup(void *fdt)
 		mmu_type = fdt_getprop(fdt, cpu_offset, "mmu-type", &len);
 		if (!sbi_domain_is_assigned_hart(dom, hartid) ||
 		    !mmu_type || !len)
-			fdt_setprop_string(fdt, cpu_offset, "status",
-					   "disabled");
+			fdt_setprop_string(fdt, cpu_offset, "status", "");
 	}
 }
 
