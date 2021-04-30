@@ -39,6 +39,9 @@ int fdt_parse_hart_id(void *fdt, int cpu_offset, u32 *hartid);
 
 int fdt_parse_max_hart_id(void *fdt, u32 *max_hartid);
 
+int fdt_parse_gaisler_uart_node(void *fdt, int nodeoffset,
+				struct platform_uart_data *uart);
+
 int fdt_parse_shakti_uart_node(void *fdt, int nodeoffset,
 			       struct platform_uart_data *uart);
 
