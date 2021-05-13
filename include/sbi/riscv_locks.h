@@ -34,9 +34,9 @@ typedef struct {
 #define DEFINE_SPIN_LOCK(x)	\
 	spinlock_t SPIN_LOCK_INIT(x)
 
-int spin_lock_check(spinlock_t *lock);
+bool spin_lock_check(spinlock_t *lock);
 
-int spin_trylock(spinlock_t *lock);
+bool spin_trylock(spinlock_t *lock);
 
 void spin_lock(spinlock_t *lock);
 

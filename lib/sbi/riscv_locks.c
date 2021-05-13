@@ -8,7 +8,7 @@
 #include <sbi/riscv_barrier.h>
 #include <sbi/riscv_locks.h>
 
-static inline int spin_lock_unlocked(spinlock_t lock)
+static inline bool spin_lock_unlocked(spinlock_t lock)
 {
 	return lock.owner == lock.next;
 }
@@ -19,7 +19,7 @@ bool spin_lock_check(spinlock_t *lock)
 	return !spin_lock_unlocked(*lock);
 }
 
-int spin_trylock(spinlock_t *lock)
+bool spin_trylock(spinlock_t *lock)
 {
 	unsigned long inc = 1u << TICKET_SHIFT;
 	unsigned long mask = 0xffffu << TICKET_SHIFT;
@@ -42,7 +42,7 @@ int spin_trylock(spinlock_t *lock)
 		: "r"(inc), "r"(mask), "I"(TICKET_SHIFT)
 		: "memory");
 
-	return !l0;
+	return l0 == 0;
 }
 
 void spin_lock(spinlock_t *lock)
