@@ -21,14 +21,15 @@
 
 #ifdef __riscv_flen
 
-#define GET_F32_REG(insn, pos, regs)                                                                    \
-	({                                                                                              \
-		register s32 value asm("a0") =                                                          \
-			SHIFT_RIGHT(insn, (pos)-3) & 0xf8;                                              \
-		ulong tmp;                                                                              \
-		asm("1: auipc %0, %%pcrel_hi(get_f32_reg); add %0, %0, %1; jalr t0, %0, %%pcrel_lo(1b)" \
-		    : "=&r"(tmp), "+&r"(value)::"t0");                                                  \
-		value;                                                                                  \
+#define GET_F32_REG(insn, pos, regs)                                                                     \
+	({                                                                                                   \
+		ulong rf_address = SHIFT_RIGHT(insn, (pos)-3) & 0xf8;                                             \
+		ulong tmp;                                                                                        \
+		volatile u32 value;                                                                               \
+		register ulong ptr asm("a0") = (ulong)&value;                                                      \
+		asm volatile("1: auipc %0, %%pcrel_hi(get_f32_reg); add %0, %0, %2; jalr t0, %0, %%pcrel_lo(1b)"  \
+			: "=&r"(tmp) : "r"(ptr), "r"(rf_address)  :"t0");                                             \
+		value;                                                                                            \
 	})
 #define SET_F32_REG(insn, pos, regs, val)                                                                   \
 	({                                                                                                  \
@@ -42,14 +43,15 @@
 			: "t0");                                                                            \
 	})
 #define init_fp_reg(i) SET_F32_REG((i) << 3, 3, 0, 0)
-#define GET_F64_REG(insn, pos, regs)                                                                    \
-	({                                                                                              \
-		register ulong value asm("a0") =                                                        \
-			SHIFT_RIGHT(insn, (pos)-3) & 0xf8;                                              \
-		ulong tmp;                                                                              \
-		asm("1: auipc %0, %%pcrel_hi(get_f64_reg); add %0, %0, %1; jalr t0, %0, %%pcrel_lo(1b)" \
-		    : "=&r"(tmp), "+&r"(value)::"t0");                                                  \
-		sizeof(ulong) == 4 ? *(int64_t *)value : (int64_t)value;                                \
+#define GET_F64_REG(insn, pos, regs)                                                                      \
+	({                                                                                                    \
+		ulong rf_address = SHIFT_RIGHT(insn, (pos)-3) & 0xf8;                                             \
+		ulong tmp;                                                                                        \
+		volatile u64 value;                                                                               \
+		register ulong ptr asm("a0") = (ulong)&value;                                                      \
+		asm volatile("1: auipc %0, %%pcrel_hi(get_f64_reg); add %0, %0, %2; jalr t0, %0, %%pcrel_lo(1b)"  \
+			: "=&r"(tmp) : "r"(ptr), "r"(rf_address)  :"t0");                                          \
+		value;                                                                                            \
 	})
 #define SET_F64_REG(insn, pos, regs, val)                                                                   \
 	({                                                                                                  \
