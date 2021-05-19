@@ -96,7 +96,7 @@ static int __fixup_find_domain_offset(void *fdt, int doff, void *p)
 {
 	struct __fixup_find_domain_offset_info *fdo = p;
 
-	if (!strcmp(fdo->name, fdt_get_name(fdt, doff, NULL)))
+	if (!strncmp(fdo->name, fdt_get_name(fdt, doff, NULL), strlen(fdo->name)))
 		*fdo->doffset = doff;
 
 	return 0;
