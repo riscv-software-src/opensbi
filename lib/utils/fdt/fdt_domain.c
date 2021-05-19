@@ -9,6 +9,7 @@
  */
 
 #include <libfdt.h>
+#include <libfdt_env.h>
 #include <sbi/sbi_domain.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hartmask.h>
@@ -95,7 +96,7 @@ static int __fixup_find_domain_offset(void *fdt, int doff, void *p)
 {
 	struct __fixup_find_domain_offset_info *fdo = p;
 
-	if (!sbi_strcmp(fdo->name, fdt_get_name(fdt, doff, NULL)))
+	if (!strcmp(fdo->name, fdt_get_name(fdt, doff, NULL)))
 		*fdo->doffset = doff;
 
 	return 0;
@@ -287,7 +288,7 @@ static int __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 	regions = &fdt_regions[fdt_domains_count][0];
 
 	/* Read DT node name */
-	sbi_strncpy(dom->name, fdt_get_name(fdt, domain_offset, NULL),
+	strncpy(dom->name, fdt_get_name(fdt, domain_offset, NULL),
 		    sizeof(dom->name));
 	dom->name[sizeof(dom->name) - 1] = '\0';
 
@@ -313,7 +314,7 @@ static int __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 
 	/* Setup memregions from DT */
 	val32 = 0;
-	sbi_memset(regions, 0,
+	memset(regions, 0,
 		   sizeof(*regions) * (FDT_DOMAIN_REGION_MAX_COUNT + 1));
 	dom->regions = regions;
 	err = fdt_iterate_each_memregion(fdt, domain_offset, &val32,
@@ -337,7 +338,7 @@ static int __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 			continue;
 		if (FDT_DOMAIN_REGION_MAX_COUNT <= val32)
 			return SBI_EINVAL;
-		sbi_memcpy(&regions[val32++], reg, sizeof(*reg));
+		memcpy(&regions[val32++], reg, sizeof(*reg));
 	}
 
 	/* Read "boot-hart" DT property */
