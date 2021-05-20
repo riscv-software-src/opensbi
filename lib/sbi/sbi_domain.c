@@ -511,7 +511,8 @@ int sbi_domain_root_add_memregion(const struct sbi_domain_memregion *reg)
 			if (!nreg1->order)
 				continue;
 
-			if ((nreg->base + BIT(nreg->order)) == nreg1->base &&
+			if (!(nreg->base & (BIT(nreg->order + 1) - 1)) &&
+			    (nreg->base + BIT(nreg->order)) == nreg1->base &&
 			    nreg->order == nreg1->order &&
 			    nreg->flags == nreg1->flags) {
 				nreg->order++;
