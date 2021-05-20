@@ -7,5 +7,6 @@
 #   Anup Patel <anup.patel@wdc.com>
 #
 
+libsbiutils-objs-y += timer/aclint_mtimer.o
 libsbiutils-objs-y += timer/fdt_timer.o
 libsbiutils-objs-y += timer/fdt_timer_clint.o
