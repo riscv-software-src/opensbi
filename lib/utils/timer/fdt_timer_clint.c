@@ -7,6 +7,7 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
+#include <libfdt.h>
 #include <sbi/sbi_error.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/timer/fdt_timer.h>
@@ -21,6 +22,7 @@ static int timer_clint_cold_init(void *fdt, int nodeoff,
 				  const struct fdt_match *match)
 {
 	int rc;
+	unsigned long ctsize;
 	struct clint_data *ct, *ctmaster = NULL;
 
 	if (CLINT_TIMER_MAX_NR <= clint_timer_count)
@@ -29,9 +31,14 @@ static int timer_clint_cold_init(void *fdt, int nodeoff,
 	if (1 < clint_timer_count)
 		ctmaster = &clint_timer[0];
 
-	rc = fdt_parse_clint_node(fdt, nodeoff, TRUE, ct);
+	rc = fdt_parse_aclint_node(fdt, nodeoff, true, &ct->addr, &ctsize,
+				   &ct->first_hartid, &ct->hart_count);
 	if (rc)
 		return rc;
+
+	ct->has_64bit_mmio = true;
+	if (fdt_getprop(fdt, nodeoff, "clint,has-no-64bit-mmio", &rc))
+		ct->has_64bit_mmio = false;
 
 	return clint_cold_timer_init(ct, ctmaster);
 }

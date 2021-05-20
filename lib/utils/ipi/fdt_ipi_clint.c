@@ -21,15 +21,18 @@ static int ipi_clint_cold_init(void *fdt, int nodeoff,
 			       const struct fdt_match *match)
 {
 	int rc;
+	unsigned long cisize;
 	struct clint_data *ci;
 
 	if (CLINT_IPI_MAX_NR <= clint_ipi_count)
 		return SBI_ENOSPC;
 	ci = &clint_ipi[clint_ipi_count++];
 
-	rc = fdt_parse_clint_node(fdt, nodeoff, FALSE, ci);
+	rc = fdt_parse_aclint_node(fdt, nodeoff, false, &ci->addr, &cisize,
+				   &ci->first_hartid, &ci->hart_count);
 	if (rc)
 		return rc;
+	ci->has_64bit_mmio = false;
 
 	return clint_cold_ipi_init(ci);
 }

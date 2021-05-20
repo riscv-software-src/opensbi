@@ -60,10 +60,9 @@ int fdt_parse_plic_node(void *fdt, int nodeoffset, struct plic_data *plic);
 
 int fdt_parse_plic(void *fdt, struct plic_data *plic, const char *compat);
 
-struct clint_data;
-
-int fdt_parse_clint_node(void *fdt, int nodeoffset, bool for_timer,
-			 struct clint_data *clint);
+int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
+			  unsigned long *out_addr, unsigned long *out_size,
+			  u32 *out_first_hartid, u32 *out_hart_count);
 
 int fdt_parse_compat_addr(void *fdt, unsigned long *addr,
 			  const char *compatible);

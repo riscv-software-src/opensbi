@@ -14,7 +14,6 @@
 #include <sbi/sbi_scratch.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/irqchip/plic.h>
-#include <sbi_utils/sys/clint.h>
 
 #define DEFAULT_UART_FREQ		0
 #define DEFAULT_UART_BAUD		115200
@@ -421,8 +420,9 @@ int fdt_parse_plic(void *fdt, struct plic_data *plic, const char *compat)
 	return fdt_parse_plic_node(fdt, nodeoffset, plic);
 }
 
-int fdt_parse_clint_node(void *fdt, int nodeoffset, bool for_timer,
-			 struct clint_data *clint)
+int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
+			  unsigned long *out_addr, unsigned long *out_size,
+			  u32 *out_first_hartid, u32 *out_hart_count)
 {
 	const fdt32_t *val;
 	unsigned long reg_addr, reg_size;
@@ -430,22 +430,25 @@ int fdt_parse_clint_node(void *fdt, int nodeoffset, bool for_timer,
 	u32 phandle, hwirq, hartid, first_hartid, last_hartid;
 	u32 match_hwirq = (for_timer) ? IRQ_M_TIMER : IRQ_M_SOFT;
 
-	if (nodeoffset < 0 || !clint || !fdt)
-		return SBI_ENODEV;
+	if (nodeoffset < 0 || !fdt ||
+	    !out_addr || !out_size ||
+	    !out_first_hartid || !out_hart_count)
+		return SBI_EINVAL;
 
 	rc = fdt_get_node_addr_size(fdt, nodeoffset, &reg_addr, &reg_size);
 	if (rc < 0 || !reg_addr || !reg_size)
 		return SBI_ENODEV;
-	clint->addr = reg_addr;
+	*out_addr = reg_addr;
+	*out_size = reg_size;
 
 	val = fdt_getprop(fdt, nodeoffset, "interrupts-extended", &count);
 	if (!val || count < sizeof(fdt32_t))
-		return SBI_EINVAL;
+		return SBI_ENODEV;
 	count = count / sizeof(fdt32_t);
 
 	first_hartid = -1U;
 	last_hartid = 0;
-	clint->hart_count = 0;
+	*out_hart_count = 0;
 	for (i = 0; i < count; i += 2) {
 		phandle = fdt32_to_cpu(val[i]);
 		hwirq = fdt32_to_cpu(val[i + 1]);
@@ -470,21 +473,17 @@ int fdt_parse_clint_node(void *fdt, int nodeoffset, bool for_timer,
 				first_hartid = hartid;
 			if (hartid > last_hartid)
 				last_hartid = hartid;
-			clint->hart_count++;
+			(*out_hart_count)++;
 		}
 	}
 
 	if ((last_hartid < first_hartid) || first_hartid == -1U)
 		return SBI_ENODEV;
 
-	clint->first_hartid = first_hartid;
+	*out_first_hartid = first_hartid;
 	count = last_hartid - first_hartid + 1;
-	if (clint->hart_count < count)
-		clint->hart_count = count;
-
-	clint->has_64bit_mmio = TRUE;
-	if (fdt_getprop(fdt, nodeoffset, "clint,has-no-64bit-mmio", &count))
-		clint->has_64bit_mmio = FALSE;
+	if (*out_hart_count < count)
+		*out_hart_count = count;
 
 	return 0;
 }
