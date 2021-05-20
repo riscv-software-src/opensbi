@@ -7,6 +7,7 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
+#include <sbi/sbi_error.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/reset/fdt_reset.h>
@@ -39,6 +40,8 @@ int fdt_reset_init(void)
 
 		if (drv->init) {
 			rc = drv->init(fdt, noff, match);
+			if (rc == SBI_ENODEV)
+				continue;
 			if (rc)
 				return rc;
 		}

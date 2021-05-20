@@ -7,6 +7,7 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
+#include <sbi/sbi_error.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/irqchip/fdt_irqchip.h>
@@ -47,6 +48,8 @@ static int fdt_irqchip_cold_init(void)
 					drv->match_table, &match)) >= 0) {
 			if (drv->cold_init) {
 				rc = drv->cold_init(fdt, noff, match);
+				if (rc == SBI_ENODEV)
+					continue;
 				if (rc)
 					return rc;
 			}

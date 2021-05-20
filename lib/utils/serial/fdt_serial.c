@@ -8,6 +8,7 @@
  */
 
 #include <libfdt.h>
+#include <sbi/sbi_error.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/serial/fdt_serial.h>
@@ -59,6 +60,8 @@ int fdt_serial_init(void)
 
 		if (drv->init) {
 			rc = drv->init(fdt, noff, match);
+			if (rc == SBI_ENODEV)
+				continue;
 			if (rc)
 				return rc;
 		}
@@ -80,6 +83,8 @@ int fdt_serial_init(void)
 
 		if (drv->init) {
 			rc = drv->init(fdt, noff, match);
+			if (rc == SBI_ENODEV)
+				continue;
 			if (rc)
 				return rc;
 		}
