@@ -12,10 +12,10 @@
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/timer/fdt_timer.h>
 
-extern struct fdt_timer fdt_timer_clint;
+extern struct fdt_timer fdt_timer_mtimer;
 
 static struct fdt_timer *timer_drivers[] = {
-	&fdt_timer_clint
+	&fdt_timer_mtimer
 };
 
 static struct fdt_timer dummy = {
