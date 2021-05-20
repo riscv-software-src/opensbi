@@ -12,10 +12,10 @@
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/ipi/fdt_ipi.h>
 
-extern struct fdt_ipi fdt_ipi_clint;
+extern struct fdt_ipi fdt_ipi_mswi;
 
 static struct fdt_ipi *ipi_drivers[] = {
-	&fdt_ipi_clint
+	&fdt_ipi_mswi
 };
 
 static struct fdt_ipi dummy = {
