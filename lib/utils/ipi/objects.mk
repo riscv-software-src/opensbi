@@ -7,5 +7,6 @@
 #   Anup Patel <anup.patel@wdc.com>
 #
 
+libsbiutils-objs-y += ipi/aclint_mswi.o
 libsbiutils-objs-y += ipi/fdt_ipi.o
 libsbiutils-objs-y += ipi/fdt_ipi_clint.o
