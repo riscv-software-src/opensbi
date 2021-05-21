@@ -7,6 +7,5 @@
 #   Anup Patel <anup.patel@wdc.com>
 #
 
-libsbiutils-objs-y += sys/clint.o
 libsbiutils-objs-y += sys/htif.o
 libsbiutils-objs-y += sys/sifive_test.o

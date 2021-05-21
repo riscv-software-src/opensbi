@@ -12,9 +12,10 @@
 #include <sbi/sbi_platform.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
+#include <sbi_utils/ipi/aclint_mswi.h>
 #include <sbi_utils/irqchip/plic.h>
 #include <sbi_utils/serial/uart8250.h>
-#include <sbi_utils/sys/clint.h>
+#include <sbi_utils/timer/aclint_mtimer.h>
 
 #define OPENPITON_DEFAULT_UART_ADDR		0xfff0c2c000
 #define OPENPITON_DEFAULT_UART_FREQ		60000000
@@ -25,6 +26,10 @@
 #define OPENPITON_DEFAULT_PLIC_NUM_SOURCES	2
 #define OPENPITON_DEFAULT_HART_COUNT		3
 #define OPENPITON_DEFAULT_CLINT_ADDR		0xfff1020000
+#define OPENPITON_DEFAULT_ACLINT_MSWI_ADDR	\
+		(OPENPITON_DEFAULT_CLINT_ADDR + CLINT_MSWI_OFFSET)
+#define OPENPITON_DEFAULT_ACLINT_MTIMER_ADDR	\
+		(OPENPITON_DEFAULT_CLINT_ADDR + CLINT_MTIMER_OFFSET)
 
 static struct platform_uart_data uart = {
 	OPENPITON_DEFAULT_UART_ADDR,
@@ -36,8 +41,16 @@ static struct plic_data plic = {
 	.num_src = OPENPITON_DEFAULT_PLIC_NUM_SOURCES,
 };
 
-static struct clint_data clint = {
-	.addr = OPENPITON_DEFAULT_CLINT_ADDR,
+static struct aclint_mswi_data mswi = {
+	.addr = OPENPITON_DEFAULT_ACLINT_MSWI_ADDR,
+	.size = ACLINT_MSWI_SIZE,
+	.first_hartid = 0,
+	.hart_count = OPENPITON_DEFAULT_HART_COUNT,
+};
+
+static struct aclint_mtimer_data mtimer = {
+	.addr = OPENPITON_DEFAULT_ACLINT_MTIMER_ADDR,
+	.size = ACLINT_MTIMER_SIZE,
 	.first_hartid = 0,
 	.hart_count = OPENPITON_DEFAULT_HART_COUNT,
 	.has_64bit_mmio = TRUE,
@@ -67,8 +80,10 @@ static int openpiton_early_init(bool cold_boot)
 		plic = plic_data;
 
 	rc = fdt_parse_compat_addr(fdt, &clint_addr, "riscv,clint0");
-	if (!rc)
-		clint.addr = clint_addr;
+	if (!rc) {
+		mswi.addr = clint_addr;
+		mtimer.addr = clint_addr + CLINT_MTIMER_OFFSET;
+	}
 
 	return 0;
 }
@@ -149,12 +164,12 @@ static int openpiton_ipi_init(bool cold_boot)
 	int ret;
 
 	if (cold_boot) {
-		ret = clint_cold_ipi_init(&clint);
+		ret = aclint_mswi_cold_init(&mswi);
 		if (ret)
 			return ret;
 	}
 
-	return clint_warm_ipi_init();
+	return aclint_mswi_warm_init();
 }
 
 /*
@@ -165,12 +180,12 @@ static int openpiton_timer_init(bool cold_boot)
 	int ret;
 
 	if (cold_boot) {
-		ret = clint_cold_timer_init(&clint, NULL);
+		ret = aclint_mtimer_cold_init(&mtimer, NULL);
 		if (ret)
 			return ret;
 	}
 
-	return clint_warm_timer_init();
+	return aclint_mtimer_warm_init();
 }
 
 /*

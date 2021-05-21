@@ -13,14 +13,19 @@
  * Include these files as needed.
  * See config.mk PLATFORM_xxx configuration parameters.
  */
+#include <sbi_utils/ipi/aclint_mswi.h>
 #include <sbi_utils/irqchip/plic.h>
 #include <sbi_utils/serial/uart8250.h>
-#include <sbi_utils/sys/clint.h>
+#include <sbi_utils/timer/aclint_mtimer.h>
 
 #define PLATFORM_PLIC_ADDR		0xc000000
 #define PLATFORM_PLIC_NUM_SOURCES	128
 #define PLATFORM_HART_COUNT		4
 #define PLATFORM_CLINT_ADDR		0x2000000
+#define PLATFORM_ACLINT_MSWI_ADDR	(PLATFORM_CLINT_ADDR + \
+					 CLINT_MSWI_OFFSET)
+#define PLATFORM_ACLINT_MTIMER_ADDR	(PLATFORM_CLINT_ADDR + \
+					 CLINT_MTIMER_OFFSET)
 #define PLATFORM_UART_ADDR		0x09000000
 #define PLATFORM_UART_INPUT_FREQ	10000000
 #define PLATFORM_UART_BAUDRATE		115200
@@ -30,8 +35,16 @@ static struct plic_data plic = {
 	.num_src = PLATFORM_PLIC_NUM_SOURCES,
 };
 
-static struct clint_data clint = {
-	.addr = PLATFORM_CLINT_ADDR,
+static struct aclint_mswi_data mswi = {
+	.addr = PLATFORM_ACLINT_MSWI_ADDR,
+	.size = ACLINT_MSWI_SIZE,
+	.first_hartid = 0,
+	.hart_count = PLATFORM_HART_COUNT,
+};
+
+static struct aclint_mtimer_data mtimer = {
+	.addr = PLATFORM_ACLINT_MTIMER_ADDR,
+	.size = ACLINT_MTIMER_SIZE,
 	.first_hartid = 0,
 	.hart_count = PLATFORM_HART_COUNT,
 	.has_64bit_mmio = TRUE,
@@ -88,14 +101,14 @@ static int platform_ipi_init(bool cold_boot)
 {
 	int ret;
 
-	/* Example if the generic CLINT driver is used */
+	/* Example if the generic ACLINT driver is used */
 	if (cold_boot) {
-		ret = clint_cold_ipi_init(&clint);
+		ret = aclint_mswi_cold_init(&mswi);
 		if (ret)
 			return ret;
 	}
 
-	return clint_warm_ipi_init();
+	return aclint_mswi_warm_init();
 }
 
 /*
@@ -105,14 +118,14 @@ static int platform_timer_init(bool cold_boot)
 {
 	int ret;
 
-	/* Example if the generic CLINT driver is used */
+	/* Example if the generic ACLINT driver is used */
 	if (cold_boot) {
-		ret = clint_cold_timer_init(&clint, NULL);
+		ret = aclint_mtimer_cold_init(&mtimer, NULL);
 		if (ret)
 			return ret;
 	}
 
-	return clint_warm_timer_init();
+	return aclint_mtimer_warm_init();
 }
 
 /*

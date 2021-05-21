@@ -14,9 +14,10 @@
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_system.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
+#include <sbi_utils/ipi/aclint_mswi.h>
 #include <sbi_utils/irqchip/plic.h>
 #include <sbi_utils/serial/sifive-uart.h>
-#include <sbi_utils/sys/clint.h>
+#include <sbi_utils/timer/aclint_mtimer.h>
 #include "platform.h"
 
 extern const char dt_k210_start[];
@@ -33,8 +34,16 @@ static struct plic_data plic = {
 	.num_src = K210_PLIC_NUM_SOURCES,
 };
 
-static struct clint_data clint = {
-	.addr = K210_CLINT_BASE_ADDR,
+static struct aclint_mswi_data mswi = {
+	.addr = K210_ACLINT_MSWI_ADDR,
+	.size = ACLINT_MSWI_SIZE,
+	.first_hartid = 0,
+	.hart_count = K210_HART_COUNT,
+};
+
+static struct aclint_mtimer_data mtimer = {
+	.addr = K210_ACLINT_MTIMER_ADDR,
+	.size = ACLINT_MTIMER_SIZE,
 	.first_hartid = 0,
 	.hart_count = K210_HART_COUNT,
 	.has_64bit_mmio = TRUE,
@@ -139,12 +148,12 @@ static int k210_ipi_init(bool cold_boot)
 	int rc;
 
 	if (cold_boot) {
-		rc = clint_cold_ipi_init(&clint);
+		rc = aclint_mswi_cold_init(&mswi);
 		if (rc)
 			return rc;
 	}
 
-	return clint_warm_ipi_init();
+	return aclint_mswi_warm_init();
 }
 
 static int k210_timer_init(bool cold_boot)
@@ -152,12 +161,12 @@ static int k210_timer_init(bool cold_boot)
 	int rc;
 
 	if (cold_boot) {
-		rc = clint_cold_timer_init(&clint, NULL);
+		rc = aclint_mtimer_cold_init(&mtimer, NULL);
 		if (rc)
 			return rc;
 	}
 
-	return clint_warm_timer_init();
+	return aclint_mtimer_warm_init();
 }
 
 const struct sbi_platform_operations platform_ops = {
