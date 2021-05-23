@@ -80,9 +80,6 @@ struct sbi_domain {
 	bool system_reset_allowed;
 };
 
-/** The root domain instance */
-extern struct sbi_domain root;
-
 /** HART id to domain table */
 extern struct sbi_domain *hartid_to_domain_table[];
 
@@ -127,19 +124,8 @@ bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartid);
 ulong sbi_domain_get_assigned_hartmask(const struct sbi_domain *dom,
 				       ulong hbase);
 
-/**
- * Initialize a domain memory region based on it's physical
- * address and size.
- *
- * @param addr start physical address of memory region
- * @param size physical size of memory region
- * @param flags memory region flags
- * @param reg pointer to memory region being initialized
- */
-void sbi_domain_memregion_init(unsigned long addr,
-				unsigned long size,
-				unsigned long flags,
-				struct sbi_domain_memregion *reg);
+/** Initialize a domain memory region as firmware region */
+void sbi_domain_memregion_initfw(struct sbi_domain_memregion *reg);
 
 /**
  * Check whether we can access specified address for given mode and
@@ -169,14 +155,6 @@ void sbi_domain_dump_all(const char *suffix);
  */
 int sbi_domain_register(struct sbi_domain *dom,
 			const struct sbi_hartmask *assign_mask);
-
-/**
- * Add a memory region to the root domain
- * @param reg pointer to the memory region to be added
- *
- * @return 0 on success and negative error code on failure
- */
-int sbi_domain_root_add_memregion(const struct sbi_domain_memregion *reg);
 
 /** Finalize domain tables and startup non-root domains */
 int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid);

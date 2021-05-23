@@ -12,6 +12,8 @@
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_const.h>
 #include <sbi/sbi_platform.h>
+#include <sbi/sbi_console.h>
+#include <sbi/sbi_ecall.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
 #include <sbi_utils/irqchip/plic.h>
 #include <sbi_utils/serial/sifive-uart.h>
@@ -69,6 +71,41 @@ static u32 k210_get_clk_freq(void)
 }
 volatile static u64 MMUTable[4096 / sizeof(u64)] __attribute__((aligned(4 * 1024))) = {0};
 
+#define SBI_EXT_VENDOR_ENABLE_EXTERNAL_INTERRUPT 0
+#define SBI_EXT_VENDOR_DISABLE_EXTERNAL_INTERRUPT 1
+
+static int sbi_ecall_vendor_handler(unsigned long extid, unsigned long funcid,
+				  const struct sbi_trap_regs *regs,
+				  unsigned long *out_val,
+				  struct sbi_trap_info *out_trap)
+{
+	int ret = SBI_OK;
+
+	switch (funcid) 
+	{
+		case SBI_EXT_VENDOR_ENABLE_EXTERNAL_INTERRUPT:
+			csr_set(mie,MIP_MEIP);
+			csr_set(mstatus,MSTATUS_MIE);
+			break;
+
+		case SBI_EXT_VENDOR_DISABLE_EXTERNAL_INTERRUPT:
+			csr_clear(mie,MIP_MEIP);
+			break;
+
+		default:
+			ret = SBI_ENOTSUPP;
+			break;
+	}
+
+	return ret;
+}
+
+struct sbi_ecall_extension ecall_vendor = {
+	.extid_start = SBI_EXT_VENDOR_START,
+	.extid_end = SBI_EXT_VENDOR_START,
+	.handle = sbi_ecall_vendor_handler,
+};
+
 static int k210_final_init(bool cold_boot)
 {
 	void *fdt;
@@ -82,6 +119,8 @@ static int k210_final_init(bool cold_boot)
 	MMUTable[2] = 0x2000002fULL;
 	MMUTable[3] = 0x3000002fULL;
 	csr_write(sptbr,((u64)MMUTable) >> 12);
+
+	sbi_ecall_register_extension(&ecall_vendor);
 	
 	if (!cold_boot)
 		return 0;

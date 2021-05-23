@@ -204,7 +204,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	int rc;
 	unsigned long *init_count;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
-
+	
 	/* Note: This has to be first thing in coldboot init sequence */
 	rc = sbi_scratch_init(scratch);
 	if (rc)
@@ -235,7 +235,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	rc = sbi_console_init(scratch);
 	if (rc)
 		sbi_hart_hang();
-
+	
 	sbi_boot_print_banner(scratch);
 
 	rc = sbi_platform_irqchip_init(plat, TRUE);
@@ -321,7 +321,7 @@ static void init_warm_startup(struct sbi_scratch *scratch, u32 hartid)
 	int rc;
 	unsigned long *init_count;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
-
+	
 	if (!init_count_offset)
 		sbi_hart_hang();
 
@@ -358,12 +358,13 @@ static void init_warm_startup(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 
 	rc = sbi_platform_final_init(plat, FALSE);
+	
 	if (rc)
 		sbi_hart_hang();
-
+	
 	init_count = sbi_scratch_offset_ptr(scratch, init_count_offset);
 	(*init_count)++;
-
+	
 	sbi_hsm_prepare_next_jump(scratch, hartid);
 }
 
@@ -424,7 +425,10 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 	bool coldboot			= FALSE;
 	u32 hartid			= current_hartid();
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
-
+	if(hartid != 0)
+	{
+		while(1);
+	}
 	if ((SBI_HARTMASK_MAX_BITS <= hartid) ||
 	    sbi_platform_hart_invalid(plat, hartid))
 		sbi_hart_hang();

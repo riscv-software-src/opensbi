@@ -63,7 +63,6 @@ typedef unsigned long		physical_size_t;
 
 #define __packed		__attribute__((packed))
 #define __noreturn		__attribute__((noreturn))
-#define __aligned(x)		__attribute__((aligned(x)))
 
 #define likely(x) __builtin_expect((x), 1)
 #define unlikely(x) __builtin_expect((x), 0)

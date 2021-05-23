@@ -232,6 +232,10 @@ struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs)
 		case IRQ_M_SOFT:
 			sbi_ipi_process();
 			break;
+		case IRQ_M_EXT:
+			csr_clear(mie,MIP_MEIP);
+			csr_set(sip,SIP_SSIP);
+			break;
 		default:
 			msg = "unhandled external interrupt";
 			goto trap_error;
@@ -257,6 +261,7 @@ struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs)
 		rc  = sbi_ecall_handler(regs);
 		msg = "ecall handler failed";
 		break;
+	case CAUSE_USER_ECALL:
 	default:
 		/* If the trap came from S or U mode, redirect it there */
 		trap.epc = regs->mepc;
