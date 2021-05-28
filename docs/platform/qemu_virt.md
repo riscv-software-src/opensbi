@@ -147,3 +147,27 @@ qemu-system-riscv32 -M virt -m 256M -nographic \
 	-device virtio-blk-device,drive=hd0 \
 	-append "root=/dev/vda rw console=ttyS0"
 ```
+
+Debugging with GDB
+------------------
+
+In a first console start OpenSBI with QEMU:
+
+```
+qemu-system-riscv64 -M virt -m 256M -nographic \
+	-bios build/platform/generic/firmware/fw_payload.bin \
+	-gdb tcp::1234 \
+	-S
+
+```
+
+Parameter *-gdb tcp::1234* specifies 1234 as the debug port.
+Parameter *-S* lets QEMU wait at the first instruction.
+
+In a second console start GDB:
+
+```
+gdb build/platform/generic/firmware/fw_payload.elf \
+	-ex 'target remote localhost:1234'
+
+```
