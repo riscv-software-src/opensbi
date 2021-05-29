@@ -121,8 +121,7 @@ int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot)
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if (cold_boot) {
-		time_delta_off = sbi_scratch_alloc_offset(sizeof(*time_delta),
-							  "TIME_DELTA");
+		time_delta_off = sbi_scratch_alloc_offset(sizeof(*time_delta));
 		if (!time_delta_off)
 			return SBI_ENOMEM;
 

@@ -380,19 +380,16 @@ int sbi_tlb_init(struct sbi_scratch *scratch, bool cold_boot)
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if (cold_boot) {
-		tlb_sync_off = sbi_scratch_alloc_offset(sizeof(*tlb_sync),
-							"IPI_TLB_SYNC");
+		tlb_sync_off = sbi_scratch_alloc_offset(sizeof(*tlb_sync));
 		if (!tlb_sync_off)
 			return SBI_ENOMEM;
-		tlb_fifo_off = sbi_scratch_alloc_offset(sizeof(*tlb_q),
-							"IPI_TLB_FIFO");
+		tlb_fifo_off = sbi_scratch_alloc_offset(sizeof(*tlb_q));
 		if (!tlb_fifo_off) {
 			sbi_scratch_free_offset(tlb_sync_off);
 			return SBI_ENOMEM;
 		}
 		tlb_fifo_mem_off = sbi_scratch_alloc_offset(
-				SBI_TLB_FIFO_NUM_ENTRIES * SBI_TLB_INFO_SIZE,
-				"IPI_TLB_FIFO_MEM");
+				SBI_TLB_FIFO_NUM_ENTRIES * SBI_TLB_INFO_SIZE);
 		if (!tlb_fifo_mem_off) {
 			sbi_scratch_free_offset(tlb_fifo_off);
 			sbi_scratch_free_offset(tlb_sync_off);

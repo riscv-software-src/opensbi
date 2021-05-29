@@ -185,8 +185,7 @@ int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 	struct sbi_hsm_data *hdata;
 
 	if (cold_boot) {
-		hart_data_offset = sbi_scratch_alloc_offset(sizeof(*hdata),
-							    "HART_DATA");
+		hart_data_offset = sbi_scratch_alloc_offset(sizeof(*hdata));
 		if (!hart_data_offset)
 			return SBI_ENOMEM;
 

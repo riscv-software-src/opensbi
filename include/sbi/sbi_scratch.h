@@ -98,7 +98,7 @@ int sbi_scratch_init(struct sbi_scratch *scratch);
  * @return zero on failure and non-zero (>= SBI_SCRATCH_EXTRA_SPACE_OFFSET)
  * on success
  */
-unsigned long sbi_scratch_alloc_offset(unsigned long size, const char *owner);
+unsigned long sbi_scratch_alloc_offset(unsigned long size);
 
 /** Free-up extra space in sbi_scratch */
 void sbi_scratch_free_offset(unsigned long offset);

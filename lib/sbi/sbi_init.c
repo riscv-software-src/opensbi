@@ -233,8 +233,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
-	init_count_offset = sbi_scratch_alloc_offset(__SIZEOF_POINTER__,
-						     "INIT_COUNT");
+	init_count_offset = sbi_scratch_alloc_offset(__SIZEOF_POINTER__);
 	if (!init_count_offset)
 		sbi_hart_hang();
 

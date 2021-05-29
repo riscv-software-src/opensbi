@@ -451,8 +451,7 @@ int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot)
 			sbi_hart_expected_trap = &__sbi_expected_trap_hext;
 
 		hart_features_offset = sbi_scratch_alloc_offset(
-						sizeof(struct hart_features),
-						"HART_FEATURES");
+						sizeof(struct hart_features));
 		if (!hart_features_offset)
 			return SBI_ENOMEM;
 	}

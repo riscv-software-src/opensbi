@@ -40,7 +40,7 @@ int sbi_scratch_init(struct sbi_scratch *scratch)
 	return 0;
 }
 
-unsigned long sbi_scratch_alloc_offset(unsigned long size, const char *owner)
+unsigned long sbi_scratch_alloc_offset(unsigned long size)
 {
 	u32 i;
 	void *ptr;

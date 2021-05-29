@@ -227,8 +227,7 @@ int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
 	struct sbi_ipi_data *ipi_data;
 
 	if (cold_boot) {
-		ipi_data_off = sbi_scratch_alloc_offset(sizeof(*ipi_data),
-							"IPI_DATA");
+		ipi_data_off = sbi_scratch_alloc_offset(sizeof(*ipi_data));
 		if (!ipi_data_off)
 			return SBI_ENOMEM;
 		ret = sbi_ipi_event_create(&ipi_smode_ops);
