@@ -83,7 +83,7 @@ void plicsw_ipi_clear(u32 target_hart)
 	if (plicsw_ipi_hart_count <= target_hart)
 		return;
 
-	/* Clear CLINT IPI */
+	/* Clear PLICSW IPI */
 	plicsw_claim();
 	plicsw_complete();
 }
@@ -108,10 +108,10 @@ int plicsw_cold_ipi_init(unsigned long base, u32 hart_count)
 	/* Setup source priority */
 	uint32_t *priority = (void *)base + PLICSW_PRIORITY_BASE;
 
-	for (int i = 0; i < AE350_HART_COUNT*PLICSW_PENDING_PER_HART; i++)
+	for (int i = 0; i < AE350_HART_COUNT * PLICSW_PENDING_PER_HART; i++)
 		writel(1, &priority[i]);
 
-	/* Setup target enable.*/
+	/* Setup target enable */
 	uint32_t enable_mask = PLICSW_HART_MASK;
 
 	for (int i = 0; i < AE350_HART_COUNT; i++) {
