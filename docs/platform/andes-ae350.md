@@ -1,9 +1,9 @@
 Andes AE350 SoC Platform
 ========================
 The AE350 AXI/AHB-based platform N25(F)/NX25(F)/D25F/A25/AX25 CPU with level-one
-memories,interrupt controller, debug module, AXI and AHB Bus Matrix Controller,
-AXI-to-AHB Bridge and a collection of fundamentalAHB/APB bus IP components
-pre-integrated together as a system design.The high-quality and configurable
+memories, interrupt controller, debug module, AXI and AHB Bus Matrix Controller,
+AXI-to-AHB Bridge and a collection of fundamental AHB/APB bus IP components
+pre-integrated together as a system design. The high-quality and configurable
 AHB/APB IPs suites a majority embedded systems, and the verified platform serves
 as a starting point to jump start SoC designs.
 
