@@ -33,12 +33,6 @@ static inline void plicsw_complete(void)
 	writel(source, plicsw_dev[source_hart].plicsw_claim);
 }
 
-static inline u32 plicsw_get_pending(u32 source_hart, u32 target_hart)
-{
-	return readl(plicsw_dev[source_hart].plicsw_pending)
-	       & (PLICSW_HART_MASK >> target_hart);
-}
-
 static inline void plic_sw_pending(u32 target_hart)
 {
 	/*
