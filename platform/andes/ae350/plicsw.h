@@ -35,8 +35,6 @@ struct plicsw {
 
 void plicsw_ipi_send(u32 target_hart);
 
-void plicsw_ipi_sync(u32 target_hart);
-
 void plicsw_ipi_clear(u32 target_hart);
 
 int plicsw_warm_ipi_init(void);
