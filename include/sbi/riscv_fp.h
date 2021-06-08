@@ -42,6 +42,8 @@
 			: "t0");                                                                            \
 	})
 #define init_fp_reg(i) SET_F32_REG((i) << 3, 3, 0, 0)
+
+#if __riscv_xlen == 64
 #define GET_F64_REG(insn, pos, regs)                                                                    \
 	({                                                                                              \
 		register ulong value asm("a0") =                                                        \
@@ -51,6 +53,18 @@
 		    : "=&r"(tmp), "+&r"(value)::"t0");                                                  \
 		sizeof(ulong) == 4 ? *(int64_t *)value : (int64_t)value;                                \
 	})
+#else
+#define GET_F64_REG(insn, pos, regs)                                                                    \
+	({                                                                                              \
+		ulong rf_address = SHIFT_RIGHT(insn, (pos)-3) & 0xf8;                                             \
+		u64 value;                                                                               \
+		register ulong ptr asm("a0") = (ulong)&value;                                                      \
+		asm ("1: auipc t1, %%pcrel_hi(get_f64_reg); add t1, t1, %2; jalr t0, t1, %%pcrel_lo(1b)"  \
+			: "=m"(value) : "r"(ptr), "r"(rf_address) : "t0", "t1");                                          \
+		value;                                                                                         \
+	})
+#endif
+
 #define SET_F64_REG(insn, pos, regs, val)                                                                   \
 	({                                                                                                  \
 		uint64_t __val = (val);                                                                     \
