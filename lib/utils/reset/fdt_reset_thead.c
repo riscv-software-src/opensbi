@@ -62,24 +62,26 @@ static int thead_reset_init(void *fdt, int nodeoff,
 	void *p;
 	const fdt64_t *val;
 	const fdt32_t *val_w;
-	int len, i, cnt;
+	int len, i;
 	u32 t, tmp = 0;
 
 	/* Prepare clone csrs */
 	val_w = fdt_getprop(fdt, nodeoff, "csr-copy", &len);
 	if (len > 0 && val_w) {
-		cnt = len / sizeof(fdt32_t);
+		int cnt;
 
+		cnt = len / sizeof(fdt32_t);
 		if (cnt > MAX_CUSTOM_CSR)
 			sbi_hart_hang();
 
 		for (i = 0; i < cnt; i++) {
 			custom_csr[i].index = fdt32_to_cpu(val_w[i]);
 		}
+
+		if (cnt)
+			clone_csrs(cnt);
 	}
 
-	if (cnt)
-		clone_csrs(cnt);
 
 	/* Delegate plic enable regs for S-mode */
 	val = fdt_getprop(fdt, nodeoff, "plic-delegate", &len);
