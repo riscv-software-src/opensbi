@@ -7,7 +7,7 @@
  * Copyright 2012 Kim Phillips, Freescale Semiconductor.
  */
 
-#ifndef __ASSEMBLER__
+#ifndef __ASSEMBLY__
 
 struct fdt_header {
 	fdt32_t magic;			 /* magic word FDT_MAGIC */
