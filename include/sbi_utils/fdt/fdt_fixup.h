@@ -22,6 +22,18 @@
 void fdt_cpu_fixup(void *fdt);
 
 /**
+ * Fix up the IMSIC nodes in the device tree
+ *
+ * This routine disables IMSIC nodes which are not accessible to the next
+ * booting stage based on currently assigned domain.
+ *
+ * It is recommended that platform codes call this helper in their final_init()
+ *
+ * @param fdt: device tree blob
+ */
+void fdt_imsic_fixup(void *fdt);
+
+/**
  * Fix up the PLIC node in the device tree
  *
  * This routine updates the "interrupt-extended" property of the PLIC node in
@@ -64,8 +76,9 @@ int fdt_reserved_memory_nomap_fixup(void *fdt);
  * General device tree fix-up
  *
  * This routine do all required device tree fix-ups for a typical platform.
- * It fixes up the PLIC node and the reserved memory node in the device tree
- * by calling the corresponding helper routines to accomplish the task.
+ * It fixes up the PLIC node, IMSIC nodes, and the reserved memory node in
+ * the device tree by calling the corresponding helper routines to accomplish
+ * the task.
  *
  * It is recommended that platform codes call this helper in their final_init()
  *

@@ -52,6 +52,34 @@ void fdt_cpu_fixup(void *fdt)
 	}
 }
 
+static void fdt_domain_based_fixup_one(void *fdt, int nodeoff)
+{
+	int rc;
+	uint64_t reg_addr, reg_size;
+	struct sbi_domain *dom = sbi_domain_thishart_ptr();
+
+	rc = fdt_get_node_addr_size(fdt, nodeoff, 0, &reg_addr, &reg_size);
+	if (rc < 0 || !reg_addr || !reg_size)
+		return;
+
+	if (!sbi_domain_check_addr(dom, reg_addr, dom->next_mode,
+				    SBI_DOMAIN_READ | SBI_DOMAIN_WRITE)) {
+		rc = fdt_open_into(fdt, fdt, fdt_totalsize(fdt) + 32);
+		if (rc < 0)
+			return;
+		fdt_setprop_string(fdt, nodeoff, "status", "disabled");
+	}
+}
+
+void fdt_imsic_fixup(void *fdt)
+{
+	int noff = 0;
+
+	while ((noff = fdt_node_offset_by_compatible(fdt, noff,
+						     "riscv,imsics")) >= 0)
+		fdt_domain_based_fixup_one(fdt, noff);
+}
+
 void fdt_plic_fixup(void *fdt)
 {
 	u32 *cells;
@@ -261,10 +289,10 @@ int fdt_reserved_memory_nomap_fixup(void *fdt)
 
 void fdt_fixups(void *fdt)
 {
+	fdt_imsic_fixup(fdt);
+
 	fdt_plic_fixup(fdt);
 
 	fdt_reserved_memory_fixup(fdt);
 	fdt_pmu_fixup(fdt);
 }
-
-
