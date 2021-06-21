@@ -193,10 +193,11 @@ static void sbi_tlb_entry_process(struct sbi_tlb_info *tinfo)
 	}
 }
 
-static void sbi_tlb_process_count(struct sbi_scratch *scratch, int count)
+static void sbi_tlb_process_count(struct sbi_scratch *scratch,
+				  unsigned int count)
 {
 	struct sbi_tlb_info tinfo;
-	u32 deq_count = 0;
+	unsigned int deq_count = 0;
 	struct sbi_fifo *tlb_fifo =
 			sbi_scratch_offset_ptr(scratch, tlb_fifo_off);
 
