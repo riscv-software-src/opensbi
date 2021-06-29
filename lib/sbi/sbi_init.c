@@ -165,8 +165,8 @@ static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	/* Save MIE CSR */
 	saved_mie = csr_read(CSR_MIE);
 
-	/* Set MSIE bit to receive IPI */
-	csr_set(CSR_MIE, MIP_MSIP);
+	/* Set MSIE and MEIE bits to receive IPI */
+	csr_set(CSR_MIE, MIP_MSIP | MIP_MEIP);
 
 	/* Acquire coldboot lock */
 	spin_lock(&coldboot_lock);
@@ -182,7 +182,7 @@ static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		do {
 			wfi();
 			cmip = csr_read(CSR_MIP);
-		 } while (!(cmip & MIP_MSIP));
+		 } while (!(cmip & (MIP_MSIP | MIP_MEIP)));
 	};
 
 	/* Acquire coldboot lock */
@@ -276,6 +276,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 			   __func__, rc);
 		sbi_hart_hang();
 	}
+	csr_set(CSR_MIE, MIP_MEIP);
 
 	rc = sbi_ipi_init(scratch, TRUE);
 	if (rc) {
@@ -376,6 +377,7 @@ static void init_warm_startup(struct sbi_scratch *scratch, u32 hartid)
 	rc = sbi_platform_irqchip_init(plat, FALSE);
 	if (rc)
 		sbi_hart_hang();
+	csr_set(CSR_MIE, MIP_MEIP);
 
 	rc = sbi_ipi_init(scratch, FALSE);
 	if (rc)
@@ -550,6 +552,7 @@ void __noreturn sbi_exit(struct sbi_scratch *scratch)
 
 	sbi_ipi_exit(scratch);
 
+	csr_clear(CSR_MIE, MIP_MEIP);
 	sbi_platform_irqchip_exit(plat);
 
 	sbi_platform_final_exit(plat);

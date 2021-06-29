@@ -113,8 +113,8 @@ static void sbi_hsm_hart_wait(struct sbi_scratch *scratch, u32 hartid)
 	/* Save MIE CSR */
 	saved_mie = csr_read(CSR_MIE);
 
-	/* Set MSIE bit to receive IPI */
-	csr_set(CSR_MIE, MIP_MSIP);
+	/* Set MSIE and MEIE bits to receive IPI */
+	csr_set(CSR_MIE, MIP_MSIP | MIP_MEIP);
 
 	/* Wait for hart_add call*/
 	while (atomic_read(&hdata->state) != SBI_HSM_STATE_START_PENDING) {
