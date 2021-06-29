@@ -494,6 +494,14 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 	if (next_mode_supported && atomic_xchg(&coldboot_lottery, 1) == 0)
 		coldboot = TRUE;
 
+	/*
+	 * Do platform specific nascent (very early) initialization so
+	 * that platform can initialize platform specific per-HART CSRs
+	 * or per-HART devices.
+	 */
+	if (sbi_platform_nascent_init(plat))
+		sbi_hart_hang();
+
 	if (coldboot)
 		init_coldboot(scratch, hartid);
 	else

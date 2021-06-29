@@ -64,6 +64,9 @@ enum sbi_platform_features {
 
 /** Platform functions */
 struct sbi_platform_operations {
+	/* Platform nascent initialization */
+	int (*nascent_init)(void);
+
 	/** Platform early initialization */
 	int (*early_init)(bool cold_boot);
 	/** Platform final initialization */
@@ -297,6 +300,23 @@ static inline bool sbi_platform_hart_invalid(const struct sbi_platform *plat,
 	if (plat->hart_count <= sbi_platform_hart_index(plat, hartid))
 		return TRUE;
 	return FALSE;
+}
+
+/**
+ * Nascent (very early) initialization for current HART
+ *
+ * NOTE: This function can be used to do very early initialization of
+ * platform specific per-HART CSRs and devices.
+ *
+ * @param plat pointer to struct sbi_platform
+ *
+ * @return 0 on success and negative error code on failure
+ */
+static inline int sbi_platform_nascent_init(const struct sbi_platform *plat)
+{
+	if (plat && sbi_platform_ops(plat)->nascent_init)
+		return sbi_platform_ops(plat)->nascent_init();
+	return 0;
 }
 
 /**
