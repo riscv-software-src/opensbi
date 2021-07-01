@@ -12,12 +12,12 @@
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/reset/fdt_reset.h>
 
-extern struct fdt_reset fdt_reset_sifive;
+extern struct fdt_reset fdt_reset_sifive_test;
 extern struct fdt_reset fdt_reset_htif;
 extern struct fdt_reset fdt_reset_thead;
 
 static struct fdt_reset *reset_drivers[] = {
-	&fdt_reset_sifive,
+	&fdt_reset_sifive_test,
 	&fdt_reset_htif,
 	&fdt_reset_thead,
 };
