@@ -16,7 +16,7 @@ The *T-HEAD C9xx* does not have any platform-specific compile options
 because it use generic platform.
 
 ```
-CROSS_COMPILE=riscv64-linux-gnu- PLATFORM=generic FW_PIC=y /usr/bin/make
+CROSS_COMPILE=riscv64-linux-gnu- PLATFORM=generic /usr/bin/make
 ```
 
 The *T-HEAD C9xx* DTB provided to OpenSBI generic firmwares will usually have
