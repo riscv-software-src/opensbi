@@ -85,7 +85,7 @@ unsigned long fw_platform_init(unsigned long arg0, unsigned long arg1,
 
 	model = fdt_getprop(fdt, root_offset, "model", &len);
 	if (model)
-		sbi_strncpy(platform.name, model, sizeof(platform.name));
+		sbi_strncpy(platform.name, model, sizeof(platform.name) - 1);
 
 	if (generic_plat && generic_plat->features)
 		platform.features = generic_plat->features(generic_plat_match);
