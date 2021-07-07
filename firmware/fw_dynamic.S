@@ -57,14 +57,6 @@ fw_save_info:
 	lla	a4, _dynamic_next_arg1
 	REG_S	a1, (a4)
 
-	/* Sanity checks */
-	li	a4, FW_DYNAMIC_INFO_MAGIC_VALUE
-	REG_L	a3, FW_DYNAMIC_INFO_MAGIC_OFFSET(a2)
-	bne	a3, a4, _bad_dynamic_info
-	li	a4, FW_DYNAMIC_INFO_VERSION_MAX
-	REG_L	a3, FW_DYNAMIC_INFO_VERSION_OFFSET(a2)
-	bgt	a3, a4, _bad_dynamic_info
-
 	/* Save version == 0x1 fields */
 	lla	a4, _dynamic_next_addr
 	REG_L	a3, FW_DYNAMIC_INFO_NEXT_ADDR_OFFSET(a2)
