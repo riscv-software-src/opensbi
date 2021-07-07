@@ -31,7 +31,8 @@
 #define FW_DYNAMIC_INFO_MAGIC_VALUE		0x4942534f
 
 /** Maximum supported info version */
-#define FW_DYNAMIC_INFO_VERSION_MAX		0x2
+#define FW_DYNAMIC_INFO_VERSION_2		0x2
+#define FW_DYNAMIC_INFO_VERSION_MAX		FW_DYNAMIC_INFO_VERSION_2
 
 /** Possible next mode values */
 #define FW_DYNAMIC_INFO_NEXT_MODE_U		0x0

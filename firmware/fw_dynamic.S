@@ -36,7 +36,7 @@ fw_boot_hart:
 	bgt	a0, a1, _bad_dynamic_info
 
 	/* Read boot HART id */
-	li	a1, 0x2
+	li	a1, FW_DYNAMIC_INFO_VERSION_2
 	blt	a0, a1, 2f
 	REG_L	a0, FW_DYNAMIC_INFO_BOOT_HART_OFFSET(a2)
 	ret
@@ -69,7 +69,7 @@ fw_save_info:
 	REG_S	a3, (a4)
 
 	/* Save version == 0x2 fields */
-	li	a4, 0x2
+	li	a4, FW_DYNAMIC_INFO_VERSION_2
 	REG_L	a3, FW_DYNAMIC_INFO_VERSION_OFFSET(a2)
 	blt	a3, a4, 2f
 	lla	a4, _dynamic_boot_hart
