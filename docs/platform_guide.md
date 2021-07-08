@@ -25,18 +25,18 @@ APIs is available in the file *include/sbi/sbi_platform.h*.
 Adding support for a new platform
 ---------------------------------
 
-Support for a new platform named *<xyz>* can be added as follows:
+Support for a new platform named *&lt;xyz&gt;* can be added as follows:
 
-1. Create a directory named *<xyz>* under the *platform/* directory.
+1. Create a directory named *&lt;xyz&gt;* under the *platform/* directory.
 2. Create a platform configuration file named *config.mk* under the
-   *platform/<xyz>/* directory. This configuration file will provide
+   *platform/&lt;xyz&gt;/* directory. This configuration file will provide
    compiler flags, and select firmware options.
-3. Create a *platform/<xyz>/objects.mk* file for listing the
+3. Create a *platform/&lt;xyz&gt;/objects.mk* file for listing the
    platform-specific object files to be compiled.
-4. Create a *platform/<xyz>/platform.c* file providing a *struct sbi_platform*
-   instance.
+4. Create a *platform/&lt;xyz&gt;/platform.c* file providing a
+   *struct sbi_platform* instance.
 
 A platform support code template is available under the *platform/template*
 directory. Copying this directory and its content as a new directory named
-*<xyz>* under the *platform/* directory will create all the files mentioned
-above.
+*&lt;xyz&gt;* under the *platform/* directory will create all the files
+mentioned above.
