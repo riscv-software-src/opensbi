@@ -17,7 +17,7 @@ the supported platforms. These firmwares are linked against *libplatsbi.a*.
 Firmware binaries are installed in
 *<install_directory>/platform/<platform_subdir>/bin*. These firmwares can be
 used as executable runtime firmwares on the supported platforms as a replacement
-for the legacy *riskv-pk* boot loader (BBL).
+for the legacy *riscv-pk* boot loader (BBL).
 
 A complete doxygen-style documentation of *struct sbi_platform* and related
 APIs is available in the file *include/sbi/sbi_platform.h*.
