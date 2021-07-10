@@ -5,5 +5,6 @@
 #
 
 libsbiutils-objs-y += fdt/fdt_domain.o
+libsbiutils-objs-y += fdt/fdt_pmu.o
 libsbiutils-objs-y += fdt/fdt_helper.o
 libsbiutils-objs-y += fdt/fdt_fixup.o

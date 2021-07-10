@@ -15,6 +15,7 @@
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_string.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
+#include <sbi_utils/fdt/fdt_pmu.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 
 void fdt_cpu_fixup(void *fdt)
@@ -263,6 +264,7 @@ void fdt_fixups(void *fdt)
 	fdt_plic_fixup(fdt);
 
 	fdt_reserved_memory_fixup(fdt);
+	fdt_pmu_fixup(fdt);
 }
 
 
