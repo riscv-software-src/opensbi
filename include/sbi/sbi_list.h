@@ -44,6 +44,17 @@ static inline void __sbi_list_add(struct sbi_dlist *new,
 }
 
 /**
+ * Checks if the list is empty or not.
+ * @param head List head
+ *
+ * Retruns TRUE if list is empty, FALSE otherwise.
+ */
+static inline bool sbi_list_empty(struct sbi_dlist *head)
+{
+	return head->next == head;
+}
+
+/**
  * Adds the new node after the given head.
  * @param new New node that needs to be added to list.
  * @param head List head after which the "new" node should be added.
