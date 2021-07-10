@@ -278,6 +278,14 @@ _bss_zero:
 	/* hartid 0 is mandated by ISA */
 	li	t1, 0
 _scratch_init:
+	/*
+	 * The following registers hold values that are computed before
+	 * entering this block, and should remain unchanged.
+	 *
+	 * t3 -> the firmware end address
+	 * s7 -> HART count
+	 * s8 -> HART stack size
+	 */
 	add	tp, t3, zero
 	mul	a5, s8, t1
 	sub	tp, tp, a5
@@ -287,10 +295,7 @@ _scratch_init:
 	/* Initialize scratch space */
 	/* Store fw_start and fw_size in scratch space */
 	lla	a4, _fw_start
-	lla	a5, _fw_end
-	mul	t0, s7, s8
-	add	a5, a5, t0
-	sub	a5, a5, a4
+	sub	a5, t3, a4
 	REG_S	a4, SBI_SCRATCH_FW_START_OFFSET(tp)
 	REG_S	a5, SBI_SCRATCH_FW_SIZE_OFFSET(tp)
 	/* Store next arg1 in scratch space */
