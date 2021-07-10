@@ -375,7 +375,7 @@ static int pmu_update_hw_mhpmevent(struct sbi_pmu_hw_event *hw_evt, int ctr_idx,
 	if (!mhpmevent_val || ctr_idx < 3 || ctr_idx >= SBI_PMU_HW_CTR_MAX)
 		return SBI_EFAIL;
 
-	/* TODO: The upper 8 bits of mhpmevent is reserved by sscofpmf extension.
+	/* TODO: The upper 16 bits of mhpmevent is reserved by sscofpmf extension.
 	 * Update those bits based on the flags received from supervisor.
 	 * The OVF bit also should be cleared here in case it was not cleared
 	 * during event stop.
