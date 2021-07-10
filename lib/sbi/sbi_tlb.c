@@ -21,6 +21,7 @@
 #include <sbi/sbi_string.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_platform.h>
+#include <sbi/sbi_pmu.h>
 
 static unsigned long tlb_sync_off;
 static unsigned long tlb_fifo_off;
@@ -38,6 +39,8 @@ void sbi_tlb_local_hfence_vvma(struct sbi_tlb_info *tinfo)
 	unsigned long size  = tinfo->size;
 	unsigned long vmid  = tinfo->vmid;
 	unsigned long i, hgatp;
+
+	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_HFENCE_VVMA_RCVD);
 
 	hgatp = csr_swap(CSR_HGATP,
 			 (vmid << HGATP_VMID_SHIFT) & HGATP_VMID_MASK);
@@ -61,6 +64,8 @@ void sbi_tlb_local_hfence_gvma(struct sbi_tlb_info *tinfo)
 	unsigned long size  = tinfo->size;
 	unsigned long i;
 
+	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_HFENCE_GVMA_RCVD);
+
 	if ((start == 0 && size == 0) || (size == SBI_TLB_FLUSH_ALL)) {
 		__sbi_hfence_gvma_all();
 		return;
@@ -76,6 +81,8 @@ void sbi_tlb_local_sfence_vma(struct sbi_tlb_info *tinfo)
 	unsigned long start = tinfo->start;
 	unsigned long size  = tinfo->size;
 	unsigned long i;
+
+	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_SFENCE_VMA_RCVD);
 
 	if ((start == 0 && size == 0) || (size == SBI_TLB_FLUSH_ALL)) {
 		sbi_tlb_flush_all();
@@ -97,6 +104,8 @@ void sbi_tlb_local_hfence_vvma_asid(struct sbi_tlb_info *tinfo)
 	unsigned long asid  = tinfo->asid;
 	unsigned long vmid  = tinfo->vmid;
 	unsigned long i, hgatp;
+
+	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_HFENCE_VVMA_ASID_RCVD);
 
 	hgatp = csr_swap(CSR_HGATP,
 			 (vmid << HGATP_VMID_SHIFT) & HGATP_VMID_MASK);
@@ -126,6 +135,8 @@ void sbi_tlb_local_hfence_gvma_vmid(struct sbi_tlb_info *tinfo)
 	unsigned long vmid  = tinfo->vmid;
 	unsigned long i;
 
+	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_HFENCE_GVMA_VMID_RCVD);
+
 	if (start == 0 && size == 0) {
 		__sbi_hfence_gvma_all();
 		return;
@@ -147,6 +158,8 @@ void sbi_tlb_local_sfence_vma_asid(struct sbi_tlb_info *tinfo)
 	unsigned long size  = tinfo->size;
 	unsigned long asid  = tinfo->asid;
 	unsigned long i;
+
+	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_SFENCE_VMA_ASID_RCVD);
 
 	if (start == 0 && size == 0) {
 		sbi_tlb_flush_all();
@@ -172,7 +185,30 @@ void sbi_tlb_local_sfence_vma_asid(struct sbi_tlb_info *tinfo)
 
 void sbi_tlb_local_fence_i(struct sbi_tlb_info *tinfo)
 {
+	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_FENCE_I_RECVD);
+
 	__asm__ __volatile("fence.i");
+}
+
+static void tlb_pmu_incr_fw_ctr(struct sbi_tlb_info *data)
+{
+	if (unlikely(!data))
+		return;
+
+	if (data->local_fn == sbi_tlb_local_fence_i)
+		sbi_pmu_ctr_incr_fw(SBI_PMU_FW_FENCE_I_SENT);
+	else if (data->local_fn == sbi_tlb_local_sfence_vma)
+		sbi_pmu_ctr_incr_fw(SBI_PMU_FW_SFENCE_VMA_SENT);
+	else if (data->local_fn == sbi_tlb_local_sfence_vma_asid)
+		sbi_pmu_ctr_incr_fw(SBI_PMU_FW_SFENCE_VMA_ASID_SENT);
+	else if (data->local_fn == sbi_tlb_local_hfence_gvma)
+		sbi_pmu_ctr_incr_fw(SBI_PMU_FW_HFENCE_GVMA_SENT);
+	else if (data->local_fn == sbi_tlb_local_hfence_gvma_vmid)
+		sbi_pmu_ctr_incr_fw(SBI_PMU_FW_HFENCE_GVMA_VMID_SENT);
+	else if (data->local_fn == sbi_tlb_local_hfence_vvma)
+		sbi_pmu_ctr_incr_fw(SBI_PMU_FW_HFENCE_VVMA_SENT);
+	else if (data->local_fn == sbi_tlb_local_hfence_vvma_asid)
+		sbi_pmu_ctr_incr_fw(SBI_PMU_FW_HFENCE_VVMA_ASID_SENT);
 }
 
 static void sbi_tlb_entry_process(struct sbi_tlb_info *tinfo)
@@ -368,6 +404,8 @@ int sbi_tlb_request(ulong hmask, ulong hbase, struct sbi_tlb_info *tinfo)
 {
 	if (!tinfo->local_fn)
 		return SBI_EINVAL;
+
+	tlb_pmu_incr_fw_ctr(tinfo);
 
 	return sbi_ipi_send_many(hmask, hbase, tlb_event, tinfo);
 }

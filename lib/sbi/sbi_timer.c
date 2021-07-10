@@ -12,6 +12,7 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
+#include <sbi/sbi_pmu.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_timer.h>
 
@@ -88,6 +89,7 @@ void sbi_timer_set_delta_upper(ulong delta_upper)
 
 void sbi_timer_event_start(u64 next_event)
 {
+	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_SET_TIMER);
 	if (timer_dev && timer_dev->timer_event_start)
 		timer_dev->timer_event_start(next_event);
 	csr_clear(CSR_MIP, MIP_STIP);

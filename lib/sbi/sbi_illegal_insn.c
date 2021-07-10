@@ -13,6 +13,7 @@
 #include <sbi/sbi_emulate_csr.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_illegal_insn.h>
+#include <sbi/sbi_pmu.h>
 #include <sbi/sbi_trap.h>
 #include <sbi/sbi_unpriv.h>
 
@@ -129,6 +130,7 @@ int sbi_illegal_insn_handler(ulong insn, struct sbi_trap_regs *regs)
 	 * instruction trap.
 	 */
 
+	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_ILLEGAL_INSN);
 	if (unlikely((insn & 3) != 3)) {
 		insn = sbi_get_insn(regs->mepc, &uptrap);
 		if (uptrap.cause) {

@@ -19,6 +19,9 @@
 #include <sbi/sbi_init.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_platform.h>
+#include <sbi/sbi_pmu.h>
+#include <sbi/sbi_string.h>
+#include <sbi/sbi_tlb.h>
 
 struct sbi_ipi_data {
 	unsigned long ipi_type;
@@ -63,6 +66,8 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartid,
 
 	if (ipi_dev && ipi_dev->ipi_send)
 		ipi_dev->ipi_send(remote_hartid);
+
+	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_IPI_SENT);
 
 	if (ipi_ops->sync)
 		ipi_ops->sync(scratch);
@@ -183,6 +188,7 @@ void sbi_ipi_process(void)
 			sbi_scratch_offset_ptr(scratch, ipi_data_off);
 	u32 hartid = current_hartid();
 
+	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_IPI_RECVD);
 	if (ipi_dev && ipi_dev->ipi_clear)
 		ipi_dev->ipi_clear(hartid);
 

@@ -12,6 +12,7 @@
 #include <sbi/riscv_fp.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_misaligned_ldst.h>
+#include <sbi/sbi_pmu.h>
 #include <sbi/sbi_trap.h>
 #include <sbi/sbi_unpriv.h>
 
@@ -28,6 +29,8 @@ int sbi_misaligned_load_handler(ulong addr, ulong tval2, ulong tinst,
 	union reg_data val;
 	struct sbi_trap_info uptrap;
 	int i, fp = 0, shift = 0, len = 0;
+
+	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_MISALIGNED_LOAD);
 
 	if (tinst & 0x1) {
 		/*
@@ -148,6 +151,8 @@ int sbi_misaligned_store_handler(ulong addr, ulong tval2, ulong tinst,
 	union reg_data val;
 	struct sbi_trap_info uptrap;
 	int i, len = 0;
+
+	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_MISALIGNED_STORE);
 
 	if (tinst & 0x1) {
 		/*
