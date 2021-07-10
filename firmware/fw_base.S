@@ -349,8 +349,7 @@ _scratch_init:
 	 * previous booting stage.
 	 */
 	beqz	a1, _fdt_reloc_done
-	/* Mask values in a3 and a4 */
-	li	a3, ~(__SIZEOF_POINTER__ - 1)
+	/* Mask values in a4 */
 	li	a4, 0xff
 	/* t1 = destination FDT start address */
 	MOV_3R	s0, a0, s1, a1, s2, a2
@@ -359,10 +358,8 @@ _scratch_init:
 	MOV_3R	a0, s0, a1, s1, a2, s2
 	beqz	t1, _fdt_reloc_done
 	beq	t1, a1, _fdt_reloc_done
-	and	t1, t1, a3
 	/* t0 = source FDT start address */
 	add	t0, a1, zero
-	and	t0, t0, a3
 	/* t2 = source FDT size in big-endian */
 #if __riscv_xlen == 64
 	lwu	t2, 4(t0)
