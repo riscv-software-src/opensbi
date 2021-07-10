@@ -9,6 +9,13 @@ OpenSBI generic library code. The supported firmwares type will differ in how
 the arguments passed by the platform early boot stage are handled, as well as
 how the boot stage following the firmware will be handled and executed.
 
+The previous booting stage will pass information via the following registers
+of RISC-V CPU:
+
+* hartid via *a0* register
+* device tree blob address in memory via *a1* register. The address must
+  be aligned to 8 bytes.
+
 OpenSBI currently supports three different types of firmwares.
 
 Firmware with Dynamic Information (*FW_DYNAMIC*)
