@@ -89,6 +89,12 @@ struct sbi_platform_operations {
 	/** Initialize (or populate) domains for the platform */
 	int (*domains_init)(void);
 
+	/** Initialize hw performance counters */
+	int (*pmu_init)(void);
+
+	/** Get platform specific mhpmevent value */
+	uint64_t (*pmu_xlate_to_mhpmevent)(uint32_t event_idx, uint64_t data);
+
 	/** Initialize the platform console */
 	int (*console_init)(void);
 
@@ -388,6 +394,39 @@ static inline int sbi_platform_domains_init(const struct sbi_platform *plat)
 {
 	if (plat && sbi_platform_ops(plat)->domains_init)
 		return sbi_platform_ops(plat)->domains_init();
+	return 0;
+}
+
+/**
+ * Setup hw PMU events for the platform
+ *
+ * @param plat pointer to struct sbi_platform
+ *
+ * @return 0 on success and negative error code on failure
+ */
+static inline int sbi_platform_pmu_init(const struct sbi_platform *plat)
+{
+	if (plat && sbi_platform_ops(plat)->pmu_init)
+		return sbi_platform_ops(plat)->pmu_init();
+	return 0;
+}
+
+/**
+ * Get the value to be written in mhpmeventx for event_idx
+ *
+ * @param plat pointer to struct sbi_platform
+ * @param event_idx ID of the PMU event
+ * @param data Additional configuration data passed from supervisor software
+ *
+ * @return expected value by the platform or 0 if platform doesn't know about
+ * the event
+ */
+static inline uint64_t sbi_platform_pmu_xlate_to_mhpmevent(const struct sbi_platform *plat,
+						      uint32_t event_idx, uint64_t data)
+{
+	if (plat && sbi_platform_ops(plat)->pmu_xlate_to_mhpmevent)
+		return sbi_platform_ops(plat)->pmu_xlate_to_mhpmevent(event_idx,
+								      data);
 	return 0;
 }
 
