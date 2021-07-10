@@ -18,8 +18,10 @@ enum sbi_hart_features {
 	SBI_HART_HAS_SCOUNTEREN = (1 << 0),
 	/** Hart has M-mode counter enable */
 	SBI_HART_HAS_MCOUNTEREN = (1 << 1),
+	/** Hart has counter inhibit CSR */
+	SBI_HART_HAS_MCOUNTINHIBIT = (1 << 2),
 	/** HART has timer csr implementation in hardware */
-	SBI_HART_HAS_TIME = (1 << 2),
+	SBI_HART_HAS_TIME = (1 << 3),
 
 	/** Last index of Hart features*/
 	SBI_HART_HAS_LAST_FEATURE = SBI_HART_HAS_TIME,
