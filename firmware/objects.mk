@@ -21,7 +21,7 @@ ifeq ($(FW_PIC),y)
 firmware-genflags-y +=	-DFW_PIC
 firmware-asflags-y  +=	-fpic
 firmware-cflags-y   +=	-fPIE -pie
-firmware-ldflags-y  +=  -Wl,--no-dynamic-linker
+firmware-ldflags-y  +=	-Wl,--no-dynamic-linker -Wl,-pie
 endif
 
 ifdef FW_TEXT_START
