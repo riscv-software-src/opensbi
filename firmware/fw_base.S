@@ -558,7 +558,6 @@ _start_hang:
 
 	.section .entry, "ax", %progbits
 	.align 3
-	.globl fw_platform_init
 	.weak fw_platform_init
 fw_platform_init:
 	add	a0, a1, zero
