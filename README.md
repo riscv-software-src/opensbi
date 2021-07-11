@@ -96,8 +96,13 @@ Required Toolchain
 ------------------
 
 OpenSBI can be compiled natively or cross-compiled on a x86 host. For
-cross-compilation, you can build your own toolchain or just download
-a prebuilt one from the [Bootlin toolchain repository].
+cross-compilation, you can build your own toolchain, download a prebuilt one
+from the [Bootlin toolchain repository] or install a distribution-provided
+toolchain; if you opt to use LLVM/Clang, most distribution toolchains will
+support cross-compiling for RISC-V using the same toolchain as your native
+LLVM/Clang toolchain due to LLVM's ability to support multiple backends in the
+same binary, so is often an easy way to obtain a working cross-compilation
+toolchain.
 
 Please note that only a 64-bit version of the toolchain is available in
 the Bootlin toolchain repository for now.
@@ -201,6 +206,45 @@ export PLATFORM_RISCV_XLEN=32
 ```
 
 will generate 32-bit OpenSBI images. And vice vesa.
+
+Building with Clang/LLVM
+------------------------
+
+OpenSBI can also be built with Clang/LLVM. To build with just Clang but keep
+the default binutils (which will still use the *CROSS_COMPILE* prefix if
+defined), override the *CC* make variable with:
+```
+make CC=clang
+```
+
+To build with a full LLVM-based toolchain, not just Clang, enable the *LLVM*
+option with:
+```
+make LLVM=1
+```
+
+When using Clang, *CROSS_COMPILE* often does not need to be defined unless
+using GNU binutils with prefixed binary names. *PLATFORM_RISCV_XLEN* will be
+used to infer a default triple to pass to Clang, so if *PLATFORM_RISCV_XLEN*
+itself defaults to an undesired value then prefer setting that rather than the
+full triple via *CROSS_COMPILE*. If *CROSS_COMPILE* is nonetheless defined,
+rather than being used as a prefix for the executable name, it will instead be
+passed via the `--target` option with the trailing `-` removed, so must be a
+valid triple.
+
+These can also be mixed; for example using a GCC cross-compiler but LLVM
+binutils would be:
+```
+make CC=riscv64-unknown-elf-gcc LLVM=1
+```
+
+These variables must be passed for all the make invocations described in this
+document.
+
+NOTE: Using Clang with a `riscv*-linux-gnu` GNU binutils linker has been seen
+to produce broken binaries with missing relocations; it is therefore currently
+recommended that this combination be avoided or *FW_PIC=n* be used to disable
+building OpenSBI as a position-independent binary.
 
 Contributing to OpenSBI
 -----------------------
