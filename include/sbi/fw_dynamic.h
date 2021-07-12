@@ -15,17 +15,17 @@
 /* clang-format off */
 
 /** Offset of magic member in fw_dynamic_info */
-#define FW_DYNAMIC_INFO_MAGIC_OFFSET		(0 * __SIZEOF_POINTER__)
+#define FW_DYNAMIC_INFO_MAGIC_OFFSET		(0 * __SIZEOF_LONG__)
 /** Offset of version member in fw_dynamic_info */
-#define FW_DYNAMIC_INFO_VERSION_OFFSET		(1 * __SIZEOF_POINTER__)
+#define FW_DYNAMIC_INFO_VERSION_OFFSET		(1 * __SIZEOF_LONG__)
 /** Offset of next_addr member in fw_dynamic_info (version >= 1) */
-#define FW_DYNAMIC_INFO_NEXT_ADDR_OFFSET	(2 * __SIZEOF_POINTER__)
+#define FW_DYNAMIC_INFO_NEXT_ADDR_OFFSET	(2 * __SIZEOF_LONG__)
 /** Offset of next_mode member in fw_dynamic_info  (version >= 1) */
-#define FW_DYNAMIC_INFO_NEXT_MODE_OFFSET	(3 * __SIZEOF_POINTER__)
+#define FW_DYNAMIC_INFO_NEXT_MODE_OFFSET	(3 * __SIZEOF_LONG__)
 /** Offset of options member in fw_dynamic_info  (version >= 1) */
-#define FW_DYNAMIC_INFO_OPTIONS_OFFSET		(4 * __SIZEOF_POINTER__)
+#define FW_DYNAMIC_INFO_OPTIONS_OFFSET		(4 * __SIZEOF_LONG__)
 /** Offset of boot_hart member in fw_dynamic_info  (version >= 2) */
-#define FW_DYNAMIC_INFO_BOOT_HART_OFFSET	(5 * __SIZEOF_POINTER__)
+#define FW_DYNAMIC_INFO_BOOT_HART_OFFSET	(5 * __SIZEOF_LONG__)
 
 /** Expected value of info magic ('OSBI' ascii string in hex) */
 #define FW_DYNAMIC_INFO_MAGIC_VALUE		0x4942534f
