@@ -69,6 +69,12 @@ parameters:
   argument by the prior booting stage.
 * **FW_FDT_PADDING** - Optional zero bytes padding to the embedded flattened
   device tree binary file specified by **FW_FDT_PATH** option.
+* **FW_PIC** - "FW_PIC=y" generates position independent executable firmware
+  images. OpenSBI can run at arbitrary address with appropriate alignment.
+  Therefore, the original relocation mechanism ("FW_PIC=n") will be skipped.
+  In other words, OpenSBI will directly run at the load address without any
+  code movement. This option requires a toolchain with PIE support, and it
+  is on by default.
 
 Additionally, each firmware type as a set of type specific configuration
 parameters. Detailed information for each firmware type can be found in the
