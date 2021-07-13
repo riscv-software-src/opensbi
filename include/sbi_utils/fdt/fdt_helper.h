@@ -17,6 +17,13 @@ struct fdt_match {
 	void *data;
 };
 
+#define FDT_MAX_PHANDLE_ARGS 16
+struct fdt_phandle_args {
+	int node_offset;
+	int args_count;
+	u32 args[FDT_MAX_PHANDLE_ARGS];
+};
+
 struct platform_uart_data {
 	unsigned long addr;
 	unsigned long freq;
@@ -31,6 +38,10 @@ const struct fdt_match *fdt_match_node(void *fdt, int nodeoff,
 int fdt_find_match(void *fdt, int startoff,
 		   const struct fdt_match *match_table,
 		   const struct fdt_match **out_match);
+
+int fdt_parse_phandle_with_args(void *fdt, int nodeoff,
+				const char *prop, const char *cells_prop,
+				int index, struct fdt_phandle_args *out_args);
 
 int fdt_get_node_addr_size(void *fdt, int node, unsigned long *addr,
 			   unsigned long *size);
