@@ -7,4 +7,5 @@
 #   Anup Patel <anup.patel@wdc.com>
 #
 
+libsbiutils-objs-y += gpio/fdt_gpio.o
 libsbiutils-objs-y += gpio/gpio.o
