@@ -12,7 +12,10 @@
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/gpio/fdt_gpio.h>
 
+extern struct fdt_gpio fdt_gpio_sifive;
+
 static struct fdt_gpio *gpio_drivers[] = {
+	&fdt_gpio_sifive
 };
 
 static struct fdt_gpio *fdt_gpio_driver(struct gpio_chip *chip)

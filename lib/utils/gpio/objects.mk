@@ -8,4 +8,5 @@
 #
 
 libsbiutils-objs-y += gpio/fdt_gpio.o
+libsbiutils-objs-y += gpio/fdt_gpio_sifive.o
 libsbiutils-objs-y += gpio/gpio.o
