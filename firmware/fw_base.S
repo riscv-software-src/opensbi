@@ -65,14 +65,14 @@ _try_lottery:
 
 	/* Save load address */
 	lla	t0, _load_start
-	lla	t1, _start
+	lla	t1, _fw_start
 	REG_S	t1, 0(t0)
 
 #ifdef FW_PIC
 	/* relocate the global table content */
 	lla	t0, _link_start
 	REG_L	t0, 0(t0)
-	/* t1 shall has the address of _start */
+	/* t1 shall has the address of _fw_start */
 	sub	t2, t1, t0
 	lla	t3, _runtime_offset
 	REG_S	t2, (t3)
@@ -172,7 +172,7 @@ _relocate_copy_to_upper_loop:
 	blt	t0, t1, _relocate_copy_to_upper_loop
 	jr	t4
 _wait_relocate_copy_done:
-	lla	t0, _start
+	lla	t0, _fw_start
 	lla	t1, _link_start
 	REG_L	t1, 0(t1)
 	beq	t0, t1, _wait_for_boot_hart

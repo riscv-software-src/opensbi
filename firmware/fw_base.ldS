@@ -8,7 +8,7 @@
  */
 
 	. = FW_TEXT_START;
-
+	/* Don't add any section between FW_TEXT_START and _fw_start */
 	PROVIDE(_fw_start = .);
 
 	. = ALIGN(0x1000); /* Need this to create proper sections */
