@@ -24,9 +24,11 @@
 #include <sbi_utils/reset/fdt_reset.h>
 
 extern const struct platform_override sifive_fu540;
+extern const struct platform_override sifive_fu740;
 
 static const struct platform_override *special_platforms[] = {
 	&sifive_fu540,
+	&sifive_fu740,
 };
 
 static const struct platform_override *generic_plat = NULL;
