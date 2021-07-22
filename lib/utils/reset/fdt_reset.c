@@ -24,8 +24,6 @@ static struct fdt_reset *reset_drivers[] = {
 	&fdt_reset_thead,
 };
 
-static struct fdt_reset *current_driver = NULL;
-
 int fdt_reset_init(void)
 {
 	int pos, noff, rc;
@@ -47,7 +45,6 @@ int fdt_reset_init(void)
 			if (rc)
 				return rc;
 		}
-		current_driver = drv;
 		break;
 	}
 
