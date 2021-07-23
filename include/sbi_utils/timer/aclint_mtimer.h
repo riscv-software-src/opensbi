@@ -12,16 +12,22 @@
 
 #include <sbi/sbi_types.h>
 
-#define ACLINT_MTIMER_ALIGN		0x1000
-#define ACLINT_MTIMER_SIZE		0x8000
-#define ACLINT_MTIMER_MAX_HARTS	4095
+#define ACLINT_MTIMER_ALIGN		0x8
+#define ACLINT_MTIMER_MAX_HARTS		4095
+
+#define ACLINT_DEFAULT_MTIME_OFFSET	0x7ff8
+#define ACLINT_DEFAULT_MTIME_SIZE	0x8
+#define ACLINT_DEFAULT_MTIMECMP_OFFSET	0x0000
+#define ACLINT_DEFAULT_MTIMECMP_SIZE	0x7ff8
 
 #define CLINT_MTIMER_OFFSET		0x4000
 
 struct aclint_mtimer_data {
 	/* Public details */
-	unsigned long addr;
-	unsigned long size;
+	unsigned long mtime_addr;
+	unsigned long mtime_size;
+	unsigned long mtimecmp_addr;
+	unsigned long mtimecmp_size;
 	u32 first_hartid;
 	u32 hart_count;
 	bool has_64bit_mmio;

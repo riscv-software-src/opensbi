@@ -22,7 +22,7 @@ static int timer_mtimer_cold_init(void *fdt, int nodeoff,
 				  const struct fdt_match *match)
 {
 	int rc;
-	unsigned long offset;
+	unsigned long offset, addr, size;
 	struct aclint_mtimer_data *mt, *mtmaster = NULL;
 
 	if (MTIMER_MAX_NR <= mtimer_count)
@@ -31,19 +31,23 @@ static int timer_mtimer_cold_init(void *fdt, int nodeoff,
 	if (0 < mtimer_count)
 		mtmaster = &mtimer[0];
 
-	rc = fdt_parse_aclint_node(fdt, nodeoff, true, &mt->addr, &mt->size,
+	rc = fdt_parse_aclint_node(fdt, nodeoff, true, &addr, &size,
 				   &mt->first_hartid, &mt->hart_count);
 	if (rc)
 		return rc;
 	mt->has_64bit_mmio = true;
 
+	mt->mtimecmp_addr = addr + ACLINT_DEFAULT_MTIMECMP_OFFSET;
+	mt->mtimecmp_size = ACLINT_DEFAULT_MTIMECMP_SIZE;
+	mt->mtime_addr = addr + ACLINT_DEFAULT_MTIME_OFFSET;
+	mt->mtime_size = size - mt->mtimecmp_size;
+
 	if (match->data) {
 		/* Adjust MTIMER address and size for CLINT device */
 		offset = *((unsigned long *)match->data);
-		mt->addr += offset;
-		if ((mt->size - offset) < ACLINT_MTIMER_SIZE)
-			return SBI_EINVAL;
-		mt->size -= offset;
+		mt->mtime_addr += offset;
+		mt->mtimecmp_addr += offset;
+		mt->mtime_size -= offset;
 		/* Parse additional CLINT properties */
 		if (fdt_getprop(fdt, nodeoff, "clint,has-no-64bit-mmio", &rc))
 			mt->has_64bit_mmio = false;

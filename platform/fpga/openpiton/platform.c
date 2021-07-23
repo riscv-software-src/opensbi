@@ -49,8 +49,12 @@ static struct aclint_mswi_data mswi = {
 };
 
 static struct aclint_mtimer_data mtimer = {
-	.addr = OPENPITON_DEFAULT_ACLINT_MTIMER_ADDR,
-	.size = ACLINT_MTIMER_SIZE,
+	.mtime_addr = OPENPITON_DEFAULT_ACLINT_MTIMER_ADDR +
+		      ACLINT_DEFAULT_MTIME_OFFSET,
+	.mtime_size = ACLINT_DEFAULT_MTIME_SIZE,
+	.mtimecmp_addr = OPENPITON_DEFAULT_ACLINT_MTIMER_ADDR +
+			 ACLINT_DEFAULT_MTIMECMP_OFFSET,
+	.mtimecmp_size = ACLINT_DEFAULT_MTIMECMP_SIZE,
 	.first_hartid = 0,
 	.hart_count = OPENPITON_DEFAULT_HART_COUNT,
 	.has_64bit_mmio = TRUE,
@@ -82,7 +86,10 @@ static int openpiton_early_init(bool cold_boot)
 	rc = fdt_parse_compat_addr(fdt, &clint_addr, "riscv,clint0");
 	if (!rc) {
 		mswi.addr = clint_addr;
-		mtimer.addr = clint_addr + CLINT_MTIMER_OFFSET;
+		mtimer.mtime_addr = clint_addr + CLINT_MTIMER_OFFSET +
+				    ACLINT_DEFAULT_MTIME_OFFSET;
+		mtimer.mtimecmp_addr = clint_addr + CLINT_MTIMER_OFFSET +
+				    ACLINT_DEFAULT_MTIMECMP_OFFSET;
 	}
 
 	return 0;
