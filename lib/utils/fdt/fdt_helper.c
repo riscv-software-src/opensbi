@@ -481,38 +481,50 @@ int fdt_parse_plic(void *fdt, struct plic_data *plic, const char *compat)
 }
 
 int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
-			  unsigned long *out_addr, unsigned long *out_size,
+			  unsigned long *out_addr1, unsigned long *out_size1,
+			  unsigned long *out_addr2, unsigned long *out_size2,
 			  u32 *out_first_hartid, u32 *out_hart_count)
 {
 	const fdt32_t *val;
 	uint64_t reg_addr, reg_size;
 	int i, rc, count, cpu_offset, cpu_intc_offset;
-	u32 phandle, hwirq, hartid, first_hartid, last_hartid;
+	u32 phandle, hwirq, hartid, first_hartid, last_hartid, hart_count;
 	u32 match_hwirq = (for_timer) ? IRQ_M_TIMER : IRQ_M_SOFT;
 
 	if (nodeoffset < 0 || !fdt ||
-	    !out_addr || !out_size ||
+	    !out_addr1 || !out_size1 ||
 	    !out_first_hartid || !out_hart_count)
 		return SBI_EINVAL;
 
 	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
 				    &reg_addr, &reg_size);
-	if (rc < 0 || !reg_addr || !reg_size)
+	if (rc < 0 || !reg_size)
 		return SBI_ENODEV;
-	*out_addr = reg_addr;
-	*out_size = reg_size;
+	*out_addr1 = reg_addr;
+	*out_size1 = reg_size;
+
+	rc = fdt_get_node_addr_size(fdt, nodeoffset, 1,
+				    &reg_addr, &reg_size);
+	if (rc < 0 || !reg_size)
+		reg_addr = reg_size = 0;
+	if (out_addr2)
+		*out_addr2 = reg_addr;
+	if (out_size2)
+		*out_size2 = reg_size;
+
+	*out_first_hartid = 0;
+	*out_hart_count = 0;
 
 	val = fdt_getprop(fdt, nodeoffset, "interrupts-extended", &count);
 	if (!val || count < sizeof(fdt32_t))
-		return SBI_ENODEV;
+		return 0;
 	count = count / sizeof(fdt32_t);
 
 	first_hartid = -1U;
-	last_hartid = 0;
-	*out_hart_count = 0;
-	for (i = 0; i < count; i += 2) {
-		phandle = fdt32_to_cpu(val[i]);
-		hwirq = fdt32_to_cpu(val[i + 1]);
+	hart_count = last_hartid = 0;
+	for (i = 0; i < (count / 2); i++) {
+		phandle = fdt32_to_cpu(val[2 * i]);
+		hwirq = fdt32_to_cpu(val[(2 * i) + 1]);
 
 		cpu_intc_offset = fdt_node_offset_by_phandle(fdt, phandle);
 		if (cpu_intc_offset < 0)
@@ -534,17 +546,15 @@ int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
 				first_hartid = hartid;
 			if (hartid > last_hartid)
 				last_hartid = hartid;
-			(*out_hart_count)++;
+			hart_count++;
 		}
 	}
 
-	if ((last_hartid < first_hartid) || first_hartid == -1U)
-		return SBI_ENODEV;
-
-	*out_first_hartid = first_hartid;
-	count = last_hartid - first_hartid + 1;
-	if (*out_hart_count < count)
-		*out_hart_count = count;
+	if ((last_hartid >= first_hartid) && first_hartid != -1U) {
+		*out_first_hartid = first_hartid;
+		count = last_hartid - first_hartid + 1;
+		*out_hart_count = (hart_count < count) ? hart_count : count;
+	}
 
 	return 0;
 }

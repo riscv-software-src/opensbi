@@ -28,7 +28,8 @@ static int ipi_mswi_cold_init(void *fdt, int nodeoff,
 		return SBI_ENOSPC;
 	ms = &mswi[mswi_count];
 
-	rc = fdt_parse_aclint_node(fdt, nodeoff, false, &ms->addr, &ms->size,
+	rc = fdt_parse_aclint_node(fdt, nodeoff, false,
+				   &ms->addr, &ms->size, NULL, NULL,
 				   &ms->first_hartid, &ms->hart_count);
 	if (rc)
 		return rc;
