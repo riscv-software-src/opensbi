@@ -58,6 +58,9 @@ static int timer_mtimer_cold_init(void *fdt, int nodeoff,
 		mt->mtime_size = size[0];
 		mt->mtimecmp_addr = addr[1];
 		mt->mtimecmp_size = size[1];
+		/* Parse additional ACLINT MTIMER properties */
+		if (fdt_getprop(fdt, nodeoff, "mtimer,no-64bit-mmio", &rc))
+			mt->has_64bit_mmio = false;
 	}
 
 	rc = aclint_mtimer_cold_init(mt, mtmaster);
