@@ -31,13 +31,18 @@ struct aclint_mtimer_data {
 	u32 first_hartid;
 	u32 hart_count;
 	bool has_64bit_mmio;
+	bool has_shared_mtime;
 	/* Private details (initialized and used by ACLINT MTIMER library) */
 	struct aclint_mtimer_data *time_delta_reference;
 	unsigned long time_delta_computed;
-	u64 time_delta;
 	u64 (*time_rd)(volatile u64 *addr);
 	void (*time_wr)(bool timecmp, u64 value, volatile u64 *addr);
 };
+
+void aclint_mtimer_sync(struct aclint_mtimer_data *mt);
+
+void aclint_mtimer_set_reference(struct aclint_mtimer_data *mt,
+				 struct aclint_mtimer_data *ref);
 
 int aclint_mtimer_warm_init(void);
 

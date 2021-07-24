@@ -57,7 +57,7 @@ static u64 mtimer_value(void)
 	u64 *time_val = (void *)mt->mtime_addr;
 
 	/* Read MTIMER Time Value */
-	return mt->time_rd(time_val) + mt->time_delta;
+	return mt->time_rd(time_val);
 }
 
 static void mtimer_event_stop(void)
@@ -77,7 +77,7 @@ static void mtimer_event_start(u64 next_event)
 	u64 *time_cmp = (void *)mt->mtimecmp_addr;
 
 	/* Program MTIMER Time Compare */
-	mt->time_wr(true, next_event - mt->time_delta,
+	mt->time_wr(true, next_event,
 		    &time_cmp[target_hart - mt->first_hartid]);
 }
 
@@ -88,36 +88,51 @@ static struct sbi_timer_device mtimer = {
 	.timer_event_stop = mtimer_event_stop
 };
 
+void aclint_mtimer_sync(struct aclint_mtimer_data *mt)
+{
+	u64 v1, v2, mv, delta;
+	u64 *mt_time_val, *ref_time_val;
+	struct aclint_mtimer_data *reference;
+
+	/* Sync-up non-shared MTIME if reference is available */
+	if (mt->has_shared_mtime || !mt->time_delta_reference)
+		return;
+
+	reference = mt->time_delta_reference;
+	mt_time_val = (void *)mt->mtime_addr;
+	ref_time_val = (void *)reference->mtime_addr;
+	if (!atomic_raw_xchg_ulong(&mt->time_delta_computed, 1)) {
+		v1 = mt->time_rd(mt_time_val);
+		mv = reference->time_rd(ref_time_val);
+		v2 = mt->time_rd(mt_time_val);
+		delta = mv - ((v1 / 2) + (v2 / 2));
+		mt->time_wr(false, mt->time_rd(mt_time_val) + delta,
+			    mt_time_val);
+	}
+
+}
+
+void aclint_mtimer_set_reference(struct aclint_mtimer_data *mt,
+				 struct aclint_mtimer_data *ref)
+{
+	if (!mt || !ref || mt == ref)
+		return;
+
+	mt->time_delta_reference = ref;
+	mt->time_delta_computed = 0;
+}
+
 int aclint_mtimer_warm_init(void)
 {
-	u64 v1, v2, mv;
+	u64 *mt_time_cmp;
 	u32 target_hart = current_hartid();
-	struct aclint_mtimer_data *reference;
-	u64 *mt_time_val, *mt_time_cmp, *ref_time_val;
 	struct aclint_mtimer_data *mt = mtimer_hartid2data[target_hart];
 
 	if (!mt)
 		return SBI_ENODEV;
 
-	/*
-	 * Compute delta if reference available
-	 *
-	 * We deliberately compute time_delta in warm init so that time_delta
-	 * is computed on a HART which is going to use given MTIMER. We use
-	 * atomic flag timer_delta_computed to ensure that only one HART does
-	 * time_delta computation.
-	 */
-	if (mt->time_delta_reference) {
-		reference = mt->time_delta_reference;
-		mt_time_val = (void *)mt->mtime_addr;
-		ref_time_val = (void *)reference->mtime_addr;
-		if (!atomic_raw_xchg_ulong(&mt->time_delta_computed, 1)) {
-			v1 = mt->time_rd(mt_time_val);
-			mv = reference->time_rd(ref_time_val);
-			v2 = mt->time_rd(mt_time_val);
-			mt->time_delta = mv - ((v1 / 2) + (v2 / 2));
-		}
-	}
+	/* Sync-up MTIME register */
+	aclint_mtimer_sync(mt);
 
 	/* Clear Time Compare */
 	mt_time_cmp = (void *)mt->mtimecmp_addr;
@@ -173,9 +188,7 @@ int aclint_mtimer_cold_init(struct aclint_mtimer_data *mt,
 		return SBI_EINVAL;
 
 	/* Initialize private data */
-	mt->time_delta_reference = reference;
-	mt->time_delta_computed = 0;
-	mt->time_delta = 0;
+	aclint_mtimer_set_reference(mt, reference);
 	mt->time_rd = mtimer_time_rd32;
 	mt->time_wr = mtimer_time_wr32;
 

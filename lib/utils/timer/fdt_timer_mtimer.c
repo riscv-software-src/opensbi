@@ -17,19 +17,18 @@
 
 static unsigned long mtimer_count = 0;
 static struct aclint_mtimer_data mtimer[MTIMER_MAX_NR];
+static struct aclint_mtimer_data *mt_reference = NULL;
 
 static int timer_mtimer_cold_init(void *fdt, int nodeoff,
 				  const struct fdt_match *match)
 {
-	int rc;
+	int i, rc;
 	unsigned long offset, addr[2], size[2];
-	struct aclint_mtimer_data *mt, *mtmaster = NULL;
+	struct aclint_mtimer_data *mt;
 
 	if (MTIMER_MAX_NR <= mtimer_count)
 		return SBI_ENOSPC;
 	mt = &mtimer[mtimer_count];
-	if (0 < mtimer_count)
-		mtmaster = &mtimer[0];
 
 	rc = fdt_parse_aclint_node(fdt, nodeoff, true,
 				   &addr[0], &size[0], &addr[1], &size[1],
@@ -37,6 +36,7 @@ static int timer_mtimer_cold_init(void *fdt, int nodeoff,
 	if (rc)
 		return rc;
 	mt->has_64bit_mmio = true;
+	mt->has_shared_mtime = false;
 
 	if (match->data) { /* SiFive CLINT */
 		/* Set CLINT addresses */
@@ -63,9 +63,41 @@ static int timer_mtimer_cold_init(void *fdt, int nodeoff,
 			mt->has_64bit_mmio = false;
 	}
 
-	rc = aclint_mtimer_cold_init(mt, mtmaster);
+	/* Check if MTIMER device has shared MTIME address */
+	mt->has_shared_mtime = false;
+	for (i = 0; i < mtimer_count; i++) {
+		if (mtimer[i].mtime_addr == mt->mtime_addr) {
+			mt->has_shared_mtime = true;
+			break;
+		}
+	}
+
+	/* Initialize the MTIMER device */
+	rc = aclint_mtimer_cold_init(mt, mt_reference);
 	if (rc)
 		return rc;
+
+	/*
+	 * Select first MTIMER device with no associated HARTs as our
+	 * reference MTIMER device. This is only a temporary strategy
+	 * of selecting reference MTIMER device. In future, we might
+	 * define an optional DT property or some other mechanism to
+	 * help us select the reference MTIMER device.
+	 */
+	if (!mt->hart_count && !mt_reference) {
+		mt_reference = mt;
+		/*
+		 * Set reference for already propbed MTIMER devices
+		 * with non-shared MTIME
+		 */
+		for (i = 0; i < mtimer_count; i++)
+			if (!mtimer[i].has_shared_mtime)
+				aclint_mtimer_set_reference(&mtimer[i], mt);
+	}
+
+	/* Explicitly sync-up MTIMER devices not associated with any HARTs */
+	if (!mt->hart_count)
+		aclint_mtimer_sync(mt);
 
 	mtimer_count++;
 	return 0;
