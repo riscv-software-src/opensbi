@@ -33,6 +33,10 @@ int sbi_strncmp(const char *a, const char *b, size_t count)
 	for (; count > 0 && *a == *b && *a != '\0'; a++, b++, count--)
 		;
 
+	/* No difference till the end */
+	if (!count)
+		return 0;
+
 	return *a - *b;
 }
 
