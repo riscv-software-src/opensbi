@@ -64,7 +64,7 @@ static int openpiton_early_init(bool cold_boot)
 	void *fdt;
 	struct platform_uart_data uart_data;
 	struct plic_data plic_data;
-	unsigned long clint_addr;
+	uint64_t clint_addr;
 	int rc;
 
 	if (!cold_boot)

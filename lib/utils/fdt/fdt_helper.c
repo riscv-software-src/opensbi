@@ -120,7 +120,7 @@ int fdt_parse_phandle_with_args(void *fdt, int nodeoff,
 }
 
 static int fdt_translate_address(void *fdt, uint64_t reg, int parent,
-				 unsigned long *addr)
+				 uint64_t *addr)
 {
 	int i, rlen;
 	int cell_addr, cell_size;
@@ -157,8 +157,7 @@ static int fdt_translate_address(void *fdt, uint64_t reg, int parent,
 	return 0;
 }
 
-int fdt_get_node_addr_size(void *fdt, int node, unsigned long *addr,
-			   unsigned long *size)
+int fdt_get_node_addr_size(void *fdt, int node, uint64_t *addr, uint64_t *size)
 {
 	int parent, len, i, rc;
 	int cell_addr, cell_size;
@@ -266,7 +265,7 @@ int fdt_parse_gaisler_uart_node(void *fdt, int nodeoffset,
 {
 	int len, rc;
 	const fdt32_t *val;
-	unsigned long reg_addr, reg_size;
+	uint64_t reg_addr, reg_size;
 
 	if (nodeoffset < 0 || !uart || !fdt)
 		return SBI_ENODEV;
@@ -304,7 +303,7 @@ int fdt_parse_shakti_uart_node(void *fdt, int nodeoffset,
 {
 	int len, rc;
 	const fdt32_t *val;
-	unsigned long reg_addr, reg_size;
+	uint64_t reg_addr, reg_size;
 
 	if (nodeoffset < 0 || !uart || !fdt)
 		return SBI_ENODEV;
@@ -338,7 +337,7 @@ int fdt_parse_sifive_uart_node(void *fdt, int nodeoffset,
 {
 	int len, rc;
 	const fdt32_t *val;
-	unsigned long reg_addr, reg_size;
+	uint64_t reg_addr, reg_size;
 
 	if (nodeoffset < 0 || !uart || !fdt)
 		return SBI_ENODEV;
@@ -376,7 +375,7 @@ int fdt_parse_uart8250_node(void *fdt, int nodeoffset,
 {
 	int len, rc;
 	const fdt32_t *val;
-	unsigned long reg_addr, reg_size;
+	uint64_t reg_addr, reg_size;
 
 	if (nodeoffset < 0 || !uart || !fdt)
 		return SBI_ENODEV;
@@ -436,7 +435,7 @@ int fdt_parse_plic_node(void *fdt, int nodeoffset, struct plic_data *plic)
 {
 	int len, rc;
 	const fdt32_t *val;
-	unsigned long reg_addr, reg_size;
+	uint64_t reg_addr, reg_size;
 
 	if (nodeoffset < 0 || !plic || !fdt)
 		return SBI_ENODEV;
@@ -472,7 +471,7 @@ int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
 			  u32 *out_first_hartid, u32 *out_hart_count)
 {
 	const fdt32_t *val;
-	unsigned long reg_addr, reg_size;
+	uint64_t reg_addr, reg_size;
 	int i, rc, count, cpu_offset, cpu_intc_offset;
 	u32 phandle, hwirq, hartid, first_hartid, last_hartid;
 	u32 match_hwirq = (for_timer) ? IRQ_M_TIMER : IRQ_M_SOFT;
@@ -535,7 +534,7 @@ int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
 	return 0;
 }
 
-int fdt_parse_compat_addr(void *fdt, unsigned long *addr,
+int fdt_parse_compat_addr(void *fdt, uint64_t *addr,
 			  const char *compatible)
 {
 	int nodeoffset, rc;

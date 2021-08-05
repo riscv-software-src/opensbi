@@ -71,15 +71,17 @@ static int sifive_gpio_init(void *fdt, int nodeoff, u32 phandle,
 {
 	int rc;
 	struct sifive_gpio_chip *chip;
+	uint64_t addr;
 
 	if (SIFIVE_GPIO_CHIP_MAX <= sifive_gpio_chip_count)
 		return SBI_ENOSPC;
 	chip = &sifive_gpio_chip_array[sifive_gpio_chip_count];
 
-	rc = fdt_get_node_addr_size(fdt, nodeoff, &chip->addr, NULL);
+	rc = fdt_get_node_addr_size(fdt, nodeoff, &addr, NULL);
 	if (rc)
 		return rc;
 
+	chip->addr = addr;
 	chip->chip.driver = &fdt_gpio_sifive;
 	chip->chip.id = phandle;
 	chip->chip.ngpio = SIFIVE_GPIO_PINS_DEF;

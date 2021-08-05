@@ -43,8 +43,8 @@ int fdt_parse_phandle_with_args(void *fdt, int nodeoff,
 				const char *prop, const char *cells_prop,
 				int index, struct fdt_phandle_args *out_args);
 
-int fdt_get_node_addr_size(void *fdt, int node, unsigned long *addr,
-			   unsigned long *size);
+int fdt_get_node_addr_size(void *fdt, int node, uint64_t *addr,
+			   uint64_t *size);
 
 int fdt_parse_hart_id(void *fdt, int cpu_offset, u32 *hartid);
 
@@ -75,7 +75,7 @@ int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
 			  unsigned long *out_addr, unsigned long *out_size,
 			  u32 *out_first_hartid, u32 *out_hart_count);
 
-int fdt_parse_compat_addr(void *fdt, unsigned long *addr,
+int fdt_parse_compat_addr(void *fdt, uint64_t *addr,
 			  const char *compatible);
 
 #endif /* __FDT_HELPER_H__ */
