@@ -54,8 +54,8 @@ static int sbi_ecall_rfence_handler(unsigned long extid, unsigned long funcid,
 	struct sbi_tlb_info tlb_info;
 	u32 source_hart = current_hartid();
 
-	if (funcid >= SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA &&
-	    funcid <= SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA_ASID)
+	if (funcid >= SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA_VMID &&
+	    funcid <= SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA)
 		if (!misa_extension('H'))
 			return SBI_ENOTSUPP;
 
