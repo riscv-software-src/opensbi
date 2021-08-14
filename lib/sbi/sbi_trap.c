@@ -259,11 +259,10 @@ struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs)
 		msg = "ecall handler failed";
 		break;
 	case CAUSE_LOAD_ACCESS:
-		sbi_pmu_ctr_incr_fw(SBI_PMU_FW_ACCESS_LOAD);
-		break;
 	case CAUSE_STORE_ACCESS:
-		sbi_pmu_ctr_incr_fw(SBI_PMU_FW_ACCESS_STORE);
-		break;
+		sbi_pmu_ctr_incr_fw(mcause == CAUSE_LOAD_ACCESS ?
+			SBI_PMU_FW_ACCESS_LOAD : SBI_PMU_FW_ACCESS_STORE);
+		/* fallthrough */
 	default:
 		/* If the trap came from S or U mode, redirect it there */
 		trap.epc = regs->mepc;
