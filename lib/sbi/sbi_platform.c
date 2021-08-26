@@ -20,7 +20,7 @@ static inline char *sbi_platform_feature_id2string(unsigned long feature)
 
 	switch (feature) {
 	case SBI_PLATFORM_HAS_MFAULTS_DELEGATION:
-		fstr = "mfdeleg";
+		fstr = "medeleg";
 		break;
 	default:
 		break;
