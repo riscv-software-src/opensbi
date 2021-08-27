@@ -43,9 +43,12 @@ u16 sbi_fifo_avail(struct sbi_fifo *fifo)
 	return ret;
 }
 
-bool sbi_fifo_is_full(struct sbi_fifo *fifo)
+int sbi_fifo_is_full(struct sbi_fifo *fifo)
 {
 	bool ret;
+
+	if (!fifo)
+		return SBI_EINVAL;
 
 	spin_lock(&fifo->qlock);
 	ret = __sbi_fifo_is_full(fifo);
@@ -75,9 +78,12 @@ static inline bool __sbi_fifo_is_empty(struct sbi_fifo *fifo)
 	return (fifo->avail == 0) ? TRUE : FALSE;
 }
 
-bool sbi_fifo_is_empty(struct sbi_fifo *fifo)
+int sbi_fifo_is_empty(struct sbi_fifo *fifo)
 {
 	bool ret;
+
+	if (!fifo)
+		return SBI_EINVAL;
 
 	spin_lock(&fifo->qlock);
 	ret = __sbi_fifo_is_empty(fifo);
