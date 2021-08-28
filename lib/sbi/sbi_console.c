@@ -387,8 +387,11 @@ int sbi_dprintf(const char *format, ...)
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	va_start(args, format);
-	if (scratch->options & SBI_SCRATCH_DEBUG_PRINTS)
+	if (scratch->options & SBI_SCRATCH_DEBUG_PRINTS) {
+		spin_lock(&console_out_lock);
 		retval = print(NULL, NULL, format, args);
+		spin_unlock(&console_out_lock);
+	}
 	va_end(args);
 
 	return retval;
