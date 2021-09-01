@@ -48,9 +48,18 @@ void sbi_platform_get_features_str(const struct sbi_platform *plat,
 		if (features & feat) {
 			temp = sbi_platform_feature_id2string(feat);
 			if (temp) {
-				sbi_snprintf(features_str + offset, nfstr,
-					     "%s,", temp);
-				offset = offset + sbi_strlen(temp) + 1;
+				int len = sbi_snprintf(features_str + offset,
+						       nfstr - offset,
+						       "%s,", temp);
+				if (len < 0)
+					break;
+
+				if (offset + len >= nfstr) {
+					/* No more space for features */
+					offset = nfstr;
+					break;
+				} else
+					offset = offset + len;
 			}
 		}
 		feat = feat << 1;
