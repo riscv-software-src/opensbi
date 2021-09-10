@@ -239,8 +239,9 @@ static void pmu_ctr_write_hw(uint32_t cidx, uint64_t ival)
 
 static int pmu_ctr_start_hw(uint32_t cidx, uint64_t ival, bool ival_update)
 {
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	unsigned long mctr_en = csr_read(CSR_MCOUNTEREN);
-	unsigned long mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
+	unsigned long mctr_inhbt = 0;
 
 	/* Make sure the counter index lies within the range and is not TM bit */
 	if (cidx > num_hw_ctrs || cidx == 1)
@@ -250,13 +251,18 @@ static int pmu_ctr_start_hw(uint32_t cidx, uint64_t ival, bool ival_update)
 		return SBI_EALREADY_STARTED;
 
 	__set_bit(cidx, &mctr_en);
-	__clear_bit(cidx, &mctr_inhbt);
+	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT)) {
+		mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
+		__clear_bit(cidx, &mctr_inhbt);
+	}
 
 	if (ival_update)
 		pmu_ctr_write_hw(cidx, ival);
 
 	csr_write(CSR_MCOUNTEREN, mctr_en);
-	csr_write(CSR_MCOUNTINHIBIT, mctr_inhbt);
+
+	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
+		csr_write(CSR_MCOUNTINHIBIT, mctr_inhbt);
 
 	return 0;
 }
@@ -306,18 +312,24 @@ int sbi_pmu_ctr_start(unsigned long cbase, unsigned long cmask,
 
 static int pmu_ctr_stop_hw(uint32_t cidx)
 {
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	unsigned long mctr_en = csr_read(CSR_MCOUNTEREN);
-	unsigned long mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
+	unsigned long mctr_inhbt = 0x0;
 
 	/* Make sure the counter index lies within the range and is not TM bit */
 	if (cidx > num_hw_ctrs || cidx == 1)
 		return SBI_EINVAL;
 
+	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
+		mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
+
 	if (__test_bit(cidx, &mctr_en) && !__test_bit(cidx, &mctr_inhbt)) {
-		__set_bit(cidx, &mctr_inhbt);
 		__clear_bit(cidx, &mctr_en);
 		csr_write(CSR_MCOUNTEREN, mctr_en);
-		csr_write(CSR_MCOUNTINHIBIT, mctr_inhbt);
+		if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT)) {
+			__set_bit(cidx, &mctr_inhbt);
+			csr_write(CSR_MCOUNTINHIBIT, mctr_inhbt);
+		}
 		return 0;
 	} else
 		return SBI_EALREADY_STOPPED;
@@ -380,7 +392,8 @@ static int pmu_update_hw_mhpmevent(struct sbi_pmu_hw_event *hw_evt, int ctr_idx,
 	 * The OVF bit also should be cleared here in case it was not cleared
 	 * during event stop.
 	 */
-	csr_write_num(CSR_MCOUNTINHIBIT + ctr_idx, mhpmevent_val);
+	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
+		csr_write_num(CSR_MCOUNTINHIBIT + ctr_idx, mhpmevent_val);
 
 	return 0;
 }
@@ -388,11 +401,12 @@ static int pmu_update_hw_mhpmevent(struct sbi_pmu_hw_event *hw_evt, int ctr_idx,
 static int pmu_ctr_find_hw(unsigned long cbase, unsigned long cmask,
 			   unsigned long event_idx, uint64_t data)
 {
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	unsigned long ctr_mask;
 	int i, ret = 0, ctr_idx = SBI_ENOTSUPP;
 	struct sbi_pmu_hw_event *temp;
 	unsigned long mctr_en = csr_read(CSR_MCOUNTEREN);
-	unsigned long mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
+	unsigned long mctr_inhbt = 0xFFFFFFFF;
 	int evt_idx_code = get_cidx_code(event_idx);
 
 	if (cbase > num_hw_ctrs)
@@ -403,6 +417,9 @@ static int pmu_ctr_find_hw(unsigned long cbase, unsigned long cmask,
 		return 0;
 	else if (evt_idx_code == SBI_PMU_HW_INSTRUCTIONS)
 		return 2;
+
+	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
+		mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
 
 	for (i = 0; i < num_hw_events; i++) {
 		temp = &hw_event_map[i];
@@ -583,11 +600,9 @@ void sbi_pmu_exit(struct sbi_scratch *scratch)
 {
 	u32 hartid = current_hartid();
 
-	/* SBI PMU is not supported if mcountinhibit is not available */
-	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
-		return;
+	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
+		csr_write(CSR_MCOUNTINHIBIT, 0xFFFFFFF8);
 
-	csr_write(CSR_MCOUNTINHIBIT, 0xFFFFFFF8);
 	csr_write(CSR_MCOUNTEREN, 7);
 	pmu_reset_event_map(hartid);
 }
@@ -596,10 +611,6 @@ int sbi_pmu_init(struct sbi_scratch *scratch, bool cold_boot)
 {
 	const struct sbi_platform *plat;
 	u32 hartid = current_hartid();
-
-	/* SBI PMU is not supported if mcountinhibit is not available */
-	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
-		return 0;
 
 	if (cold_boot) {
 		plat = sbi_platform_ptr(scratch);
