@@ -269,6 +269,27 @@ int fdt_parse_max_hart_id(void *fdt, u32 *max_hartid)
 	return 0;
 }
 
+int fdt_parse_timebase_frequency(void *fdt, unsigned long *freq)
+{
+	const fdt32_t *val;
+	int len, cpus_offset;
+
+	if (!fdt || !freq)
+		return SBI_EINVAL;
+
+	cpus_offset = fdt_path_offset(fdt, "/cpus");
+	if (cpus_offset < 0)
+		return cpus_offset;
+
+	val = fdt_getprop(fdt, cpus_offset, "timebase-frequency", &len);
+	if (len > 0 && val)
+		*freq = fdt32_to_cpu(*val);
+	else
+		return SBI_ENOENT;
+
+	return 0;
+}
+
 int fdt_parse_gaisler_uart_node(void *fdt, int nodeoffset,
 				struct platform_uart_data *uart)
 {
