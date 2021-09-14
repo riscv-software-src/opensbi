@@ -24,6 +24,7 @@
 
 struct aclint_mtimer_data {
 	/* Public details */
+	unsigned long mtime_freq;
 	unsigned long mtime_addr;
 	unsigned long mtime_size;
 	unsigned long mtimecmp_addr;

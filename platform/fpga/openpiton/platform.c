@@ -26,6 +26,7 @@
 #define OPENPITON_DEFAULT_PLIC_NUM_SOURCES	2
 #define OPENPITON_DEFAULT_HART_COUNT		3
 #define OPENPITON_DEFAULT_CLINT_ADDR		0xfff1020000
+#define OPENPITON_DEFAULT_ACLINT_MTIMER_FREQ	1000000
 #define OPENPITON_DEFAULT_ACLINT_MSWI_ADDR	\
 		(OPENPITON_DEFAULT_CLINT_ADDR + CLINT_MSWI_OFFSET)
 #define OPENPITON_DEFAULT_ACLINT_MTIMER_ADDR	\
@@ -49,6 +50,7 @@ static struct aclint_mswi_data mswi = {
 };
 
 static struct aclint_mtimer_data mtimer = {
+	.mtime_freq = OPENPITON_DEFAULT_ACLINT_MTIMER_FREQ,
 	.mtime_addr = OPENPITON_DEFAULT_ACLINT_MTIMER_ADDR +
 		      ACLINT_DEFAULT_MTIME_OFFSET,
 	.mtime_size = ACLINT_DEFAULT_MTIME_SIZE,
@@ -68,6 +70,7 @@ static int openpiton_early_init(bool cold_boot)
 	void *fdt;
 	struct platform_uart_data uart_data;
 	struct plic_data plic_data;
+	unsigned long aclint_freq;
 	uint64_t clint_addr;
 	int rc;
 
@@ -82,6 +85,10 @@ static int openpiton_early_init(bool cold_boot)
 	rc = fdt_parse_plic(fdt, &plic_data, "riscv,plic0");
 	if (!rc)
 		plic = plic_data;
+
+	rc = fdt_parse_timebase_frequency(fdt, &aclint_freq);
+	if (!rc)
+		mtimer.mtime_freq = aclint_freq;
 
 	rc = fdt_parse_compat_addr(fdt, &clint_addr, "riscv,clint0");
 	if (!rc) {

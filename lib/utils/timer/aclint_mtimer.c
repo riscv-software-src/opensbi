@@ -186,6 +186,8 @@ int aclint_mtimer_cold_init(struct aclint_mtimer_data *mt,
 	    (mt->first_hartid >= SBI_HARTMASK_MAX_BITS) ||
 	    (mt->hart_count > ACLINT_MTIMER_MAX_HARTS))
 		return SBI_EINVAL;
+	if (reference && mt->mtime_freq != reference->mtime_freq)
+		return SBI_EINVAL;
 
 	/* Initialize private data */
 	aclint_mtimer_set_reference(mt, reference);
@@ -227,6 +229,7 @@ int aclint_mtimer_cold_init(struct aclint_mtimer_data *mt,
 			return rc;
 	}
 
+	mtimer.timer_freq = mt->mtime_freq;
 	sbi_timer_set_device(&mtimer);
 
 	return 0;

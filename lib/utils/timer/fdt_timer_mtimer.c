@@ -38,6 +38,10 @@ static int timer_mtimer_cold_init(void *fdt, int nodeoff,
 	mt->has_64bit_mmio = true;
 	mt->has_shared_mtime = false;
 
+	rc = fdt_parse_timebase_frequency(fdt, &mt->mtime_freq);
+	if (rc)
+		return rc;
+
 	if (match->data) { /* SiFive CLINT */
 		/* Set CLINT addresses */
 		mt->mtimecmp_addr = addr[0] + ACLINT_DEFAULT_MTIMECMP_OFFSET;

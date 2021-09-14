@@ -17,6 +17,9 @@ struct sbi_timer_device {
 	/** Name of the timer operations */
 	char name[32];
 
+	/** Frequency of timer in HZ */
+	unsigned long timer_freq;
+
 	/** Get free-running timer value */
 	u64 (*timer_value)(void);
 

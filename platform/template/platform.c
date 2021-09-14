@@ -22,6 +22,7 @@
 #define PLATFORM_PLIC_NUM_SOURCES	128
 #define PLATFORM_HART_COUNT		4
 #define PLATFORM_CLINT_ADDR		0x2000000
+#define PLATFORM_ACLINT_MTIMER_FREQ	10000000
 #define PLATFORM_ACLINT_MSWI_ADDR	(PLATFORM_CLINT_ADDR + \
 					 CLINT_MSWI_OFFSET)
 #define PLATFORM_ACLINT_MTIMER_ADDR	(PLATFORM_CLINT_ADDR + \
@@ -43,6 +44,7 @@ static struct aclint_mswi_data mswi = {
 };
 
 static struct aclint_mtimer_data mtimer = {
+	.mtime_freq = PLATFORM_ACLINT_MTIMER_FREQ,
 	.mtime_addr = PLATFORM_ACLINT_MTIMER_ADDR +
 		      ACLINT_DEFAULT_MTIME_OFFSET,
 	.mtime_size = ACLINT_DEFAULT_MTIME_SIZE,

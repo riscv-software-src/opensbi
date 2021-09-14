@@ -42,6 +42,7 @@ static struct aclint_mswi_data mswi = {
 };
 
 static struct aclint_mtimer_data mtimer = {
+	.mtime_freq = K210_ACLINT_MTIMER_FREQ,
 	.mtime_addr = K210_ACLINT_MTIMER_ADDR +
 		      ACLINT_DEFAULT_MTIME_OFFSET,
 	.mtime_size = ACLINT_DEFAULT_MTIME_SIZE,

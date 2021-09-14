@@ -26,6 +26,7 @@
 #define ARIANE_PLIC_NUM_SOURCES			3
 #define ARIANE_HART_COUNT			1
 #define ARIANE_CLINT_ADDR			0x2000000
+#define ARIANE_ACLINT_MTIMER_FREQ		1000000
 #define ARIANE_ACLINT_MSWI_ADDR			(ARIANE_CLINT_ADDR + \
 						 CLINT_MSWI_OFFSET)
 #define ARIANE_ACLINT_MTIMER_ADDR		(ARIANE_CLINT_ADDR + \
@@ -44,6 +45,7 @@ static struct aclint_mswi_data mswi = {
 };
 
 static struct aclint_mtimer_data mtimer = {
+	.mtime_freq = ARIANE_ACLINT_MTIMER_FREQ,
 	.mtime_addr = ARIANE_ACLINT_MTIMER_ADDR +
 		      ACLINT_DEFAULT_MTIME_OFFSET,
 	.mtime_size = ACLINT_DEFAULT_MTIME_SIZE,
