@@ -213,6 +213,9 @@ static unsigned long ctz(unsigned long x)
 {
 	unsigned long ret = 0;
 
+	if (x == 0)
+		return 8 * sizeof(x);
+
 	while (!(x & 1UL)) {
 		ret++;
 		x = x >> 1;
