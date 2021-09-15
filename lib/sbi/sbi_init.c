@@ -75,8 +75,9 @@ static void sbi_boot_print_general(struct sbi_scratch *scratch)
 	sbi_printf("Platform IPI Device       : %s\n",
 		   (idev) ? idev->name : "---");
 	tdev = sbi_timer_get_device();
-	sbi_printf("Platform Timer Device     : %s\n",
-		   (tdev) ? tdev->name : "---");
+	sbi_printf("Platform Timer Device     : %s @ %luHz\n",
+		   (tdev) ? tdev->name : "---",
+		   (tdev) ? tdev->timer_freq : 0);
 	cdev = sbi_console_get_device();
 	sbi_printf("Platform Console Device   : %s\n",
 		   (cdev) ? cdev->name : "---");
