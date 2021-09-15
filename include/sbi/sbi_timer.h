@@ -32,6 +32,22 @@ struct sbi_timer_device {
 
 struct sbi_scratch;
 
+/** Generic delay loop of desired granularity */
+void sbi_timer_delay_loop(ulong units, u64 unit_freq,
+			  void (*delay_fn)(void *), void *opaque);
+
+/** Provide delay in terms of milliseconds */
+static inline void sbi_timer_mdelay(ulong msecs)
+{
+	sbi_timer_delay_loop(msecs, 1000, NULL, NULL);
+}
+
+/** Provide delay in terms of microseconds */
+static inline void sbi_timer_udelay(ulong usecs)
+{
+	sbi_timer_delay_loop(usecs, 1000000, NULL, NULL);
+}
+
 /** Get timer value for current HART */
 u64 sbi_timer_value(void);
 

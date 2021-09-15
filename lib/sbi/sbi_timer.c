@@ -8,7 +8,9 @@
  */
 
 #include <sbi/riscv_asm.h>
+#include <sbi/riscv_barrier.h>
 #include <sbi/riscv_encoding.h>
+#include <sbi/sbi_console.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
@@ -45,6 +47,38 @@ static u64 get_ticks(void)
 static u64 get_platform_ticks(void)
 {
 	return timer_dev->timer_value();
+}
+
+static void nop_delay_fn(void *opaque)
+{
+	cpu_relax();
+}
+
+void sbi_timer_delay_loop(ulong units, u64 unit_freq,
+			  void (*delay_fn)(void *), void *opaque)
+{
+	u64 start_val, delta;
+
+	/* Do nothing if we don't have timer device */
+	if (!timer_dev || !get_time_val) {
+		sbi_printf("%s: called without timer device\n", __func__);
+		return;
+	}
+
+	/* Save starting timer value */
+	start_val = get_time_val();
+
+	/* Compute desired timer value delta */
+	delta = ((u64)timer_dev->timer_freq * (u64)units);
+	delta = delta / unit_freq;
+
+	/* Use NOP delay function if delay function not available */
+	if (!delay_fn)
+		delay_fn = nop_delay_fn;
+
+	/* Busy loop until desired timer value delta reached */
+	while ((get_time_val() - start_val) < delta)
+		delay_fn(opaque);
 }
 
 u64 sbi_timer_value(void)
