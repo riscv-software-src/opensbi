@@ -30,6 +30,9 @@ struct sbi_pmu_fw_event {
 	/* Event associated with the particular counter */
 	uint32_t event_idx;
 
+	/* Stored on start value to calculate delta on read */
+	unsigned long data;
+
 	/* Current value of the counter */
 	unsigned long curr_count;
 
@@ -124,9 +127,31 @@ static int pmu_ctr_read_fw(uint32_t cidx, unsigned long *cval,
 {
 	u32 hartid = current_hartid();
 	struct sbi_pmu_fw_event fevent;
+	unsigned long delta = 0;
 
 	fevent = fw_event_map[hartid][fw_evt_code];
-	*cval = fevent.curr_count;
+
+	switch(fw_evt_code) {
+	case SBI_PMU_FW_SHADOW_CPU_CYCLES:
+		delta = csr_read_num(CSR_MCYCLE);
+		/* We could have CSR overwritten by pmu user, let's add a sanity check */
+		if(delta < fevent.data)
+			return SBI_EINVAL;
+		delta -= fevent.data;
+		*cval = fevent.curr_count + delta;
+		break;
+	case SBI_PMU_FW_SHADOW_INSTRUCTIONS:
+		delta = csr_read_num(CSR_MINSTRET);
+		/* We could have CSR overwritten by pmu user, let's add a sanity check */
+		if(delta < fevent.data)
+			return SBI_EINVAL;
+		delta -= fevent.data;
+		*cval = fevent.curr_count + delta;
+		break;
+	default:
+		*cval = fevent.curr_count;
+		break;
+	}
 
 	return 0;
 }
@@ -276,6 +301,18 @@ static int pmu_ctr_start_fw(uint32_t cidx, uint32_t fw_evt_code,
 	fevent = &fw_event_map[hartid][fw_evt_code];
 	if (ival_update)
 		fevent->curr_count = ival;
+
+	switch(fw_evt_code) {
+	case SBI_PMU_FW_SHADOW_CPU_CYCLES:
+		fevent->data = csr_read_num(CSR_MCYCLE);
+		break;
+	case SBI_PMU_FW_SHADOW_INSTRUCTIONS:
+		fevent->data = csr_read_num(CSR_MINSTRET);
+		break;
+	default:
+		break;
+	}
+
 	fevent->bStarted = TRUE;
 
 	return 0;
