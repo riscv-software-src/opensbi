@@ -309,6 +309,12 @@ static int pmu_ctr_start_fw(uint32_t cidx, uint32_t fw_evt_code,
 	case SBI_PMU_FW_SHADOW_INSTRUCTIONS:
 		fevent->data = csr_read_num(CSR_MINSTRET);
 		break;
+	case SBI_PMU_FW_MACHINE_CYCLES:
+		fevent->data = csr_read_num(CSR_MCYCLE);
+		break;
+	case SBI_PMU_FW_MACHINE_INSTRUCTIONS:
+		fevent->data = csr_read_num(CSR_MINSTRET);
+		break;
 	default:
 		break;
 	}
@@ -375,8 +381,22 @@ static int pmu_ctr_stop_hw(uint32_t cidx)
 static int pmu_ctr_stop_fw(uint32_t cidx, uint32_t fw_evt_code)
 {
 	u32 hartid = current_hartid();
+	struct sbi_pmu_fw_event *fevent = &fw_event_map[hartid][fw_evt_code];
 
-	fw_event_map[hartid][fw_evt_code].bStarted = FALSE;
+	fevent->bStarted = FALSE;
+
+	switch(fw_evt_code) {
+	case SBI_PMU_FW_MACHINE_CYCLES:
+		fevent->curr_count += csr_read_num(CSR_MCYCLE) - fevent->data;
+		fevent->data = 0;
+		break;
+	case SBI_PMU_FW_MACHINE_INSTRUCTIONS:
+		fevent->curr_count += csr_read_num(CSR_MINSTRET) - fevent->data;
+		fevent->data = 0;
+		break;
+	default:
+		break;
+	}
 
 	return 0;
 }
@@ -584,6 +604,38 @@ inline int sbi_pmu_ctr_incr_fw(enum sbi_pmu_fw_event_code_id fw_id)
 		fevent->curr_count++;
 
 	return 0;
+}
+
+void sbi_pmu_ctr_mm_enter()
+{
+	u32 hartid = current_hartid();
+	struct sbi_pmu_fw_event *fevent;
+
+	fevent = &fw_event_map[hartid][SBI_PMU_FW_MACHINE_CYCLES];
+	if (unlikely(fevent->bStarted))
+		fevent->data = csr_read_num(CSR_MCYCLE);
+
+	fevent = &fw_event_map[hartid][SBI_PMU_FW_MACHINE_INSTRUCTIONS];
+	if (unlikely(fevent->bStarted))
+		fevent->data = csr_read_num(CSR_MINSTRET);
+}
+
+void sbi_pmu_ctr_mm_exit()
+{
+	u32 hartid = current_hartid();
+	struct sbi_pmu_fw_event *fevent;
+
+	fevent = &fw_event_map[hartid][SBI_PMU_FW_MACHINE_CYCLES];
+	if (unlikely(fevent->bStarted) && fevent->data != 0) {
+		fevent->curr_count += csr_read_num(CSR_MCYCLE) - fevent->data;
+		fevent->data = 0;
+	}
+
+	fevent = &fw_event_map[hartid][SBI_PMU_FW_MACHINE_INSTRUCTIONS];
+	if (unlikely(fevent->bStarted) && fevent->data != 0) {
+		fevent->curr_count += csr_read_num(CSR_MINSTRET) - fevent->data;
+		fevent->data = 0;
+	}
 }
 
 unsigned long sbi_pmu_num_ctr(void)

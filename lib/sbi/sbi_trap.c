@@ -213,6 +213,7 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
  */
 struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs)
 {
+	sbi_pmu_ctr_mm_enter();
 	int rc = SBI_ENOTSUPP;
 	const char *msg = "trap handler failed";
 	ulong mcause = csr_read(CSR_MCAUSE);
@@ -277,6 +278,7 @@ struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs)
 trap_error:
 	if (rc)
 		sbi_trap_error(msg, rc, mcause, mtval, mtval2, mtinst, regs);
+	sbi_pmu_ctr_mm_exit();
 	return regs;
 }
 

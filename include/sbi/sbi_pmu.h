@@ -70,4 +70,7 @@ int sbi_pmu_ctr_cfg_match(unsigned long cidx_base, unsigned long cidx_mask,
 
 int sbi_pmu_ctr_incr_fw(enum sbi_pmu_fw_event_code_id fw_id);
 
+void sbi_pmu_ctr_mm_enter();
+void sbi_pmu_ctr_mm_exit();
+
 #endif
