@@ -14,6 +14,7 @@
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_system.h>
+#include <sbi/sbi_timer.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/gpio/fdt_gpio.h>
 #include <sbi_utils/reset/fdt_reset.h>
@@ -33,14 +34,6 @@ static struct gpio_reset restart = {
 	.active_delay = 100,
 	.inactive_delay = 100
 };
-
-/* Custom mdelay function until we have a generic mdelay() API */
-static void gpio_mdelay(unsigned long msecs)
-{
-	volatile int i;
-	while (msecs--)
-		for (i = 0; i < 100000; i++) ;
-}
 
 static int gpio_system_reset_check(u32 type, u32 reason)
 {
@@ -76,11 +69,11 @@ static void gpio_system_reset(u32 type, u32 reason)
 
 		/* drive it active, also inactive->active edge */
 		gpio_direction_output(&reset->pin, 1);
-		gpio_mdelay(reset->active_delay);
+		sbi_timer_mdelay(reset->active_delay);
 
 		/* drive inactive, also active->inactive edge */
 		gpio_set(&reset->pin, 0);
-		gpio_mdelay(reset->inactive_delay);
+		sbi_timer_mdelay(reset->inactive_delay);
 
 		/* drive it active, also inactive->active edge */
 		gpio_set(&reset->pin, 1);
