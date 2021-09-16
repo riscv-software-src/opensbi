@@ -11,6 +11,7 @@
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_platform.h>
+#include <sbi/sbi_console.h>
 
 /* determine CPU extension, return non-zero support */
 int misa_extension_imp(char ext)
@@ -75,6 +76,7 @@ void misa_string(int xlen, char *out, unsigned int out_sz)
 			out[pos++] = '8';
 			break;
 		default:
+			BUG();
 			return;
 		}
 	}
@@ -134,6 +136,7 @@ unsigned long csr_read_num(int csr_num)
 #endif
 
 	default:
+		BUG();
 		break;
 	};
 
@@ -197,6 +200,7 @@ void csr_write_num(int csr_num, unsigned long val)
 	switchcase_csr_write_16(CSR_MHPMEVENT16, val)
 
 	default:
+		BUG();
 		break;
 	};
 
