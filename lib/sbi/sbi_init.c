@@ -48,6 +48,14 @@ static void sbi_boot_print_banner(struct sbi_scratch *scratch)
 		   OPENSBI_VERSION_MINOR);
 #endif
 
+#ifdef OPENSBI_BUILD_TIME_STAMP
+	sbi_printf("Build time: %s\n", OPENSBI_BUILD_TIME_STAMP);
+#endif
+
+#ifdef OPENSBI_BUILD_COMPILER_VERSION
+	sbi_printf("Build compiler: %s\n", OPENSBI_BUILD_COMPILER_VERSION);
+#endif
+
 	sbi_printf(BANNER);
 }
 
