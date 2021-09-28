@@ -35,21 +35,9 @@ static struct gpio_reset restart = {
 	.inactive_delay = 100
 };
 
-static int gpio_system_reset_check(u32 type, u32 reason)
+static struct gpio_reset *gpio_get_reset_settings(u32 type)
 {
-	switch (type) {
-	case SBI_SRST_RESET_TYPE_SHUTDOWN:
-	case SBI_SRST_RESET_TYPE_COLD_REBOOT:
-	case SBI_SRST_RESET_TYPE_WARM_REBOOT:
-		return 1;
-	}
-
-	return 0;
-}
-
-static void gpio_system_reset(u32 type, u32 reason)
-{
-	struct gpio_reset *reset = NULL;
+	struct gpio_reset *reset;
 
 	switch (type) {
 	case SBI_SRST_RESET_TYPE_SHUTDOWN:
@@ -59,14 +47,26 @@ static void gpio_system_reset(u32 type, u32 reason)
 	case SBI_SRST_RESET_TYPE_WARM_REBOOT:
 		reset = &restart;
 		break;
+	default:
+		reset = NULL;
 	}
 
-	if (reset) {
-		if (!reset->pin.chip) {
-			sbi_printf("%s: gpio pin not available\n", __func__);
-			goto skip_reset;
-		}
+	if (reset && !reset->pin.chip)
+		reset = NULL;
 
+	return reset;
+}
+
+static int gpio_system_reset_check(u32 type, u32 reason)
+{
+	return !!gpio_get_reset_settings(type);
+}
+
+static void gpio_system_reset(u32 type, u32 reason)
+{
+	struct gpio_reset *reset = gpio_get_reset_settings(type);
+
+	if (reset) {
 		/* drive it active, also inactive->active edge */
 		gpio_direction_output(&reset->pin, 1);
 		sbi_timer_mdelay(reset->active_delay);
@@ -77,11 +77,9 @@ static void gpio_system_reset(u32 type, u32 reason)
 
 		/* drive it active, also inactive->active edge */
 		gpio_set(&reset->pin, 1);
-
-skip_reset:
-		/* hang !!! */
-		sbi_hart_hang();
 	}
+	/* hang !!! */
+	sbi_hart_hang();
 }
 
 static struct sbi_system_reset_device gpio_reset = {
