@@ -150,6 +150,25 @@ endif
 # Check whether the linker supports creating PIEs
 OPENSBI_LD_PIE := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) $(USE_LD_FLAG) -fPIE -nostdlib -Wl,-pie -x c /dev/null -o /dev/null >/dev/null 2>&1 && echo y || echo n)
 
+# Build Info:
+# OPENSBI_BUILD_TIME_STAMP -- the compilation time stamp
+# OPENSBI_BUILD_COMPILER_VERSION -- the compiler version info
+BUILD_INFO ?= n
+ifeq ($(BUILD_INFO),y)
+OPENSBI_BUILD_DATE_FMT = +%Y-%m-%d %H:%M:%S %z
+ifdef SOURCE_DATE_EPOCH
+	OPENSBI_BUILD_TIME_STAMP ?= $(shell date -u -d "@$(SOURCE_DATE_EPOCH)" \
+		"$(OPENSBI_BUILD_DATE_FMT)" 2>/dev/null || \
+		date -u -r "$(SOURCE_DATE_EPOCH)" \
+		"$(OPENSBI_BUILD_DATE_FMT)" 2>/dev/null || \
+		date -u "$(OPENSBI_BUILD_DATE_FMT)")
+else
+	OPENSBI_BUILD_TIME_STAMP ?= $(shell date "$(OPENSBI_BUILD_DATE_FMT)")
+endif
+OPENSBI_BUILD_COMPILER_VERSION=$(shell $(CC) -v 2>&1 | grep ' version ' | \
+	sed 's/[[:space:]]*$$//')
+endif
+
 # Setup list of objects.mk files
 ifdef PLATFORM
 platform-object-mks=$(shell if [ -d $(platform_src_dir)/ ]; then find $(platform_src_dir) -iname "objects.mk" | sort -r; fi)
@@ -246,6 +265,10 @@ GENFLAGS	+=	-I$(platform_src_dir)/include
 GENFLAGS	+=	-I$(include_dir)
 ifneq ($(OPENSBI_VERSION_GIT),)
 GENFLAGS	+=	-DOPENSBI_VERSION_GIT="\"$(OPENSBI_VERSION_GIT)\""
+endif
+ifeq ($(BUILD_INFO),y)
+GENFLAGS	+=	-DOPENSBI_BUILD_TIME_STAMP="\"$(OPENSBI_BUILD_TIME_STAMP)\""
+GENFLAGS	+=	-DOPENSBI_BUILD_COMPILER_VERSION="\"$(OPENSBI_BUILD_COMPILER_VERSION)\""
 endif
 GENFLAGS	+=	$(libsbiutils-genflags-y)
 GENFLAGS	+=	$(platform-genflags-y)
@@ -397,6 +420,11 @@ $(build_dir)/%.dep: $(src_dir)/%.c
 
 $(build_dir)/%.o: $(src_dir)/%.c
 	$(call compile_cc,$@,$<)
+
+ifeq ($(BUILD_INFO),y)
+$(build_dir)/lib/sbi/sbi_init.o: $(libsbi_dir)/sbi_init.c FORCE
+	$(call compile_cc,$@,$<)
+endif
 
 $(build_dir)/%.dep: $(src_dir)/%.S
 	$(call compile_as_dep,$@,$<)
@@ -551,3 +579,6 @@ ifeq ($(install_root_dir),$(install_root_dir_default)/usr)
 	$(if $(V), @echo " RM        $(install_root_dir_default)")
 	$(CMD_PREFIX)rm -rf $(install_root_dir_default)
 endif
+
+.PHONY: FORCE
+FORCE:

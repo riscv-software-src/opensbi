@@ -254,6 +254,29 @@ to produce broken binaries with missing relocations; it is therefore currently
 recommended that this combination be avoided or *FW_PIC=n* be used to disable
 building OpenSBI as a position-independent binary.
 
+Building with timestamp and compiler info
+-----------------------------------------
+
+When doing development, we may want to know the build time and compiler info
+for debug purpose. OpenSBI can also be built with timestamp and compiler info.
+To build with those info and print it out at boot time, we can just simply add
+`BUILD_INFO=y`, like:
+```
+make BUILD_INFO=y
+```
+
+But if you have used `BUILD_INFO=y`, and want to switch back to `BUILD_INFO=n`,
+you must do
+```
+make clean
+```
+before the next build.
+
+NOTE: Using `BUILD_INFO=y` without specifying SOURCE_DATE_EPOCH will violate
+[reproducible builds]. This definition is ONLY for development and debug
+purpose, and should NOT be used in a product which follows "reproducible
+builds".
+
 Contributing to OpenSBI
 -----------------------
 
@@ -336,3 +359,4 @@ make I=<install_directory> install_docs
 [Doxygen manual]: http://www.doxygen.nl/manual/index.html
 [Kendryte standalone SDK]: https://github.com/kendryte/kendryte-standalone-sdk
 [third party notices]: ThirdPartyNotices.md
+[reproducible builds]: https://reproducible-builds.org
