@@ -23,18 +23,30 @@ static SBI_LIST_HEAD(reset_devices_list);
 const struct sbi_system_reset_device *sbi_system_reset_get_device(
 					u32 reset_type, u32 reset_reason)
 {
-	struct sbi_system_reset_device *dev = 0;
+	struct sbi_system_reset_device *reset_dev = NULL;
 	struct sbi_dlist *pos;
+	/** lowest priority - any non zero is our candidate */
+	int priority = 0;
 
 	/* Check each reset device registered for supported reset type */
 	sbi_list_for_each(pos, &(reset_devices_list)) {
-		dev = to_system_reset_device(pos);
-		if (dev->system_reset_check &&
-			dev->system_reset_check(reset_type, reset_reason))
-			break;
+		struct sbi_system_reset_device *dev =
+			to_system_reset_device(pos);
+		if (dev->system_reset_check) {
+			int status = dev->system_reset_check(reset_type,
+							     reset_reason);
+			/** reset_type not supported */
+			if (status == 0)
+				continue;
+
+			if (status > priority) {
+				reset_dev = dev;
+				priority = status;
+			}
+		}
 	}
 
-	return dev;
+	return reset_dev;
 }
 
 void sbi_system_reset_add_device(struct sbi_system_reset_device *dev)
