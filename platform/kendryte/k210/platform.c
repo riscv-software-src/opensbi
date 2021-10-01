@@ -108,7 +108,7 @@ static struct sbi_system_reset_device k210_reset = {
 static int k210_early_init(bool cold_boot)
 {
 	if (cold_boot)
-		sbi_system_reset_set_device(&k210_reset);
+		sbi_system_reset_add_device(&k210_reset);
 
 	return 0;
 }

@@ -18,28 +18,36 @@
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_init.h>
 
-static const struct sbi_system_reset_device *reset_dev = NULL;
+static SBI_LIST_HEAD(reset_devices_list);
 
-const struct sbi_system_reset_device *sbi_system_reset_get_device(void)
+const struct sbi_system_reset_device *sbi_system_reset_get_device(
+					u32 reset_type, u32 reset_reason)
 {
-	return reset_dev;
+	struct sbi_system_reset_device *dev = 0;
+	struct sbi_dlist *pos;
+
+	/* Check each reset device registered for supported reset type */
+	sbi_list_for_each(pos, &(reset_devices_list)) {
+		dev = to_system_reset_device(pos);
+		if (dev->system_reset_check &&
+			dev->system_reset_check(reset_type, reset_reason))
+			break;
+	}
+
+	return dev;
 }
 
-void sbi_system_reset_set_device(const struct sbi_system_reset_device *dev)
+void sbi_system_reset_add_device(struct sbi_system_reset_device *dev)
 {
-	if (!dev || reset_dev)
+	if (!dev || !dev->system_reset_check)
 		return;
 
-	reset_dev = dev;
+	sbi_list_add(&(dev->node), &(reset_devices_list));
 }
 
 bool sbi_system_reset_supported(u32 reset_type, u32 reset_reason)
 {
-	if (reset_dev && reset_dev->system_reset_check &&
-	    reset_dev->system_reset_check(reset_type, reset_reason))
-		return TRUE;
-
-	return FALSE;
+	return !!sbi_system_reset_get_device(reset_type, reset_reason);
 }
 
 void __noreturn sbi_system_reset(u32 reset_type, u32 reset_reason)
@@ -62,9 +70,12 @@ void __noreturn sbi_system_reset(u32 reset_type, u32 reset_reason)
 	sbi_hsm_hart_stop(scratch, FALSE);
 
 	/* Platform specific reset if domain allowed system reset */
-	if (dom->system_reset_allowed &&
-	    reset_dev && reset_dev->system_reset)
-		reset_dev->system_reset(reset_type, reset_reason);
+	if (dom->system_reset_allowed) {
+		const struct sbi_system_reset_device *dev =
+			sbi_system_reset_get_device(reset_type, reset_reason);
+		if (dev)
+			dev->system_reset(reset_type, reset_reason);
+	}
 
 	/* If platform specific reset did not work then do sbi_exit() */
 	sbi_exit(scratch);

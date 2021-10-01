@@ -126,7 +126,7 @@ static int thead_reset_init(void *fdt, int nodeoff,
 		}
 	}
 
-	sbi_system_reset_set_device(&thead_reset);
+	sbi_system_reset_add_device(&thead_reset);
 
 	return 0;
 }

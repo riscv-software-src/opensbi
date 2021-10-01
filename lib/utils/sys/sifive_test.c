@@ -59,7 +59,7 @@ static struct sbi_system_reset_device sifive_test_reset = {
 int sifive_test_init(unsigned long base)
 {
 	sifive_test_base = (void *)base;
-	sbi_system_reset_set_device(&sifive_test_reset);
+	sbi_system_reset_add_device(&sifive_test_reset);
 
 	return 0;
 }

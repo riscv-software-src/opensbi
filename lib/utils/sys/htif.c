@@ -176,7 +176,7 @@ static struct sbi_system_reset_device htif_reset = {
 
 int htif_system_reset_init(void)
 {
-	sbi_system_reset_set_device(&htif_reset);
+	sbi_system_reset_add_device(&htif_reset);
 
 	return 0;
 }

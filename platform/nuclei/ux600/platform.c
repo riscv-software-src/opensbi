@@ -148,7 +148,7 @@ static int ux600_early_init(bool cold_boot)
 	u32 regval;
 
 	if (cold_boot)
-		sbi_system_reset_set_device(&ux600_reset);
+		sbi_system_reset_add_device(&ux600_reset);
 
 	/* Measure CPU Frequency using Timer */
 	ux600_clk_freq = ux600_get_clk_freq();

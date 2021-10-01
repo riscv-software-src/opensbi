@@ -115,7 +115,7 @@ static int gpio_reset_init(void *fdt, int nodeoff,
 	if (len > 0)
 		reset->inactive_delay = fdt32_to_cpu(*val);
 
-	sbi_system_reset_set_device(&gpio_reset);
+	sbi_system_reset_add_device(&gpio_reset);
 
 	return 0;
 }

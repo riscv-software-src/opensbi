@@ -84,8 +84,11 @@ static void sbi_boot_print_general(struct sbi_scratch *scratch)
 	hdev = sbi_hsm_get_device();
 	sbi_printf("Platform HSM Device       : %s\n",
 		   (hdev) ? hdev->name : "---");
-	srdev = sbi_system_reset_get_device();
-	sbi_printf("Platform SysReset Device  : %s\n",
+	srdev = sbi_system_reset_get_device(SBI_SRST_RESET_TYPE_COLD_REBOOT, 0);
+	sbi_printf("Platform Reboot Device    : %s\n",
+		   (srdev) ? srdev->name : "---");
+	srdev = sbi_system_reset_get_device(SBI_SRST_RESET_TYPE_SHUTDOWN, 0);
+	sbi_printf("Platform Shutdown Device  : %s\n",
 		   (srdev) ? srdev->name : "---");
 
 	/* Firmware details */

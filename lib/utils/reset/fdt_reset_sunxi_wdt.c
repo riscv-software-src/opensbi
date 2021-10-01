@@ -61,7 +61,7 @@ static int sunxi_wdt_reset_init(void *fdt, int nodeoff,
 
 	sunxi_wdt_base = (volatile void *)(unsigned long)reg_addr;
 
-	sbi_system_reset_set_device(&sunxi_wdt_reset);
+	sbi_system_reset_add_device(&sunxi_wdt_reset);
 
 	return 0;
 }
