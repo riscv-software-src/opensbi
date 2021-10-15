@@ -151,7 +151,7 @@ static int sbi_ecall_srst_handler(unsigned long extid, unsigned long funcid,
 		case SBI_SRST_RESET_TYPE_WARM_REBOOT:
 			break;
 		default:
-			return SBI_ENOTSUPP;
+			return SBI_EINVAL;
 		}
 
 		switch (regs->a1) {
@@ -159,7 +159,7 @@ static int sbi_ecall_srst_handler(unsigned long extid, unsigned long funcid,
 		case SBI_SRST_RESET_REASON_SYSFAIL:
 			break;
 		default:
-			return SBI_ENOTSUPP;
+			return SBI_EINVAL;
 		}
 
 		if (sbi_system_reset_supported(regs->a0, regs->a1))
