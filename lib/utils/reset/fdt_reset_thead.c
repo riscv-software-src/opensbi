@@ -82,14 +82,6 @@ static int thead_reset_init(void *fdt, int nodeoff,
 			clone_csrs(cnt);
 	}
 
-
-	/* Delegate plic enable regs for S-mode */
-	val = fdt_getprop(fdt, nodeoff, "plic-delegate", &len);
-	if (len > 0 && val) {
-		p = (void *)(ulong)fdt64_to_cpu(*val);
-		writel(BIT(0), p);
-	}
-
 	/* Old reset method for secondary harts */
 	if (fdt_getprop(fdt, nodeoff, "using-csr-reset", &len)) {
 		csr_write(0x7c7, (ulong)&__thead_pre_start_warm);

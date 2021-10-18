@@ -9,6 +9,7 @@
 
 #include <libfdt.h>
 #include <sbi/riscv_asm.h>
+#include <sbi/riscv_io.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hartmask.h>
 #include <sbi_utils/fdt/fdt_helper.h>
@@ -91,6 +92,11 @@ static int irqchip_plic_cold_init(void *fdt, int nodeoff,
 	if (rc)
 		return rc;
 
+	if (match->data) {
+		void (*plic_plat_init)(struct plic_data *) = match->data;
+		plic_plat_init(pd);
+	}
+
 	rc = plic_cold_irqchip_init(pd);
 	if (rc)
 		return rc;
@@ -106,9 +112,18 @@ static int irqchip_plic_cold_init(void *fdt, int nodeoff,
 	return irqchip_plic_update_hartid_table(fdt, nodeoff, pd);
 }
 
+#define THEAD_PLIC_CTRL_REG 0x1ffffc
+
+static void thead_plic_plat_init(struct plic_data *pd)
+{
+	writel_relaxed(BIT(0), (void *)pd->addr + THEAD_PLIC_CTRL_REG);
+}
+
 static const struct fdt_match irqchip_plic_match[] = {
 	{ .compatible = "riscv,plic0" },
 	{ .compatible = "sifive,plic-1.0.0" },
+	{ .compatible = "thead,c900-plic",
+	  .data = thead_plic_plat_init },
 	{ },
 };
 
