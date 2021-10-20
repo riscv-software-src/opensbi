@@ -15,6 +15,11 @@
 
 #define MTIMER_MAX_NR			16
 
+struct timer_mtimer_quirks {
+	unsigned int	mtime_offset;
+	bool		has_64bit_mmio;
+};
+
 static unsigned long mtimer_count = 0;
 static struct aclint_mtimer_data mtimer[MTIMER_MAX_NR];
 static struct aclint_mtimer_data *mt_reference = NULL;
@@ -23,7 +28,7 @@ static int timer_mtimer_cold_init(void *fdt, int nodeoff,
 				  const struct fdt_match *match)
 {
 	int i, rc;
-	unsigned long offset, addr[2], size[2];
+	unsigned long addr[2], size[2];
 	struct aclint_mtimer_data *mt;
 
 	if (MTIMER_MAX_NR <= mtimer_count)
@@ -43,28 +48,25 @@ static int timer_mtimer_cold_init(void *fdt, int nodeoff,
 		return rc;
 
 	if (match->data) { /* SiFive CLINT */
+		const struct timer_mtimer_quirks *quirks = match->data;
+
 		/* Set CLINT addresses */
 		mt->mtimecmp_addr = addr[0] + ACLINT_DEFAULT_MTIMECMP_OFFSET;
 		mt->mtimecmp_size = ACLINT_DEFAULT_MTIMECMP_SIZE;
 		mt->mtime_addr = addr[0] + ACLINT_DEFAULT_MTIME_OFFSET;
 		mt->mtime_size = size[0] - mt->mtimecmp_size;
 		/* Adjust MTIMER address and size for CLINT device */
-		offset = *((unsigned long *)match->data);
-		mt->mtime_addr += offset;
-		mt->mtimecmp_addr += offset;
-		mt->mtime_size -= offset;
-		/* Parse additional CLINT properties */
-		if (fdt_getprop(fdt, nodeoff, "clint,has-no-64bit-mmio", &rc))
-			mt->has_64bit_mmio = false;
+		mt->mtime_addr += quirks->mtime_offset;
+		mt->mtimecmp_addr += quirks->mtime_offset;
+		mt->mtime_size -= quirks->mtime_offset;
+		/* Apply additional CLINT quirks */
+		mt->has_64bit_mmio = quirks->has_64bit_mmio;
 	} else { /* RISC-V ACLINT MTIMER */
 		/* Set ACLINT MTIMER addresses */
 		mt->mtime_addr = addr[0];
 		mt->mtime_size = size[0];
 		mt->mtimecmp_addr = addr[1];
 		mt->mtimecmp_size = size[1];
-		/* Parse additional ACLINT MTIMER properties */
-		if (fdt_getprop(fdt, nodeoff, "mtimer,no-64bit-mmio", &rc))
-			mt->has_64bit_mmio = false;
 	}
 
 	/* Check if MTIMER device has shared MTIME address */
@@ -107,11 +109,20 @@ static int timer_mtimer_cold_init(void *fdt, int nodeoff,
 	return 0;
 }
 
-static const unsigned long clint_offset = CLINT_MTIMER_OFFSET;
+static const struct timer_mtimer_quirks d1_clint_quirks = {
+	.mtime_offset	= CLINT_MTIMER_OFFSET,
+	.has_64bit_mmio	= false,
+};
+
+static const struct timer_mtimer_quirks sifive_clint_quirks = {
+	.mtime_offset	= CLINT_MTIMER_OFFSET,
+	.has_64bit_mmio	= true,
+};
 
 static const struct fdt_match timer_mtimer_match[] = {
-	{ .compatible = "riscv,clint0", .data = &clint_offset },
-	{ .compatible = "sifive,clint0", .data = &clint_offset },
+	{ .compatible = "allwinner,sun20i-d1-clint", .data = &d1_clint_quirks },
+	{ .compatible = "riscv,clint0", .data = &sifive_clint_quirks },
+	{ .compatible = "sifive,clint0", .data = &sifive_clint_quirks },
 	{ .compatible = "riscv,aclint-mtimer" },
 	{ },
 };
