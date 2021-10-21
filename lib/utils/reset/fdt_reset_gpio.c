@@ -35,20 +35,20 @@ static struct gpio_reset restart = {
 	.inactive_delay = 100
 };
 
-static struct gpio_reset *gpio_get_reset_settings(u32 type)
+static struct gpio_reset *gpio_reset_get(bool is_restart, u32 type)
 {
-	struct gpio_reset *reset;
+	struct gpio_reset *reset = NULL;
 
 	switch (type) {
 	case SBI_SRST_RESET_TYPE_SHUTDOWN:
-		reset = &poweroff;
+		if (!is_restart)
+			reset = &poweroff;
 		break;
 	case SBI_SRST_RESET_TYPE_COLD_REBOOT:
 	case SBI_SRST_RESET_TYPE_WARM_REBOOT:
-		reset = &restart;
+		if (is_restart)
+			reset = &restart;
 		break;
-	default:
-		reset = NULL;
 	}
 
 	if (reset && !reset->pin.chip)
@@ -57,15 +57,8 @@ static struct gpio_reset *gpio_get_reset_settings(u32 type)
 	return reset;
 }
 
-static int gpio_system_reset_check(u32 type, u32 reason)
+static void gpio_reset_exec(struct gpio_reset *reset)
 {
-	return !!gpio_get_reset_settings(type);
-}
-
-static void gpio_system_reset(u32 type, u32 reason)
-{
-	struct gpio_reset *reset = gpio_get_reset_settings(type);
-
 	if (reset) {
 		/* drive it active, also inactive->active edge */
 		gpio_direction_output(&reset->pin, 1);
@@ -82,10 +75,36 @@ static void gpio_system_reset(u32 type, u32 reason)
 	sbi_hart_hang();
 }
 
-static struct sbi_system_reset_device gpio_reset = {
-	.name = "gpio-reset",
-	.system_reset_check = gpio_system_reset_check,
-	.system_reset = gpio_system_reset
+static int gpio_system_poweroff_check(u32 type, u32 reason)
+{
+	return !!gpio_reset_get(FALSE, type);
+}
+
+static void gpio_system_poweroff(u32 type, u32 reason)
+{
+	gpio_reset_exec(gpio_reset_get(FALSE, type));
+}
+
+static struct sbi_system_reset_device gpio_poweroff = {
+	.name = "gpio-poweroff",
+	.system_reset_check = gpio_system_poweroff_check,
+	.system_reset = gpio_system_poweroff
+};
+
+static int gpio_system_restart_check(u32 type, u32 reason)
+{
+	return !!gpio_reset_get(TRUE, type);
+}
+
+static void gpio_system_restart(u32 type, u32 reason)
+{
+	gpio_reset_exec(gpio_reset_get(TRUE, type));
+}
+
+static struct sbi_system_reset_device gpio_restart = {
+	.name = "gpio-restart",
+	.system_reset_check = gpio_system_restart_check,
+	.system_reset = gpio_system_restart
 };
 
 static int gpio_reset_init(void *fdt, int nodeoff,
@@ -115,7 +134,10 @@ static int gpio_reset_init(void *fdt, int nodeoff,
 	if (len > 0)
 		reset->inactive_delay = fdt32_to_cpu(*val);
 
-	sbi_system_reset_add_device(&gpio_reset);
+	if (is_restart)
+		sbi_system_reset_add_device(&gpio_restart);
+	else
+		sbi_system_reset_add_device(&gpio_poweroff);
 
 	return 0;
 }
