@@ -150,17 +150,10 @@ void sbi_hart_delegation_dump(struct sbi_scratch *scratch,
 		/* No delegation possible as mideleg does not exist*/
 		return;
 
-#if __riscv_xlen == 32
-	sbi_printf("%sMIDELEG%s: 0x%08lx\n",
+	sbi_printf("%sMIDELEG%s: 0x%" PRILX "\n",
 		   prefix, suffix, csr_read(CSR_MIDELEG));
-	sbi_printf("%sMEDELEG%s: 0x%08lx\n",
+	sbi_printf("%sMEDELEG%s: 0x%" PRILX "\n",
 		   prefix, suffix, csr_read(CSR_MEDELEG));
-#else
-	sbi_printf("%sMIDELEG%s: 0x%016lx\n",
-		   prefix, suffix, csr_read(CSR_MIDELEG));
-	sbi_printf("%sMEDELEG%s: 0x%016lx\n",
-		   prefix, suffix, csr_read(CSR_MEDELEG));
-#endif
 }
 
 unsigned int sbi_hart_mhpm_count(struct sbi_scratch *scratch)

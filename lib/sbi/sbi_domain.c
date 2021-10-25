@@ -328,11 +328,7 @@ void sbi_domain_dump(const struct sbi_domain *dom, const char *suffix)
 		rend = (reg->order < __riscv_xlen) ?
 			rstart + ((1UL << reg->order) - 1) : -1UL;
 
-#if __riscv_xlen == 32
-		sbi_printf("Domain%d Region%02d    %s: 0x%08lx-0x%08lx ",
-#else
-		sbi_printf("Domain%d Region%02d    %s: 0x%016lx-0x%016lx ",
-#endif
+		sbi_printf("Domain%d Region%02d    %s: 0x%" PRILX "-0x%" PRILX " ",
 			   dom->index, i, suffix, rstart, rend);
 
 		k = 0;
@@ -351,18 +347,10 @@ void sbi_domain_dump(const struct sbi_domain *dom, const char *suffix)
 		i++;
 	}
 
-#if __riscv_xlen == 32
-	sbi_printf("Domain%d Next Address%s: 0x%08lx\n",
-#else
-	sbi_printf("Domain%d Next Address%s: 0x%016lx\n",
-#endif
+	sbi_printf("Domain%d Next Address%s: 0x%" PRILX "\n",
 		   dom->index, suffix, dom->next_addr);
 
-#if __riscv_xlen == 32
-	sbi_printf("Domain%d Next Arg1   %s: 0x%08lx\n",
-#else
-	sbi_printf("Domain%d Next Arg1   %s: 0x%016lx\n",
-#endif
+	sbi_printf("Domain%d Next Arg1   %s: 0x%" PRILX "\n",
 		   dom->index, suffix, dom->next_arg1);
 
 	sbi_printf("Domain%d Next Mode   %s: ", dom->index, suffix);
