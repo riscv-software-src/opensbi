@@ -12,13 +12,14 @@
 #define __SBI_FENCE_H__
 
 /** Invalidate Stage2 TLBs for given VMID and guest physical address */
-void __sbi_hfence_gvma_vmid_gpa(unsigned long gpa, unsigned long vmid);
+void __sbi_hfence_gvma_vmid_gpa(unsigned long gpa_divby_4,
+				unsigned long vmid);
 
 /** Invalidate Stage2 TLBs for given VMID */
 void __sbi_hfence_gvma_vmid(unsigned long vmid);
 
 /** Invalidate Stage2 TLBs for given guest physical address */
-void __sbi_hfence_gvma_gpa(unsigned long gpa);
+void __sbi_hfence_gvma_gpa(unsigned long gpa_divby_4);
 
 /** Invalidate all possible Stage2 TLBs */
 void __sbi_hfence_gvma_all(void);

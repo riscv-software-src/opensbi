@@ -27,7 +27,7 @@
 	.global __sbi_hfence_gvma_vmid_gpa
 __sbi_hfence_gvma_vmid_gpa:
 	/*
-	 * rs1 = a0 (GPA)
+	 * rs1 = a0 (GPA >> 2)
 	 * rs2 = a1 (VMID)
 	 * HFENCE.GVMA a0, a1
 	 * 0110001 01011 01010 000 00000 1110011
@@ -51,7 +51,7 @@ __sbi_hfence_gvma_vmid:
 	.global __sbi_hfence_gvma_gpa
 __sbi_hfence_gvma_gpa:
 	/*
-	 * rs1 = a0 (GPA)
+	 * rs1 = a0 (GPA >> 2)
 	 * rs2 = zero
 	 * HFENCE.GVMA a0
 	 * 0110001 00000 01010 000 00000 1110011

@@ -72,7 +72,7 @@ void sbi_tlb_local_hfence_gvma(struct sbi_tlb_info *tinfo)
 	}
 
 	for (i = 0; i < size; i += PAGE_SIZE) {
-		__sbi_hfence_gvma_gpa(start+i);
+		__sbi_hfence_gvma_gpa((start + i) >> 2);
 	}
 }
 
@@ -148,7 +148,7 @@ void sbi_tlb_local_hfence_gvma_vmid(struct sbi_tlb_info *tinfo)
 	}
 
 	for (i = 0; i < size; i += PAGE_SIZE) {
-		__sbi_hfence_gvma_vmid_gpa(start + i, vmid);
+		__sbi_hfence_gvma_vmid_gpa((start + i) >> 2, vmid);
 	}
 }
 
