@@ -40,7 +40,7 @@ int fdt_serial_init(void)
 	struct fdt_serial *drv;
 	const struct fdt_match *match;
 	int pos, noff = -1, len, coff, rc;
-	void *fdt = sbi_scratch_thishart_arg1_ptr();
+	void *fdt = fdt_get_address();
 
 	/* Find offset of node pointed to by stdout-path */
 	coff = fdt_path_offset(fdt, "/chosen");

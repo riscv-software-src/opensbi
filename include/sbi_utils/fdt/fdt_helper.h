@@ -11,6 +11,7 @@
 #define __FDT_HELPER_H__
 
 #include <sbi/sbi_types.h>
+#include <sbi/sbi_scratch.h>
 
 struct fdt_match {
 	const char *compatible;
@@ -80,5 +81,10 @@ int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
 
 int fdt_parse_compat_addr(void *fdt, uint64_t *addr,
 			  const char *compatible);
+
+static inline void *fdt_get_address(void)
+{
+	return sbi_scratch_thishart_arg1_ptr();
+}
 
 #endif /* __FDT_HELPER_H__ */

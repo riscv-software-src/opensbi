@@ -76,7 +76,7 @@ static int openpiton_early_init(bool cold_boot)
 
 	if (!cold_boot)
 		return 0;
-	fdt = sbi_scratch_thishart_arg1_ptr();
+	fdt = fdt_get_address();
 
 	rc = fdt_parse_uart8250(fdt, &uart_data, "ns16550");
 	if (!rc)
@@ -112,7 +112,7 @@ static int openpiton_final_init(bool cold_boot)
 	if (!cold_boot)
 		return 0;
 
-	fdt = sbi_scratch_thishart_arg1_ptr();
+	fdt = fdt_get_address();
 	fdt_fixups(fdt);
 
 	return 0;

@@ -38,7 +38,7 @@ static int fdt_irqchip_cold_init(void)
 	int pos, noff, rc;
 	struct fdt_irqchip *drv;
 	const struct fdt_match *match;
-	void *fdt = sbi_scratch_thishart_arg1_ptr();
+	void *fdt = fdt_get_address();
 
 	for (pos = 0; pos < array_size(irqchip_drivers); pos++) {
 		drv = irqchip_drivers[pos];

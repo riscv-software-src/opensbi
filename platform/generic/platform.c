@@ -148,7 +148,7 @@ static int generic_final_init(bool cold_boot)
 	if (!cold_boot)
 		return 0;
 
-	fdt = sbi_scratch_thishart_arg1_ptr();
+	fdt = fdt_get_address();
 
 	fdt_cpu_fixup(fdt);
 	fdt_fixups(fdt);
@@ -177,7 +177,7 @@ static void generic_final_exit(void)
 
 static int generic_domains_init(void)
 {
-	return fdt_domains_populate(sbi_scratch_thishart_arg1_ptr());
+	return fdt_domains_populate(fdt_get_address());
 }
 
 static u64 generic_tlbr_flush_limit(void)
@@ -189,7 +189,7 @@ static u64 generic_tlbr_flush_limit(void)
 
 static int generic_pmu_init(void)
 {
-	return fdt_pmu_setup(sbi_scratch_thishart_arg1_ptr());
+	return fdt_pmu_setup(fdt_get_address());
 }
 
 static uint64_t generic_pmu_xlate_to_mhpmevent(uint32_t event_idx,
