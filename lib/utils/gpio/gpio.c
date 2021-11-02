@@ -10,58 +10,40 @@
 #include <sbi/sbi_error.h>
 #include <sbi_utils/gpio/gpio.h>
 
-#define GPIO_CHIP_MAX		16
-
-static struct gpio_chip *gc_array[GPIO_CHIP_MAX];
+static SBI_LIST_HEAD(gpio_chip_list);
 
 struct gpio_chip *gpio_chip_find(unsigned int id)
 {
-	unsigned int i;
-	struct gpio_chip *ret = NULL;
+	struct sbi_dlist *pos;
 
-	for (i = 0; i < GPIO_CHIP_MAX; i++) {
-		if (gc_array[i] && gc_array[i]->id == id) {
-			ret = gc_array[i];
-			break;
-		}
+	sbi_list_for_each(pos, &(gpio_chip_list)) {
+		struct gpio_chip *chip = to_gpio_chip(pos);
+
+		if (chip->id == id)
+			return chip;
 	}
 
-	return ret;
+	return NULL;
 }
 
 int gpio_chip_add(struct gpio_chip *gc)
 {
-	int i, ret = SBI_ENOSPC;
-
 	if (!gc)
 		return SBI_EINVAL;
 	if (gpio_chip_find(gc->id))
 		return SBI_EALREADY;
 
-	for (i = 0; i < GPIO_CHIP_MAX; i++) {
-		if (!gc_array[i]) {
-			gc_array[i] = gc;
-			ret = 0;
-			break;
-		}
-	}
+	sbi_list_add(&(gc->node), &(gpio_chip_list));
 
-	return ret;
+	return 0;
 }
 
 void gpio_chip_remove(struct gpio_chip *gc)
 {
-	int i;
-
 	if (!gc)
 		return;
 
-	for (i = 0; i < GPIO_CHIP_MAX; i++) {
-		if (gc_array[i] == gc) {
-			gc_array[i] = NULL;
-			break;
-		}
-	}
+	sbi_list_del(&(gc->node));
 }
 
 int gpio_get_direction(struct gpio_pin *gp)

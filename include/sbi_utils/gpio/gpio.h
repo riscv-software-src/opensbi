@@ -11,6 +11,7 @@
 #define __GPIO_H__
 
 #include <sbi/sbi_types.h>
+#include <sbi/sbi_list.h>
 
 #define GPIO_LINE_DIRECTION_IN	1
 #define GPIO_LINE_DIRECTION_OUT	0
@@ -70,7 +71,14 @@ struct gpio_chip {
 	int (*get)(struct gpio_pin *gp);
 	/** Set output value for GPIO pin */
 	void (*set)(struct gpio_pin *gp, int value);
+	/** List */
+	struct sbi_dlist node;
 };
+
+static inline struct gpio_chip *to_gpio_chip(struct sbi_dlist *node)
+{
+	return container_of(node, struct gpio_chip, node);
+}
 
 /** Find a registered GPIO chip */
 struct gpio_chip *gpio_chip_find(unsigned int id);
