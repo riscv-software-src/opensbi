@@ -539,8 +539,10 @@ unsigned long sbi_pmu_num_ctr(void)
 
 int sbi_pmu_ctr_get_info(uint32_t cidx, unsigned long *ctr_info)
 {
-	union sbi_pmu_ctr_info cinfo = {0};
+	union sbi_pmu_ctr_info cinfo;
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+
+	sbi_memset(&cinfo, 0, sizeof(cinfo));
 
 	/* Sanity check. Counter1 is not mapped at all */
 	if (cidx >= total_ctrs || cidx == 1)

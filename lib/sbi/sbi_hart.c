@@ -337,7 +337,9 @@ done:
 static unsigned long hart_pmp_get_allowed_addr(void)
 {
 	unsigned long val = 0;
-	struct sbi_trap_info trap = {0};
+	struct sbi_trap_info trap;
+
+	sbi_memset(&trap, 0, sizeof(trap));
 
 	csr_write_allowed(CSR_PMPADDR0, (ulong)&trap, PMP_ADDR_MASK);
 	if (!trap.cause) {
@@ -352,8 +354,10 @@ static unsigned long hart_pmp_get_allowed_addr(void)
 static int hart_pmu_get_allowed_bits(void)
 {
 	unsigned long val = ~(0UL);
-	struct sbi_trap_info trap = {0};
+	struct sbi_trap_info trap;
 	int num_bits = 0;
+
+	sbi_memset(&trap, 0, sizeof(trap));
 
 	/**
 	 * It is assumed that platforms will implement same number of bits for
@@ -382,9 +386,11 @@ static int hart_pmu_get_allowed_bits(void)
 
 static void hart_detect_features(struct sbi_scratch *scratch)
 {
-	struct sbi_trap_info trap = {0};
+	struct sbi_trap_info trap;
 	struct hart_features *hfeatures;
 	unsigned long val;
+
+	sbi_memset(&trap, 0, sizeof(trap));
 
 	/* Reset hart features */
 	hfeatures = sbi_scratch_offset_ptr(scratch, hart_features_offset);
