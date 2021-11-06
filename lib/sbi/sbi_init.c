@@ -301,8 +301,6 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 	}
 
-	sbi_boot_print_general(scratch);
-
 	/*
 	 * Note: Finalize domains after HSM initialization so that we
 	 * can startup non-root domains.
@@ -315,8 +313,6 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 			   __func__, rc);
 		sbi_hart_hang();
 	}
-
-	sbi_boot_print_domains(scratch);
 
 	rc = sbi_hart_pmp_configure(scratch);
 	if (rc) {
@@ -335,6 +331,10 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 			   __func__, rc);
 		sbi_hart_hang();
 	}
+
+	sbi_boot_print_general(scratch);
+
+	sbi_boot_print_domains(scratch);
 
 	sbi_boot_print_hart(scratch, hartid);
 
