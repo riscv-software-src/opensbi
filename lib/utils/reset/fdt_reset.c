@@ -7,6 +7,7 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
+#include <sbi/sbi_console.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi_utils/fdt/fdt_helper.h>
@@ -28,7 +29,7 @@ static struct fdt_reset *reset_drivers[] = {
 	&fdt_reset_thead,
 };
 
-int fdt_reset_init(void)
+void fdt_reset_init(void)
 {
 	int pos, noff, rc;
 	struct fdt_reset *drv;
@@ -44,12 +45,10 @@ int fdt_reset_init(void)
 
 		if (drv->init) {
 			rc = drv->init(fdt, noff, match);
-			if (rc == SBI_ENODEV)
-				continue;
-			if (rc)
-				return rc;
+			if (rc && rc != SBI_ENODEV) {
+				sbi_printf("%s: %s init failed, %d\n",
+					   __func__, match->compatible, rc);
+			}
 		}
 	}
-
-	return 0;
 }
