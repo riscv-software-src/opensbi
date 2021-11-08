@@ -270,7 +270,7 @@ static void pmu_ctr_write_hw(uint32_t cidx, uint64_t ival)
 {
 #if __riscv_xlen == 32
 	csr_write_num(CSR_MCYCLE + cidx, 0);
-	csr_write_num(CSR_MCYCLE + cidx, ival & 0xFFFF);
+	csr_write_num(CSR_MCYCLE + cidx, ival & 0xFFFFFFFF);
 	csr_write_num(CSR_MCYCLEH + cidx, ival >> BITS_PER_LONG);
 #else
 	csr_write_num(CSR_MCYCLE + cidx, ival);
