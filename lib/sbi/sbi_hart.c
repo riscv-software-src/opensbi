@@ -281,6 +281,9 @@ static inline char *sbi_hart_feature_id2string(unsigned long feature)
 	case SBI_HART_HAS_MCOUNTINHIBIT:
 		fstr = "mcountinhibit";
 		break;
+	case SBI_HART_HAS_SSCOFPMF:
+		fstr = "sscofpmf";
+		break;
 	case SBI_HART_HAS_TIME:
 		fstr = "time";
 		break;
@@ -488,6 +491,15 @@ __mhpm_skip:
 		csr_write_allowed(CSR_MCOUNTINHIBIT, (unsigned long)&trap, val);
 		if (!trap.cause)
 			hfeatures->features |= SBI_HART_HAS_MCOUNTINHIBIT;
+	}
+
+	/* Counter overflow/filtering is not useful without mcounter/inhibit */
+	if (hfeatures->features & SBI_HART_HAS_MCOUNTINHIBIT &&
+	    hfeatures->features & SBI_HART_HAS_MCOUNTEREN) {
+		/* Detect if hart supports sscofpmf */
+		csr_read_allowed(CSR_SCOUNTOVF, (unsigned long)&trap);
+		if (!trap.cause)
+			hfeatures->features |= SBI_HART_HAS_SSCOFPMF;
 	}
 
 	/* Detect if hart supports time CSR */
