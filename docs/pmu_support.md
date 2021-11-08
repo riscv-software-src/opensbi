@@ -31,7 +31,7 @@ bindings in details.
 * **compatible** (Mandatory) - The compatible string of SBI PMU device tree node.
 This DT property must have the value **riscv,pmu**.
 
-* **pmu,event-to-mhpmevent**(Optional) - It represents an ONE-to-ONE mapping
+* **riscv,event-to-mhpmevent**(Optional) - It represents an ONE-to-ONE mapping
 between a PMU event and the event selector value that platform expects to be
 written to the MHPMEVENTx CSR for that event. The mapping is encoded in a
 table format where each row represents an event. The first column represent the
@@ -39,7 +39,7 @@ event idx where the 2nd & 3rd column represent the event selector value that
 should be encoded in the expected value to be written in MHPMEVENTx.
 This property shouldn't encode any raw hardware event.
 
-* **pmu,event-to-mhpmcounters**(Optional) - It represents a MANY-to-MANY
+* **riscv,event-to-mhpmcounters**(Optional) - It represents a MANY-to-MANY
 mapping between a range of events and all the MHPMCOUNTERx in a bitmap format
 that can be used to monitor these range of events. The information is encoded in
 a table format where each row represent a certain range of events and
@@ -49,7 +49,7 @@ represent a bitmap of all the MHPMCOUNTERx. This property is mandatory if
 event-to-mhpmevent is present. Otherwise, it can be omitted. This property
 shouldn't encode any raw event.
 
-* **pmu,raw-event-to-mhpmcounters**(Optional) - It represents an ONE-to-MANY
+* **riscv,raw-event-to-mhpmcounters**(Optional) - It represents an ONE-to-MANY
 mapping between a raw event and all the MHPMCOUNTERx in a bitmap format that can
 be used to monitor that raw event. The information is encoded in a table format
 where each raw represent a specific raw event. The first column stores the
@@ -67,12 +67,12 @@ pmu {
 	compatible 			= "riscv,pmu";
 	interrupts 			= <0x100>;
 	interrupt-parent 			= <&plic>
-	pmu,event-to-mhpmevent 		= <0x0000B  0x0000 0x0001>,
-	pmu,event-to-mhpmcounters 	= <0x00001 0x00001 0x00000001>,
+	riscv,event-to-mhpmevent 		= <0x0000B  0x0000 0x0001>,
+	riscv,event-to-mhpmcounters 	= <0x00001 0x00001 0x00000001>,
 						  <0x00002 0x00002 0x00000004>,
 						  <0x00003 0x0000A 0x00000ff8>,
 						  <0x10000 0x10033 0x000ff000>,
-	pmu,raw-event-to-mhpmcounters 	= <0x0000 0x0002 0x00000f8>,
+	riscv,raw-event-to-mhpmcounters 	= <0x0000 0x0002 0x00000f8>,
 					  <0x0000 0x0003 0x00000ff0>,
 };
 
