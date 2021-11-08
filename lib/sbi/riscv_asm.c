@@ -268,6 +268,7 @@ int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
 		return SBI_ENOTSUPP;
 
 	/* encode PMP config */
+	prot &= ~PMP_A;
 	prot |= (log2len == PMP_SHIFT) ? PMP_A_NA4 : PMP_A_NAPOT;
 	cfgmask = ~(0xffUL << pmpcfg_shift);
 	pmpcfg	= (csr_read_num(pmpcfg_csr) & cfgmask);
