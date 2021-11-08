@@ -369,6 +369,20 @@ static int pmu_ctr_stop_fw(uint32_t cidx, uint32_t fw_evt_code)
 	return 0;
 }
 
+static int pmu_reset_hw_mhpmevent(int ctr_idx)
+{
+	if (ctr_idx < 3 || ctr_idx >= SBI_PMU_HW_CTR_MAX)
+		return SBI_EFAIL;
+#if __riscv_xlen == 32
+	csr_write_num(CSR_MHPMEVENT3 + ctr_idx - 3, 0);
+	csr_write_num(CSR_MHPMEVENT3H + ctr_idx - 3, 0);
+#else
+	csr_write_num(CSR_MHPMEVENT3 + ctr_idx - 3, 0);
+#endif
+
+	return 0;
+}
+
 int sbi_pmu_ctr_stop(unsigned long cbase, unsigned long cmask,
 		     unsigned long flag)
 {
@@ -392,8 +406,10 @@ int sbi_pmu_ctr_stop(unsigned long cbase, unsigned long cmask,
 		else
 			ret = pmu_ctr_stop_hw(cbase);
 
-		if (!ret && (flag & SBI_PMU_STOP_FLAG_RESET))
+		if (flag & SBI_PMU_STOP_FLAG_RESET) {
 			active_events[hartid][cbase] = SBI_PMU_EVENT_IDX_INVALID;
+			pmu_reset_hw_mhpmevent(cbase);
+		}
 	}
 
 	return ret;
