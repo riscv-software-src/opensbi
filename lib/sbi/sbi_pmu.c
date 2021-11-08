@@ -275,7 +275,6 @@ static void pmu_ctr_write_hw(uint32_t cidx, uint64_t ival)
 
 static int pmu_ctr_start_hw(uint32_t cidx, uint64_t ival, bool ival_update)
 {
-	unsigned long mctr_en = csr_read(CSR_MCOUNTEREN);
 	unsigned long mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
@@ -283,15 +282,13 @@ static int pmu_ctr_start_hw(uint32_t cidx, uint64_t ival, bool ival_update)
 	if (cidx > num_hw_ctrs || cidx == 1)
 		return SBI_EINVAL;
 
-	if (__test_bit(cidx, &mctr_en) && !__test_bit(cidx, &mctr_inhbt))
+	if (!__test_bit(cidx, &mctr_inhbt))
 		return SBI_EALREADY_STARTED;
 
-	__set_bit(cidx, &mctr_en);
 	__clear_bit(cidx, &mctr_inhbt);
 
 	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_SSCOFPMF))
 		pmu_ctr_enable_irq_hw(cidx);
-	csr_write(CSR_MCOUNTEREN, mctr_en);
 	csr_write(CSR_MCOUNTINHIBIT, mctr_inhbt);
 
 	if (ival_update)
@@ -345,17 +342,14 @@ int sbi_pmu_ctr_start(unsigned long cbase, unsigned long cmask,
 
 static int pmu_ctr_stop_hw(uint32_t cidx)
 {
-	unsigned long mctr_en = csr_read(CSR_MCOUNTEREN);
 	unsigned long mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
 
 	/* Make sure the counter index lies within the range and is not TM bit */
 	if (cidx > num_hw_ctrs || cidx == 1)
 		return SBI_EINVAL;
 
-	if (__test_bit(cidx, &mctr_en) && !__test_bit(cidx, &mctr_inhbt)) {
+	if (!__test_bit(cidx, &mctr_inhbt)) {
 		__set_bit(cidx, &mctr_inhbt);
-		__clear_bit(cidx, &mctr_en);
-		csr_write(CSR_MCOUNTEREN, mctr_en);
 		csr_write(CSR_MCOUNTINHIBIT, mctr_inhbt);
 		return 0;
 	} else
@@ -449,7 +443,6 @@ static int pmu_ctr_find_hw(unsigned long cbase, unsigned long cmask, unsigned lo
 	unsigned long ctr_mask;
 	int i, ret = 0, ctr_idx = SBI_ENOTSUPP;
 	struct sbi_pmu_hw_event *temp;
-	unsigned long mctr_en = csr_read(CSR_MCOUNTEREN);
 	unsigned long mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
 	int evt_idx_code = get_cidx_code(event_idx);
 
@@ -474,8 +467,7 @@ static int pmu_ctr_find_hw(unsigned long cbase, unsigned long cmask, unsigned lo
 
 		ctr_mask = temp->counters & (cmask << cbase);
 		for_each_set_bit_from(cbase, &ctr_mask, SBI_PMU_HW_CTR_MAX) {
-			if (!__test_bit(cbase, &mctr_en) &&
-			    __test_bit(cbase, &mctr_inhbt)) {
+			if (__test_bit(cbase, &mctr_inhbt)) {
 				ctr_idx = cbase;
 				break;
 			}
@@ -647,7 +639,7 @@ void sbi_pmu_exit(struct sbi_scratch *scratch)
 		return;
 
 	csr_write(CSR_MCOUNTINHIBIT, 0xFFFFFFF8);
-	csr_write(CSR_MCOUNTEREN, 7);
+	csr_write(CSR_MCOUNTEREN, -1);
 	pmu_reset_event_map(hartid);
 }
 

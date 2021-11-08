@@ -56,20 +56,13 @@ static void mstatus_init(struct sbi_scratch *scratch)
 	    sbi_hart_has_feature(scratch, SBI_HART_HAS_SCOUNTEREN))
 		csr_write(CSR_SCOUNTEREN, 7);
 
-	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTEREN)) {
-		if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
-			/**
-			 * Just enable the default counters (CY, TM, IR) because
-			 * some OS (e.g FreeBSD) expect them to be enabled.
-			 *
-			 * All other counters will be enabled at runtime after
-			 * S-mode request.
-			 */
-			csr_write(CSR_MCOUNTEREN, 7);
-		else
-			/* Supervisor mode usage are enabled by default */
-			csr_write(CSR_MCOUNTEREN, -1);
-	}
+	/**
+	 * OpenSBI doesn't use any PMU counters in M-mode.
+	 * Supervisor mode usage for all counters are enabled by default
+	 * But counters will not run until mcountinhibit is set.
+	 */
+	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTEREN))
+		csr_write(CSR_MCOUNTEREN, -1);
 
 	/* All programmable counters will start running at runtime after S-mode request */
 	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
