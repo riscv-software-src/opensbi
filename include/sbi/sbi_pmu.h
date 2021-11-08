@@ -26,6 +26,7 @@
 #define SBI_PMU_FW_CTR_MAX 16
 #define SBI_PMU_HW_CTR_MAX 32
 #define SBI_PMU_CTR_MAX	   (SBI_PMU_HW_CTR_MAX + SBI_PMU_FW_CTR_MAX)
+#define SBI_PMU_FIXED_CTR_MASK 0x07
 
 /** Initialize PMU */
 int sbi_pmu_init(struct sbi_scratch *scratch, bool cold_boot);
