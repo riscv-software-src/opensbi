@@ -74,14 +74,8 @@ static int sbi_ecall_pmu_handler(unsigned long extid, unsigned long funcid,
 
 static int sbi_ecall_pmu_probe(unsigned long extid, unsigned long *out_val)
 {
-	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
-
-	/* SBI PMU extension is useless without mcount inhibit features */
-	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
-		*out_val = 1;
-	else
-		*out_val = 0;
-
+	/* PMU extension is always enabled */
+	*out_val = 1;
 	return 0;
 }
 

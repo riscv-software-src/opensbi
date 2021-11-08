@@ -9,6 +9,7 @@
  */
 
 #include <libfdt.h>
+#include <sbi/sbi_hart.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_pmu.h>
 #include <sbi_utils/fdt/fdt_helper.h>
@@ -40,6 +41,7 @@ uint64_t fdt_pmu_get_select_value(uint32_t event_idx)
 int fdt_pmu_fixup(void *fdt)
 {
 	int pmu_offset;
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	if (!fdt)
 		return SBI_EINVAL;
@@ -51,6 +53,8 @@ int fdt_pmu_fixup(void *fdt)
 	fdt_delprop(fdt, pmu_offset, "pmu,event-to-mhpmcounters");
 	fdt_delprop(fdt, pmu_offset, "pmu,event-to-mhpmevent");
 	fdt_delprop(fdt, pmu_offset, "pmu,raw-event-to-mhpmcounters");
+	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_SSCOFPMF))
+		fdt_delprop(fdt, pmu_offset, "interrupts-extended");
 
 	return 0;
 }

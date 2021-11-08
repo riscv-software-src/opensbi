@@ -279,13 +279,21 @@ static void pmu_ctr_write_hw(uint32_t cidx, uint64_t ival)
 
 static int pmu_ctr_start_hw(uint32_t cidx, uint64_t ival, bool ival_update)
 {
-	unsigned long mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	unsigned long mctr_inhbt;
 
 	/* Make sure the counter index lies within the range and is not TM bit */
 	if (cidx > num_hw_ctrs || cidx == 1)
 		return SBI_EINVAL;
 
+	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
+		goto skip_inhibit_update;
+
+	/*
+	 * Some of the hardware may not support mcountinhibit but perf stat
+	 * still can work if supervisor mode programs the initial value.
+	 */
+	mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
 	if (!__test_bit(cidx, &mctr_inhbt))
 		return SBI_EALREADY_STARTED;
 
@@ -295,6 +303,7 @@ static int pmu_ctr_start_hw(uint32_t cidx, uint64_t ival, bool ival_update)
 		pmu_ctr_enable_irq_hw(cidx);
 	csr_write(CSR_MCOUNTINHIBIT, mctr_inhbt);
 
+skip_inhibit_update:
 	if (ival_update)
 		pmu_ctr_write_hw(cidx, ival);
 
@@ -346,7 +355,13 @@ int sbi_pmu_ctr_start(unsigned long cbase, unsigned long cmask,
 
 static int pmu_ctr_stop_hw(uint32_t cidx)
 {
-	unsigned long mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	unsigned long mctr_inhbt;
+
+	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
+		return 0;
+
+	mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
 
 	/* Make sure the counter index lies within the range and is not TM bit */
 	if (cidx > num_hw_ctrs || cidx == 1)
@@ -474,7 +489,8 @@ static int pmu_ctr_find_hw(unsigned long cbase, unsigned long cmask, unsigned lo
 	unsigned long ctr_mask;
 	int i, ret = 0, fixed_ctr, ctr_idx = SBI_ENOTSUPP;
 	struct sbi_pmu_hw_event *temp;
-	unsigned long mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
+	unsigned long mctr_inhbt;
+	u32 hartid = current_hartid();
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	if (cbase > num_hw_ctrs)
@@ -489,6 +505,8 @@ static int pmu_ctr_find_hw(unsigned long cbase, unsigned long cmask, unsigned lo
 	    !sbi_hart_has_feature(scratch, SBI_HART_HAS_SSCOFPMF))
 		return fixed_ctr;
 
+	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
+		mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
 	for (i = 0; i < num_hw_events; i++) {
 		temp = &hw_event_map[i];
 		if ((temp->start_idx > event_idx && event_idx < temp->end_idx) ||
@@ -503,10 +521,18 @@ static int pmu_ctr_find_hw(unsigned long cbase, unsigned long cmask, unsigned lo
 		ctr_mask = temp->counters & (cmask << cbase) &
 			   (~SBI_PMU_FIXED_CTR_MASK);
 		for_each_set_bit_from(cbase, &ctr_mask, SBI_PMU_HW_CTR_MAX) {
-			if (__test_bit(cbase, &mctr_inhbt)) {
-				ctr_idx = cbase;
-				break;
-			}
+			/**
+			 * Some of the platform may not support mcountinhibit.
+			 * Checking the active_events is enough for them
+			 */
+			if (active_events[hartid][cbase] != SBI_PMU_EVENT_IDX_INVALID)
+				continue;
+			/* If mcountinhibit is supported, the bit must be enabled */
+			if ((sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT)) &&
+			    !__test_bit(cbase, &mctr_inhbt))
+				continue;
+			/* We found a valid counter that is not started yet */
+			ctr_idx = cbase;
 		}
 	}
 
@@ -678,11 +704,9 @@ void sbi_pmu_exit(struct sbi_scratch *scratch)
 {
 	u32 hartid = current_hartid();
 
-	/* SBI PMU is not supported if mcountinhibit is not available */
-	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
-		return;
+	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
+		csr_write(CSR_MCOUNTINHIBIT, 0xFFFFFFF8);
 
-	csr_write(CSR_MCOUNTINHIBIT, 0xFFFFFFF8);
 	csr_write(CSR_MCOUNTEREN, -1);
 	pmu_reset_event_map(hartid);
 }
@@ -691,10 +715,6 @@ int sbi_pmu_init(struct sbi_scratch *scratch, bool cold_boot)
 {
 	const struct sbi_platform *plat;
 	u32 hartid = current_hartid();
-
-	/* SBI PMU is not supported if mcountinhibit is not available */
-	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
-		return 0;
 
 	if (cold_boot) {
 		plat = sbi_platform_ptr(scratch);
