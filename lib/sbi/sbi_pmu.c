@@ -649,7 +649,7 @@ int sbi_pmu_ctr_get_info(uint32_t cidx, unsigned long *ctr_info)
 		if (cidx == 0 || cidx == 2)
 			cinfo.width = 63;
 		else
-			cinfo.width = sbi_hart_mhpm_bits(scratch);
+			cinfo.width = sbi_hart_mhpm_bits(scratch) - 1;
 	} else {
 		/* it's a firmware counter */
 		cinfo.type = SBI_PMU_CTR_TYPE_FW;
