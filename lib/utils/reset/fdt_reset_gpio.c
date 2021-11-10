@@ -77,7 +77,10 @@ static void gpio_reset_exec(struct gpio_reset *reset)
 
 static int gpio_system_poweroff_check(u32 type, u32 reason)
 {
-	return !!gpio_reset_get(FALSE, type);
+	if (gpio_reset_get(FALSE, type))
+		return 128;
+
+	return 0;
 }
 
 static void gpio_system_poweroff(u32 type, u32 reason)
@@ -93,7 +96,10 @@ static struct sbi_system_reset_device gpio_poweroff = {
 
 static int gpio_system_restart_check(u32 type, u32 reason)
 {
-	return !!gpio_reset_get(TRUE, type);
+	if (gpio_reset_get(TRUE, type))
+		return 128;
+
+	return 0;
 }
 
 static void gpio_system_restart(u32 type, u32 reason)
