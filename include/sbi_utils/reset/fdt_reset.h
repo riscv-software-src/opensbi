@@ -18,6 +18,11 @@ struct fdt_reset {
 };
 
 /**
+ * fdt_reset_driver_init() - initialize reset driver based on the device-tree
+ */
+int fdt_reset_driver_init(void *fdt, struct fdt_reset *drv);
+
+/**
  * fdt_reset_init() - initialize reset drivers based on the device-tree
  *
  * This function shall be invoked in final init.

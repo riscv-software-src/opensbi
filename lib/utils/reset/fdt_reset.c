@@ -29,26 +29,31 @@ static struct fdt_reset *reset_drivers[] = {
 	&fdt_reset_thead,
 };
 
-void fdt_reset_init(void)
+int fdt_reset_driver_init(void *fdt, struct fdt_reset *drv)
 {
-	int pos, noff, rc;
-	struct fdt_reset *drv;
+	int noff, rc = SBI_ENODEV;
 	const struct fdt_match *match;
-	void *fdt = fdt_get_address();
 
-	for (pos = 0; pos < array_size(reset_drivers); pos++) {
-		drv = reset_drivers[pos];
+	noff = fdt_find_match(fdt, -1, drv->match_table, &match);
+	if (noff < 0)
+		return SBI_ENODEV;
 
-		noff = fdt_find_match(fdt, -1, drv->match_table, &match);
-		if (noff < 0)
-			continue;
-
-		if (drv->init) {
-			rc = drv->init(fdt, noff, match);
-			if (rc && rc != SBI_ENODEV) {
-				sbi_printf("%s: %s init failed, %d\n",
-					   __func__, match->compatible, rc);
-			}
+	if (drv->init) {
+		rc = drv->init(fdt, noff, match);
+		if (rc && rc != SBI_ENODEV) {
+			sbi_printf("%s: %s init failed, %d\n",
+				   __func__, match->compatible, rc);
 		}
 	}
+
+	return rc;
+}
+
+void fdt_reset_init(void)
+{
+	int pos;
+	void *fdt = fdt_get_address();
+
+	for (pos = 0; pos < array_size(reset_drivers); pos++)
+		fdt_reset_driver_init(fdt, reset_drivers[pos]);
 }
