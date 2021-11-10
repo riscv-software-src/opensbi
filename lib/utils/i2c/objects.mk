@@ -8,3 +8,4 @@
 #
 
 libsbiutils-objs-y += i2c/i2c.o
+libsbiutils-objs-y += i2c/fdt_i2c.o
