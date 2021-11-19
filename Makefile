@@ -284,6 +284,7 @@ CFLAGS		+=	$(GENFLAGS)
 CFLAGS		+=	$(platform-cflags-y)
 CFLAGS		+=	-fno-pie -no-pie
 CFLAGS		+=	$(firmware-cflags-y)
+CFLAGS		+=	-ffile-prefix-map=$(CURDIR)=.
 
 CPPFLAGS	+=	$(GENFLAGS)
 CPPFLAGS	+=	$(platform-cppflags-y)
