@@ -295,7 +295,7 @@ static int sanitize_domain(const struct sbi_platform *plat,
 	/* Check next address and next mode*/
 	if (!sbi_domain_check_addr(dom, dom->next_addr, dom->next_mode,
 				   SBI_DOMAIN_EXECUTE)) {
-		sbi_printf("%s: %s next booting stage addres 0x%lx can't "
+		sbi_printf("%s: %s next booting stage address 0x%lx can't "
 			   "execute\n", __func__, dom->name, dom->next_addr);
 		return SBI_EINVAL;
 	}
