@@ -76,7 +76,8 @@ void misa_string(int xlen, char *out, unsigned int out_sz)
 			out[pos++] = '8';
 			break;
 		default:
-			BUG();
+			sbi_panic("%s: Unknown misa.MXL encoding %d",
+				   __func__, xlen);
 			return;
 		}
 	}
@@ -145,7 +146,7 @@ unsigned long csr_read_num(int csr_num)
 #endif
 
 	default:
-		BUG();
+		sbi_panic("%s: Unknown CSR %#x", __func__, csr_num);
 		break;
 	};
 
@@ -213,7 +214,7 @@ void csr_write_num(int csr_num, unsigned long val)
 	switchcase_csr_write_16(CSR_MHPMEVENT16, val)
 
 	default:
-		BUG();
+		sbi_panic("%s: Unknown CSR %#x", __func__, csr_num);
 		break;
 	};
 

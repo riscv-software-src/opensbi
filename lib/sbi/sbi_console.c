@@ -9,6 +9,7 @@
 
 #include <sbi/riscv_locks.h>
 #include <sbi/sbi_console.h>
+#include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
 
@@ -395,6 +396,19 @@ int sbi_dprintf(const char *format, ...)
 	va_end(args);
 
 	return retval;
+}
+
+void sbi_panic(const char *format, ...)
+{
+	va_list args;
+
+	spin_lock(&console_out_lock);
+	va_start(args, format);
+	print(NULL, NULL, format, args);
+	va_end(args);
+	spin_unlock(&console_out_lock);
+
+	sbi_hart_hang();
 }
 
 const struct sbi_console_device *sbi_console_get_device(void)

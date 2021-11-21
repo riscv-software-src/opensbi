@@ -12,6 +12,7 @@
 #include <platform_override.h>
 #include <libfdt.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_hart.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_console.h>
 #include <sbi_utils/fdt/fdt_helper.h>
