@@ -101,7 +101,7 @@ int uart8250_init(unsigned long base, u32 in_freq, u32 baudrate, u32 reg_shift,
 	uart8250_in_freq   = in_freq;
 	uart8250_baudrate  = baudrate;
 
-	bdiv = uart8250_in_freq / (16 * uart8250_baudrate);
+	bdiv = (uart8250_in_freq + 8 * uart8250_baudrate) / (16 * uart8250_baudrate);
 
 	/* Disable all interrupts */
 	set_reg(UART_IER_OFFSET, 0x00);
