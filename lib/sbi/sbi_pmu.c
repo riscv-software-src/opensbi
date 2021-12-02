@@ -21,8 +21,16 @@ struct sbi_pmu_hw_event {
 	uint32_t counters;
 	uint32_t start_idx;
 	uint32_t end_idx;
-	/* Event selector value used only for raw events */
+	/* Event selector value used only for raw events. The event select value
+	 * can be a even id or a selector value for set of events encoded in few
+	 * bits. In case latter, the bits used for encoding of the events should
+	 * be zeroed out in the select value.
+	 */
 	uint64_t select;
+	 /**
+	  * The select_mask indicates which bits are encoded for the event(s).
+	  */
+	uint64_t select_mask;
 };
 
 /** Representation of a firmware event */
@@ -91,9 +99,9 @@ static bool pmu_event_range_overlap(struct sbi_pmu_hw_event *evtA,
 }
 
 static bool pmu_event_select_overlap(struct sbi_pmu_hw_event *evt,
-				     uint64_t select_val)
+				     uint64_t select_val, uint64_t select_mask)
 {
-	if (evt->select == select_val)
+	if ((evt->select == select_val) && (evt->select_mask == select_mask))
 		return TRUE;
 
 	return FALSE;
@@ -168,7 +176,7 @@ int sbi_pmu_ctr_read(uint32_t cidx, unsigned long *cval)
 }
 
 static int pmu_add_hw_event_map(u32 eidx_start, u32 eidx_end, u32 cmap,
-				uint64_t select)
+				uint64_t select, uint64_t select_mask)
 {
 	int i = 0;
 	bool is_overlap;
@@ -191,13 +199,15 @@ static int pmu_add_hw_event_map(u32 eidx_start, u32 eidx_end, u32 cmap,
 	for (i = 0; i < num_hw_events; i++) {
 		if (eidx_start == SBI_PMU_EVENT_RAW_IDX)
 		/* All raw events have same event idx. Just do sanity check on select */
-			is_overlap = pmu_event_select_overlap(&hw_event_map[i], select);
+			is_overlap = pmu_event_select_overlap(&hw_event_map[i],
+							      select, select_mask);
 		else
 			is_overlap = pmu_event_range_overlap(&hw_event_map[i], event);
 		if (is_overlap)
 			goto reset_event;
 	}
 
+	event->select_mask = select_mask;
 	event->counters = cmap;
 	event->select = select;
 	num_hw_events++;
@@ -221,13 +231,13 @@ int sbi_pmu_add_hw_event_counter_map(u32 eidx_start, u32 eidx_end, u32 cmap)
 	     eidx_end == SBI_PMU_EVENT_RAW_IDX)
 		return SBI_EINVAL;
 
-	return pmu_add_hw_event_map(eidx_start, eidx_end, cmap, 0);
+	return pmu_add_hw_event_map(eidx_start, eidx_end, cmap, 0, 0);
 }
 
-int sbi_pmu_add_raw_event_counter_map(uint64_t select, u32 cmap)
+int sbi_pmu_add_raw_event_counter_map(uint64_t select, uint64_t select_mask, u32 cmap)
 {
 	return pmu_add_hw_event_map(SBI_PMU_EVENT_RAW_IDX,
-				    SBI_PMU_EVENT_RAW_IDX, cmap, select);
+				    SBI_PMU_EVENT_RAW_IDX, cmap, select, select_mask);
 }
 
 static int pmu_ctr_enable_irq_hw(int ctr_idx)
@@ -514,9 +524,13 @@ static int pmu_ctr_find_hw(unsigned long cbase, unsigned long cmask, unsigned lo
 			continue;
 
 		/* For raw events, event data is used as the select value */
-		if ((event_idx == SBI_PMU_EVENT_RAW_IDX) && temp->select != data)
-			continue;
+		if (event_idx == SBI_PMU_EVENT_RAW_IDX) {
+			uint64_t select_mask = temp->select_mask;
 
+			/* The non-event map bits of data should match the selector */
+			if (temp->select != (data & select_mask))
+				continue;
+		}
 		/* Fixed counters should not be part of the search */
 		ctr_mask = temp->counters & (cmask << cbase) &
 			   (~SBI_PMU_FIXED_CTR_MASK);
@@ -546,7 +560,6 @@ static int pmu_ctr_find_hw(unsigned long cbase, unsigned long cmask, unsigned lo
 		else
 			return SBI_EFAIL;
 	}
-
 	ret = pmu_update_hw_mhpmevent(temp, ctr_idx, flags, event_idx, data);
 
 	if (!ret)

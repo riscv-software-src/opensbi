@@ -51,7 +51,7 @@ int sbi_pmu_add_hw_event_counter_map(u32 eidx_start, u32 eidx_end, u32 cmap);
  * @return 0 on success, error otherwise.
  */
 
-int sbi_pmu_add_raw_event_counter_map(uint64_t select, u32 cmap);
+int sbi_pmu_add_raw_event_counter_map(uint64_t select, uint64_t select_mask, u32 cmap);
 
 int sbi_pmu_ctr_read(uint32_t cidx, unsigned long *cval);
 

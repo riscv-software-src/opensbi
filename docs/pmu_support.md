@@ -50,12 +50,20 @@ event-to-mhpmevent is present. Otherwise, it can be omitted. This property
 shouldn't encode any raw event.
 
 * **riscv,raw-event-to-mhpmcounters**(Optional) - It represents an ONE-to-MANY
-mapping between a raw event and all the MHPMCOUNTERx in a bitmap format that can
-be used to monitor that raw event. The information is encoded in a table format
-where each raw represent a specific raw event. The first column stores the
-expected event selector value that should be encoded in the expected value to be
-written in MHPMEVENTx. The second column stores a bitmap of all the MHPMCOUNTERx
-that can be used for monitoring the specified event.
+or MANY-to-MANY mapping between the raw event(s) and all the MHPMCOUNTERx in
+a bitmap format that can be used to monitor that raw event, which depends on
+how the platform encodes the monitor events. Currently, only the following three
+encoding methods are supported, encoding each event as a number, using a bitmap
+to encode monitor events, and mixing the previous two methods. The information
+is encoded in a table format where each row represent the specific raw event(s).
+The first column represents a 64-bit selector value which can indicate an
+monitor event ID (encoded by a number) or an event set (encoded by a bitmap).
+In case of the latter, the lower bits used to encode a set of events should be
+set to zero. The second column is a 64-bit selector mask where any bits used
+for event encoding will be cleared. If a platform directly encodes each raw PMU
+event as a unique ID, the value of select_mask will be 0xffffffff_ffffffff.
+The third column represent a bitmap of all the MHPMCOUNTERx that can be used for
+monitoring the specified event(s).
 
 *Note:* A platform may choose to provide the mapping between event & counters
 via platform hooks rather than the device tree.
@@ -72,8 +80,8 @@ pmu {
 						  <0x00002 0x00002 0x00000004>,
 						  <0x00003 0x0000A 0x00000ff8>,
 						  <0x10000 0x10033 0x000ff000>,
-	riscv,raw-event-to-mhpmcounters 	= <0x0000 0x0002 0x00000f8>,
-					  <0x0000 0x0003 0x00000ff0>,
+	riscv,raw-event-to-mhpmcounters = <0x0000     0x0002 0xffffffff 0xffffffff 0x00000f8>,
+					  <0xffffffff 0xfffffff0 0xffffffff 0xfffffff0 0x00000ff0>,
 };
 
 ```
