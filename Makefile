@@ -275,8 +275,11 @@ GENFLAGS	+=	$(platform-genflags-y)
 GENFLAGS	+=	$(firmware-genflags-y)
 
 CFLAGS		=	-g -Wall -Werror -ffreestanding -nostdlib -fno-stack-protector -fno-strict-aliasing -O2
-CFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
-CFLAGS		+=	-mno-save-restore -mstrict-align
+CFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls -mstrict-align
+# CLANG-10 (or lower) does not support -m(no-)save-restore option
+ifneq ($(CC_IS_CLANG),y)
+CFLAGS		+=	-mno-save-restore
+endif
 CFLAGS		+=	-mabi=$(PLATFORM_RISCV_ABI) -march=$(PLATFORM_RISCV_ISA)
 CFLAGS		+=	-mcmodel=$(PLATFORM_RISCV_CODE_MODEL)
 CFLAGS		+=	$(RELAX_FLAG)
@@ -290,8 +293,11 @@ CPPFLAGS	+=	$(platform-cppflags-y)
 CPPFLAGS	+=	$(firmware-cppflags-y)
 
 ASFLAGS		=	-g -Wall -nostdlib
-ASFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
-ASFLAGS		+=	-mno-save-restore -mstrict-align
+ASFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls -mstrict-align
+# CLANG-10 (or lower) does not support -m(no-)save-restore option
+ifneq ($(CC_IS_CLANG),y)
+ASFLAGS		+=	-mno-save-restore
+endif
 ASFLAGS		+=	-mabi=$(PLATFORM_RISCV_ABI) -march=$(PLATFORM_RISCV_ISA)
 ASFLAGS		+=	-mcmodel=$(PLATFORM_RISCV_CODE_MODEL)
 ASFLAGS		+=	$(RELAX_FLAG)
