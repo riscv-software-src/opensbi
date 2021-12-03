@@ -43,7 +43,18 @@ make PLATFORM=generic FW_PAYLOAD_PATH=<linux_build_directory>/arch/riscv/boot/Im
 
 Run:
 ```
-spike --initrd <path_to_cpio_ramdisk> build/platform/generic/firmware/fw_payload.elf
+spike -m256 \
+	--initrd <path_to_cpio_ramdisk> \
+	--bootargs 'root=/dev/ram rw console=hvc0 earlycon=sbi' \
+	build/platform/generic/firmware/fw_payload.elf
+```
+or
+```
+spike -m256 \
+	--kernel <linux_build_directory>/arch/riscv/boot/Image \
+	--initrd <path_to_cpio_ramdisk> \
+	--bootargs 'root=/dev/ram rw console=hvc0 earlycon=sbi' \
+	build/platform/generic/firmware/fw_jump.elf
 ```
 
 Execution on QEMU RISC-V 64-bit
