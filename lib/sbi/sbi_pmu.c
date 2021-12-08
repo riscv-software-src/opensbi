@@ -467,7 +467,8 @@ static int pmu_update_hw_mhpmevent(struct sbi_pmu_hw_event *hw_evt, int ctr_idx,
 		return SBI_EFAIL;
 
 	/* Always clear the OVF bit and inhibit countin of events in M-mode */
-	mhpmevent_val = (mhpmevent_val & ~MHPMEVENT_SSCOF_MASK) | MHPMEVENT_MINH;
+	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_SSCOFPMF))
+		mhpmevent_val = (mhpmevent_val & ~MHPMEVENT_SSCOF_MASK) | MHPMEVENT_MINH;
 
 	/* Update the inhibit flags based on inhibit flags received from supervisor */
 	pmu_update_inhibit_flags(flags, &mhpmevent_val);
