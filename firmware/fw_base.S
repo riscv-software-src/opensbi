@@ -561,6 +561,34 @@ fw_platform_init:
 	add	a0, a1, zero
 	ret
 
+	/* Map implicit memcpy() added by compiler to sbi_memcpy() */
+	.section .text
+	.align 3
+	.globl memcpy
+memcpy:
+	tail	sbi_memcpy
+
+	/* Map implicit memset() added by compiler to sbi_memset() */
+	.section .text
+	.align 3
+	.globl memset
+memset:
+	tail	sbi_memset
+
+	/* Map implicit memmove() added by compiler to sbi_memmove() */
+	.section .text
+	.align 3
+	.globl memmove
+memmove:
+	tail	sbi_memmove
+
+	/* Map implicit memcmp() added by compiler to sbi_memcmp() */
+	.section .text
+	.align 3
+	.globl memcmp
+memcmp:
+	tail	sbi_memcmp
+
 .macro	TRAP_SAVE_AND_SETUP_SP_T0
 	/* Swap TP and MSCRATCH */
 	csrrw	tp, CSR_MSCRATCH, tp
