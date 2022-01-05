@@ -81,32 +81,32 @@ static inline int da9063_sanity_check(struct i2c_adapter *adap, uint32_t reg)
 
 static inline int da9063_shutdown(struct i2c_adapter *adap, uint32_t reg)
 {
-	int rc = i2c_adapter_reg_write(adap, da9063.reg,
+	int rc = i2c_adapter_reg_write(adap, reg,
 					DA9063_REG_PAGE_CON, 0x00);
 
 	if (rc)
 		return rc;
 
-	return i2c_adapter_reg_write(adap, da9063.reg,
+	return i2c_adapter_reg_write(adap, reg,
 				     DA9063_REG_CONTROL_F,
 				     DA9063_CONTROL_F_SHUTDOWN);
 }
 
 static inline int da9063_reset(struct i2c_adapter *adap, uint32_t reg)
 {
-	int rc = i2c_adapter_reg_write(adap, da9063.reg,
+	int rc = i2c_adapter_reg_write(adap, reg,
 					DA9063_REG_PAGE_CON, 0x00);
 
 	if (rc)
 		return rc;
 
-	rc = i2c_adapter_reg_write(adap, da9063.reg,
+	rc = i2c_adapter_reg_write(adap, reg,
 				   DA9063_REG_CONTROL_F,
 				   DA9063_CONTROL_F_WAKEUP);
 	if (rc)
 		return rc;
 
-	return i2c_adapter_reg_write(adap, da9063.reg,
+	return i2c_adapter_reg_write(adap, reg,
 				DA9063_REG_CONTROL_A,
 				DA9063_CONTROL_A_M_POWER1_EN |
 				DA9063_CONTROL_A_M_POWER_EN |
