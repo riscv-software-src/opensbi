@@ -22,12 +22,15 @@
 
 #define DA9063_REG_PAGE_CON		0x00
 #define DA9063_REG_CONTROL_A		0x0e
+#define DA9063_REG_CONTROL_D		0x11
 #define DA9063_REG_CONTROL_F		0x13
 #define DA9063_REG_DEVICE_ID		0x81
 
 #define DA9063_CONTROL_A_M_POWER1_EN	(1 << 6)
 #define DA9063_CONTROL_A_M_POWER_EN	(1 << 5)
 #define DA9063_CONTROL_A_STANDBY	(1 << 3)
+
+#define DA9063_CONTROL_D_TWDSCALE_MASK	0x07
 
 #define DA9063_CONTROL_F_WAKEUP	(1 << 2)
 #define DA9063_CONTROL_F_SHUTDOWN	(1 << 1)
@@ -77,6 +80,27 @@ static inline int da9063_sanity_check(struct i2c_adapter *adap, uint32_t reg)
 		return SBI_ENODEV;
 
 	return 0;
+}
+
+static inline int da9063_stop_watchdog(struct i2c_adapter *adap, uint32_t reg)
+{
+	uint8_t val;
+	int rc = i2c_adapter_reg_write(adap, reg,
+					DA9063_REG_PAGE_CON, 0x00);
+
+	if (rc)
+		return rc;
+
+	rc = i2c_adapter_reg_read(adap, reg, DA9063_REG_CONTROL_D, &val);
+	if (rc)
+		return rc;
+
+	if ((val & DA9063_CONTROL_D_TWDSCALE_MASK) == 0)
+		return 0;
+
+	val &= ~DA9063_CONTROL_D_TWDSCALE_MASK;
+
+	return i2c_adapter_reg_write(adap, reg, DA9063_REG_CONTROL_D, val);
 }
 
 static inline int da9063_shutdown(struct i2c_adapter *adap, uint32_t reg)
@@ -133,6 +157,7 @@ static void da9063_system_reset(u32 type, u32 reason)
 			break;
 		case SBI_SRST_RESET_TYPE_COLD_REBOOT:
 		case SBI_SRST_RESET_TYPE_WARM_REBOOT:
+			da9063_stop_watchdog(adap, reg);
 			da9063_reset(adap, reg);
 			break;
 		}
