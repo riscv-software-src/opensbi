@@ -10,8 +10,12 @@
 
 #include <sbi/sbi_types.h>
 
-int htif_serial_init(void);
+int htif_serial_init(bool custom_addr,
+		     unsigned long custom_fromhost_addr,
+		     unsigned long custom_tohost_addr);
 
-int htif_system_reset_init(void);
+int htif_system_reset_init(bool custom_addr,
+			   unsigned long custom_fromhost_addr,
+			   unsigned long custom_tohost_addr);
 
 #endif
