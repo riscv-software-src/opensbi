@@ -181,6 +181,9 @@ static int pmu_add_hw_event_map(u32 eidx_start, u32 eidx_end, u32 cmap,
 	int i = 0;
 	bool is_overlap;
 	struct sbi_pmu_hw_event *event = &hw_event_map[num_hw_events];
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	int hw_ctr_avail = sbi_hart_mhpm_count(scratch);
+	uint32_t ctr_avail_mask = ((uint32_t)(~0) >> (32 - (hw_ctr_avail + 3)));
 
 	/* The first two counters are reserved by priv spec */
 	if (eidx_start > SBI_PMU_HW_INSTRUCTIONS && (cmap & SBI_PMU_FIXED_CTR_MASK))
@@ -208,7 +211,8 @@ static int pmu_add_hw_event_map(u32 eidx_start, u32 eidx_end, u32 cmap,
 	}
 
 	event->select_mask = select_mask;
-	event->counters = cmap;
+	/* Map the only the counters that are available in the hardware */
+	event->counters = cmap & ctr_avail_mask;
 	event->select = select;
 	num_hw_events++;
 
