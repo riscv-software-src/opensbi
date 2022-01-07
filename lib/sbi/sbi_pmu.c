@@ -256,7 +256,7 @@ static int pmu_ctr_enable_irq_hw(int ctr_idx)
 
 #if __riscv_xlen == 32
 	mhpmevent_csr = CSR_MHPMEVENT3H  + ctr_idx - 3;
-	of_mask = ~MHPMEVENTH_OF;
+	of_mask = (uint32_t)~MHPMEVENTH_OF;
 #else
 	mhpmevent_csr = CSR_MHPMEVENT3 + ctr_idx - 3;
 	of_mask = ~MHPMEVENT_OF;
@@ -470,9 +470,13 @@ static int pmu_update_hw_mhpmevent(struct sbi_pmu_hw_event *hw_evt, int ctr_idx,
 	if (!mhpmevent_val || ctr_idx < 3 || ctr_idx >= SBI_PMU_HW_CTR_MAX)
 		return SBI_EFAIL;
 
-	/* Always clear the OVF bit and inhibit countin of events in M-mode */
+	/**
+	 * Always set the OVF bit(disable interrupts) and inhibit counting of
+	 * events in M-mode. The OVF bit should be enabled during the start call.
+	 */
 	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_SSCOFPMF))
-		mhpmevent_val = (mhpmevent_val & ~MHPMEVENT_SSCOF_MASK) | MHPMEVENT_MINH;
+		mhpmevent_val = (mhpmevent_val & ~MHPMEVENT_SSCOF_MASK) |
+				 MHPMEVENT_MINH | MHPMEVENT_OF;
 
 	/* Update the inhibit flags based on inhibit flags received from supervisor */
 	pmu_update_inhibit_flags(flags, &mhpmevent_val);

@@ -181,13 +181,14 @@
 #define MHPMEVENT_VSINH			(_UL(1) << 59)
 #define MHPMEVENT_VUINH			(_UL(1) << 58)
 #else
-#define MHPMEVENTH_OF			(_UL(1) << 31)
+#define MHPMEVENTH_OF			(_ULL(1) << 31)
 #define MHPMEVENTH_MINH			(_ULL(1) << 30)
 #define MHPMEVENTH_SINH			(_ULL(1) << 29)
 #define MHPMEVENTH_UINH			(_ULL(1) << 28)
 #define MHPMEVENTH_VSINH		(_ULL(1) << 27)
 #define MHPMEVENTH_VUINH		(_ULL(1) << 26)
 
+#define MHPMEVENT_OF			(MHPMEVENTH_OF << 32)
 #define MHPMEVENT_MINH			(MHPMEVENTH_MINH << 32)
 #define MHPMEVENT_SINH			(MHPMEVENTH_SINH << 32)
 #define MHPMEVENT_UINH			(MHPMEVENTH_UINH << 32)
