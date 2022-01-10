@@ -66,7 +66,7 @@ static inline void  __sbi_fifo_enqueue(struct sbi_fifo *fifo, void *data)
 	if (head >= fifo->num_entries)
 		head = head - fifo->num_entries;
 
-	sbi_memcpy(fifo->queue + head * fifo->entry_size, data, fifo->entry_size);
+	sbi_memcpy((char *)fifo->queue + head * fifo->entry_size, data, fifo->entry_size);
 
 	fifo->avail++;
 }
@@ -142,7 +142,7 @@ int sbi_fifo_inplace_update(struct sbi_fifo *fifo, void *in,
 		index = fifo->tail + i;
 		if (index >= fifo->num_entries)
 			index -= fifo->num_entries;
-		entry = (void *)fifo->queue + (u32)index * fifo->entry_size;
+		entry = (char *)fifo->queue + (u32)index * fifo->entry_size;
 		ret = fptr(in, entry);
 
 		if (ret == SBI_FIFO_SKIP || ret == SBI_FIFO_UPDATED) {
@@ -184,7 +184,7 @@ int sbi_fifo_dequeue(struct sbi_fifo *fifo, void *data)
 		return SBI_ENOENT;
 	}
 
-	sbi_memcpy(data, fifo->queue + (u32)fifo->tail * fifo->entry_size,
+	sbi_memcpy(data, (char *)fifo->queue + (u32)fifo->tail * fifo->entry_size,
 	       fifo->entry_size);
 
 	fifo->avail--;
