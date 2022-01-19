@@ -116,7 +116,7 @@ static int irqchip_plic_cold_init(void *fdt, int nodeoff,
 
 static void thead_plic_plat_init(struct plic_data *pd)
 {
-	writel_relaxed(BIT(0), (void *)pd->addr + THEAD_PLIC_CTRL_REG);
+	writel_relaxed(BIT(0), (char *)pd->addr + THEAD_PLIC_CTRL_REG);
 }
 
 static const struct fdt_match irqchip_plic_match[] = {

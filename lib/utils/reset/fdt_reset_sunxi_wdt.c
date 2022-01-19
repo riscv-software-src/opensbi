@@ -19,7 +19,7 @@
 
 #define WDT_MODE_REG			0x18
 
-static volatile void *sunxi_wdt_base;
+static volatile char *sunxi_wdt_base;
 
 static int sunxi_wdt_system_reset_check(u32 type, u32 reason)
 {
@@ -59,7 +59,7 @@ static int sunxi_wdt_reset_init(void *fdt, int nodeoff,
 	if (rc < 0 || !reg_addr)
 		return SBI_ENODEV;
 
-	sunxi_wdt_base = (volatile void *)(unsigned long)reg_addr;
+	sunxi_wdt_base = (volatile char *)(unsigned long)reg_addr;
 
 	sbi_system_reset_add_device(&sunxi_wdt_reset);
 

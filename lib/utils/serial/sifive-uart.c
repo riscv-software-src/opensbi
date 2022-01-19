@@ -29,7 +29,7 @@
 
 /* clang-format on */
 
-static volatile void *uart_base;
+static volatile char *uart_base;
 static u32 uart_in_freq;
 static u32 uart_baudrate;
 
@@ -90,7 +90,7 @@ static struct sbi_console_device sifive_console = {
 
 int sifive_uart_init(unsigned long base, u32 in_freq, u32 baudrate)
 {
-	uart_base     = (volatile void *)base;
+	uart_base     = (volatile char *)base;
 	uart_in_freq  = in_freq;
 	uart_baudrate = baudrate;
 

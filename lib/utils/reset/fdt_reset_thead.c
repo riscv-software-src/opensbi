@@ -59,7 +59,7 @@ extern void __thead_pre_start_warm(void);
 static int thead_reset_init(void *fdt, int nodeoff,
 				 const struct fdt_match *match)
 {
-	void *p;
+	char *p;
 	const fdt64_t *val;
 	const fdt32_t *val_w;
 	int len, i;
@@ -91,7 +91,7 @@ static int thead_reset_init(void *fdt, int nodeoff,
 	/* Custom reset method for secondary harts */
 	val = fdt_getprop(fdt, nodeoff, "entry-reg", &len);
 	if (len > 0 && val) {
-		p = (void *)(ulong)fdt64_to_cpu(*val);
+          p = (char *)(ulong)fdt64_to_cpu(*val);
 
 		val_w = fdt_getprop(fdt, nodeoff, "entry-cnt", &len);
 		if (len > 0 && val_w) {

@@ -21,7 +21,7 @@
 #define UART_TX_FULL  0x2
 #define UART_RX_FULL  0x8
 
-static volatile void *uart_base;
+static volatile char *uart_base;
 
 static void shakti_uart_putc(char ch)
 {
@@ -46,7 +46,7 @@ static struct sbi_console_device shakti_console = {
 
 int shakti_uart_init(unsigned long base, u32 in_freq, u32 baudrate)
 {
-	uart_base = (volatile void *)base;
+	uart_base = (volatile char *)base;
 	u16 baud = (u16)(in_freq/(16 * baudrate));
 	writew(baud, uart_base + REG_BAUD);
 

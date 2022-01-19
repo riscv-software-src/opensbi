@@ -23,7 +23,7 @@
 
 static void plic_set_priority(struct plic_data *plic, u32 source, u32 val)
 {
-	volatile void *plic_priority = (void *)plic->addr +
+	volatile void *plic_priority = (char *)plic->addr +
 			PLIC_PRIORITY_BASE + 4 * source;
 	writel(val, plic_priority);
 }
@@ -35,19 +35,19 @@ void plic_set_thresh(struct plic_data *plic, u32 cntxid, u32 val)
 	if (!plic)
 		return;
 
-	plic_thresh = (void *)plic->addr +
+	plic_thresh = (char *)plic->addr +
 		      PLIC_CONTEXT_BASE + PLIC_CONTEXT_STRIDE * cntxid;
 	writel(val, plic_thresh);
 }
 
 void plic_set_ie(struct plic_data *plic, u32 cntxid, u32 word_index, u32 val)
 {
-	volatile void *plic_ie;
+	volatile char *plic_ie;
 
 	if (!plic)
 		return;
 
-	plic_ie = (void *)plic->addr +
+	plic_ie = (char *)plic->addr +
 		   PLIC_ENABLE_BASE + PLIC_ENABLE_STRIDE * cntxid;
 	writel(val, plic_ie + word_index * 4);
 }

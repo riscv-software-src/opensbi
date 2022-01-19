@@ -56,13 +56,13 @@ extern struct fdt_i2c_adapter fdt_i2c_adapter_sifive;
 static inline void sifive_i2c_setreg(struct sifive_i2c_adapter *adap,
 				     uint8_t reg, uint8_t value)
 {
-	writel(value, (volatile void *)adap->addr + reg);
+	writel(value, (volatile char *)adap->addr + reg);
 }
 
 static inline uint8_t sifive_i2c_getreg(struct sifive_i2c_adapter *adap,
 					uint8_t reg)
 {
-	return readl((volatile void *)adap->addr + reg);
+	return readl((volatile char *)adap->addr + reg);
 }
 
 static int sifive_i2c_adapter_rxack(struct sifive_i2c_adapter *adap)

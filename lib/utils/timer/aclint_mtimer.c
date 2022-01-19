@@ -47,7 +47,7 @@ static u64 mtimer_time_rd32(volatile u64 *addr)
 static void mtimer_time_wr32(bool timecmp, u64 value, volatile u64 *addr)
 {
 	writel_relaxed((timecmp) ? -1U : 0U, (void *)(addr));
-	writel_relaxed((u32)(value >> 32), (void *)(addr) + 0x04);
+	writel_relaxed((u32)(value >> 32), (char *)(addr) + 0x04);
 	writel_relaxed((u32)value, (void *)(addr));
 }
 
