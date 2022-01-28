@@ -347,7 +347,7 @@ int sbi_pmu_ctr_start(unsigned long cbase, unsigned long cmask,
 	int ret = SBI_EINVAL;
 	bool bUpdate = FALSE;
 
-	if (__fls(ctr_mask) >= total_ctrs)
+	if (sbi_fls(ctr_mask) >= total_ctrs)
 		return ret;
 
 	if (flags & SBI_PMU_START_FLAG_SET_INIT_VALUE)
@@ -421,7 +421,7 @@ int sbi_pmu_ctr_stop(unsigned long cbase, unsigned long cmask,
 	uint32_t event_code;
 	unsigned long ctr_mask = cmask << cbase;
 
-	if (__fls(ctr_mask) >= total_ctrs)
+	if (sbi_fls(ctr_mask) >= total_ctrs)
 		return SBI_EINVAL;
 
 	for_each_set_bit_from(cbase, &ctr_mask, total_ctrs) {
@@ -614,7 +614,7 @@ int sbi_pmu_ctr_cfg_match(unsigned long cidx_base, unsigned long cidx_mask,
 	unsigned long tmp = cidx_mask << cidx_base;
 
 	/* Do a basic sanity check of counter base & mask */
-	if (__fls(tmp) >= total_ctrs || event_type >= SBI_PMU_EVENT_TYPE_MAX)
+	if (sbi_fls(tmp) >= total_ctrs || event_type >= SBI_PMU_EVENT_TYPE_MAX)
 		return SBI_EINVAL;
 
 	if (flags & SBI_PMU_CFG_FLAG_SKIP_MATCH) {

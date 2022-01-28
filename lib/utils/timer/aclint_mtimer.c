@@ -154,7 +154,7 @@ static int aclint_mtimer_add_regions(unsigned long addr, unsigned long size)
 	while (pos < end) {
 		rsize = pos & (MTIMER_ADD_REGION_ALIGN - 1);
 		if (rsize)
-			rsize = 1UL << __ffs(pos);
+			rsize = 1UL << sbi_ffs(pos);
 		else
 			rsize = ((end - pos) < MTIMER_ADD_REGION_ALIGN) ?
 				(end - pos) : MTIMER_ADD_REGION_ALIGN;

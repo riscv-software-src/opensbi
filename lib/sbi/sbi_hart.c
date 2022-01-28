@@ -386,7 +386,7 @@ static int hart_pmu_get_allowed_bits(void)
 		if (trap.cause)
 			return 0;
 	}
-	num_bits = __fls(val) + 1;
+	num_bits = sbi_fls(val) + 1;
 #if __riscv_xlen == 32
 	csr_write_allowed(CSR_MHPMCOUNTER3H, (ulong)&trap, val);
 	if (!trap.cause) {
@@ -394,7 +394,7 @@ static int hart_pmu_get_allowed_bits(void)
 		if (trap.cause)
 			return num_bits;
 	}
-	num_bits += __fls(val) + 1;
+	num_bits += sbi_fls(val) + 1;
 
 #endif
 
@@ -457,8 +457,8 @@ static void hart_detect_features(struct sbi_scratch *scratch)
 	 */
 	val = hart_pmp_get_allowed_addr();
 	if (val) {
-		hfeatures->pmp_gran =  1 << (__ffs(val) + 2);
-		hfeatures->pmp_addr_bits = __fls(val) + 1;
+		hfeatures->pmp_gran =  1 << (sbi_ffs(val) + 2);
+		hfeatures->pmp_addr_bits = sbi_fls(val) + 1;
 		/* Detect number of PMP regions. At least PMPADDR0 should be implemented*/
 		__check_csr_64(CSR_PMPADDR0, 0, val, pmp_count, __pmp_skip);
 	}
