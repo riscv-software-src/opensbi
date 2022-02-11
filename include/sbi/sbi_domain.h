@@ -174,7 +174,9 @@ int sbi_domain_register(struct sbi_domain *dom,
  * Add a memory region to the root domain
  * @param reg pointer to the memory region to be added
  *
- * @return 0 on success and negative error code on failure
+ * @return 0 on success
+ * @return SBI_EALREADY if memory region conflicts with existing
+ * @return SBI_EINVAL otherwise
  */
 int sbi_domain_root_add_memregion(const struct sbi_domain_memregion *reg);
 

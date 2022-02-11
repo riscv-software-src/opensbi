@@ -471,8 +471,12 @@ int sbi_domain_root_add_memregion(const struct sbi_domain_memregion *reg)
 
 	/* Check for conflicts */
 	sbi_domain_for_each_memregion(&root, nreg) {
-		if (is_region_conflict(reg, nreg))
-			return SBI_EINVAL;
+		if (is_region_conflict(reg, nreg)) {
+			sbi_printf("%s: is_region_conflict check failed"
+			" 0x%lx conflicts existing 0x%lx\n", __func__,
+				   reg->base, nreg->base);
+			return SBI_EALREADY;
+		}
 	}
 
 	/* Append the memregion to root memregions */
