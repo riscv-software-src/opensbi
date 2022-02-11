@@ -159,7 +159,7 @@ static bool is_region_subset(const struct sbi_domain_memregion *regA,
 	ulong regA_start = regA->base;
 	ulong regA_end = regA->base + (BIT(regA->order) - 1);
 	ulong regB_start = regB->base;
-	ulong regB_end = regB->base + (BIT(regA->order) - 1);
+	ulong regB_end = regB->base + (BIT(regB->order) - 1);
 
 	if ((regB_start <= regA_start) &&
 	    (regA_start < regB_end) &&
