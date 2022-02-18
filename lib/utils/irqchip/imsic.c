@@ -15,8 +15,8 @@
 #include <sbi/sbi_domain.h>
 #include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_ipi.h>
+#include <sbi/sbi_irqchip.h>
 #include <sbi/sbi_error.h>
-#include <sbi/sbi_trap.h>
 #include <sbi_utils/irqchip/imsic.h>
 
 #define IMSIC_MMIO_PAGE_LE		0x00
@@ -268,7 +268,7 @@ int imsic_cold_irqchip_init(struct imsic_data *imsic)
 		return SBI_EINVAL;
 
 	/* Setup external interrupt function for IMSIC */
-	sbi_trap_set_external_irqfn(imsic_external_irqfn);
+	sbi_irqchip_set_irqfn(imsic_external_irqfn);
 
 	/* Add IMSIC regions to the root domain */
 	for (i = 0; i < IMSIC_MAX_REGS && imsic->regs[i].size; i++) {

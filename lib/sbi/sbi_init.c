@@ -18,6 +18,7 @@
 #include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_hsm.h>
 #include <sbi/sbi_ipi.h>
+#include <sbi/sbi_irqchip.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_pmu.h>
 #include <sbi/sbi_system.h>
@@ -270,13 +271,12 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 
 	sbi_boot_print_banner(scratch);
 
-	rc = sbi_platform_irqchip_init(plat, TRUE);
+	rc = sbi_irqchip_init(scratch, TRUE);
 	if (rc) {
-		sbi_printf("%s: platform irqchip init failed (error %d)\n",
+		sbi_printf("%s: irqchip init failed (error %d)\n",
 			   __func__, rc);
 		sbi_hart_hang();
 	}
-	csr_set(CSR_MIE, MIP_MEIP);
 
 	rc = sbi_ipi_init(scratch, TRUE);
 	if (rc) {
@@ -374,10 +374,9 @@ static void init_warm_startup(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_platform_irqchip_init(plat, FALSE);
+	rc = sbi_irqchip_init(scratch, FALSE);
 	if (rc)
 		sbi_hart_hang();
-	csr_set(CSR_MIE, MIP_MEIP);
 
 	rc = sbi_ipi_init(scratch, FALSE);
 	if (rc)
@@ -552,8 +551,7 @@ void __noreturn sbi_exit(struct sbi_scratch *scratch)
 
 	sbi_ipi_exit(scratch);
 
-	csr_clear(CSR_MIE, MIP_MEIP);
-	sbi_platform_irqchip_exit(plat);
+	sbi_irqchip_exit(scratch);
 
 	sbi_platform_final_exit(plat);
 

@@ -205,8 +205,6 @@ struct sbi_trap_info {
 int sbi_trap_redirect(struct sbi_trap_regs *regs,
 		      struct sbi_trap_info *trap);
 
-void sbi_trap_set_external_irqfn(int (*fn)(struct sbi_trap_regs *regs));
-
 struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs);
 
 void __noreturn sbi_trap_exit(const struct sbi_trap_regs *regs);
