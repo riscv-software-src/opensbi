@@ -467,6 +467,24 @@ int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
 	return fdt_parse_uart8250_node(fdt, nodeoffset, uart);
 }
 
+int fdt_parse_xlnx_uartlite_node(void *fdt, int nodeoffset,
+			       struct platform_uart_data *uart)
+{
+	int rc;
+	uint64_t reg_addr, reg_size;
+
+	if (nodeoffset < 0 || !uart || !fdt)
+		return SBI_ENODEV;
+
+	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
+				    &reg_addr, &reg_size);
+	if (rc < 0 || !reg_addr || !reg_size)
+		return SBI_ENODEV;
+	uart->addr = reg_addr;
+
+	return 0;
+}
+
 int fdt_parse_aplic_node(void *fdt, int nodeoff, struct aplic_data *aplic)
 {
 	bool child_found;
