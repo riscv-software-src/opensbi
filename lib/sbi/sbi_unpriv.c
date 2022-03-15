@@ -83,7 +83,7 @@ DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u32, lwu)
 DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u64, ld)
 DEFINE_UNPRIVILEGED_STORE_FUNCTION(u64, sd)
 DEFINE_UNPRIVILEGED_LOAD_FUNCTION(ulong, ld)
-#else
+#elif __riscv_xlen == 32
 DEFINE_UNPRIVILEGED_LOAD_FUNCTION(u32, lw)
 DEFINE_UNPRIVILEGED_LOAD_FUNCTION(ulong, lw)
 
@@ -112,6 +112,8 @@ void sbi_store_u64(u64 *addr, u64 val,
 	if (trap->cause)
 		return;
 }
+#else
+# error "Unexpected __riscv_xlen"
 #endif
 
 ulong sbi_get_insn(ulong mepc, struct sbi_trap_info *trap)
