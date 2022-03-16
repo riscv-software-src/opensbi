@@ -73,6 +73,66 @@ struct sbi_scratch {
 	unsigned long options;
 };
 
+/**
+ * Prevent modification of struct sbi_scratch from affecting
+ * SBI_SCRATCH_xxx_OFFSET
+ */
+_Static_assert(
+	offsetof(struct sbi_scratch, fw_start)
+		== SBI_SCRATCH_FW_START_OFFSET,
+	"struct sbi_scratch definition has changed, please redefine "
+	"SBI_SCRATCH_FW_START_OFFSET");
+_Static_assert(
+	offsetof(struct sbi_scratch, fw_size)
+		== SBI_SCRATCH_FW_SIZE_OFFSET,
+	"struct sbi_scratch definition has changed, please redefine "
+	"SBI_SCRATCH_FW_SIZE_OFFSET");
+_Static_assert(
+	offsetof(struct sbi_scratch, next_arg1)
+		== SBI_SCRATCH_NEXT_ARG1_OFFSET,
+	"struct sbi_scratch definition has changed, please redefine "
+	"SBI_SCRATCH_NEXT_ARG1_OFFSET");
+_Static_assert(
+	offsetof(struct sbi_scratch, next_addr)
+		== SBI_SCRATCH_NEXT_ADDR_OFFSET,
+	"struct sbi_scratch definition has changed, please redefine "
+	"SBI_SCRATCH_NEXT_ADDR_OFFSET");
+_Static_assert(
+	offsetof(struct sbi_scratch, next_mode)
+		== SBI_SCRATCH_NEXT_MODE_OFFSET,
+	"struct sbi_scratch definition has changed, please redefine "
+	"SBI_SCRATCH_NEXT_MODE_OFFSET");
+_Static_assert(
+	offsetof(struct sbi_scratch, warmboot_addr)
+		== SBI_SCRATCH_WARMBOOT_ADDR_OFFSET,
+	"struct sbi_scratch definition has changed, please redefine "
+	"SBI_SCRATCH_WARMBOOT_ADDR_OFFSET");
+_Static_assert(
+	offsetof(struct sbi_scratch, platform_addr)
+		== SBI_SCRATCH_PLATFORM_ADDR_OFFSET,
+	"struct sbi_scratch definition has changed, please redefine "
+	"SBI_SCRATCH_PLATFORM_ADDR_OFFSET");
+_Static_assert(
+	offsetof(struct sbi_scratch, hartid_to_scratch)
+		== SBI_SCRATCH_HARTID_TO_SCRATCH_OFFSET,
+	"struct sbi_scratch definition has changed, please redefine "
+	"SBI_SCRATCH_HARTID_TO_SCRATCH_OFFSET");
+_Static_assert(
+	offsetof(struct sbi_scratch, trap_exit)
+		== SBI_SCRATCH_TRAP_EXIT_OFFSET,
+	"struct sbi_scratch definition has changed, please redefine "
+	"SBI_SCRATCH_TRAP_EXIT_OFFSET");
+_Static_assert(
+	offsetof(struct sbi_scratch, tmp0)
+		== SBI_SCRATCH_TMP0_OFFSET,
+	"struct sbi_scratch definition has changed, please redefine "
+	"SBI_SCRATCH_TMP0_OFFSET");
+_Static_assert(
+	offsetof(struct sbi_scratch, options)
+		== SBI_SCRATCH_OPTIONS_OFFSET,
+	"struct sbi_scratch definition has changed, please redefine "
+	"SBI_SCRATCH_OPTIONS_OFFSET");
+
 /** Possible options for OpenSBI library */
 enum sbi_scratch_options {
 	/** Disable prints during boot */
