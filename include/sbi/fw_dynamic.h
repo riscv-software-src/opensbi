@@ -75,6 +75,41 @@ struct fw_dynamic_info {
 	unsigned long boot_hart;
 } __packed;
 
+/**
+ * Prevent modification of struct fw_dynamic_info from affecting
+ * FW_DYNAMIC_INFO_xxx_OFFSET
+ */
+_Static_assert(
+	offsetof(struct fw_dynamic_info, magic)
+		== FW_DYNAMIC_INFO_MAGIC_OFFSET,
+	"struct fw_dynamic_info definition has changed, please redefine "
+	"FW_DYNAMIC_INFO_MAGIC_OFFSET");
+_Static_assert(
+	offsetof(struct fw_dynamic_info, version)
+		== FW_DYNAMIC_INFO_VERSION_OFFSET,
+	"struct fw_dynamic_info definition has changed, please redefine "
+	"FW_DYNAMIC_INFO_VERSION_OFFSET");
+_Static_assert(
+	offsetof(struct fw_dynamic_info, next_addr)
+		== FW_DYNAMIC_INFO_NEXT_ADDR_OFFSET,
+	"struct fw_dynamic_info definition has changed, please redefine "
+	"FW_DYNAMIC_INFO_NEXT_ADDR_OFFSET");
+_Static_assert(
+	offsetof(struct fw_dynamic_info, next_mode)
+		== FW_DYNAMIC_INFO_NEXT_MODE_OFFSET,
+	"struct fw_dynamic_info definition has changed, please redefine "
+	"FW_DYNAMIC_INFO_NEXT_MODE_OFFSET");
+_Static_assert(
+	offsetof(struct fw_dynamic_info, options)
+		== FW_DYNAMIC_INFO_OPTIONS_OFFSET,
+	"struct fw_dynamic_info definition has changed, please redefine "
+	"FW_DYNAMIC_INFO_OPTIONS_OFFSET");
+_Static_assert(
+	offsetof(struct fw_dynamic_info, boot_hart)
+		== FW_DYNAMIC_INFO_BOOT_HART_OFFSET,
+	"struct fw_dynamic_info definition has changed, please redefine "
+	"FW_DYNAMIC_INFO_BOOT_HART_OFFSET");
+
 #endif
 
 #endif
