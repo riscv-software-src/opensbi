@@ -39,7 +39,7 @@ static unsigned long hart_features_offset;
 
 static void mstatus_init(struct sbi_scratch *scratch)
 {
-	unsigned long mstatus_val = 0;
+	unsigned long menvcfg_val, mstatus_val = 0;
 	int cidx;
 	unsigned int num_mhpm = sbi_hart_mhpm_count(scratch);
 	uint64_t mhpmevent_init_val = 0;
@@ -86,6 +86,37 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		csr_write_num(CSR_MHPMEVENT3 + cidx, mhpmevent_init_val);
 #endif
 	}
+
+	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MENVCFG)) {
+		menvcfg_val = csr_read(CSR_MENVCFG);
+
+		/*
+		 * Set menvcfg.CBZE == 1
+		 *
+		 * If Zicboz extension is not available then writes to
+		 * menvcfg.CBZE will be ignored because it is a WARL field.
+		 */
+		menvcfg_val |= ENVCFG_CBZE;
+
+		/*
+		 * Set menvcfg.CBCFE == 1
+		 *
+		 * If Zicbom extension is not available then writes to
+		 * menvcfg.CBCFE will be ignored because it is a WARL field.
+		 */
+		menvcfg_val |= ENVCFG_CBCFE;
+
+		/*
+		 * Set menvcfg.CBIE == 3
+		 *
+		 * If Zicbom extension is not available then writes to
+		 * menvcfg.CBIE will be ignored because it is a WARL field.
+		 */
+		menvcfg_val |= ENVCFG_CBIE_INV << ENVCFG_CBIE_SHIFT;
+
+		csr_write(CSR_MENVCFG, menvcfg_val);
+	}
+
 	/* Disable all interrupts */
 	csr_write(CSR_MIE, 0);
 
