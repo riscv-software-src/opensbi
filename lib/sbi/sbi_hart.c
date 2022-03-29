@@ -114,6 +114,16 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		 */
 		menvcfg_val |= ENVCFG_CBIE_INV << ENVCFG_CBIE_SHIFT;
 
+		/*
+		 * Set menvcfg.PBMTE == 1 for RV64 or RV128
+		 *
+		 * If Svpbmt extension is not available then menvcfg.PBMTE
+		 * will be read-only zero.
+		 */
+#if __riscv_xlen > 32
+		menvcfg_val |= ENVCFG_PBMTE;
+#endif
+
 		csr_write(CSR_MENVCFG, menvcfg_val);
 	}
 
