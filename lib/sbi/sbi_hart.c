@@ -304,6 +304,9 @@ static inline char *sbi_hart_feature_id2string(unsigned long feature)
 	case SBI_HART_HAS_AIA:
 		fstr = "aia";
 		break;
+	case SBI_HART_HAS_MENVCFG:
+		fstr = "menvcfg";
+		break;
 	default:
 		break;
 	}
@@ -534,6 +537,12 @@ __mhpm_skip:
 		goto __aia_skip;
 	hfeatures->features |= SBI_HART_HAS_AIA;
 __aia_skip:
+
+	/* Detect if hart has menvcfg CSR */
+	csr_read_allowed(CSR_MENVCFG, (unsigned long)&trap);
+	if (!trap.cause)
+		hfeatures->features |= SBI_HART_HAS_MENVCFG;
+
 	return;
 }
 
