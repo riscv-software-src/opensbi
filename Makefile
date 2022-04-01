@@ -284,7 +284,13 @@ GENFLAGS	+=	$(libsbiutils-genflags-y)
 GENFLAGS	+=	$(platform-genflags-y)
 GENFLAGS	+=	$(firmware-genflags-y)
 
-CFLAGS		=	-g -Wall -Werror -ffreestanding -nostdlib -fno-stack-protector -fno-strict-aliasing -O2
+ifeq ($(CC_IS_CLANG),y)
+# newer clang versions use dwarf v5 as default (tested with clang 14.0.0) which is unsupported by gdb < 10.1 (https://discourse.llvm.org/t/gdb-10-1-cant-read-clangs-dwarf-v5/6035)
+DEBUG_FLAGS = -gdwarf-4
+else
+DEBUG_FLAGS = -g
+endif
+CFLAGS		=	$(DEBUG_FLAGS) -Wall -Werror -ffreestanding -nostdlib -fno-stack-protector -fno-strict-aliasing -O2
 CFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls -mstrict-align
 # enable -m(no-)save-restore option by CC_SUPPORT_SAVE_RESTORE
 ifeq ($(CC_SUPPORT_SAVE_RESTORE),y)
@@ -302,7 +308,7 @@ CPPFLAGS	+=	$(GENFLAGS)
 CPPFLAGS	+=	$(platform-cppflags-y)
 CPPFLAGS	+=	$(firmware-cppflags-y)
 
-ASFLAGS		=	-g -Wall -nostdlib
+ASFLAGS		=	$(DEBUG_FLAGS) -Wall -nostdlib
 ASFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls -mstrict-align
 # enable -m(no-)save-restore option by CC_SUPPORT_SAVE_RESTORE
 ifeq ($(CC_SUPPORT_SAVE_RESTORE),y)
