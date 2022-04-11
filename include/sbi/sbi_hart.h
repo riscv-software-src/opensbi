@@ -28,9 +28,11 @@ enum sbi_hart_features {
 	SBI_HART_HAS_AIA = (1 << 5),
 	/** HART has menvcfg CSR */
 	SBI_HART_HAS_MENVCFG = (1 << 6),
+	/** HART has mstateen CSR **/
+	SBI_HART_HAS_SMSTATEEN = (1 << 7),
 
 	/** Last index of Hart features*/
-	SBI_HART_HAS_LAST_FEATURE = SBI_HART_HAS_MENVCFG,
+	SBI_HART_HAS_LAST_FEATURE = SBI_HART_HAS_SMSTATEEN,
 };
 
 struct sbi_scratch;

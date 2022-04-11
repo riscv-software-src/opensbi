@@ -43,6 +43,7 @@ static void mstatus_init(struct sbi_scratch *scratch)
 	int cidx;
 	unsigned int num_mhpm = sbi_hart_mhpm_count(scratch);
 	uint64_t mhpmevent_init_val = 0;
+	uint64_t mstateen_val;
 
 	/* Enable FPU */
 	if (misa_extension('D') || misa_extension('F'))
@@ -84,6 +85,22 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		csr_write_num(CSR_MHPMEVENT3H + cidx, mhpmevent_init_val >> BITS_PER_LONG);
 #else
 		csr_write_num(CSR_MHPMEVENT3 + cidx, mhpmevent_init_val);
+#endif
+	}
+
+	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_SMSTATEEN)) {
+		mstateen_val = csr_read(CSR_MSTATEEN0);
+#if __riscv_xlen == 32
+		mstateen_val |= ((uint64_t)csr_read(CSR_MSTATEEN0H)) << 32;
+#endif
+		mstateen_val |= SMSTATEEN_STATEN;
+		if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MENVCFG))
+			mstateen_val |= SMSTATEEN0_HSENVCFG;
+		else
+			mstateen_val &= ~SMSTATEEN0_HSENVCFG;
+		csr_write(CSR_MSTATEEN0, mstateen_val);
+#if __riscv_xlen == 32
+		csr_write(CSR_MSTATEEN0H, mstateen_val >> 32);
 #endif
 	}
 
@@ -348,6 +365,9 @@ static inline char *sbi_hart_feature_id2string(unsigned long feature)
 	case SBI_HART_HAS_MENVCFG:
 		fstr = "menvcfg";
 		break;
+	case SBI_HART_HAS_SMSTATEEN:
+		fstr = "smstateen";
+		break;
 	default:
 		break;
 	}
@@ -583,6 +603,11 @@ __aia_skip:
 	csr_read_allowed(CSR_MENVCFG, (unsigned long)&trap);
 	if (!trap.cause)
 		hfeatures->features |= SBI_HART_HAS_MENVCFG;
+
+	/* Detect if hart supports mstateen CSRs */
+	val = csr_read_allowed(CSR_MSTATEEN0, (unsigned long)&trap);
+	if (!trap.cause)
+		hfeatures->features |= SBI_HART_HAS_SMSTATEEN;
 
 	return;
 }
