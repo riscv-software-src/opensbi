@@ -79,7 +79,7 @@ static int platform_console_init(void)
 {
 	/* Example if the generic UART8250 driver is used */
 	return uart8250_init(PLATFORM_UART_ADDR, PLATFORM_UART_INPUT_FREQ,
-			     PLATFORM_UART_BAUDRATE, 0, 1);
+			     PLATFORM_UART_BAUDRATE, 0, 1, 0);
 }
 
 /*

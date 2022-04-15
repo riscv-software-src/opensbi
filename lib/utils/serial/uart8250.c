@@ -91,11 +91,11 @@ static struct sbi_console_device uart8250_console = {
 };
 
 int uart8250_init(unsigned long base, u32 in_freq, u32 baudrate, u32 reg_shift,
-		  u32 reg_width)
+		  u32 reg_width, u32 reg_offset)
 {
 	u16 bdiv;
 
-	uart8250_base      = (volatile char *)base;
+	uart8250_base      = (volatile char *)base + reg_offset;
 	uart8250_reg_shift = reg_shift;
 	uart8250_reg_width = reg_width;
 	uart8250_in_freq   = in_freq;

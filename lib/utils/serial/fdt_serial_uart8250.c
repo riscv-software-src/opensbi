@@ -22,7 +22,8 @@ static int serial_uart8250_init(void *fdt, int nodeoff,
 		return rc;
 
 	return uart8250_init(uart.addr, uart.freq, uart.baud,
-			     uart.reg_shift, uart.reg_io_width);
+			     uart.reg_shift, uart.reg_io_width,
+			     uart.reg_offset);
 }
 
 static const struct fdt_match serial_uart8250_match[] = {

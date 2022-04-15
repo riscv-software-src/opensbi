@@ -21,6 +21,7 @@
 #define DEFAULT_UART_BAUD		115200
 #define DEFAULT_UART_REG_SHIFT		0
 #define DEFAULT_UART_REG_IO_WIDTH	1
+#define DEFAULT_UART_REG_OFFSET		0
 
 #define DEFAULT_SIFIVE_UART_FREQ		0
 #define DEFAULT_SIFIVE_UART_BAUD		115200
@@ -448,6 +449,12 @@ int fdt_parse_uart8250_node(void *fdt, int nodeoffset,
 		uart->reg_io_width = fdt32_to_cpu(*val);
 	else
 		uart->reg_io_width = DEFAULT_UART_REG_IO_WIDTH;
+
+	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "reg-offset", &len);
+	if (len > 0 && val)
+		uart->reg_offset = fdt32_to_cpu(*val);
+	else
+		uart->reg_offset = DEFAULT_UART_REG_OFFSET;
 
 	return 0;
 }

@@ -31,6 +31,7 @@ struct platform_uart_data {
 	unsigned long baud;
 	unsigned long reg_shift;
 	unsigned long reg_io_width;
+	unsigned long reg_offset;
 };
 
 const struct fdt_match *fdt_match_node(void *fdt, int nodeoff,

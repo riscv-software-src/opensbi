@@ -23,6 +23,7 @@
 #define ARIANE_UART_BAUDRATE			115200
 #define ARIANE_UART_REG_SHIFT			2
 #define ARIANE_UART_REG_WIDTH			4
+#define ARIANE_UART_REG_OFFSET			0
 #define ARIANE_PLIC_ADDR			0xc000000
 #define ARIANE_PLIC_NUM_SOURCES			3
 #define ARIANE_HART_COUNT			1
@@ -92,7 +93,8 @@ static int ariane_console_init(void)
 			     ARIANE_UART_FREQ,
 			     ARIANE_UART_BAUDRATE,
 			     ARIANE_UART_REG_SHIFT,
-			     ARIANE_UART_REG_WIDTH);
+			     ARIANE_UART_REG_WIDTH,
+			     ARIANE_UART_REG_OFFSET);
 }
 
 static int plic_ariane_warm_irqchip_init(int m_cntx_id, int s_cntx_id)

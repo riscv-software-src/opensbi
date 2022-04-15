@@ -28,6 +28,7 @@
 #define AE350_UART_BAUDRATE		38400
 #define AE350_UART_REG_SHIFT		2
 #define AE350_UART_REG_WIDTH		0
+#define AE350_UART_REG_OFFSET		0
 
 /*Memory and Miscellaneous Registers*/
 #define CSR_MILMB		0x7c0

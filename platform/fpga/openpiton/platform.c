@@ -22,6 +22,7 @@
 #define OPENPITON_DEFAULT_UART_BAUDRATE		115200
 #define OPENPITON_DEFAULT_UART_REG_SHIFT	0
 #define OPENPITON_DEFAULT_UART_REG_WIDTH	1
+#define OPENPITON_DEFAULT_UART_REG_OFFSET	0
 #define OPENPITON_DEFAULT_PLIC_ADDR		0xfff1100000
 #define OPENPITON_DEFAULT_PLIC_NUM_SOURCES	2
 #define OPENPITON_DEFAULT_HART_COUNT		3
@@ -127,7 +128,8 @@ static int openpiton_console_init(void)
 			     uart.freq,
 			     uart.baud,
 			     OPENPITON_DEFAULT_UART_REG_SHIFT,
-			     OPENPITON_DEFAULT_UART_REG_WIDTH);
+			     OPENPITON_DEFAULT_UART_REG_WIDTH,
+			     OPENPITON_DEFAULT_UART_REG_OFFSET);
 }
 
 static int plic_openpiton_warm_irqchip_init(int m_cntx_id, int s_cntx_id)
