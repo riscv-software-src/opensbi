@@ -478,7 +478,7 @@ static void hart_detect_features(struct sbi_scratch *scratch)
 {
 	struct sbi_trap_info trap = {0};
 	struct hart_features *hfeatures;
-	unsigned long val;
+	unsigned long val, oldval;
 
 	/* Reset hart features */
 	hfeatures = sbi_scratch_offset_ptr(scratch, hart_features_offset);
@@ -487,14 +487,14 @@ static void hart_detect_features(struct sbi_scratch *scratch)
 	hfeatures->mhpm_count = 0;
 
 #define __check_csr(__csr, __rdonly, __wrval, __field, __skip)	\
-	val = csr_read_allowed(__csr, (ulong)&trap);			\
+	oldval = csr_read_allowed(__csr, (ulong)&trap);			\
 	if (!trap.cause) {						\
 		if (__rdonly) {						\
 			(hfeatures->__field)++;				\
 		} else {						\
 			csr_write_allowed(__csr, (ulong)&trap, __wrval);\
 			if (!trap.cause) {				\
-				if (csr_swap(__csr, val) == __wrval)	\
+				if (csr_swap(__csr, oldval) == __wrval)	\
 					(hfeatures->__field)++;		\
 				else					\
 					goto __skip;			\
