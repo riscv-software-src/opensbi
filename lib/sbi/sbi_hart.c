@@ -147,6 +147,22 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		menvcfg_val |= ENVCFG_PBMTE;
 #endif
 
+		/*
+		 * The spec doesn't explicitly describe the reset value of menvcfg.
+		 * Enable access to stimecmp if sstc extension is present in the
+		 * hardware.
+		 */
+		if (sbi_hart_has_feature(scratch, SBI_HART_HAS_SSTC)) {
+#if __riscv_xlen == 32
+			unsigned long menvcfgh_val;
+			menvcfgh_val = csr_read(CSR_MENVCFGH);
+			menvcfgh_val |= ENVCFGH_STCE;
+			csr_write(CSR_MENVCFGH, menvcfgh_val);
+#else
+			menvcfg_val |= ENVCFG_STCE;
+#endif
+		}
+
 		csr_write(CSR_MENVCFG, menvcfg_val);
 	}
 
@@ -367,6 +383,8 @@ static inline char *sbi_hart_feature_id2string(unsigned long feature)
 		break;
 	case SBI_HART_HAS_AIA:
 		fstr = "aia";
+	case SBI_HART_HAS_SSTC:
+		fstr = "sstc";
 		break;
 	case SBI_HART_HAS_MENVCFG:
 		fstr = "menvcfg";
@@ -609,6 +627,16 @@ __aia_skip:
 	csr_read_allowed(CSR_MENVCFG, (unsigned long)&trap);
 	if (!trap.cause)
 		hfeatures->features |= SBI_HART_HAS_MENVCFG;
+
+	/**
+	 * Detect if hart supports stimecmp CSR(Sstc extension) and menvcfg is
+	 * implemented.
+	 */
+	if (hfeatures->features & SBI_HART_HAS_MENVCFG) {
+		csr_read_allowed(CSR_STIMECMP, (unsigned long)&trap);
+		if (!trap.cause)
+			hfeatures->features |= SBI_HART_HAS_SSTC;
+	}
 
 	/* Detect if hart supports mstateen CSRs */
 	val = csr_read_allowed(CSR_MSTATEEN0, (unsigned long)&trap);

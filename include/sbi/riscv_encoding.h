@@ -324,6 +324,10 @@
 #define CSR_STVAL			0x143
 #define CSR_SIP				0x144
 
+/* Sstc extension */
+#define CSR_STIMECMP			0x14D
+#define CSR_STIMECMPH			0x15D
+
 /* Supervisor Protection and Translation */
 #define CSR_SATP			0x180
 

@@ -124,16 +124,35 @@ void sbi_timer_set_delta_upper(ulong delta_upper)
 void sbi_timer_event_start(u64 next_event)
 {
 	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_SET_TIMER);
-	if (timer_dev && timer_dev->timer_event_start)
+
+	/**
+	 * Update the stimecmp directly if available. This allows
+	 * the older software to leverage sstc extension on newer hardware.
+	 */
+	if (sbi_hart_has_feature(sbi_scratch_thishart_ptr(), SBI_HART_HAS_SSTC)) {
+#if __riscv_xlen == 32
+		csr_write(CSR_STIMECMP, next_event & 0xFFFFFFFF);
+		csr_write(CSR_STIMECMPH, next_event >> 32);
+#else
+		csr_write(CSR_STIMECMP, next_event);
+#endif
+	} else if (timer_dev && timer_dev->timer_event_start) {
 		timer_dev->timer_event_start(next_event);
-	csr_clear(CSR_MIP, MIP_STIP);
+		csr_clear(CSR_MIP, MIP_STIP);
+	}
 	csr_set(CSR_MIE, MIP_MTIP);
 }
 
 void sbi_timer_process(void)
 {
 	csr_clear(CSR_MIE, MIP_MTIP);
-	csr_set(CSR_MIP, MIP_STIP);
+	/*
+	 * If sstc extension is available, supervisor can receive the timer
+	 * directly without M-mode come in between. This function should
+	 * only invoked if M-mode programs the timer for its own purpose.
+	 */
+	if (!sbi_hart_has_feature(sbi_scratch_thishart_ptr(), SBI_HART_HAS_SSTC))
+		csr_set(CSR_MIP, MIP_STIP);
 }
 
 const struct sbi_timer_device *sbi_timer_get_device(void)

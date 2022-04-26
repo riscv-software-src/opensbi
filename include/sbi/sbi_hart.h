@@ -30,9 +30,11 @@ enum sbi_hart_features {
 	SBI_HART_HAS_MENVCFG = (1 << 6),
 	/** HART has mstateen CSR **/
 	SBI_HART_HAS_SMSTATEEN = (1 << 7),
+	/** HART has SSTC extension implemented in hardware */
+	SBI_HART_HAS_SSTC = (1 << 8),
 
 	/** Last index of Hart features*/
-	SBI_HART_HAS_LAST_FEATURE = SBI_HART_HAS_SMSTATEEN,
+	SBI_HART_HAS_LAST_FEATURE = SBI_HART_HAS_SSTC,
 };
 
 struct sbi_scratch;
