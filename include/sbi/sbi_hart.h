@@ -12,6 +12,18 @@
 
 #include <sbi/sbi_types.h>
 
+/** Possible privileged specification versions of a hart */
+enum sbi_hart_priv_versions {
+	/** Unknown privileged specification */
+	SBI_HART_PRIV_VER_UNKNOWN = 0,
+	/** Privileged specification v1.10 */
+	SBI_HART_PRIV_VER_1_10 = 1,
+	/** Privileged specification v1.11 */
+	SBI_HART_PRIV_VER_1_11 = 2,
+	/** Privileged specification v1.12 */
+	SBI_HART_PRIV_VER_1_12 = 3,
+};
+
 /** Possible feature flags of a hart */
 enum sbi_hart_features {
 	/** Hart has S-mode counter enable */
@@ -56,6 +68,9 @@ unsigned long sbi_hart_pmp_granularity(struct sbi_scratch *scratch);
 unsigned int sbi_hart_pmp_addrbits(struct sbi_scratch *scratch);
 unsigned int sbi_hart_mhpm_bits(struct sbi_scratch *scratch);
 int sbi_hart_pmp_configure(struct sbi_scratch *scratch);
+int sbi_hart_priv_version(struct sbi_scratch *scratch);
+void sbi_hart_get_priv_version_str(struct sbi_scratch *scratch,
+				   char *version_str, int nvstr);
 bool sbi_hart_has_feature(struct sbi_scratch *scratch, unsigned long feature);
 void sbi_hart_get_features_str(struct sbi_scratch *scratch,
 			       char *features_str, int nfstr);

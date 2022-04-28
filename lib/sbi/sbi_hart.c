@@ -28,6 +28,7 @@ extern void __sbi_expected_trap_hext(void);
 void (*sbi_hart_expected_trap)(void) = &__sbi_expected_trap;
 
 struct hart_features {
+	int priv_version;
 	unsigned long features;
 	unsigned int pmp_count;
 	unsigned int pmp_addr_bits;
@@ -334,6 +335,39 @@ int sbi_hart_pmp_configure(struct sbi_scratch *scratch)
 	return 0;
 }
 
+int sbi_hart_priv_version(struct sbi_scratch *scratch)
+{
+	struct hart_features *hfeatures =
+			sbi_scratch_offset_ptr(scratch, hart_features_offset);
+
+	return hfeatures->priv_version;
+}
+
+void sbi_hart_get_priv_version_str(struct sbi_scratch *scratch,
+				   char *version_str, int nvstr)
+{
+	char *temp;
+	struct hart_features *hfeatures =
+			sbi_scratch_offset_ptr(scratch, hart_features_offset);
+
+	switch (hfeatures->priv_version) {
+	case SBI_HART_PRIV_VER_1_10:
+		temp = "v1.10";
+		break;
+	case SBI_HART_PRIV_VER_1_11:
+		temp = "v1.11";
+		break;
+	case SBI_HART_PRIV_VER_1_12:
+		temp = "v1.12";
+		break;
+	default:
+		temp = "unknown";
+		break;
+	}
+
+	sbi_snprintf(version_str, nvstr, "%s", temp);
+}
+
 /**
  * Check whether a particular hart feature is available
  *
@@ -583,6 +617,7 @@ __mhpm_skip:
 	/* Detect if hart supports SCOUNTEREN feature */
 	val = csr_read_allowed(CSR_SCOUNTEREN, (unsigned long)&trap);
 	if (!trap.cause) {
+		hfeatures->priv_version = SBI_HART_PRIV_VER_1_10;
 		csr_write_allowed(CSR_SCOUNTEREN, (unsigned long)&trap, val);
 		if (!trap.cause)
 			hfeatures->features |= SBI_HART_HAS_SCOUNTEREN;
@@ -591,6 +626,7 @@ __mhpm_skip:
 	/* Detect if hart supports MCOUNTEREN feature */
 	val = csr_read_allowed(CSR_MCOUNTEREN, (unsigned long)&trap);
 	if (!trap.cause) {
+		hfeatures->priv_version = SBI_HART_PRIV_VER_1_10;
 		csr_write_allowed(CSR_MCOUNTEREN, (unsigned long)&trap, val);
 		if (!trap.cause)
 			hfeatures->features |= SBI_HART_HAS_MCOUNTEREN;
@@ -600,8 +636,17 @@ __mhpm_skip:
 	val = csr_read_allowed(CSR_MCOUNTINHIBIT, (unsigned long)&trap);
 	if (!trap.cause) {
 		csr_write_allowed(CSR_MCOUNTINHIBIT, (unsigned long)&trap, val);
-		if (!trap.cause)
+		if (!trap.cause) {
+			hfeatures->priv_version = SBI_HART_PRIV_VER_1_11;
 			hfeatures->features |= SBI_HART_HAS_MCOUNTINHIBIT;
+		}
+	}
+
+	/* Detect if hart has menvcfg CSR */
+	csr_read_allowed(CSR_MENVCFG, (unsigned long)&trap);
+	if (!trap.cause) {
+		hfeatures->priv_version = SBI_HART_PRIV_VER_1_12;
+		hfeatures->features |= SBI_HART_HAS_MENVCFG;
 	}
 
 	/* Counter overflow/filtering is not useful without mcounter/inhibit */
@@ -624,11 +669,6 @@ __mhpm_skip:
 		goto __aia_skip;
 	hfeatures->features |= SBI_HART_HAS_AIA;
 __aia_skip:
-
-	/* Detect if hart has menvcfg CSR */
-	csr_read_allowed(CSR_MENVCFG, (unsigned long)&trap);
-	if (!trap.cause)
-		hfeatures->features |= SBI_HART_HAS_MENVCFG;
 
 	/**
 	 * Detect if hart supports stimecmp CSR(Sstc extension) and menvcfg is
