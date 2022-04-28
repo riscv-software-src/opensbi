@@ -404,7 +404,9 @@ static int pmu_reset_hw_mhpmevent(int ctr_idx)
 		return SBI_EFAIL;
 #if __riscv_xlen == 32
 	csr_write_num(CSR_MHPMEVENT3 + ctr_idx - 3, 0);
-	csr_write_num(CSR_MHPMEVENT3H + ctr_idx - 3, 0);
+	if (sbi_hart_has_feature(sbi_scratch_thishart_ptr(),
+                                 SBI_HART_HAS_SSCOFPMF))
+		csr_write_num(CSR_MHPMEVENT3H + ctr_idx - 3, 0);
 #else
 	csr_write_num(CSR_MHPMEVENT3 + ctr_idx - 3, 0);
 #endif
@@ -483,7 +485,9 @@ static int pmu_update_hw_mhpmevent(struct sbi_pmu_hw_event *hw_evt, int ctr_idx,
 
 #if __riscv_xlen == 32
 	csr_write_num(CSR_MHPMEVENT3 + ctr_idx - 3, mhpmevent_val & 0xFFFFFFFF);
-	csr_write_num(CSR_MHPMEVENT3H + ctr_idx - 3, mhpmevent_val >> BITS_PER_LONG);
+	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_SSCOFPMF))
+		csr_write_num(CSR_MHPMEVENT3H + ctr_idx - 3,
+			      mhpmevent_val >> BITS_PER_LONG);
 #else
 	csr_write_num(CSR_MHPMEVENT3 + ctr_idx - 3, mhpmevent_val);
 #endif

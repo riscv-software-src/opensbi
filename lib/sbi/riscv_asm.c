@@ -139,6 +139,10 @@ unsigned long csr_read_num(int csr_num)
 	switchcase_csr_read_4(CSR_MHPMCOUNTER4H, ret)
 	switchcase_csr_read_8(CSR_MHPMCOUNTER8H, ret)
 	switchcase_csr_read_16(CSR_MHPMCOUNTER16H, ret)
+	/**
+	 * The CSR range MHPMEVENT[3-16]H are available only if sscofpmf
+	 * extension is present. The caller must ensure that.
+	 */
 	switchcase_csr_read(CSR_MHPMEVENT3H, ret)
 	switchcase_csr_read_4(CSR_MHPMEVENT4H, ret)
 	switchcase_csr_read_8(CSR_MHPMEVENT8H, ret)
