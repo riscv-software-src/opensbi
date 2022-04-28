@@ -24,7 +24,7 @@ static bool hpm_allowed(int hpm_num, ulong prev_mode, bool virt)
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	if (prev_mode <= PRV_S) {
-		if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTEREN)) {
+		if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_10) {
 			cen &= csr_read(CSR_MCOUNTEREN);
 			if (virt)
 				cen &= csr_read(CSR_HCOUNTEREN);
@@ -33,7 +33,7 @@ static bool hpm_allowed(int hpm_num, ulong prev_mode, bool virt)
 		}
 	}
 	if (prev_mode == PRV_U) {
-		if (sbi_hart_has_feature(scratch, SBI_HART_HAS_SCOUNTEREN))
+		if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_10)
 			cen &= csr_read(CSR_SCOUNTEREN);
 		else
 			cen = 0;

@@ -58,7 +58,7 @@ static void mstatus_init(struct sbi_scratch *scratch)
 
 	/* Disable user mode usage of all perf counters except default ones (CY, TM, IR) */
 	if (misa_extension('S') &&
-	    sbi_hart_has_feature(scratch, SBI_HART_HAS_SCOUNTEREN))
+	    sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_10)
 		csr_write(CSR_SCOUNTEREN, 7);
 
 	/**
@@ -66,7 +66,7 @@ static void mstatus_init(struct sbi_scratch *scratch)
 	 * Supervisor mode usage for all counters are enabled by default
 	 * But counters will not run until mcountinhibit is set.
 	 */
-	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTEREN))
+	if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_10)
 		csr_write(CSR_MCOUNTEREN, -1);
 
 	/* All programmable counters will start running at runtime after S-mode request */
@@ -402,12 +402,6 @@ static inline char *sbi_hart_feature_id2string(unsigned long feature)
 		return NULL;
 
 	switch (feature) {
-	case SBI_HART_HAS_SCOUNTEREN:
-		fstr = "scounteren";
-		break;
-	case SBI_HART_HAS_MCOUNTEREN:
-		fstr = "mcounteren";
-		break;
 	case SBI_HART_HAS_MCOUNTINHIBIT:
 		fstr = "mcountinhibit";
 		break;
@@ -614,23 +608,10 @@ __mhpm_skip:
 #undef __check_csr_2
 #undef __check_csr
 
-	/* Detect if hart supports SCOUNTEREN feature */
-	val = csr_read_allowed(CSR_SCOUNTEREN, (unsigned long)&trap);
-	if (!trap.cause) {
-		hfeatures->priv_version = SBI_HART_PRIV_VER_1_10;
-		csr_write_allowed(CSR_SCOUNTEREN, (unsigned long)&trap, val);
-		if (!trap.cause)
-			hfeatures->features |= SBI_HART_HAS_SCOUNTEREN;
-	}
-
-	/* Detect if hart supports MCOUNTEREN feature */
+	/* Detect if hart supports Priv v1.10 */
 	val = csr_read_allowed(CSR_MCOUNTEREN, (unsigned long)&trap);
-	if (!trap.cause) {
+	if (!trap.cause)
 		hfeatures->priv_version = SBI_HART_PRIV_VER_1_10;
-		csr_write_allowed(CSR_MCOUNTEREN, (unsigned long)&trap, val);
-		if (!trap.cause)
-			hfeatures->features |= SBI_HART_HAS_MCOUNTEREN;
-	}
 
 	/* Detect if hart supports MCOUNTINHIBIT feature */
 	val = csr_read_allowed(CSR_MCOUNTINHIBIT, (unsigned long)&trap);
@@ -651,7 +632,7 @@ __mhpm_skip:
 
 	/* Counter overflow/filtering is not useful without mcounter/inhibit */
 	if (hfeatures->features & SBI_HART_HAS_MCOUNTINHIBIT &&
-	    hfeatures->features & SBI_HART_HAS_MCOUNTEREN) {
+	    hfeatures->priv_version >= SBI_HART_PRIV_VER_1_12) {
 		/* Detect if hart supports sscofpmf */
 		csr_read_allowed(CSR_SCOUNTOVF, (unsigned long)&trap);
 		if (!trap.cause)

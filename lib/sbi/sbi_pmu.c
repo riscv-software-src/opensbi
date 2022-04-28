@@ -733,7 +733,8 @@ void sbi_pmu_exit(struct sbi_scratch *scratch)
 	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
 		csr_write(CSR_MCOUNTINHIBIT, 0xFFFFFFF8);
 
-	csr_write(CSR_MCOUNTEREN, -1);
+	if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_10)
+		csr_write(CSR_MCOUNTEREN, -1);
 	pmu_reset_event_map(hartid);
 }
 
