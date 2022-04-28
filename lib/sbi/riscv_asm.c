@@ -53,7 +53,7 @@ int misa_xlen(void)
 void misa_string(int xlen, char *out, unsigned int out_sz)
 {
 	unsigned int i, pos = 0;
-	const char valid_isa_order[] = "iemafdqclbjtpvnsuhkorwxyzg";
+	const char valid_isa_order[] = "iemafdqclbjtpvnhkorwxyzg";
 
 	if (!out)
 		return;
