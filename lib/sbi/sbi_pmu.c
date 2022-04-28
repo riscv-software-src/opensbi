@@ -313,7 +313,7 @@ static int pmu_ctr_start_hw(uint32_t cidx, uint64_t ival, bool ival_update)
 
 	__clear_bit(cidx, &mctr_inhbt);
 
-	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_SSCOFPMF))
+	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SSCOFPMF))
 		pmu_ctr_enable_irq_hw(cidx);
 	csr_write(CSR_MCOUNTINHIBIT, mctr_inhbt);
 
@@ -404,8 +404,8 @@ static int pmu_reset_hw_mhpmevent(int ctr_idx)
 		return SBI_EFAIL;
 #if __riscv_xlen == 32
 	csr_write_num(CSR_MHPMEVENT3 + ctr_idx - 3, 0);
-	if (sbi_hart_has_feature(sbi_scratch_thishart_ptr(),
-                                 SBI_HART_HAS_SSCOFPMF))
+	if (sbi_hart_has_extension(sbi_scratch_thishart_ptr(),
+				   SBI_HART_EXT_SSCOFPMF))
 		csr_write_num(CSR_MHPMEVENT3H + ctr_idx - 3, 0);
 #else
 	csr_write_num(CSR_MHPMEVENT3 + ctr_idx - 3, 0);
@@ -476,7 +476,7 @@ static int pmu_update_hw_mhpmevent(struct sbi_pmu_hw_event *hw_evt, int ctr_idx,
 	 * Always set the OVF bit(disable interrupts) and inhibit counting of
 	 * events in M-mode. The OVF bit should be enabled during the start call.
 	 */
-	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_SSCOFPMF))
+	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SSCOFPMF))
 		mhpmevent_val = (mhpmevent_val & ~MHPMEVENT_SSCOF_MASK) |
 				 MHPMEVENT_MINH | MHPMEVENT_OF;
 
@@ -485,7 +485,7 @@ static int pmu_update_hw_mhpmevent(struct sbi_pmu_hw_event *hw_evt, int ctr_idx,
 
 #if __riscv_xlen == 32
 	csr_write_num(CSR_MHPMEVENT3 + ctr_idx - 3, mhpmevent_val & 0xFFFFFFFF);
-	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_SSCOFPMF))
+	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SSCOFPMF))
 		csr_write_num(CSR_MHPMEVENT3H + ctr_idx - 3,
 			      mhpmevent_val >> BITS_PER_LONG);
 #else
@@ -525,7 +525,7 @@ static int pmu_ctr_find_hw(unsigned long cbase, unsigned long cmask, unsigned lo
 	 */
 	fixed_ctr = pmu_ctr_find_fixed_fw(event_idx);
 	if (fixed_ctr >= 0 &&
-	    !sbi_hart_has_feature(scratch, SBI_HART_HAS_SSCOFPMF))
+	    !sbi_hart_has_extension(scratch, SBI_HART_EXT_SSCOFPMF))
 		return fixed_ctr;
 
 	if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_11)

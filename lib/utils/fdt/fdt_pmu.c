@@ -53,7 +53,7 @@ int fdt_pmu_fixup(void *fdt)
 	fdt_delprop(fdt, pmu_offset, "riscv,event-to-mhpmcounters");
 	fdt_delprop(fdt, pmu_offset, "riscv,event-to-mhpmevent");
 	fdt_delprop(fdt, pmu_offset, "riscv,raw-event-to-mhpmcounters");
-	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_SSCOFPMF))
+	if (!sbi_hart_has_extension(scratch, SBI_HART_EXT_SSCOFPMF))
 		fdt_delprop(fdt, pmu_offset, "interrupts-extended");
 
 	return 0;

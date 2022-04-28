@@ -29,7 +29,7 @@ void (*sbi_hart_expected_trap)(void) = &__sbi_expected_trap;
 
 struct hart_features {
 	int priv_version;
-	unsigned long features;
+	unsigned long extensions;
 	unsigned int pmp_count;
 	unsigned int pmp_addr_bits;
 	unsigned long pmp_gran;
@@ -83,7 +83,7 @@ static void mstatus_init(struct sbi_scratch *scratch)
 	for (cidx = 0; cidx < num_mhpm; cidx++) {
 #if __riscv_xlen == 32
 		csr_write_num(CSR_MHPMEVENT3 + cidx, mhpmevent_init_val & 0xFFFFFFFF);
-		if (sbi_hart_has_feature(scratch, SBI_HART_HAS_SSCOFPMF))
+		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SSCOFPMF))
 			csr_write_num(CSR_MHPMEVENT3H + cidx,
 				      mhpmevent_init_val >> BITS_PER_LONG);
 #else
@@ -91,7 +91,7 @@ static void mstatus_init(struct sbi_scratch *scratch)
 #endif
 	}
 
-	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_SMSTATEEN)) {
+	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SMSTATEEN)) {
 		mstateen_val = csr_read(CSR_MSTATEEN0);
 #if __riscv_xlen == 32
 		mstateen_val |= ((uint64_t)csr_read(CSR_MSTATEEN0H)) << 32;
@@ -99,7 +99,7 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		mstateen_val |= SMSTATEEN_STATEN;
 		mstateen_val |= SMSTATEEN0_HSENVCFG;
 
-		if (sbi_hart_has_feature(scratch, SBI_HART_HAS_AIA))
+		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_AIA))
 			mstateen_val |= (SMSTATEEN0_AIA | SMSTATEEN0_SVSLCT |
 					SMSTATEEN0_IMSIC);
 		else
@@ -153,7 +153,7 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		 * Enable access to stimecmp if sstc extension is present in the
 		 * hardware.
 		 */
-		if (sbi_hart_has_feature(scratch, SBI_HART_HAS_SSTC)) {
+		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SSTC)) {
 #if __riscv_xlen == 32
 			unsigned long menvcfgh_val;
 			menvcfgh_val = csr_read(CSR_MENVCFGH);
@@ -207,7 +207,7 @@ static int delegate_traps(struct sbi_scratch *scratch)
 
 	/* Send M-mode interrupts and most exceptions to S-mode */
 	interrupts = MIP_SSIP | MIP_STIP | MIP_SEIP;
-	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_SSCOFPMF))
+	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SSCOFPMF))
 		interrupts |= MIP_LCOFIP;
 
 	exceptions = (1U << CAUSE_MISALIGNED_FETCH) | (1U << CAUSE_BREAKPOINT) |
@@ -367,102 +367,94 @@ void sbi_hart_get_priv_version_str(struct sbi_scratch *scratch,
 }
 
 /**
- * Check whether a particular hart feature is available
+ * Check whether a particular hart extension is available
  *
  * @param scratch pointer to the HART scratch space
- * @param feature the feature to check
- * @returns true (feature available) or false (feature not available)
+ * @param ext the extension number to check
+ * @returns true (available) or false (not available)
  */
-bool sbi_hart_has_feature(struct sbi_scratch *scratch, unsigned long feature)
+bool sbi_hart_has_extension(struct sbi_scratch *scratch,
+			    enum sbi_hart_extensions ext)
 {
 	struct hart_features *hfeatures =
 			sbi_scratch_offset_ptr(scratch, hart_features_offset);
 
-	if (hfeatures->features & feature)
+	if (hfeatures->extensions & BIT(ext))
 		return true;
 	else
 		return false;
 }
 
-static unsigned long hart_get_features(struct sbi_scratch *scratch)
+static inline char *sbi_hart_extension_id2string(int ext)
 {
-	struct hart_features *hfeatures =
-			sbi_scratch_offset_ptr(scratch, hart_features_offset);
+	char *estr = NULL;
 
-	return hfeatures->features;
-}
-
-static inline char *sbi_hart_feature_id2string(unsigned long feature)
-{
-	char *fstr = NULL;
-
-	if (!feature)
-		return NULL;
-
-	switch (feature) {
-	case SBI_HART_HAS_SSCOFPMF:
-		fstr = "sscofpmf";
+	switch (ext) {
+	case SBI_HART_EXT_SSCOFPMF:
+		estr = "sscofpmf";
 		break;
-	case SBI_HART_HAS_TIME:
-		fstr = "time";
+	case SBI_HART_EXT_TIME:
+		estr = "time";
 		break;
-	case SBI_HART_HAS_AIA:
-		fstr = "aia";
+	case SBI_HART_EXT_AIA:
+		estr = "aia";
 		break;
-	case SBI_HART_HAS_SSTC:
-		fstr = "sstc";
+	case SBI_HART_EXT_SSTC:
+		estr = "sstc";
 		break;
-	case SBI_HART_HAS_SMSTATEEN:
-		fstr = "smstateen";
+	case SBI_HART_EXT_SMSTATEEN:
+		estr = "smstateen";
 		break;
 	default:
 		break;
 	}
 
-	return fstr;
+	return estr;
 }
 
 /**
- * Get the hart features in string format
+ * Get the hart extensions in string format
  *
  * @param scratch pointer to the HART scratch space
- * @param features_str pointer to a char array where the features string will be
- *		       updated
- * @param nfstr length of the features_str. The feature string will be truncated
- *		if nfstr is not long enough.
+ * @param extensions_str pointer to a char array where the extensions string
+ *			 will be updated
+ * @param nestr length of the features_str. The feature string will be
+ *		truncated if nestr is not long enough.
  */
-void sbi_hart_get_features_str(struct sbi_scratch *scratch,
-			       char *features_str, int nfstr)
+void sbi_hart_get_extensions_str(struct sbi_scratch *scratch,
+				 char *extensions_str, int nestr)
 {
-	unsigned long features, feat = 1UL;
+	struct hart_features *hfeatures =
+			sbi_scratch_offset_ptr(scratch, hart_features_offset);
+	int offset = 0, ext = 0;
 	char *temp;
-	int offset = 0;
 
-	if (!features_str || nfstr <= 0)
+	if (!extensions_str || nestr <= 0)
 		return;
-	sbi_memset(features_str, 0, nfstr);
+	sbi_memset(extensions_str, 0, nestr);
 
-	features = hart_get_features(scratch);
-	if (!features)
+	if (!hfeatures->extensions)
 		goto done;
 
 	do {
-		if (features & feat) {
-			temp = sbi_hart_feature_id2string(feat);
+		if (hfeatures->extensions & BIT(ext)) {
+			temp = sbi_hart_extension_id2string(ext);
 			if (temp) {
-				sbi_snprintf(features_str + offset, nfstr,
+				sbi_snprintf(extensions_str + offset,
+					     nestr - offset,
 					     "%s,", temp);
 				offset = offset + sbi_strlen(temp) + 1;
 			}
 		}
-		feat = feat << 1;
-	} while (feat <= SBI_HART_HAS_LAST_FEATURE);
+
+		ext++;
+	} while (ext < SBI_HART_EXT_MAX);
 
 done:
 	if (offset)
-		features_str[offset - 1] = '\0';
+		extensions_str[offset - 1] = '\0';
 	else
-		sbi_strncpy(features_str, "none", nfstr);
+		sbi_strncpy(extensions_str, "none", nestr);
 }
 
 static unsigned long hart_pmp_get_allowed_addr(void)
@@ -523,7 +515,7 @@ static void hart_detect_features(struct sbi_scratch *scratch)
 
 	/* Reset hart features */
 	hfeatures = sbi_scratch_offset_ptr(scratch, hart_features_offset);
-	hfeatures->features = 0;
+	hfeatures->extensions = 0;
 	hfeatures->pmp_count = 0;
 	hfeatures->mhpm_count = 0;
 
@@ -623,31 +615,31 @@ __mhpm_skip:
 		/* Detect if hart supports sscofpmf */
 		csr_read_allowed(CSR_SCOUNTOVF, (unsigned long)&trap);
 		if (!trap.cause)
-			hfeatures->features |= SBI_HART_HAS_SSCOFPMF;
+			hfeatures->extensions |= BIT(SBI_HART_EXT_SSCOFPMF);
 	}
 
 	/* Detect if hart supports time CSR */
 	csr_read_allowed(CSR_TIME, (unsigned long)&trap);
 	if (!trap.cause)
-		hfeatures->features |= SBI_HART_HAS_TIME;
+		hfeatures->extensions |= BIT(SBI_HART_EXT_TIME);
 
 	/* Detect if hart has AIA local interrupt CSRs */
 	csr_read_allowed(CSR_MTOPI, (unsigned long)&trap);
 	if (!trap.cause)
-		hfeatures->features |= SBI_HART_HAS_AIA;
+		hfeatures->extensions |= BIT(SBI_HART_EXT_AIA);
 
 	/* Detect if hart supports stimecmp CSR(Sstc extension) */
 	if (hfeatures->priv_version >= SBI_HART_PRIV_VER_1_12) {
 		csr_read_allowed(CSR_STIMECMP, (unsigned long)&trap);
 		if (!trap.cause)
-			hfeatures->features |= SBI_HART_HAS_SSTC;
+			hfeatures->extensions |= BIT(SBI_HART_EXT_SSTC);
 	}
 
 	/* Detect if hart supports mstateen CSRs */
 	if (hfeatures->priv_version >= SBI_HART_PRIV_VER_1_12) {
 		val = csr_read_allowed(CSR_MSTATEEN0, (unsigned long)&trap);
 		if (!trap.cause)
-			hfeatures->features |= SBI_HART_HAS_SMSTATEEN;
+			hfeatures->extensions |= BIT(SBI_HART_EXT_SMSTATEEN);
 	}
 
 	return;

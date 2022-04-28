@@ -24,21 +24,21 @@ enum sbi_hart_priv_versions {
 	SBI_HART_PRIV_VER_1_12 = 3,
 };
 
-/** Possible feature flags of a hart */
-enum sbi_hart_features {
-	/** Hart has sscofpmf extension */
-	SBI_HART_HAS_SSCOFPMF = (1 << 0),
-	/** HART has timer csr implementation in hardware */
-	SBI_HART_HAS_TIME = (1 << 1),
-	/** HART has AIA local interrupt CSRs */
-	SBI_HART_HAS_AIA = (1 << 2),
-	/** HART has mstateen CSR **/
-	SBI_HART_HAS_SMSTATEEN = (1 << 3),
-	/** HART has SSTC extension implemented in hardware */
-	SBI_HART_HAS_SSTC = (1 << 4),
+/** Possible ISA extensions of a hart */
+enum sbi_hart_extensions {
+	/** Hart has Sscofpmt extension */
+	SBI_HART_EXT_SSCOFPMF = 0,
+	/** HART has HW time CSR (extension name not available) */
+	SBI_HART_EXT_TIME,
+	/** HART has AIA CSRs (extension name not available) */
+	SBI_HART_EXT_AIA,
+	/** HART has Smstateen CSR **/
+	SBI_HART_EXT_SMSTATEEN,
+	/** HART has Sstc extension */
+	SBI_HART_EXT_SSTC,
 
-	/** Last index of Hart features*/
-	SBI_HART_HAS_LAST_FEATURE = SBI_HART_HAS_SSTC,
+	/** Maximum index of Hart extension */
+	SBI_HART_EXT_MAX,
 };
 
 struct sbi_scratch;
@@ -63,9 +63,10 @@ int sbi_hart_pmp_configure(struct sbi_scratch *scratch);
 int sbi_hart_priv_version(struct sbi_scratch *scratch);
 void sbi_hart_get_priv_version_str(struct sbi_scratch *scratch,
 				   char *version_str, int nvstr);
-bool sbi_hart_has_feature(struct sbi_scratch *scratch, unsigned long feature);
-void sbi_hart_get_features_str(struct sbi_scratch *scratch,
-			       char *features_str, int nfstr);
+bool sbi_hart_has_extension(struct sbi_scratch *scratch,
+			    enum sbi_hart_extensions ext);
+void sbi_hart_get_extensions_str(struct sbi_scratch *scratch,
+				 char *extension_str, int nestr);
 
 void __attribute__((noreturn)) sbi_hart_hang(void);
 
