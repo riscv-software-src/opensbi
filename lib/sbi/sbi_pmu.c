@@ -300,7 +300,7 @@ static int pmu_ctr_start_hw(uint32_t cidx, uint64_t ival, bool ival_update)
 	if (cidx > num_hw_ctrs || cidx == 1)
 		return SBI_EINVAL;
 
-	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
+	if (sbi_hart_priv_version(scratch) < SBI_HART_PRIV_VER_1_11)
 		goto skip_inhibit_update;
 
 	/*
@@ -372,7 +372,7 @@ static int pmu_ctr_stop_hw(uint32_t cidx)
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	unsigned long mctr_inhbt;
 
-	if (!sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
+	if (sbi_hart_priv_version(scratch) < SBI_HART_PRIV_VER_1_11)
 		return 0;
 
 	mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
@@ -528,7 +528,7 @@ static int pmu_ctr_find_hw(unsigned long cbase, unsigned long cmask, unsigned lo
 	    !sbi_hart_has_feature(scratch, SBI_HART_HAS_SSCOFPMF))
 		return fixed_ctr;
 
-	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
+	if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_11)
 		mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
 	for (i = 0; i < num_hw_events; i++) {
 		temp = &hw_event_map[i];
@@ -555,7 +555,7 @@ static int pmu_ctr_find_hw(unsigned long cbase, unsigned long cmask, unsigned lo
 			if (active_events[hartid][cbase] != SBI_PMU_EVENT_IDX_INVALID)
 				continue;
 			/* If mcountinhibit is supported, the bit must be enabled */
-			if ((sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT)) &&
+			if ((sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_11) &&
 			    !__test_bit(cbase, &mctr_inhbt))
 				continue;
 			/* We found a valid counter that is not started yet */
@@ -730,7 +730,7 @@ void sbi_pmu_exit(struct sbi_scratch *scratch)
 {
 	u32 hartid = current_hartid();
 
-	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
+	if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_11)
 		csr_write(CSR_MCOUNTINHIBIT, 0xFFFFFFF8);
 
 	if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_10)

@@ -70,7 +70,7 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		csr_write(CSR_MCOUNTEREN, -1);
 
 	/* All programmable counters will start running at runtime after S-mode request */
-	if (sbi_hart_has_feature(scratch, SBI_HART_HAS_MCOUNTINHIBIT))
+	if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_11)
 		csr_write(CSR_MCOUNTINHIBIT, 0xFFFFFFF8);
 
 	/**
@@ -402,9 +402,6 @@ static inline char *sbi_hart_feature_id2string(unsigned long feature)
 		return NULL;
 
 	switch (feature) {
-	case SBI_HART_HAS_MCOUNTINHIBIT:
-		fstr = "mcountinhibit";
-		break;
 	case SBI_HART_HAS_SSCOFPMF:
 		fstr = "sscofpmf";
 		break;
@@ -613,26 +610,22 @@ __mhpm_skip:
 	if (!trap.cause)
 		hfeatures->priv_version = SBI_HART_PRIV_VER_1_10;
 
-	/* Detect if hart supports MCOUNTINHIBIT feature */
+	/* Detect if hart supports Priv v1.11 */
 	val = csr_read_allowed(CSR_MCOUNTINHIBIT, (unsigned long)&trap);
-	if (!trap.cause) {
-		csr_write_allowed(CSR_MCOUNTINHIBIT, (unsigned long)&trap, val);
-		if (!trap.cause) {
-			hfeatures->priv_version = SBI_HART_PRIV_VER_1_11;
-			hfeatures->features |= SBI_HART_HAS_MCOUNTINHIBIT;
-		}
-	}
+	if (!trap.cause &&
+	    (hfeatures->priv_version >= SBI_HART_PRIV_VER_1_10))
+		hfeatures->priv_version = SBI_HART_PRIV_VER_1_11;
 
 	/* Detect if hart has menvcfg CSR */
 	csr_read_allowed(CSR_MENVCFG, (unsigned long)&trap);
-	if (!trap.cause) {
+	if (!trap.cause &&
+	    (hfeatures->priv_version >= SBI_HART_PRIV_VER_1_11)) {
 		hfeatures->priv_version = SBI_HART_PRIV_VER_1_12;
 		hfeatures->features |= SBI_HART_HAS_MENVCFG;
 	}
 
 	/* Counter overflow/filtering is not useful without mcounter/inhibit */
-	if (hfeatures->features & SBI_HART_HAS_MCOUNTINHIBIT &&
-	    hfeatures->priv_version >= SBI_HART_PRIV_VER_1_12) {
+	if (hfeatures->priv_version >= SBI_HART_PRIV_VER_1_12) {
 		/* Detect if hart supports sscofpmf */
 		csr_read_allowed(CSR_SCOUNTOVF, (unsigned long)&trap);
 		if (!trap.cause)

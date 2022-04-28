@@ -26,20 +26,18 @@ enum sbi_hart_priv_versions {
 
 /** Possible feature flags of a hart */
 enum sbi_hart_features {
-	/** Hart has counter inhibit CSR */
-	SBI_HART_HAS_MCOUNTINHIBIT = (1 << 0),
 	/** Hart has sscofpmf extension */
-	SBI_HART_HAS_SSCOFPMF = (1 << 1),
+	SBI_HART_HAS_SSCOFPMF = (1 << 0),
 	/** HART has timer csr implementation in hardware */
-	SBI_HART_HAS_TIME = (1 << 2),
+	SBI_HART_HAS_TIME = (1 << 1),
 	/** HART has AIA local interrupt CSRs */
-	SBI_HART_HAS_AIA = (1 << 3),
+	SBI_HART_HAS_AIA = (1 << 2),
 	/** HART has menvcfg CSR */
-	SBI_HART_HAS_MENVCFG = (1 << 4),
+	SBI_HART_HAS_MENVCFG = (1 << 3),
 	/** HART has mstateen CSR **/
-	SBI_HART_HAS_SMSTATEEN = (1 << 5),
+	SBI_HART_HAS_SMSTATEEN = (1 << 4),
 	/** HART has SSTC extension implemented in hardware */
-	SBI_HART_HAS_SSTC = (1 << 6),
+	SBI_HART_HAS_SSTC = (1 << 5),
 
 	/** Last index of Hart features*/
 	SBI_HART_HAS_LAST_FEATURE = SBI_HART_HAS_SSTC,
