@@ -82,7 +82,9 @@ static void mstatus_init(struct sbi_scratch *scratch)
 	for (cidx = 0; cidx < num_mhpm; cidx++) {
 #if __riscv_xlen == 32
 		csr_write_num(CSR_MHPMEVENT3 + cidx, mhpmevent_init_val & 0xFFFFFFFF);
-		csr_write_num(CSR_MHPMEVENT3H + cidx, mhpmevent_init_val >> BITS_PER_LONG);
+		if (sbi_hart_has_feature(scratch, SBI_HART_HAS_SSCOFPMF))
+			csr_write_num(CSR_MHPMEVENT3H + cidx,
+				      mhpmevent_init_val >> BITS_PER_LONG);
 #else
 		csr_write_num(CSR_MHPMEVENT3 + cidx, mhpmevent_init_val);
 #endif
