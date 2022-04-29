@@ -28,6 +28,7 @@ extern void __sbi_expected_trap_hext(void);
 void (*sbi_hart_expected_trap)(void) = &__sbi_expected_trap;
 
 struct hart_features {
+	bool detected;
 	int priv_version;
 	unsigned long extensions;
 	unsigned int pmp_count;
@@ -510,11 +511,15 @@ static int hart_pmu_get_allowed_bits(void)
 static void hart_detect_features(struct sbi_scratch *scratch)
 {
 	struct sbi_trap_info trap = {0};
-	struct hart_features *hfeatures;
+	struct hart_features *hfeatures =
+		sbi_scratch_offset_ptr(scratch, hart_features_offset);
 	unsigned long val, oldval;
 
-	/* Reset hart features */
-	hfeatures = sbi_scratch_offset_ptr(scratch, hart_features_offset);
+	/* If hart features already detected then do nothing */
+	if (hfeatures->detected)
+		return;
+
+	/* Clear hart features */
 	hfeatures->extensions = 0;
 	hfeatures->pmp_count = 0;
 	hfeatures->mhpm_count = 0;
@@ -641,6 +646,9 @@ __mhpm_skip:
 		if (!trap.cause)
 			hfeatures->extensions |= BIT(SBI_HART_EXT_SMSTATEEN);
 	}
+
+	/* Mark hart feature detection done */
+	hfeatures->detected = true;
 
 	return;
 }
