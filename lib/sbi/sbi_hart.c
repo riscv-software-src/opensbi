@@ -367,6 +367,34 @@ void sbi_hart_get_priv_version_str(struct sbi_scratch *scratch,
 	sbi_snprintf(version_str, nvstr, "%s", temp);
 }
 
+static inline void __sbi_hart_update_extension(
+					struct hart_features *hfeatures,
+					enum sbi_hart_extensions ext,
+					bool enable)
+{
+	if (enable)
+		hfeatures->extensions |= BIT(ext);
+	else
+		hfeatures->extensions &= ~BIT(ext);
+}
+
+/**
+ * Enable/Disable a particular hart extension
+ *
+ * @param scratch pointer to the HART scratch space
+ * @param ext the extension number to check
+ * @param enable new state of hart extension
+ */
+void sbi_hart_update_extension(struct sbi_scratch *scratch,
+			       enum sbi_hart_extensions ext,
+			       bool enable)
+{
+	struct hart_features *hfeatures =
+			sbi_scratch_offset_ptr(scratch, hart_features_offset);
+
+	__sbi_hart_update_extension(hfeatures, ext, enable);
+}
+
 /**
  * Check whether a particular hart extension is available
  *
@@ -620,31 +648,36 @@ __mhpm_skip:
 		/* Detect if hart supports sscofpmf */
 		csr_read_allowed(CSR_SCOUNTOVF, (unsigned long)&trap);
 		if (!trap.cause)
-			hfeatures->extensions |= BIT(SBI_HART_EXT_SSCOFPMF);
+			__sbi_hart_update_extension(hfeatures,
+					SBI_HART_EXT_SSCOFPMF, true);
 	}
 
 	/* Detect if hart supports time CSR */
 	csr_read_allowed(CSR_TIME, (unsigned long)&trap);
 	if (!trap.cause)
-		hfeatures->extensions |= BIT(SBI_HART_EXT_TIME);
+		__sbi_hart_update_extension(hfeatures,
+					SBI_HART_EXT_TIME, true);
 
 	/* Detect if hart has AIA local interrupt CSRs */
 	csr_read_allowed(CSR_MTOPI, (unsigned long)&trap);
 	if (!trap.cause)
-		hfeatures->extensions |= BIT(SBI_HART_EXT_AIA);
+		__sbi_hart_update_extension(hfeatures,
+					SBI_HART_EXT_AIA, true);
 
 	/* Detect if hart supports stimecmp CSR(Sstc extension) */
 	if (hfeatures->priv_version >= SBI_HART_PRIV_VER_1_12) {
 		csr_read_allowed(CSR_STIMECMP, (unsigned long)&trap);
 		if (!trap.cause)
-			hfeatures->extensions |= BIT(SBI_HART_EXT_SSTC);
+			__sbi_hart_update_extension(hfeatures,
+					SBI_HART_EXT_SSTC, true);
 	}
 
 	/* Detect if hart supports mstateen CSRs */
 	if (hfeatures->priv_version >= SBI_HART_PRIV_VER_1_12) {
 		val = csr_read_allowed(CSR_MSTATEEN0, (unsigned long)&trap);
 		if (!trap.cause)
-			hfeatures->extensions |= BIT(SBI_HART_EXT_SMSTATEEN);
+			__sbi_hart_update_extension(hfeatures,
+					SBI_HART_EXT_SMSTATEEN, true);
 	}
 
 	/* Mark hart feature detection done */

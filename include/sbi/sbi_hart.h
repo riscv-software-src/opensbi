@@ -63,6 +63,9 @@ int sbi_hart_pmp_configure(struct sbi_scratch *scratch);
 int sbi_hart_priv_version(struct sbi_scratch *scratch);
 void sbi_hart_get_priv_version_str(struct sbi_scratch *scratch,
 				   char *version_str, int nvstr);
+void sbi_hart_update_extension(struct sbi_scratch *scratch,
+			       enum sbi_hart_extensions ext,
+			       bool enable);
 bool sbi_hart_has_extension(struct sbi_scratch *scratch,
 			    enum sbi_hart_extensions ext);
 void sbi_hart_get_extensions_str(struct sbi_scratch *scratch,
