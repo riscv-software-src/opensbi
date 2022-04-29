@@ -89,6 +89,9 @@ struct sbi_platform_operations {
 	 */
 	int (*misa_get_xlen)(void);
 
+	/** Initialize (or populate) HART extensions for the platform */
+	int (*extensions_init)(void);
+
 	/** Initialize (or populate) domains for the platform */
 	int (*domains_init)(void);
 
@@ -451,6 +454,21 @@ static inline int sbi_platform_misa_xlen(const struct sbi_platform *plat)
 	if (plat && sbi_platform_ops(plat)->misa_get_xlen)
 		return sbi_platform_ops(plat)->misa_get_xlen();
 	return -1;
+}
+
+/**
+ * Initialize (or populate) HART extensions for the platform
+ *
+ * @param plat pointer to struct sbi_platform
+ *
+ * @return 0 on success and negative error code on failure
+ */
+static inline int sbi_platform_extensions_init(
+					const struct sbi_platform *plat)
+{
+	if (plat && sbi_platform_ops(plat)->extensions_init)
+		return sbi_platform_ops(plat)->extensions_init();
+	return 0;
 }
 
 /**

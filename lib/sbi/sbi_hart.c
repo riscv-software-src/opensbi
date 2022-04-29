@@ -536,16 +536,17 @@ static int hart_pmu_get_allowed_bits(void)
 	return num_bits;
 }
 
-static void hart_detect_features(struct sbi_scratch *scratch)
+static int hart_detect_features(struct sbi_scratch *scratch)
 {
 	struct sbi_trap_info trap = {0};
 	struct hart_features *hfeatures =
 		sbi_scratch_offset_ptr(scratch, hart_features_offset);
 	unsigned long val, oldval;
+	int rc;
 
 	/* If hart features already detected then do nothing */
 	if (hfeatures->detected)
-		return;
+		return 0;
 
 	/* Clear hart features */
 	hfeatures->extensions = 0;
@@ -680,10 +681,15 @@ __mhpm_skip:
 					SBI_HART_EXT_SMSTATEEN, true);
 	}
 
+	/* Let platform populate extensions */
+	rc = sbi_platform_extensions_init(sbi_platform_thishart_ptr());
+	if (rc)
+		return rc;
+
 	/* Mark hart feature detection done */
 	hfeatures->detected = true;
 
-	return;
+	return 0;
 }
 
 int sbi_hart_reinit(struct sbi_scratch *scratch)
@@ -705,6 +711,8 @@ int sbi_hart_reinit(struct sbi_scratch *scratch)
 
 int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot)
 {
+	int rc;
+
 	if (cold_boot) {
 		if (misa_extension('H'))
 			sbi_hart_expected_trap = &__sbi_expected_trap_hext;
@@ -715,7 +723,9 @@ int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot)
 			return SBI_ENOMEM;
 	}
 
-	hart_detect_features(scratch);
+	rc = hart_detect_features(scratch);
+	if (rc)
+		return rc;
 
 	return sbi_hart_reinit(scratch);
 }
