@@ -12,15 +12,9 @@
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/irqchip/fdt_irqchip.h>
 
-extern struct fdt_irqchip fdt_irqchip_aplic;
-extern struct fdt_irqchip fdt_irqchip_imsic;
-extern struct fdt_irqchip fdt_irqchip_plic;
-
-static struct fdt_irqchip *irqchip_drivers[] = {
-	&fdt_irqchip_aplic,
-	&fdt_irqchip_imsic,
-	&fdt_irqchip_plic
-};
+/* List of FDT irqchip drivers generated at compile time */
+extern struct fdt_irqchip *fdt_irqchip_drivers[];
+extern unsigned long fdt_irqchip_drivers_size;
 
 #define FDT_IRQCHIP_MAX_DRIVERS	8
 
@@ -61,8 +55,8 @@ static int fdt_irqchip_cold_init(void)
 	const struct fdt_match *match;
 	void *fdt = fdt_get_address();
 
-	for (pos = 0; pos < array_size(irqchip_drivers); pos++) {
-		drv = irqchip_drivers[pos];
+	for (pos = 0; pos < fdt_irqchip_drivers_size; pos++) {
+		drv = fdt_irqchip_drivers[pos];
 
 		noff = -1;
 		drv_added = false;
