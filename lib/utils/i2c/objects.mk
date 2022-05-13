@@ -8,5 +8,9 @@
 #
 
 libsbiutils-objs-y += i2c/i2c.o
+
 libsbiutils-objs-y += i2c/fdt_i2c.o
+libsbiutils-objs-y += i2c/fdt_i2c_adapter_drivers.o
+
+carray-fdt_i2c_adapter_drivers-y += fdt_i2c_adapter_sifive
 libsbiutils-objs-y += i2c/fdt_i2c_sifive.o
