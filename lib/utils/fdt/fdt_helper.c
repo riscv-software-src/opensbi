@@ -216,6 +216,24 @@ int fdt_get_node_addr_size(void *fdt, int node, int index,
 	return 0;
 }
 
+bool fdt_node_is_enabled(void *fdt, int nodeoff)
+{
+	int len;
+	const void *prop;
+
+	prop = fdt_getprop(fdt, nodeoff, "status", &len);
+	if (!prop)
+		return true;
+
+	if (!strncmp(prop, "okay", strlen("okay")))
+		return true;
+
+	if (!strncmp(prop, "ok", strlen("ok")))
+		return true;
+
+	return false;
+}
+
 int fdt_parse_hart_id(void *fdt, int cpu_offset, u32 *hartid)
 {
 	int len;
