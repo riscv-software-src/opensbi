@@ -283,6 +283,9 @@ int fdt_parse_max_hart_id(void *fdt, u32 *max_hartid)
 		if (err)
 			continue;
 
+		if (!fdt_node_is_enabled(fdt, cpu_offset))
+			continue;
+
 		if (hartid > *max_hartid)
 			*max_hartid = hartid;
 	}

@@ -165,6 +165,9 @@ void fdt_domain_fixup(void *fdt)
 		if (err)
 			continue;
 
+		if (!fdt_node_is_enabled(fdt, doffset))
+			continue;
+
 		fdt_nop_property(fdt, doffset, "opensbi-domain");
 	}
 
@@ -308,6 +311,9 @@ static int __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 			if (err)
 				return err;
 
+			if (!fdt_node_is_enabled(fdt, cpu_offset))
+				continue;
+
 			sbi_hartmask_set_hart(val32, mask);
 		}
 	}
@@ -347,7 +353,7 @@ static int __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 	if (val && len >= 4) {
 		cpu_offset = fdt_node_offset_by_phandle(fdt,
 							 fdt32_to_cpu(*val));
-		if (cpu_offset >= 0)
+		if (cpu_offset >= 0 && fdt_node_is_enabled(fdt, cpu_offset))
 			fdt_parse_hart_id(fdt, cpu_offset, &val32);
 	} else {
 		if (domain_offset == *cold_domain_offset)
@@ -414,6 +420,9 @@ static int __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 		if (SBI_HARTMASK_MAX_BITS <= val32)
 			continue;
 
+		if (!fdt_node_is_enabled(fdt, cpu_offset))
+			continue;
+
 		val = fdt_getprop(fdt, cpu_offset, "opensbi-domain", &len);
 		if (!val || len < 4)
 			return SBI_EINVAL;
@@ -458,6 +467,9 @@ int fdt_domains_populate(void *fdt)
 			continue;
 
 		if (hartid != cold_hartid)
+			continue;
+
+		if (!fdt_node_is_enabled(fdt, cpu_offset))
 			continue;
 
 		val = fdt_getprop(fdt, cpu_offset, "opensbi-domain", &len);

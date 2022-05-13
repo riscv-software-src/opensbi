@@ -38,6 +38,9 @@ void fdt_cpu_fixup(void *fdt)
 		if (err)
 			continue;
 
+		if (!fdt_node_is_enabled(fdt, cpu_offset))
+			continue;
+
 		/*
 		 * Disable a HART DT node if one of the following is true:
 		 * 1. The HART is not assigned to the current domain
