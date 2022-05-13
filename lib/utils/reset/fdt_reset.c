@@ -13,21 +13,9 @@
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/reset/fdt_reset.h>
 
-extern struct fdt_reset fdt_poweroff_gpio;
-extern struct fdt_reset fdt_reset_gpio;
-extern struct fdt_reset fdt_reset_htif;
-extern struct fdt_reset fdt_reset_sifive_test;
-extern struct fdt_reset fdt_reset_sunxi_wdt;
-extern struct fdt_reset fdt_reset_thead;
-
-static struct fdt_reset *reset_drivers[] = {
-	&fdt_poweroff_gpio,
-	&fdt_reset_gpio,
-	&fdt_reset_htif,
-	&fdt_reset_sifive_test,
-	&fdt_reset_sunxi_wdt,
-	&fdt_reset_thead,
-};
+/* List of FDT reset drivers generated at compile time */
+extern struct fdt_reset *fdt_reset_drivers[];
+extern unsigned long fdt_reset_drivers_size;
 
 int fdt_reset_driver_init(void *fdt, struct fdt_reset *drv)
 {
@@ -54,6 +42,6 @@ void fdt_reset_init(void)
 	int pos;
 	void *fdt = fdt_get_address();
 
-	for (pos = 0; pos < array_size(reset_drivers); pos++)
-		fdt_reset_driver_init(fdt, reset_drivers[pos]);
+	for (pos = 0; pos < fdt_reset_drivers_size; pos++)
+		fdt_reset_driver_init(fdt, fdt_reset_drivers[pos]);
 }
