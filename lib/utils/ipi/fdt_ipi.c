@@ -12,11 +12,9 @@
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/ipi/fdt_ipi.h>
 
-extern struct fdt_ipi fdt_ipi_mswi;
-
-static struct fdt_ipi *ipi_drivers[] = {
-	&fdt_ipi_mswi
-};
+/* List of FDT ipi drivers generated at compile time */
+extern struct fdt_ipi *fdt_ipi_drivers[];
+extern unsigned long fdt_ipi_drivers_size;
 
 static struct fdt_ipi dummy = {
 	.match_table = NULL,
@@ -47,8 +45,8 @@ static int fdt_ipi_cold_init(void)
 	const struct fdt_match *match;
 	void *fdt = fdt_get_address();
 
-	for (pos = 0; pos < array_size(ipi_drivers); pos++) {
-		drv = ipi_drivers[pos];
+	for (pos = 0; pos < fdt_ipi_drivers_size; pos++) {
+		drv = fdt_ipi_drivers[pos];
 
 		noff = -1;
 		while ((noff = fdt_find_match(fdt, noff,
