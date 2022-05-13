@@ -12,6 +12,8 @@
 
 #include <sbi_utils/gpio/gpio.h>
 
+struct fdt_phandle_args;
+
 /** FDT based GPIO driver */
 struct fdt_gpio {
 	const struct fdt_match *match_table;

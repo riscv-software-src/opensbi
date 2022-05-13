@@ -8,5 +8,9 @@
 #
 
 libsbiutils-objs-y += gpio/fdt_gpio.o
+libsbiutils-objs-y += gpio/fdt_gpio_drivers.o
+
+carray-fdt_gpio_drivers-y += fdt_gpio_sifive
 libsbiutils-objs-y += gpio/fdt_gpio_sifive.o
+
 libsbiutils-objs-y += gpio/gpio.o
