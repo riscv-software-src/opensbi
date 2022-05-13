@@ -52,7 +52,7 @@ bool fdt_node_is_enabled(void *fdt, int nodeoff);
 
 int fdt_parse_hart_id(void *fdt, int cpu_offset, u32 *hartid);
 
-int fdt_parse_max_hart_id(void *fdt, u32 *max_hartid);
+int fdt_parse_max_enabled_hart_id(void *fdt, u32 *max_hartid);
 
 int fdt_parse_timebase_frequency(void *fdt, unsigned long *freq);
 

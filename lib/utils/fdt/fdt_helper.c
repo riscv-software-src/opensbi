@@ -262,7 +262,7 @@ int fdt_parse_hart_id(void *fdt, int cpu_offset, u32 *hartid)
 	return 0;
 }
 
-int fdt_parse_max_hart_id(void *fdt, u32 *max_hartid)
+int fdt_parse_max_enabled_hart_id(void *fdt, u32 *max_hartid)
 {
 	u32 hartid;
 	int err, cpu_offset, cpus_offset;
