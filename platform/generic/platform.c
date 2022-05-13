@@ -24,13 +24,9 @@
 #include <sbi_utils/ipi/fdt_ipi.h>
 #include <sbi_utils/reset/fdt_reset.h>
 
-extern const struct platform_override sifive_fu540;
-extern const struct platform_override sifive_fu740;
-
-static const struct platform_override *special_platforms[] = {
-	&sifive_fu540,
-	&sifive_fu740,
-};
+/* List of platform override modules generated at compile time */
+extern const struct platform_override *platform_override_modules[];
+extern unsigned long platform_override_modules_size;
 
 static const struct platform_override *generic_plat = NULL;
 static const struct fdt_match *generic_plat_match = NULL;
@@ -41,8 +37,8 @@ static void fw_platform_lookup_special(void *fdt, int root_offset)
 	const struct platform_override *plat;
 	const struct fdt_match *match;
 
-	for (pos = 0; pos < array_size(special_platforms); pos++) {
-		plat = special_platforms[pos];
+	for (pos = 0; pos < platform_override_modules_size; pos++) {
+		plat = platform_override_modules[pos];
 		if (!plat->match_table)
 			continue;
 
