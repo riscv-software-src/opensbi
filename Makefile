@@ -437,6 +437,9 @@ $(build_dir)/%.dep: $(src_dir)/%.c
 $(build_dir)/%.o: $(src_dir)/%.c
 	$(call compile_cc,$@,$<)
 
+$(build_dir)/%.o: $(build_dir)/%.c
+	$(call compile_cc,$@,$<)
+
 ifeq ($(BUILD_INFO),y)
 $(build_dir)/lib/sbi/sbi_init.o: $(libsbi_dir)/sbi_init.c FORCE
 	$(call compile_cc,$@,$<)
@@ -461,9 +464,6 @@ $(platform_build_dir)/%.dep: $(platform_src_dir)/%.c
 	$(call compile_cc_dep,$@,$<)
 
 $(platform_build_dir)/%.o: $(platform_src_dir)/%.c
-	$(call compile_cc,$@,$<)
-
-$(platform_build_dir)/%.o: $(platform_build_dir)/%.c
 	$(call compile_cc,$@,$<)
 
 $(platform_build_dir)/%.dep: $(platform_src_dir)/%.S
