@@ -13,23 +13,9 @@
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/serial/fdt_serial.h>
 
-extern struct fdt_serial fdt_serial_uart8250;
-extern struct fdt_serial fdt_serial_sifive;
-extern struct fdt_serial fdt_serial_litex;
-extern struct fdt_serial fdt_serial_htif;
-extern struct fdt_serial fdt_serial_shakti;
-extern struct fdt_serial fdt_serial_gaisler;
-extern struct fdt_serial fdt_serial_xlnx_uartlite;
-
-static struct fdt_serial *serial_drivers[] = {
-	&fdt_serial_uart8250,
-	&fdt_serial_sifive,
-	&fdt_serial_litex,
-	&fdt_serial_htif,
-	&fdt_serial_shakti,
-	&fdt_serial_gaisler,
-	&fdt_serial_xlnx_uartlite,
-};
+/* List of FDT serial drivers generated at compile time */
+extern struct fdt_serial *fdt_serial_drivers[];
+extern unsigned long fdt_serial_drivers_size;
 
 static struct fdt_serial dummy = {
 	.match_table = NULL,
@@ -64,8 +50,8 @@ int fdt_serial_init(void)
 	}
 
 	/* First check DT node pointed by stdout-path */
-	for (pos = 0; pos < array_size(serial_drivers) && -1 < noff; pos++) {
-		drv = serial_drivers[pos];
+	for (pos = 0; pos < fdt_serial_drivers_size && -1 < noff; pos++) {
+		drv = fdt_serial_drivers[pos];
 
 		match = fdt_match_node(fdt, noff, drv->match_table);
 		if (!match)
@@ -87,8 +73,8 @@ int fdt_serial_init(void)
 		goto done;
 
 	/* Lastly check all DT nodes */
-	for (pos = 0; pos < array_size(serial_drivers); pos++) {
-		drv = serial_drivers[pos];
+	for (pos = 0; pos < fdt_serial_drivers_size; pos++) {
+		drv = fdt_serial_drivers[pos];
 
 		noff = fdt_find_match(fdt, -1, drv->match_table, &match);
 		if (noff < 0)
