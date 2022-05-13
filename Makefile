@@ -404,6 +404,10 @@ compile_d2c = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     $(if $($(2)-varprefix-$(3)),$(eval D2C_NAME_PREFIX := $($(2)-varprefix-$(3))),$(eval D2C_NAME_PREFIX := $(5))) \
 	     $(if $($(2)-padding-$(3)),$(eval D2C_PADDING_BYTES := $($(2)-padding-$(3))),$(eval D2C_PADDING_BYTES := 0)) \
 	     $(src_dir)/scripts/d2c.sh -i $(6) -a $(D2C_ALIGN_BYTES) -p $(D2C_NAME_PREFIX) -t $(D2C_PADDING_BYTES) > $(1)
+compile_carray = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
+	     echo " CARRAY    $(subst $(build_dir)/,,$(1))"; \
+	     $(eval CARRAY_VAR_LIST := $(carray-$(subst .c,,$(shell basename $(1)))-y)) \
+	     $(src_dir)/scripts/carray.sh -i $(2) -l "$(CARRAY_VAR_LIST)" > $(1)
 compile_gen_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " GEN-DEP   $(subst $(build_dir)/,,$(1))"; \
 	     echo "$(1:.dep=$(2)): $(3)" >> $(1)
@@ -450,6 +454,13 @@ $(build_dir)/%.dep: $(src_dir)/%.S
 
 $(build_dir)/%.o: $(src_dir)/%.S
 	$(call compile_as,$@,$<)
+
+$(build_dir)/%.dep: $(src_dir)/%.carray
+	$(call compile_gen_dep,$@,.c,$<)
+	$(call compile_gen_dep,$@,.o,$(@:.dep=.c))
+
+$(build_dir)/%.c: $(src_dir)/%.carray
+	$(call compile_carray,$@,$<)
 
 $(platform_build_dir)/%.bin: $(platform_build_dir)/%.elf
 	$(call compile_objcopy,$@,$<)
