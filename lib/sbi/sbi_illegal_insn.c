@@ -16,6 +16,7 @@
 #include <sbi/sbi_pmu.h>
 #include <sbi/sbi_trap.h>
 #include <sbi/sbi_unpriv.h>
+#include <sbi/sbi_console.h>
 
 typedef int (*illegal_insn_func)(ulong insn, struct sbi_trap_regs *regs);
 
@@ -37,7 +38,14 @@ static int system_opcode_insn(ulong insn, struct sbi_trap_regs *regs)
 	int do_write, rs1_num = (insn >> 15) & 0x1f;
 	ulong rs1_val = GET_RS1(insn, regs);
 	int csr_num   = (u32)insn >> 20;
+	ulong prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
 	ulong csr_val, new_csr_val;
+
+	if (prev_mode == PRV_M) {
+		sbi_printf("%s: Failed to access CSR %#x from M-mode",
+			__func__, csr_num);
+		return SBI_EFAIL;
+	}
 
 	/* TODO: Ensure that we got CSR read/write instruction */
 
