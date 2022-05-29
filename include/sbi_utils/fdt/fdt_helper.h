@@ -15,7 +15,7 @@
 
 struct fdt_match {
 	const char *compatible;
-	void *data;
+	const void *data;
 };
 
 #define FDT_MAX_PHANDLE_ARGS 16

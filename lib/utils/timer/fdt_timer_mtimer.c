@@ -107,7 +107,7 @@ static int timer_mtimer_cold_init(void *fdt, int nodeoff,
 	return 0;
 }
 
-static unsigned long clint_offset = CLINT_MTIMER_OFFSET;
+static const unsigned long clint_offset = CLINT_MTIMER_OFFSET;
 
 static const struct fdt_match timer_mtimer_match[] = {
 	{ .compatible = "riscv,clint0", .data = &clint_offset },

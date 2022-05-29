@@ -149,7 +149,7 @@ static int gpio_reset_init(void *fdt, int nodeoff,
 }
 
 static const struct fdt_match gpio_poweroff_match[] = {
-	{ .compatible = "gpio-poweroff", .data = (void *)FALSE },
+	{ .compatible = "gpio-poweroff", .data = (const void *)FALSE },
 	{ },
 };
 
@@ -159,7 +159,7 @@ struct fdt_reset fdt_poweroff_gpio = {
 };
 
 static const struct fdt_match gpio_reset_match[] = {
-	{ .compatible = "gpio-restart", .data = (void *)TRUE },
+	{ .compatible = "gpio-restart", .data = (const void *)TRUE },
 	{ },
 };
 
