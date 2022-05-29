@@ -88,7 +88,7 @@ static int system_opcode_insn(ulong insn, struct sbi_trap_regs *regs)
 	return 0;
 }
 
-static illegal_insn_func illegal_insn_table[32] = {
+static const illegal_insn_func illegal_insn_table[32] = {
 	truly_illegal_insn, /* 0 */
 	truly_illegal_insn, /* 1 */
 	truly_illegal_insn, /* 2 */
