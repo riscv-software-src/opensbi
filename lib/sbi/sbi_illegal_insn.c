@@ -8,6 +8,7 @@
  */
 
 #include <sbi/riscv_asm.h>
+#include <sbi/riscv_barrier.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_emulate_csr.h>
@@ -31,6 +32,17 @@ static int truly_illegal_insn(ulong insn, struct sbi_trap_regs *regs)
 	trap.tinst = 0;
 
 	return sbi_trap_redirect(regs, &trap);
+}
+
+static int misc_mem_opcode_insn(ulong insn, struct sbi_trap_regs *regs)
+{
+	/* Errata workaround: emulate `fence.tso` as `fence rw, rw`. */
+	if ((insn & INSN_MASK_FENCE_TSO) == INSN_MATCH_FENCE_TSO) {
+		smp_mb();
+		return 0;
+	}
+
+	return truly_illegal_insn(insn, regs);
 }
 
 static int system_opcode_insn(ulong insn, struct sbi_trap_regs *regs)
@@ -92,7 +104,7 @@ static const illegal_insn_func illegal_insn_table[32] = {
 	truly_illegal_insn, /* 0 */
 	truly_illegal_insn, /* 1 */
 	truly_illegal_insn, /* 2 */
-	truly_illegal_insn, /* 3 */
+	misc_mem_opcode_insn, /* 3 */
 	truly_illegal_insn, /* 4 */
 	truly_illegal_insn, /* 5 */
 	truly_illegal_insn, /* 6 */

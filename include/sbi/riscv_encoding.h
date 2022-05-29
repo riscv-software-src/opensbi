@@ -838,6 +838,9 @@
 #define INSN_MASK_WFI			0xffffff00
 #define INSN_MATCH_WFI			0x10500000
 
+#define INSN_MASK_FENCE_TSO		0xffffffff
+#define INSN_MATCH_FENCE_TSO		0x8330000f
+
 #define INSN_16BIT_MASK			0x3
 #define INSN_32BIT_MASK			0x1c
 
