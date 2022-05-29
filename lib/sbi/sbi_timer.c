@@ -44,11 +44,6 @@ static u64 get_ticks(void)
 }
 #endif
 
-static u64 get_platform_ticks(void)
-{
-	return timer_dev->timer_value();
-}
-
 static void nop_delay_fn(void *opaque)
 {
 	cpu_relax();
@@ -167,7 +162,7 @@ void sbi_timer_set_device(const struct sbi_timer_device *dev)
 
 	timer_dev = dev;
 	if (!get_time_val && timer_dev->timer_value)
-		get_time_val = get_platform_ticks;
+		get_time_val = timer_dev->timer_value;
 }
 
 int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot)
