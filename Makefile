@@ -177,11 +177,11 @@ endif
 
 # Setup list of objects.mk files
 ifdef PLATFORM
-platform-object-mks=$(shell if [ -d $(platform_src_dir)/ ]; then find $(platform_src_dir) -iname "objects.mk" | sort -r; fi)
+platform-object-mks=$(shell if [ -d $(platform_src_dir)/ ]; then find $(platform_src_dir) -name "objects.mk" | sort -r; fi)
 endif
-libsbi-object-mks=$(shell if [ -d $(libsbi_dir) ]; then find $(libsbi_dir) -iname "objects.mk" | sort -r; fi)
-libsbiutils-object-mks=$(shell if [ -d $(libsbiutils_dir) ]; then find $(libsbiutils_dir) -iname "objects.mk" | sort -r; fi)
-firmware-object-mks=$(shell if [ -d $(firmware_dir) ]; then find $(firmware_dir) -iname "objects.mk" | sort -r; fi)
+libsbi-object-mks=$(shell if [ -d $(libsbi_dir) ]; then find $(libsbi_dir) -name "objects.mk" | sort -r; fi)
+libsbiutils-object-mks=$(shell if [ -d $(libsbiutils_dir) ]; then find $(libsbiutils_dir) -name "objects.mk" | sort -r; fi)
+firmware-object-mks=$(shell if [ -d $(firmware_dir) ]; then find $(firmware_dir) -name "objects.mk" | sort -r; fi)
 
 # Include platform specifig config.mk
 ifdef PLATFORM
