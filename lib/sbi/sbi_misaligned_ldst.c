@@ -22,6 +22,18 @@ union reg_data {
 	u64 data_u64;
 };
 
+static ulong sbi_misaligned_tinst_fixup(ulong orig_tinst, ulong new_tinst,
+					ulong addr_offset)
+{
+	if (new_tinst == INSN_PSEUDO_VS_LOAD ||
+	    new_tinst == INSN_PSEUDO_VS_STORE)
+		return new_tinst;
+	else if (orig_tinst == 0)
+		return 0UL;
+	else
+		return orig_tinst | (addr_offset << SH_RS1);
+}
+
 int sbi_misaligned_load_handler(ulong addr, ulong tval2, ulong tinst,
 				struct sbi_trap_regs *regs)
 {
@@ -126,6 +138,8 @@ int sbi_misaligned_load_handler(ulong addr, ulong tval2, ulong tinst,
 						&uptrap);
 		if (uptrap.cause) {
 			uptrap.epc = regs->mepc;
+			uptrap.tinst = sbi_misaligned_tinst_fixup(
+				tinst, uptrap.tinst, i);
 			return sbi_trap_redirect(regs, &uptrap);
 		}
 	}
@@ -238,6 +252,8 @@ int sbi_misaligned_store_handler(ulong addr, ulong tval2, ulong tinst,
 			     &uptrap);
 		if (uptrap.cause) {
 			uptrap.epc = regs->mepc;
+			uptrap.tinst = sbi_misaligned_tinst_fixup(
+				tinst, uptrap.tinst, i);
 			return sbi_trap_redirect(regs, &uptrap);
 		}
 	}
