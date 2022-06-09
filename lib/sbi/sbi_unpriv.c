@@ -149,15 +149,17 @@ ulong sbi_get_insn(ulong mepc, struct sbi_trap_info *trap)
 	switch (trap->cause) {
 	case CAUSE_LOAD_ACCESS:
 		trap->cause = CAUSE_FETCH_ACCESS;
-		trap->tval = mepc;
+		trap->tinst = 0UL;
 		break;
 	case CAUSE_LOAD_PAGE_FAULT:
 		trap->cause = CAUSE_FETCH_PAGE_FAULT;
-		trap->tval = mepc;
+		trap->tinst = 0UL;
 		break;
 	case CAUSE_LOAD_GUEST_PAGE_FAULT:
 		trap->cause = CAUSE_FETCH_GUEST_PAGE_FAULT;
-		trap->tval = mepc;
+		if (trap->tinst != INSN_PSEUDO_VS_LOAD &&
+		    trap->tinst != INSN_PSEUDO_VS_STORE)
+			trap->tinst = 0UL;
 		break;
 	default:
 		break;
