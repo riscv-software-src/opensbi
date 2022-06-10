@@ -11,6 +11,7 @@
 #define __PLATFORM_OVERRIDE_H__
 
 #include <sbi/sbi_types.h>
+#include <sbi/sbi_trap.h>
 
 struct platform_override {
 	const struct fdt_match *match_table;
@@ -21,6 +22,12 @@ struct platform_override {
 	void (*early_exit)(const struct fdt_match *match);
 	void (*final_exit)(const struct fdt_match *match);
 	int (*fdt_fixup)(void *fdt, const struct fdt_match *match);
+	int (*vendor_ext_check)(long extid, const struct fdt_match *match);
+	int (*vendor_ext_provider)(long extid, long funcid,
+				   const struct sbi_trap_regs *regs,
+				   unsigned long *out_value,
+				   struct sbi_trap_info *out_trap,
+				   const struct fdt_match *match);
 };
 
 #endif

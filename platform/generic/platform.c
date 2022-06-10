@@ -168,6 +168,29 @@ static int generic_final_init(bool cold_boot)
 	return 0;
 }
 
+static int generic_vendor_ext_check(long extid)
+{
+	if (generic_plat && generic_plat->vendor_ext_check)
+		return generic_plat->vendor_ext_check(extid,
+						      generic_plat_match);
+
+	return 0;
+}
+
+static int generic_vendor_ext_provider(long extid, long funcid,
+				       const struct sbi_trap_regs *regs,
+				       unsigned long *out_value,
+				       struct sbi_trap_info *out_trap)
+{
+	if (generic_plat && generic_plat->vendor_ext_provider) {
+		return generic_plat->vendor_ext_provider(extid, funcid, regs,
+							 out_value, out_trap,
+							 generic_plat_match);
+	}
+
+	return SBI_ENOTSUPP;
+}
+
 static void generic_early_exit(void)
 {
 	if (generic_plat && generic_plat->early_exit)
@@ -236,6 +259,8 @@ const struct sbi_platform_operations platform_ops = {
 	.get_tlbr_flush_limit	= generic_tlbr_flush_limit,
 	.timer_init		= fdt_timer_init,
 	.timer_exit		= fdt_timer_exit,
+	.vendor_ext_check	= generic_vendor_ext_check,
+	.vendor_ext_provider	= generic_vendor_ext_provider,
 };
 
 struct sbi_platform platform = {
