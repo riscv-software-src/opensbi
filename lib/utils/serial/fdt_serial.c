@@ -76,19 +76,24 @@ int fdt_serial_init(void)
 	for (pos = 0; pos < fdt_serial_drivers_size; pos++) {
 		drv = fdt_serial_drivers[pos];
 
-		noff = fdt_find_match(fdt, -1, drv->match_table, &match);
-		if (noff < 0)
-			continue;
+		noff = -1;
+		do {
+			noff = fdt_find_match(fdt, noff, drv->match_table, &match);
 
-		if (drv->init) {
-			rc = drv->init(fdt, noff, match);
-			if (rc == SBI_ENODEV)
-				continue;
-			if (rc)
-				return rc;
-		}
-		current_driver = drv;
-		break;
+			if (noff < 0)
+				break;
+
+			if (drv->init) {
+				rc = drv->init(fdt, noff, match);
+				if (rc == SBI_ENODEV)
+					continue;
+				if (rc)
+					return rc;
+			}
+
+			current_driver = drv;
+			goto done;
+		} while (noff >= 0);
 	}
 
 done:
