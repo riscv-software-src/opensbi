@@ -22,6 +22,9 @@ libsbiutils-objs-y += serial/fdt_serial_shakti.o
 carray-fdt_serial_drivers-y += fdt_serial_sifive
 libsbiutils-objs-y += serial/fdt_serial_sifive.o
 
+carray-fdt_serial_drivers-y += fdt_serial_virtio
+libsbiutils-objs-y += serial/fdt_serial_virtio.o
+
 carray-fdt_serial_drivers-y += fdt_serial_litex
 libsbiutils-objs-y += serial/fdt_serial_litex.o
 
@@ -34,6 +37,7 @@ libsbiutils-objs-y += serial/fdt_serial_xlnx_uartlite.o
 libsbiutils-objs-y += serial/gaisler-uart.o
 libsbiutils-objs-y += serial/shakti-uart.o
 libsbiutils-objs-y += serial/sifive-uart.o
+libsbiutils-objs-y += serial/virtio-uart.o
 libsbiutils-objs-y += serial/litex-uart.o
 libsbiutils-objs-y += serial/uart8250.o
 libsbiutils-objs-y += serial/xlnx-uartlite.o

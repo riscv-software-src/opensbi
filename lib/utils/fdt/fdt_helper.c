@@ -388,6 +388,24 @@ int fdt_parse_shakti_uart_node(void *fdt, int nodeoffset,
 	return 0;
 }
 
+int fdt_parse_virtio_uart_node(void *fdt, int nodeoffset,
+			       struct platform_uart_data *uart)
+{
+	int rc;
+	uint64_t reg_addr, reg_size;
+
+	if (nodeoffset < 0 || !uart || !fdt)
+		return SBI_ENODEV;
+
+	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
+				    &reg_addr, &reg_size);
+	if (rc < 0 || !reg_addr || !reg_size)
+		return SBI_ENODEV;
+	uart->addr = reg_addr;
+
+	return 0;
+}
+
 int fdt_parse_sifive_uart_node(void *fdt, int nodeoffset,
 			       struct platform_uart_data *uart)
 {
