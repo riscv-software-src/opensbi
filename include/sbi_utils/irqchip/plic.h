@@ -17,6 +17,12 @@ struct plic_data {
 	unsigned long num_src;
 };
 
+void plic_context_save(const struct plic_data *plic, int context_id,
+		       u32 *enable, u32 *threshold);
+
+void plic_context_restore(const struct plic_data *plic, int context_id,
+			  const u32 *enable, u32 threshold);
+
 int plic_context_init(const struct plic_data *plic, int context_id,
 		      bool enable, u32 threshold);
 
