@@ -24,6 +24,38 @@ static struct plic_data plic[PLIC_MAX_NR];
 static struct plic_data *plic_hartid2data[SBI_HARTMASK_MAX_BITS];
 static int plic_hartid2context[SBI_HARTMASK_MAX_BITS][2];
 
+void fdt_plic_priority_save(u8 *priority)
+{
+	struct plic_data *plic = plic_hartid2data[current_hartid()];
+
+	plic_priority_save(plic, priority);
+}
+
+void fdt_plic_priority_restore(const u8 *priority)
+{
+	struct plic_data *plic = plic_hartid2data[current_hartid()];
+
+	plic_priority_restore(plic, priority);
+}
+
+void fdt_plic_context_save(bool smode, u32 *enable, u32 *threshold)
+{
+	u32 hartid = current_hartid();
+
+	plic_context_save(plic_hartid2data[hartid],
+			  plic_hartid2context[hartid][smode],
+			  enable, threshold);
+}
+
+void fdt_plic_context_restore(bool smode, const u32 *enable, u32 threshold)
+{
+	u32 hartid = current_hartid();
+
+	plic_context_restore(plic_hartid2data[hartid],
+			     plic_hartid2context[hartid][smode],
+			     enable, threshold);
+}
+
 static int irqchip_plic_warm_init(void)
 {
 	u32 hartid = current_hartid();
