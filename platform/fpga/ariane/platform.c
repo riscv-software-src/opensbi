@@ -99,24 +99,21 @@ static int ariane_console_init(void)
 
 static int plic_ariane_warm_irqchip_init(int m_cntx_id, int s_cntx_id)
 {
-	size_t i, ie_words = ARIANE_PLIC_NUM_SOURCES / 32 + 1;
+	int ret;
 
 	/* By default, enable all IRQs for M-mode of target HART */
 	if (m_cntx_id > -1) {
-		for (i = 0; i < ie_words; i++)
-			plic_set_ie(&plic, m_cntx_id, i, 1);
+		ret = plic_context_init(&plic, m_cntx_id, true, 0x1);
+		if (ret)
+			return ret;
 	}
+
 	/* Enable all IRQs for S-mode of target HART */
 	if (s_cntx_id > -1) {
-		for (i = 0; i < ie_words; i++)
-			plic_set_ie(&plic, s_cntx_id, i, 1);
+		ret = plic_context_init(&plic, s_cntx_id, true, 0x0);
+		if (ret)
+			return ret;
 	}
-	/* By default, enable M-mode threshold */
-	if (m_cntx_id > -1)
-		plic_set_thresh(&plic, m_cntx_id, 1);
-	/* By default, disable S-mode threshold */
-	if (s_cntx_id > -1)
-		plic_set_thresh(&plic, s_cntx_id, 0);
 
 	return 0;
 }

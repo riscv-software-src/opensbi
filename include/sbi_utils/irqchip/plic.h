@@ -17,14 +17,12 @@ struct plic_data {
 	unsigned long num_src;
 };
 
+int plic_context_init(const struct plic_data *plic, int context_id,
+		      bool enable, u32 threshold);
+
 int plic_warm_irqchip_init(const struct plic_data *plic,
 			   int m_cntx_id, int s_cntx_id);
 
 int plic_cold_irqchip_init(const struct plic_data *plic);
-
-void plic_set_thresh(const struct plic_data *plic, u32 cntxid, u32 val);
-
-void plic_set_ie(const struct plic_data *plic, u32 cntxid,
-		 u32 word_index, u32 val);
 
 #endif

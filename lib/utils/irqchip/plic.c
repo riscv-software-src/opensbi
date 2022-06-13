@@ -5,6 +5,7 @@
  *
  * Authors:
  *   Anup Patel <anup.patel@wdc.com>
+ *   Samuel Holland <samuel@sholland.org>
  */
 
 #include <sbi/riscv_io.h>
@@ -28,60 +29,62 @@ static void plic_set_priority(const struct plic_data *plic, u32 source, u32 val)
 	writel(val, plic_priority);
 }
 
-void plic_set_thresh(const struct plic_data *plic, u32 cntxid, u32 val)
+static void plic_set_thresh(const struct plic_data *plic, u32 cntxid, u32 val)
 {
 	volatile void *plic_thresh;
-
-	if (!plic)
-		return;
 
 	plic_thresh = (char *)plic->addr +
 		      PLIC_CONTEXT_BASE + PLIC_CONTEXT_STRIDE * cntxid;
 	writel(val, plic_thresh);
 }
 
-void plic_set_ie(const struct plic_data *plic, u32 cntxid,
-		 u32 word_index, u32 val)
+static void plic_set_ie(const struct plic_data *plic, u32 cntxid,
+			u32 word_index, u32 val)
 {
 	volatile char *plic_ie;
-
-	if (!plic)
-		return;
 
 	plic_ie = (char *)plic->addr +
 		   PLIC_ENABLE_BASE + PLIC_ENABLE_STRIDE * cntxid;
 	writel(val, plic_ie + word_index * 4);
 }
 
+int plic_context_init(const struct plic_data *plic, int context_id,
+		      bool enable, u32 threshold)
+{
+	u32 ie_words, ie_value;
+
+	if (!plic || context_id < 0)
+		return SBI_EINVAL;
+
+	ie_words = (plic->num_src + 31) / 32;
+	ie_value = enable ? 0xffffffffU : 0U;
+
+	for (u32 i = 0; i < ie_words; i++)
+		plic_set_ie(plic, context_id, i, ie_value);
+
+	plic_set_thresh(plic, context_id, threshold);
+
+	return 0;
+}
+
 int plic_warm_irqchip_init(const struct plic_data *plic,
 			   int m_cntx_id, int s_cntx_id)
 {
-	size_t i, ie_words;
-
-	if (!plic)
-		return SBI_EINVAL;
-
-	ie_words = plic->num_src / 32 + 1;
+	int ret;
 
 	/* By default, disable all IRQs for M-mode of target HART */
 	if (m_cntx_id > -1) {
-		for (i = 0; i < ie_words; i++)
-			plic_set_ie(plic, m_cntx_id, i, 0);
+		ret = plic_context_init(plic, m_cntx_id, false, 0x7);
+		if (ret)
+			return ret;
 	}
 
 	/* By default, disable all IRQs for S-mode of target HART */
 	if (s_cntx_id > -1) {
-		for (i = 0; i < ie_words; i++)
-			plic_set_ie(plic, s_cntx_id, i, 0);
+		ret = plic_context_init(plic, m_cntx_id, false, 0x7);
+		if (ret)
+			return ret;
 	}
-
-	/* By default, disable M-mode threshold */
-	if (m_cntx_id > -1)
-		plic_set_thresh(plic, m_cntx_id, 0x7);
-
-	/* By default, disable S-mode threshold */
-	if (s_cntx_id > -1)
-		plic_set_thresh(plic, s_cntx_id, 0x7);
 
 	return 0;
 }
