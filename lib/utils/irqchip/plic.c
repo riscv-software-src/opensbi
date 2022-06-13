@@ -21,14 +21,14 @@
 #define PLIC_CONTEXT_BASE 0x200000
 #define PLIC_CONTEXT_STRIDE 0x1000
 
-static void plic_set_priority(struct plic_data *plic, u32 source, u32 val)
+static void plic_set_priority(const struct plic_data *plic, u32 source, u32 val)
 {
 	volatile void *plic_priority = (char *)plic->addr +
 			PLIC_PRIORITY_BASE + 4 * source;
 	writel(val, plic_priority);
 }
 
-void plic_set_thresh(struct plic_data *plic, u32 cntxid, u32 val)
+void plic_set_thresh(const struct plic_data *plic, u32 cntxid, u32 val)
 {
 	volatile void *plic_thresh;
 
@@ -40,7 +40,8 @@ void plic_set_thresh(struct plic_data *plic, u32 cntxid, u32 val)
 	writel(val, plic_thresh);
 }
 
-void plic_set_ie(struct plic_data *plic, u32 cntxid, u32 word_index, u32 val)
+void plic_set_ie(const struct plic_data *plic, u32 cntxid,
+		 u32 word_index, u32 val)
 {
 	volatile char *plic_ie;
 
@@ -52,7 +53,7 @@ void plic_set_ie(struct plic_data *plic, u32 cntxid, u32 word_index, u32 val)
 	writel(val, plic_ie + word_index * 4);
 }
 
-int plic_warm_irqchip_init(struct plic_data *plic,
+int plic_warm_irqchip_init(const struct plic_data *plic,
 			   int m_cntx_id, int s_cntx_id)
 {
 	size_t i, ie_words;
@@ -85,7 +86,7 @@ int plic_warm_irqchip_init(struct plic_data *plic,
 	return 0;
 }
 
-int plic_cold_irqchip_init(struct plic_data *plic)
+int plic_cold_irqchip_init(const struct plic_data *plic)
 {
 	int i;
 
