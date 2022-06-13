@@ -17,6 +17,11 @@ struct plic_data {
 	unsigned long num_src;
 };
 
+/* So far, priorities on all consumers of these functions fit in 8 bits. */
+void plic_priority_save(const struct plic_data *plic, u8 *priority);
+
+void plic_priority_restore(const struct plic_data *plic, const u8 *priority);
+
 void plic_context_save(const struct plic_data *plic, int context_id,
 		       u32 *enable, u32 *threshold);
 

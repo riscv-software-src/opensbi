@@ -22,11 +22,30 @@
 #define PLIC_CONTEXT_BASE 0x200000
 #define PLIC_CONTEXT_STRIDE 0x1000
 
+static u32 plic_get_priority(const struct plic_data *plic, u32 source)
+{
+	volatile void *plic_priority = (char *)plic->addr +
+			PLIC_PRIORITY_BASE + 4 * source;
+	return readl(plic_priority);
+}
+
 static void plic_set_priority(const struct plic_data *plic, u32 source, u32 val)
 {
 	volatile void *plic_priority = (char *)plic->addr +
 			PLIC_PRIORITY_BASE + 4 * source;
 	writel(val, plic_priority);
+}
+
+void plic_priority_save(const struct plic_data *plic, u8 *priority)
+{
+	for (u32 i = 0; i < plic->num_src; i++)
+		priority[i] = plic_get_priority(plic, i);
+}
+
+void plic_priority_restore(const struct plic_data *plic, const u8 *priority)
+{
+	for (u32 i = 0; i < plic->num_src; i++)
+		plic_set_priority(plic, i, priority[i]);
 }
 
 static u32 plic_get_thresh(const struct plic_data *plic, u32 cntxid)
