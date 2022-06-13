@@ -171,10 +171,10 @@ static int hsm_device_hart_stop(void)
 	return SBI_ENOTSUPP;
 }
 
-static int hsm_device_hart_suspend(u32 suspend_type, ulong raddr)
+static int hsm_device_hart_suspend(u32 suspend_type)
 {
 	if (hsm_dev && hsm_dev->hart_suspend)
-		return hsm_dev->hart_suspend(suspend_type, raddr);
+		return hsm_dev->hart_suspend(suspend_type);
 	return SBI_ENOTSUPP;
 }
 
@@ -319,7 +319,7 @@ int sbi_hsm_hart_stop(struct sbi_scratch *scratch, bool exitnow)
 	return 0;
 }
 
-static int __sbi_hsm_suspend_ret_default(struct sbi_scratch *scratch)
+static int __sbi_hsm_suspend_default(struct sbi_scratch *scratch)
 {
 	/* Wait for interrupt */
 	wfi();
@@ -357,23 +357,6 @@ static void __sbi_hsm_suspend_non_ret_restore(struct sbi_scratch *scratch)
 
 	csr_write(CSR_MIE, hdata->saved_mie);
 	csr_write(CSR_MIP, (hdata->saved_mip & (MIP_SSIP | MIP_STIP)));
-}
-
-static int __sbi_hsm_suspend_non_ret_default(struct sbi_scratch *scratch,
-					     ulong raddr)
-{
-	void (*jump_warmboot)(void) = (void (*)(void))scratch->warmboot_addr;
-
-	/* Wait for interrupt */
-	wfi();
-
-	/*
-	 * Directly jump to warm reboot to simulate resume from a
-	 * non-retentive suspend.
-	 */
-	jump_warmboot();
-
-	return 0;
 }
 
 void sbi_hsm_hart_resume_start(struct sbi_scratch *scratch)
@@ -473,15 +456,26 @@ int sbi_hsm_hart_suspend(struct sbi_scratch *scratch, u32 suspend_type,
 		__sbi_hsm_suspend_non_ret_save(scratch);
 
 	/* Try platform specific suspend */
-	ret = hsm_device_hart_suspend(suspend_type, scratch->warmboot_addr);
+	ret = hsm_device_hart_suspend(suspend_type);
 	if (ret == SBI_ENOTSUPP) {
 		/* Try generic implementation of default suspend types */
-		if (suspend_type == SBI_HSM_SUSPEND_RET_DEFAULT) {
-			ret = __sbi_hsm_suspend_ret_default(scratch);
-		} else if (suspend_type == SBI_HSM_SUSPEND_NON_RET_DEFAULT) {
-			ret = __sbi_hsm_suspend_non_ret_default(scratch,
-						scratch->warmboot_addr);
+		if (suspend_type == SBI_HSM_SUSPEND_RET_DEFAULT ||
+		    suspend_type == SBI_HSM_SUSPEND_NON_RET_DEFAULT) {
+			ret = __sbi_hsm_suspend_default(scratch);
 		}
+	}
+
+	/*
+	 * The platform may have coordinated a retentive suspend, or it may
+	 * have exited early from a non-retentive suspend. Either way, the
+	 * caller is not expecting a successful return, so jump to the warm
+	 * boot entry point to simulate resume from a non-retentive suspend.
+	 */
+	if (ret == 0 && (suspend_type & SBI_HSM_SUSP_NON_RET_BIT)) {
+		void (*jump_warmboot)(void) =
+			(void (*)(void))scratch->warmboot_addr;
+
+		jump_warmboot();
 	}
 
 fail_restore_state:
