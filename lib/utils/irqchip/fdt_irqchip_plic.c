@@ -151,6 +151,13 @@ static void thead_plic_plat_init(struct plic_data *pd)
 	writel_relaxed(BIT(0), (char *)pd->addr + THEAD_PLIC_CTRL_REG);
 }
 
+void thead_plic_restore(void)
+{
+	struct plic_data *plic = plic_hartid2data[current_hartid()];
+
+	thead_plic_plat_init(plic);
+}
+
 static const struct fdt_match irqchip_plic_match[] = {
 	{ .compatible = "riscv,plic0" },
 	{ .compatible = "sifive,plic-1.0.0" },
