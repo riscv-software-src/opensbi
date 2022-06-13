@@ -37,6 +37,14 @@ struct sbi_hsm_device {
 	 * specified resume address
 	 */
 	int (*hart_suspend)(u32 suspend_type, ulong raddr);
+
+	/**
+	 * Perform platform-specific actions to resume from a suspended state.
+	 *
+	 * This includes restoring any platform state that was lost during
+	 * non-retentive suspend.
+	 */
+	void (*hart_resume)(void);
 };
 
 struct sbi_domain;

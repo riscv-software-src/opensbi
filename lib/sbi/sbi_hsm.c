@@ -178,6 +178,12 @@ static int hsm_device_hart_suspend(u32 suspend_type, ulong raddr)
 	return SBI_ENOTSUPP;
 }
 
+static void hsm_device_hart_resume(void)
+{
+	if (hsm_dev && hsm_dev->hart_resume)
+		hsm_dev->hart_resume();
+}
+
 int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 {
 	u32 i;
@@ -384,6 +390,8 @@ void sbi_hsm_hart_resume_start(struct sbi_scratch *scratch)
 			   __func__, oldstate);
 		sbi_hart_hang();
 	}
+
+	hsm_device_hart_resume();
 }
 
 void sbi_hsm_hart_resume_finish(struct sbi_scratch *scratch)
