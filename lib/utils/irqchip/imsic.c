@@ -38,9 +38,13 @@
 
 #define IMSIC_EIP63			0xbf
 
+#define IMSIC_EIPx_BITS			32
+
 #define IMSIC_EIE0			0xc0
 
 #define IMSIC_EIE63			0xff
+
+#define IMSIC_EIEx_BITS			32
 
 #define IMSIC_DISABLE_EIDELIVERY	0
 #define IMSIC_ENABLE_EIDELIVERY		1
@@ -62,6 +66,18 @@ do { \
 	__v = csr_read(CSR_MIREG); \
 	__v; \
 })
+
+#define imsic_csr_set(__c, __v)		\
+do { \
+	csr_write(CSR_MISELECT, __c); \
+	csr_set(CSR_MIREG, __v); \
+} while (0)
+
+#define imsic_csr_clear(__c, __v)	\
+do { \
+	csr_write(CSR_MISELECT, __c); \
+	csr_clear(CSR_MIREG, __v); \
+} while (0)
 
 static struct imsic_data *imsic_hartid2data[SBI_HARTMASK_MAX_BITS];
 static int imsic_hartid2file[SBI_HARTMASK_MAX_BITS];
@@ -140,6 +156,31 @@ static struct sbi_ipi_device imsic_ipi_device = {
 	.ipi_send	= imsic_ipi_send
 };
 
+static void imsic_local_eix_update(unsigned long base_id,
+				   unsigned long num_id, bool pend, bool val)
+{
+	unsigned long i, isel, ireg;
+	unsigned long id = base_id, last_id = base_id + num_id;
+
+	while (id < last_id) {
+		isel = id / __riscv_xlen;
+		isel *= __riscv_xlen / IMSIC_EIPx_BITS;
+		isel += (pend) ? IMSIC_EIP0 : IMSIC_EIE0;
+
+		ireg = 0;
+		for (i = id & (__riscv_xlen - 1);
+		     (id < last_id) && (i < __riscv_xlen); i++) {
+			ireg |= BIT(i);
+			id++;
+		}
+
+		if (val)
+			imsic_csr_set(isel, ireg);
+		else
+			imsic_csr_clear(isel, ireg);
+	}
+}
+
 void imsic_local_irqchip_init(void)
 {
 	/*
@@ -158,12 +199,11 @@ void imsic_local_irqchip_init(void)
 	imsic_csr_write(IMSIC_EIDELIVERY, IMSIC_ENABLE_EIDELIVERY);
 
 	/* Enable IPI */
-	csr_write(CSR_MSETEIENUM, IMSIC_IPI_ID);
+	imsic_local_eix_update(IMSIC_IPI_ID, 1, false, true);
 }
 
 int imsic_warm_irqchip_init(void)
 {
-	unsigned long i;
 	struct imsic_data *imsic = imsic_hartid2data[current_hartid()];
 
 	/* Sanity checks */
@@ -171,11 +211,10 @@ int imsic_warm_irqchip_init(void)
 		return SBI_EINVAL;
 
 	/* Disable all interrupts */
-	for (i = 1; i <= imsic->num_ids; i++)
-		csr_write(CSR_MCLREIENUM, i);
+	imsic_local_eix_update(1, imsic->num_ids, false, false);
 
-	/* Clear IPI */
-	csr_write(CSR_MCLREIPNUM, IMSIC_IPI_ID);
+	/* Clear IPI pending */
+	imsic_local_eix_update(IMSIC_IPI_ID, 1, true, false);
 
 	/* Local IMSIC initialization */
 	imsic_local_irqchip_init();
