@@ -145,7 +145,7 @@ int plic_warm_irqchip_init(const struct plic_data *plic,
 
 	/* By default, disable all IRQs for S-mode of target HART */
 	if (s_cntx_id > -1) {
-		ret = plic_context_init(plic, m_cntx_id, false, 0x7);
+		ret = plic_context_init(plic, s_cntx_id, false, 0x7);
 		if (ret)
 			return ret;
 	}
