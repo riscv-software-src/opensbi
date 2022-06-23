@@ -13,8 +13,8 @@
 #include <sbi/sbi_types.h>
 #include <sbi/sbi_list.h>
 
-#define SBI_ECALL_VERSION_MAJOR		0
-#define SBI_ECALL_VERSION_MINOR		3
+#define SBI_ECALL_VERSION_MAJOR		1
+#define SBI_ECALL_VERSION_MINOR		0
 #define SBI_OPENSBI_IMPID		1
 
 struct sbi_trap_regs;
