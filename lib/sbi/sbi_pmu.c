@@ -297,7 +297,7 @@ static int pmu_ctr_start_hw(uint32_t cidx, uint64_t ival, bool ival_update)
 	unsigned long mctr_inhbt;
 
 	/* Make sure the counter index lies within the range and is not TM bit */
-	if (cidx > num_hw_ctrs || cidx == 1)
+	if (cidx >= num_hw_ctrs || cidx == 1)
 		return SBI_EINVAL;
 
 	if (sbi_hart_priv_version(scratch) < SBI_HART_PRIV_VER_1_11)
@@ -378,7 +378,7 @@ static int pmu_ctr_stop_hw(uint32_t cidx)
 	mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
 
 	/* Make sure the counter index lies within the range and is not TM bit */
-	if (cidx > num_hw_ctrs || cidx == 1)
+	if (cidx >= num_hw_ctrs || cidx == 1)
 		return SBI_EINVAL;
 
 	if (!__test_bit(cidx, &mctr_inhbt)) {
@@ -516,7 +516,7 @@ static int pmu_ctr_find_hw(unsigned long cbase, unsigned long cmask, unsigned lo
 	u32 hartid = current_hartid();
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
-	if (cbase > num_hw_ctrs)
+	if (cbase >= num_hw_ctrs)
 		return SBI_EINVAL;
 
 	/**
@@ -593,8 +593,8 @@ static int pmu_ctr_find_fw(unsigned long cbase, unsigned long cmask, u32 hartid)
 	int fw_base;
 	unsigned long ctr_mask = cmask << cbase;
 
-	if (cbase <= num_hw_ctrs)
-		fw_base = num_hw_ctrs + 1;
+	if (cbase < num_hw_ctrs)
+		fw_base = num_hw_ctrs;
 	else
 		fw_base = cbase;
 
@@ -694,7 +694,7 @@ int sbi_pmu_ctr_get_info(uint32_t cidx, unsigned long *ctr_info)
 		return SBI_EINVAL;
 
 	/* We have 31 HW counters with 31 being the last index(MHPMCOUNTER31) */
-	if (cidx <= num_hw_ctrs) {
+	if (cidx < num_hw_ctrs) {
 		cinfo.type = SBI_PMU_CTR_TYPE_HW;
 		cinfo.csr = CSR_CYCLE + cidx;
 		/* mcycle & minstret are always 64 bit */
@@ -749,7 +749,7 @@ int sbi_pmu_init(struct sbi_scratch *scratch, bool cold_boot)
 		sbi_platform_pmu_init(plat);
 
 		/* mcycle & minstret is available always */
-		num_hw_ctrs = sbi_hart_mhpm_count(scratch) + 2;
+		num_hw_ctrs = sbi_hart_mhpm_count(scratch) + 3;
 		total_ctrs = num_hw_ctrs + SBI_PMU_FW_CTR_MAX;
 	}
 
