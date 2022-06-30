@@ -20,20 +20,21 @@
 
 #define UART_TX_FULL  0x2
 #define UART_RX_FULL  0x8
+#define UART_RX_NOT_EMPTY 0x4
 
 static volatile char *uart_base;
 
 static void shakti_uart_putc(char ch)
 {
-	while((readw(uart_base + REG_STATUS) & UART_TX_FULL))
+	while((readb(uart_base + REG_STATUS) & UART_TX_FULL))
 		;
 	writeb(ch, uart_base + REG_TX);
 }
 
 static int shakti_uart_getc(void)
 {
-	u16 status = readw(uart_base + REG_STATUS);
-	if (status & UART_RX_FULL)
+	u16 status = readb(uart_base + REG_STATUS);
+	if (status & UART_RX_NOT_EMPTY) // MASKING 3rd bit for UARTv2. If UARTv1 use MASK UART_RX_FULL.
 		return readb(uart_base + REG_RX);
 	return -1;
 }

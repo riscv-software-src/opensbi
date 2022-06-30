@@ -31,7 +31,7 @@
 #define DEFAULT_GAISLER_UART_REG_IO_WIDTH	4
 
 #define DEFAULT_SHAKTI_UART_FREQ		50000000
-#define DEFAULT_SHAKTI_UART_BAUD		115200
+#define DEFAULT_SHAKTI_UART_BAUD		19200
 
 const struct fdt_match *fdt_match_node(void *fdt, int nodeoff,
 				       const struct fdt_match *match_table)
