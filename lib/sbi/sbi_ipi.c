@@ -208,10 +208,13 @@ skip:
 	};
 }
 
-void sbi_ipi_raw_send(u32 target_hart)
+int sbi_ipi_raw_send(u32 target_hart)
 {
-	if (ipi_dev && ipi_dev->ipi_send)
-		ipi_dev->ipi_send(target_hart);
+	if (!ipi_dev || !ipi_dev->ipi_send)
+		return SBI_EINVAL;
+
+	ipi_dev->ipi_send(target_hart);
+	return 0;
 }
 
 const struct sbi_ipi_device *sbi_ipi_get_device(void)
