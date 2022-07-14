@@ -769,19 +769,12 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 #if __riscv_xlen == 32
 	if (misa_extension('H')) {
 		valH = csr_read(CSR_MSTATUSH);
-		if (next_virt)
-			valH = INSERT_FIELD(valH, MSTATUSH_MPV, 1);
-		else
-			valH = INSERT_FIELD(valH, MSTATUSH_MPV, 0);
+		valH = INSERT_FIELD(valH, MSTATUSH_MPV, next_virt);
 		csr_write(CSR_MSTATUSH, valH);
 	}
 #else
-	if (misa_extension('H')) {
-		if (next_virt)
-			val = INSERT_FIELD(val, MSTATUS_MPV, 1);
-		else
-			val = INSERT_FIELD(val, MSTATUS_MPV, 0);
-	}
+	if (misa_extension('H'))
+		val = INSERT_FIELD(val, MSTATUS_MPV, next_virt);
 #endif
 	csr_write(CSR_MSTATUS, val);
 	csr_write(CSR_MEPC, next_addr);
