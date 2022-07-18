@@ -69,7 +69,7 @@ static struct aclint_mtimer_data mtimer = {
 static int openpiton_early_init(bool cold_boot)
 {
 	void *fdt;
-	struct platform_uart_data uart_data;
+	struct platform_uart_data uart_data = { 0 };
 	struct plic_data plic_data;
 	unsigned long aclint_freq;
 	uint64_t clint_addr;
