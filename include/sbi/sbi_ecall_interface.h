@@ -208,6 +208,12 @@ enum sbi_pmu_ctr_type {
 
 #define SBI_PMU_EVENT_IDX_INVALID 0xFFFFFFFF
 
+#define SBI_PMU_EVENT_HW_CACHE_OPS_RESULT	0x1
+#define SBI_PMU_EVENT_HW_CACHE_OPS_ID_MASK	0x6
+#define SBI_PMU_EVENT_HW_CACHE_OPS_ID_OFFSET	1
+#define SBI_PMU_EVENT_HW_CACHE_ID_MASK		0xfff8
+#define SBI_PMU_EVENT_HW_CACHE_ID_OFFSET	3
+
 /* Flags defined for config matching function */
 #define SBI_PMU_CFG_FLAG_SKIP_MATCH	(1 << 0)
 #define SBI_PMU_CFG_FLAG_CLEAR_VALUE	(1 << 1)

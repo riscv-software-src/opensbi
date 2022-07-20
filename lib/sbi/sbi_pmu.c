@@ -107,6 +107,49 @@ static bool pmu_event_select_overlap(struct sbi_pmu_hw_event *evt,
 	return FALSE;
 }
 
+static int pmu_event_validate(unsigned long event_idx)
+{
+	uint32_t event_idx_type = get_cidx_type(event_idx);
+	uint32_t event_idx_code = get_cidx_code(event_idx);
+	uint32_t event_idx_code_max = -1;
+	uint32_t cache_ops_result, cache_ops_id, cache_id;
+
+	switch(event_idx_type) {
+	case SBI_PMU_EVENT_TYPE_HW:
+		event_idx_code_max = SBI_PMU_HW_GENERAL_MAX;
+		break;
+	case SBI_PMU_EVENT_TYPE_FW:
+		event_idx_code_max = SBI_PMU_FW_MAX;
+		break;
+	case SBI_PMU_EVENT_TYPE_HW_CACHE:
+		cache_ops_result = event_idx_code &
+					SBI_PMU_EVENT_HW_CACHE_OPS_RESULT;
+		cache_ops_id = (event_idx_code &
+				SBI_PMU_EVENT_HW_CACHE_OPS_ID_MASK) >>
+				SBI_PMU_EVENT_HW_CACHE_OPS_ID_OFFSET;
+		cache_id = (event_idx_code &
+			    SBI_PMU_EVENT_HW_CACHE_ID_MASK) >>
+			    SBI_PMU_EVENT_HW_CACHE_ID_OFFSET;
+		if ((cache_ops_result < SBI_PMU_HW_CACHE_RESULT_MAX) &&
+		    (cache_ops_id < SBI_PMU_HW_CACHE_OP_MAX) &&
+		    (cache_id < SBI_PMU_HW_CACHE_MAX))
+			return event_idx_type;
+		else
+			return SBI_EINVAL;
+		break;
+	case SBI_PMU_EVENT_TYPE_HW_RAW:
+		event_idx_code_max = 1; // event_idx.code should be zero
+		break;
+	default:
+		return SBI_EINVAL;
+	}
+
+	if (event_idx_code < event_idx_code_max)
+		return event_idx_type;
+
+	return SBI_EINVAL;
+}
+
 static int pmu_ctr_validate(uint32_t cidx, uint32_t *event_idx_code)
 {
 	uint32_t event_idx_val;
@@ -614,12 +657,16 @@ int sbi_pmu_ctr_cfg_match(unsigned long cidx_base, unsigned long cidx_mask,
 {
 	int ctr_idx = SBI_ENOTSUPP;
 	u32 hartid = current_hartid();
-	int event_type = get_cidx_type(event_idx);
+	int event_type;
 	struct sbi_pmu_fw_event *fevent;
 	uint32_t fw_evt_code;
 
 	/* Do a basic sanity check of counter base & mask */
-	if ((cidx_base + sbi_fls(cidx_mask)) >= total_ctrs || event_type >= SBI_PMU_EVENT_TYPE_MAX)
+	if ((cidx_base + sbi_fls(cidx_mask)) >= total_ctrs)
+		return SBI_EINVAL;
+
+	event_type = pmu_event_validate(event_idx);
+	if (event_type < 0)
 		return SBI_EINVAL;
 
 	if (flags & SBI_PMU_CFG_FLAG_SKIP_MATCH) {
