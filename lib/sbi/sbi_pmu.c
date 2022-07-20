@@ -156,13 +156,13 @@ static int pmu_ctr_validate(uint32_t cidx, uint32_t *event_idx_code)
 	uint32_t event_idx_type;
 	u32 hartid = current_hartid();
 
-	event_idx_val = active_events[hartid][cidx];
-
-	if (cidx >= total_ctrs || (event_idx_val == SBI_PMU_EVENT_IDX_INVALID))
+	if (cidx >= total_ctrs)
 		return SBI_EINVAL;
 
+	event_idx_val = active_events[hartid][cidx];
 	event_idx_type = get_cidx_type(event_idx_val);
-	if (event_idx_type >= SBI_PMU_EVENT_TYPE_MAX)
+	if (event_idx_val == SBI_PMU_EVENT_IDX_INVALID ||
+	    event_idx_type >= SBI_PMU_EVENT_TYPE_MAX)
 		return SBI_EINVAL;
 
 	*event_idx_code = get_cidx_code(event_idx_val);
