@@ -51,6 +51,18 @@ void sbi_puts(const char *str)
 	spin_unlock(&console_out_lock);
 }
 
+unsigned long sbi_nputs(const char *str, unsigned long len)
+{
+	unsigned long i;
+
+	spin_lock(&console_out_lock);
+	for (i = 0; i < len; i++)
+		sbi_putc(str[i]);
+	spin_unlock(&console_out_lock);
+
+	return i;
+}
+
 void sbi_gets(char *s, int maxwidth, char endchar)
 {
 	int ch;
