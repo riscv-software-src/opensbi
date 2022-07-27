@@ -183,7 +183,7 @@ static int printi(char **out, u32 *out_len, long long i, int b, int sg,
 
 static int print(char **out, u32 *out_len, const char *format, va_list args)
 {
-	int width, flags, acnt = 0;
+	int width, flags;
 	int pc = 0;
 	char scr[2];
 	unsigned long long tmp;
@@ -216,7 +216,6 @@ static int print(char **out, u32 *out_len, const char *format, va_list args)
 			}
 			if (*format == 's') {
 				char *s = va_arg(args, char *);
-				acnt += sizeof(char *);
 				pc += prints(out, out_len, s ? s : "(null)",
 					     width, flags);
 				continue;
@@ -224,61 +223,40 @@ static int print(char **out, u32 *out_len, const char *format, va_list args)
 			if ((*format == 'd') || (*format == 'i')) {
 				pc += printi(out, out_len, va_arg(args, int),
 					     10, 1, width, flags, '0');
-				acnt += sizeof(int);
 				continue;
 			}
 			if (*format == 'x') {
 				pc += printi(out, out_len,
 					     va_arg(args, unsigned int), 16, 0,
 					     width, flags, 'a');
-				acnt += sizeof(unsigned int);
 				continue;
 			}
 			if (*format == 'X') {
 				pc += printi(out, out_len,
 					     va_arg(args, unsigned int), 16, 0,
 					     width, flags, 'A');
-				acnt += sizeof(unsigned int);
 				continue;
 			}
 			if (*format == 'u') {
 				pc += printi(out, out_len,
 					     va_arg(args, unsigned int), 10, 0,
 					     width, flags, 'a');
-				acnt += sizeof(unsigned int);
 				continue;
 			}
 			if (*format == 'p') {
 				pc += printi(out, out_len,
 					     va_arg(args, unsigned long), 16, 0,
 					     width, flags, 'a');
-				acnt += sizeof(unsigned long);
 				continue;
 			}
 			if (*format == 'P') {
 				pc += printi(out, out_len,
 					     va_arg(args, unsigned long), 16, 0,
 					     width, flags, 'A');
-				acnt += sizeof(unsigned long);
 				continue;
 			}
 			if (*format == 'l' && *(format + 1) == 'l') {
-				while (acnt &
-				       (sizeof(unsigned long long) - 1)) {
-					va_arg(args, int);
-					acnt += sizeof(int);
-				}
-				if (sizeof(unsigned long long) ==
-				    sizeof(unsigned long)) {
-					tmp = va_arg(args, unsigned long long);
-					acnt += sizeof(unsigned long long);
-				} else {
-					((unsigned long *)&tmp)[0] =
-						va_arg(args, unsigned long);
-					((unsigned long *)&tmp)[1] =
-						va_arg(args, unsigned long);
-					acnt += 2 * sizeof(unsigned long);
-				}
+				tmp = va_arg(args, unsigned long long);
 				if (*(format + 2) == 'u') {
 					format += 2;
 					pc += printi(out, out_len, tmp, 10, 0,
@@ -310,19 +288,16 @@ static int print(char **out, u32 *out_len, const char *format, va_list args)
 						out, out_len,
 						va_arg(args, unsigned long), 16,
 						0, width, flags, 'a');
-					acnt += sizeof(unsigned long);
 				} else if (*(format + 1) == 'X') {
 					format += 1;
 					pc += printi(
 						out, out_len,
 						va_arg(args, unsigned long), 16,
 						0, width, flags, 'A');
-					acnt += sizeof(unsigned long);
 				} else {
 					pc += printi(out, out_len,
 						     va_arg(args, long), 10, 1,
 						     width, flags, '0');
-					acnt += sizeof(long);
 				}
 			}
 			if (*format == 'c') {
@@ -330,7 +305,6 @@ static int print(char **out, u32 *out_len, const char *format, va_list args)
 				scr[0] = va_arg(args, int);
 				scr[1] = '\0';
 				pc += prints(out, out_len, scr, width, flags);
-				acnt += sizeof(int);
 				continue;
 			}
 		} else {
