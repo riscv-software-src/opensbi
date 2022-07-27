@@ -76,20 +76,22 @@ typedef __builtin_va_list va_list;
 
 static void printc(char **out, u32 *out_len, char ch)
 {
-	if (out) {
-		if (*out) {
-			if (out_len && (0 < *out_len)) {
-				**out = ch;
-				++(*out);
-				(*out_len)--;
-			} else {
-				**out = ch;
-				++(*out);
-			}
-		}
-	} else {
+	if (!out) {
 		sbi_putc(ch);
+		return;
 	}
+
+	/*
+	 * The *printf entry point functions have enforced that (*out) can
+	 * only be null when out_len is non-null and its value is zero.
+	 */
+	if (!out_len || *out_len > 1) {
+		*(*out)++ = ch;
+		**out = '\0';
+	}
+
+	if (out_len && *out_len > 0)
+		--(*out_len);
 }
 
 static int prints(char **out, u32 *out_len, const char *string, int width,
@@ -193,7 +195,7 @@ static int print(char **out, u32 *out_len, const char *format, va_list args)
 			if (*format == '\0')
 				break;
 			if (*format == '%')
-				goto out;
+				goto literal;
 			/* Get flags */
 			if (*format == '-') {
 				++format;
@@ -332,13 +334,11 @@ static int print(char **out, u32 *out_len, const char *format, va_list args)
 				continue;
 			}
 		} else {
-		out:
+literal:
 			printc(out, out_len, *format);
 			++pc;
 		}
 	}
-	if (out)
-		**out = '\0';
 
 	return pc;
 }
@@ -347,6 +347,9 @@ int sbi_sprintf(char *out, const char *format, ...)
 {
 	va_list args;
 	int retval;
+
+	if (unlikely(!out))
+		sbi_panic("sbi_sprintf called with NULL output string\n");
 
 	va_start(args, format);
 	retval = print(&out, NULL, format, args);
@@ -359,6 +362,10 @@ int sbi_snprintf(char *out, u32 out_sz, const char *format, ...)
 {
 	va_list args;
 	int retval;
+
+	if (unlikely(!out && out_sz != 0))
+		sbi_panic("sbi_snprintf called with NULL output string and "
+			  "output size is not zero\n");
 
 	va_start(args, format);
 	retval = print(&out, &out_sz, format, args);
