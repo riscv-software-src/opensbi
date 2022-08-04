@@ -118,12 +118,14 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 	regs->mstatus |= (next_virt) ? MSTATUS_MPV : 0UL;
 #endif
 
-	/* Update HSTATUS for VS/VU-mode to HS-mode transition */
-	if (misa_extension('H') && prev_virt && !next_virt) {
-		/* Update HSTATUS SPVP and SPV bits */
+	/* Update hypervisor CSRs if going to HS-mode */
+	if (misa_extension('H') && !next_virt) {
 		hstatus = csr_read(CSR_HSTATUS);
-		hstatus &= ~HSTATUS_SPVP;
-		hstatus |= (prev_mode == PRV_S) ? HSTATUS_SPVP : 0;
+		if (prev_virt) {
+			/* hstatus.SPVP is only updated if coming from VS/VU-mode */
+			hstatus &= ~HSTATUS_SPVP;
+			hstatus |= (prev_mode == PRV_S) ? HSTATUS_SPVP : 0;
+		}
 		hstatus &= ~HSTATUS_SPV;
 		hstatus |= (prev_virt) ? HSTATUS_SPV : 0;
 		csr_write(CSR_HSTATUS, hstatus);
