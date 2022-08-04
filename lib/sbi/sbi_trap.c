@@ -128,6 +128,8 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 		}
 		hstatus &= ~HSTATUS_SPV;
 		hstatus |= (prev_virt) ? HSTATUS_SPV : 0;
+		hstatus &= ~HSTATUS_GVA;
+		hstatus |= (trap->gva) ? HSTATUS_GVA : 0;
 		csr_write(CSR_HSTATUS, hstatus);
 		csr_write(CSR_HTVAL, trap->tval2);
 		csr_write(CSR_HTINST, trap->tinst);
