@@ -95,8 +95,10 @@
 #define SBI_TRAP_INFO_tval2			3
 /** Index of tinst member in sbi_trap_info */
 #define SBI_TRAP_INFO_tinst			4
+/** Index of gva member in sbi_trap_info */
+#define SBI_TRAP_INFO_gva			5
 /** Last member index in sbi_trap_info */
-#define SBI_TRAP_INFO_last			5
+#define SBI_TRAP_INFO_last			6
 
 /* clang-format on */
 
@@ -200,6 +202,8 @@ struct sbi_trap_info {
 	unsigned long tval2;
 	/** tinst Trap instruction */
 	unsigned long tinst;
+	/** gva Guest virtual address in tval flag */
+	unsigned long gva;
 };
 
 int sbi_trap_redirect(struct sbi_trap_regs *regs,
