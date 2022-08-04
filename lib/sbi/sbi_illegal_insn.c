@@ -30,6 +30,7 @@ static int truly_illegal_insn(ulong insn, struct sbi_trap_regs *regs)
 	trap.tval = insn;
 	trap.tval2 = 0;
 	trap.tinst = 0;
+	trap.gva   = 0;
 
 	return sbi_trap_redirect(regs, &trap);
 }

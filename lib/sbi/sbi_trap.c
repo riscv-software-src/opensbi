@@ -311,6 +311,20 @@ struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs)
 		trap.tval = mtval;
 		trap.tval2 = mtval2;
 		trap.tinst = mtinst;
+
+		/*
+		 * If the hypervisor extension is not implemented,
+		 * mstatus[h].GVA is a WPRI field, which is guaranteed to read
+		 * as zero. In addition, in this case we don't read mstatush and
+		 * instead pretend it is zero, which handles privileged spec
+		 * version < 1.12.
+		 */
+#if __riscv_xlen == 32
+		trap.gva = (regs->mstatusH & MSTATUSH_GVA) ? 1 : 0;
+#else
+		trap.gva = (regs->mstatus & MSTATUS_GVA) ? 1 : 0;
+#endif
+
 		rc = sbi_trap_redirect(regs, &trap);
 		break;
 	};
