@@ -10,6 +10,7 @@ if FDT_RESET
 
 config FDT_RESET_GPIO
 	bool "GPIO FDT reset driver"
+	depends on FDT_GPIO
 	default n
 
 config FDT_RESET_HTIF
