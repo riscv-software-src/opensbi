@@ -231,7 +231,7 @@ include $(KCONFIG_CONFIG)
 include $(KCONFIG_AUTOCMD)
 endif
 
-# Include all object.mk files
+# Include all objects.mk files
 ifdef PLATFORM
 include $(platform-object-mks)
 endif
