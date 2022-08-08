@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+#
+# All mandatory drivers or libraries for this platform should
+# be directly selected by the PLATFORM_xyz kconfig symbol.
+#
+# All optional drivers or libraries for this platform should
+# be enabled via configs/defconfig of this platform.
+#
+config PLATFORM_TEMPLATE
+	bool
+	default y
