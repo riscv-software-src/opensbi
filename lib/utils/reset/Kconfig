@@ -14,10 +14,12 @@ config FDT_RESET_GPIO
 
 config FDT_RESET_HTIF
 	bool "Host transfer interface (HTIF) FDT reset driver"
+	select SYS_HTIF
 	default n
 
 config FDT_RESET_SIFIVE_TEST
 	bool "SiFive Test FDT reset driver"
+	select SYS_SIFIVE_TEST
 	default n
 
 config FDT_RESET_SUNXI_WDT

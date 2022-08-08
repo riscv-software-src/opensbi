@@ -15,6 +15,7 @@ config FDT_SERIAL_GAISLER
 
 config FDT_SERIAL_HTIF
 	bool "Host transfer interface (HTIF) UART FDT driver"
+	select SYS_HTIF
 	default n
 
 config FDT_SERIAL_SHAKTI
