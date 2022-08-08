@@ -2,5 +2,6 @@
 
 config PLATFORM_ANDES_AE350
 	bool
+	select IRQCHIP_PLIC
 	select SERIAL_UART8250
 	default y

@@ -4,6 +4,8 @@ menu "Utils and Drivers Support"
 
 source "$(OPENSBI_SRC_DIR)/lib/utils/ipi/Kconfig"
 
+source "$(OPENSBI_SRC_DIR)/lib/utils/irqchip/Kconfig"
+
 source "$(OPENSBI_SRC_DIR)/lib/utils/reset/Kconfig"
 
 source "$(OPENSBI_SRC_DIR)/lib/utils/serial/Kconfig"
