@@ -9,6 +9,20 @@ config PLATFORM_GENERIC
 
 if PLATFORM_GENERIC
 
+config PLATFORM_GENERIC_NAME
+	string "Platform default name"
+	default "Generic"
+
+config PLATFORM_GENERIC_MAJOR_VER
+	int "Platform major version"
+	range 0 65535
+	default 0
+
+config PLATFORM_GENERIC_MINOR_VER
+	int "Platform minor version"
+	range 0 65535
+	default 1
+
 config PLATFORM_ALLWINNER_D1
 	bool "Allwinner D1 support"
 	depends on FDT_IRQCHIP_PLIC

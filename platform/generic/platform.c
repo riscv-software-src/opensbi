@@ -265,8 +265,10 @@ const struct sbi_platform_operations platform_ops = {
 
 struct sbi_platform platform = {
 	.opensbi_version	= OPENSBI_VERSION,
-	.platform_version	= SBI_PLATFORM_VERSION(0x0, 0x01),
-	.name			= "Generic",
+	.platform_version	=
+		SBI_PLATFORM_VERSION(CONFIG_PLATFORM_GENERIC_MAJOR_VER,
+				     CONFIG_PLATFORM_GENERIC_MINOR_VER),
+	.name			= CONFIG_PLATFORM_GENERIC_NAME,
 	.features		= SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count		= SBI_HARTMASK_MAX_BITS,
 	.hart_index2id		= generic_hart_index2id,
