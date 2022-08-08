@@ -11,7 +11,7 @@
 
 /*
  * Include these files as needed.
- * See config.mk PLATFORM_xxx configuration parameters.
+ * See objects.mk PLATFORM_xxx configuration parameters.
  */
 #include <sbi_utils/ipi/aclint_mswi.h>
 #include <sbi_utils/irqchip/plic.h>

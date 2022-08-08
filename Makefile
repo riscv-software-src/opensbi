@@ -204,7 +204,7 @@ firmware-object-mks=$(shell if [ -d $(firmware_dir) ]; then find $(firmware_dir)
 .PHONY: all
 all:
 
-# Include platform specific .config and config.mk
+# Include platform specific .config
 ifdef PLATFORM
 .PHONY: menuconfig
 menuconfig: $(platform_src_dir)/Kconfig $(src_dir)/Kconfig
@@ -229,8 +229,6 @@ $(KCONFIG_AUTOCMD): $(KCONFIG_CONFIG)
 
 include $(KCONFIG_CONFIG)
 include $(KCONFIG_AUTOCMD)
-
-include $(platform_src_dir)/config.mk
 endif
 
 # Include all object.mk files
