@@ -6,3 +6,21 @@ config PLATFORM_GENERIC
 	select FDT_DOMAIN
 	select FDT_PMU
 	default y
+
+if PLATFORM_GENERIC
+
+config PLATFORM_ALLWINNER_D1
+	bool "Allwinner D1 support"
+	depends on FDT_IRQCHIP_PLIC
+	default n
+
+config PLATFORM_SIFIVE_FU540
+	bool "SiFive FU540 support"
+	default n
+
+config PLATFORM_SIFIVE_FU740
+	bool "SiFive FU740 support"
+	depends on FDT_RESET && FDT_I2C
+	default n
+
+endif
