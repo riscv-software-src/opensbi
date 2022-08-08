@@ -41,9 +41,9 @@ OpenSBI currently supports the following virtual and hardware platforms:
 
 The code for these supported platforms can be used as example to implement
 support for other platforms. The *platform/template* directory also provides
-template files for implementing support for a new platform. The *object.mk*,
-*config.mk* and *platform.c* template files provides enough comments to
-facilitate the implementation.
+template files for implementing support for a new platform. The *objects.mk*,
+*Kconfig*, *configs/defconfig* and *platform.c* template files provides enough
+comments to facilitate the implementation.
 
 [generic.md]: generic.md
 [qemu_virt.md]: qemu_virt.md

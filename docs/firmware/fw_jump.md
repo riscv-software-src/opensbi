@@ -15,7 +15,7 @@ and the booting stage binary to follow the OpenSBI firmware.
 A platform *FW_JUMP* firmware can be enabled by any of the following methods:
 
 1. Specifying `FW_JUMP=y` on the top level `make` command line.
-2. Specifying `FW_JUMP=y` in the target platform *config.mk* configuration file.
+2. Specifying `FW_JUMP=y` in the target platform *objects.mk* configuration file.
 
 The compiled *FW_JUMP* firmware ELF file is named *fw_jump.elf*. Its expanded
 image file is *fw_jump.bin*. Both files are created in the platform-specific
@@ -26,7 +26,7 @@ build directory under the *build/platform/<platform_subdir>/firmware* directory.
 
 To operate correctly, a *FW_JUMP* firmware requires some configuration
 parameters to be defined using either the top level `make` command line or the
-target platform *config.mk* configuration file. The possible parameters are as
+target platform *objects.mk* configuration file. The possible parameters are as
 follows:
 
 * **FW_JUMP_ADDR** - Address of the entry point of the booting stage to be

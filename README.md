@@ -92,8 +92,8 @@ N.B. Any S-mode boot loader (i.e. U-Boot) doesn't need to support HSM extension,
 as it doesn't need to boot all the harts. The operating system should be
 capable enough to bring up all other non-booting harts using HSM extension.
 
-Required Toolchain
-------------------
+Required Toolchain and Packages
+-------------------------------
 
 OpenSBI can be compiled natively or cross-compiled on a x86 host. For
 cross-compilation, you can build your own toolchain, download a prebuilt one
@@ -114,6 +114,14 @@ triple is used (e.g. *-target riscv64-unknown-elf*).
 
 Please note that only a 64-bit version of the toolchain is available in
 the Bootlin toolchain repository for now.
+
+In addition to a toolchain, OpenSBI also requires the following packages on
+the host:
+
+1. device-tree-compiler: The device tree compiler for compiling device
+   tree sources (DTS files).
+2. python3: The python 3.0 (or compatible) language support for various
+   scripts.
 
 Building and Installing the OpenSBI Platform-Independent Library
 ----------------------------------------------------------------
@@ -195,6 +203,19 @@ top-level make command line. These options, such as *PLATFORM_<xyz>* or
 *FW_<abc>*, are platform-specific and described in more details in the
 *docs/platform/<platform_name>.md* files and
 *docs/firmware/<firmware_name>.md* files.
+
+All OpenSBI platforms support Kconfig style build-time configuration. Users
+can change the build-time configuration of a platform using a graphical
+interface as follows:
+```
+make PLATFORM=<platform_subdir> menuconfig
+```
+
+Alternately, an OpenSBI platform can have multiple default configurations
+and users can select a custom default configuration as follows:
+```
+make PLATFORM=<platform_subdir> PLATFORM_DEFCONFIG=<platform_custom_defconfig>
+```
 
 Building 32-bit / 64-bit OpenSBI Images
 ---------------------------------------

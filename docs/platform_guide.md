@@ -28,11 +28,12 @@ Adding support for a new platform
 Support for a new platform named *&lt;xyz&gt;* can be added as follows:
 
 1. Create a directory named *&lt;xyz&gt;* under the *platform/* directory.
-2. Create a platform configuration file named *config.mk* under the
-   *platform/&lt;xyz&gt;/* directory. This configuration file will provide
+2. Create platform configuration files named *Kconfig* and *configs/defconfig*
+   under the *platform/&lt;xyz&gt;/* directory. These configuration files will
+   provide the build time configuration for the sources to be compiled.
+3. Create a *platform/&lt;xyz&gt;/objects.mk* file for listing the platform
+   object files to be compiled. This file also provides platform-specific
    compiler flags, and select firmware options.
-3. Create a *platform/&lt;xyz&gt;/objects.mk* file for listing the
-   platform-specific object files to be compiled.
 4. Create a *platform/&lt;xyz&gt;/platform.c* file providing a
    *struct sbi_platform* instance.
 

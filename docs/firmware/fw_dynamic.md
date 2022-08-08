@@ -20,7 +20,7 @@ the booting stage binary to follow OpenSBI firmware.
 A platform can enable *FW_DYNAMIC* firmware using any of the following methods.
 
 1. Specifying `FW_DYNAMIC=y` on the top level `make` command line.
-2. Specifying `FW_DYNAMIC=y` in the target platform *config.mk* configuration
+2. Specifying `FW_DYNAMIC=y` in the target platform *objects.mk* configuration
 file.
 
 The compiled *FW_DYNAMIC* firmware ELF file is named *fw_dynamic.elf*. It's

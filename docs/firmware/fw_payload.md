@@ -20,7 +20,7 @@ Enabling *FW_PAYLOAD* compilation
 The *FW_PAYLOAD* firmware can be enabled by any of the following methods:
 
 1. Specifying `FW_PAYLOAD=y` on the top level `make` command line.
-2. Specifying `FW_PAYLOAD=y` in the target platform *config.mk* configuration
+2. Specifying `FW_PAYLOAD=y` in the target platform *objects.mk* configuration
    file.
 
 The compiled *FW_PAYLOAD* firmware ELF file is named *fw_jump.elf*. Its
@@ -33,7 +33,7 @@ Configuration Options
 
 A *FW_PAYLOAD* firmware is built according to configuration parameters and
 options. These configuration parameters can be defined using either the top
-level `make` command line or the target platform *config.mk* configuration
+level `make` command line or the target platform *objects.mk* configuration
 file. The parameters currently defined are as follows:
 
 * **FW_PAYLOAD_OFFSET** - Offset from *FW_TEXT_BASE* where the payload binary
