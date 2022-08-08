@@ -4,6 +4,7 @@ menu "I2C Support"
 
 config FDT_I2C
 	bool "FDT based I2C drivers"
+	depends on FDT
 	select I2C
 	default n
 

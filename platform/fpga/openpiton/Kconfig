@@ -2,6 +2,7 @@
 
 config PLATFORM_OPENPITON_FPGA
 	bool
+	select FDT
 	select IPI_MSWI
 	select IRQCHIP_PLIC
 	select SERIAL_UART8250

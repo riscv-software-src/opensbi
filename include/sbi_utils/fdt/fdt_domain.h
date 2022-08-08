@@ -13,6 +13,8 @@
 
 #include <sbi/sbi_types.h>
 
+#ifdef CONFIG_FDT_DOMAIN
+
 struct sbi_domain;
 
 /**
@@ -69,5 +71,12 @@ void fdt_domain_fixup(void *fdt);
  * @return 0 on success and negative error code on failure
  */
 int fdt_domains_populate(void *fdt);
+
+#else
+
+static inline void fdt_domain_fixup(void *fdt) { }
+static inline int fdt_domains_populate(void *fdt) { return 0; }
+
+#endif
 
 #endif /* __FDT_DOMAIN_H__ */

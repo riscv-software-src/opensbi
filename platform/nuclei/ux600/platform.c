@@ -8,7 +8,6 @@
  *   hqfang <578567190@qq.com>
  */
 
-#include <libfdt.h>
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_io.h>
 #include <sbi/riscv_encoding.h>

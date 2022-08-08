@@ -4,6 +4,7 @@ menu "Timer Device Support"
 
 config FDT_TIMER
 	bool "FDT based timer drivers"
+	depends on FDT
 	default n
 
 if FDT_TIMER

@@ -2,6 +2,8 @@
 
 menu "Utils and Drivers Support"
 
+source "$(OPENSBI_SRC_DIR)/lib/utils/fdt/Kconfig"
+
 source "$(OPENSBI_SRC_DIR)/lib/utils/gpio/Kconfig"
 
 source "$(OPENSBI_SRC_DIR)/lib/utils/i2c/Kconfig"
@@ -9,6 +11,8 @@ source "$(OPENSBI_SRC_DIR)/lib/utils/i2c/Kconfig"
 source "$(OPENSBI_SRC_DIR)/lib/utils/ipi/Kconfig"
 
 source "$(OPENSBI_SRC_DIR)/lib/utils/irqchip/Kconfig"
+
+source "$(OPENSBI_SRC_DIR)/lib/utils/libfdt/Kconfig"
 
 source "$(OPENSBI_SRC_DIR)/lib/utils/reset/Kconfig"
 

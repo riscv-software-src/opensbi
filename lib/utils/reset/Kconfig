@@ -4,6 +4,7 @@ menu "System Reset Support"
 
 config FDT_RESET
 	bool "FDT based reset drivers"
+	depends on FDT
 	default n
 
 if FDT_RESET

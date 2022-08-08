@@ -2,4 +2,7 @@
 
 config PLATFORM_GENERIC
 	bool
+	select FDT
+	select FDT_DOMAIN
+	select FDT_PMU
 	default y

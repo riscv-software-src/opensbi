@@ -13,6 +13,8 @@
 
 #include <sbi/sbi_types.h>
 
+#ifdef CONFIG_FDT_PMU
+
 /**
  * Fix up the PMU node in the device tree
  *
@@ -42,5 +44,13 @@ int fdt_pmu_setup(void *fdt);
  * @return The select value read from DT or 0 if given index was not found
  */
 uint64_t fdt_pmu_get_select_value(uint32_t event_idx);
+
+#else
+
+static inline void fdt_pmu_fixup(void *fdt) { }
+static inline int fdt_pmu_setup(void *fdt) { return 0; }
+static inline uint64_t fdt_pmu_get_select_value(uint32_t event_idx) { return 0; }
+
+#endif
 
 #endif

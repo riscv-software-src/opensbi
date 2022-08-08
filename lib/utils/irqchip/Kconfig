@@ -4,6 +4,7 @@ menu "Interrupt Controller Support"
 
 config FDT_IRQCHIP
 	bool "FDT based interrupt controller drivers"
+	depends on FDT
 	default n
 
 if FDT_IRQCHIP

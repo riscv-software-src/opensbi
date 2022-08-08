@@ -4,6 +4,7 @@ menu "GPIO Support"
 
 config FDT_GPIO
 	bool "FDT based GPIO drivers"
+	depends on FDT
 	select GPIO
 	default n
 
