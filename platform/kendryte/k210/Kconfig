@@ -2,4 +2,5 @@
 
 config PLATFORM_KENDRYTE_K210
 	bool
+	select SERIAL_SIFIVE
 	default y

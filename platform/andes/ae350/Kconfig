@@ -2,4 +2,5 @@
 
 config PLATFORM_ANDES_AE350
 	bool
+	select SERIAL_UART8250
 	default y

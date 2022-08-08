@@ -7,33 +7,33 @@
 #   Anup Patel <anup.patel@wdc.com>
 #
 
-libsbiutils-objs-y += serial/fdt_serial.o
-libsbiutils-objs-y += serial/fdt_serial_drivers.o
+libsbiutils-objs-$(CONFIG_FDT_SERIAL) += serial/fdt_serial.o
+libsbiutils-objs-$(CONFIG_FDT_SERIAL) += serial/fdt_serial_drivers.o
 
-carray-fdt_serial_drivers-y += fdt_serial_gaisler
-libsbiutils-objs-y += serial/fdt_serial_gaisler.o
+carray-fdt_serial_drivers-$(CONFIG_FDT_SERIAL_GAISLER) += fdt_serial_gaisler
+libsbiutils-objs-$(CONFIG_FDT_SERIAL_GAISLER) += serial/fdt_serial_gaisler.o
 
-carray-fdt_serial_drivers-y += fdt_serial_htif
-libsbiutils-objs-y += serial/fdt_serial_htif.o
+carray-fdt_serial_drivers-$(CONFIG_FDT_SERIAL_HTIF) += fdt_serial_htif
+libsbiutils-objs-$(CONFIG_FDT_SERIAL_HTIF) += serial/fdt_serial_htif.o
 
-carray-fdt_serial_drivers-y += fdt_serial_shakti
-libsbiutils-objs-y += serial/fdt_serial_shakti.o
+carray-fdt_serial_drivers-$(CONFIG_FDT_SERIAL_SHAKTI) += fdt_serial_shakti
+libsbiutils-objs-$(CONFIG_FDT_SERIAL_SHAKTI) += serial/fdt_serial_shakti.o
 
-carray-fdt_serial_drivers-y += fdt_serial_sifive
-libsbiutils-objs-y += serial/fdt_serial_sifive.o
+carray-fdt_serial_drivers-$(CONFIG_FDT_SERIAL_SIFIVE) += fdt_serial_sifive
+libsbiutils-objs-$(CONFIG_FDT_SERIAL_SIFIVE) += serial/fdt_serial_sifive.o
 
-carray-fdt_serial_drivers-y += fdt_serial_litex
-libsbiutils-objs-y += serial/fdt_serial_litex.o
+carray-fdt_serial_drivers-$(CONFIG_FDT_SERIAL_LITEX) += fdt_serial_litex
+libsbiutils-objs-$(CONFIG_FDT_SERIAL_LITEX) += serial/fdt_serial_litex.o
 
-carray-fdt_serial_drivers-y += fdt_serial_uart8250
-libsbiutils-objs-y += serial/fdt_serial_uart8250.o
+carray-fdt_serial_drivers-$(CONFIG_FDT_SERIAL_UART8250) += fdt_serial_uart8250
+libsbiutils-objs-$(CONFIG_FDT_SERIAL_UART8250) += serial/fdt_serial_uart8250.o
 
-carray-fdt_serial_drivers-y += fdt_serial_xlnx_uartlite
-libsbiutils-objs-y += serial/fdt_serial_xlnx_uartlite.o
+carray-fdt_serial_drivers-$(CONFIG_FDT_SERIAL_XILINX_UARTLITE) += fdt_serial_xlnx_uartlite
+libsbiutils-objs-$(CONFIG_FDT_SERIAL_XILINX_UARTLITE) += serial/fdt_serial_xlnx_uartlite.o
 
-libsbiutils-objs-y += serial/gaisler-uart.o
-libsbiutils-objs-y += serial/shakti-uart.o
-libsbiutils-objs-y += serial/sifive-uart.o
-libsbiutils-objs-y += serial/litex-uart.o
-libsbiutils-objs-y += serial/uart8250.o
-libsbiutils-objs-y += serial/xlnx-uartlite.o
+libsbiutils-objs-$(CONFIG_SERIAL_GAISLER) += serial/gaisler-uart.o
+libsbiutils-objs-$(CONFIG_SERIAL_SHAKTI) += serial/shakti-uart.o
+libsbiutils-objs-$(CONFIG_SERIAL_SIFIVE) += serial/sifive-uart.o
+libsbiutils-objs-$(CONFIG_SERIAL_LITEX) += serial/litex-uart.o
+libsbiutils-objs-$(CONFIG_SERIAL_UART8250) += serial/uart8250.o
+libsbiutils-objs-$(CONFIG_SERIAL_XILINX_UARTLITE) += serial/xlnx-uartlite.o

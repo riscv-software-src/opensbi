@@ -1,1 +1,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
+
+menu "Utils and Drivers Support"
+
+source "$(OPENSBI_SRC_DIR)/lib/utils/serial/Kconfig"
+
+endmenu

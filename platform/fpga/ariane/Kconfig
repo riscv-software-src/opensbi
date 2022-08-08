@@ -2,4 +2,5 @@
 
 config PLATFORM_ARIANE_FPGA
 	bool
+	select SERIAL_UART8250
 	default y
