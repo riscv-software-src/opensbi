@@ -8,11 +8,7 @@ OpenSBI provides two types of static libraries:
    hooks for the execution of this interface must be provided by the firmware or
    bootloader linking with this library. This library is installed as
    *<install_directory>/lib/libsbi.a*
-2. *libsbiutils.a* - A static library that will contain all common code required
-   by any platform supported in OpenSBI. It will be built by default and included
-   in libplatsbi.a. This library is installed as
-   *<install_directory>/lib/libsbiutils.a*.
-3. *libplatsbi.a* - An example platform-specific static library integrating
+2. *libplatsbi.a* - An example platform-specific static library integrating
    *libsbi.a* with platform-specific hooks. This library is available only for
    the platforms supported by OpenSBI. This library is installed as
    *<install_directory>/platform/<platform_subdir>/lib/libplatsbi.a*

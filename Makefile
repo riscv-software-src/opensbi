@@ -243,8 +243,8 @@ include $(firmware-object-mks)
 
 # Setup list of objects
 libsbi-objs-path-y=$(foreach obj,$(libsbi-objs-y),$(build_dir)/lib/sbi/$(obj))
-libsbiutils-objs-path-y=$(foreach obj,$(libsbiutils-objs-y),$(build_dir)/lib/utils/$(obj))
 ifdef PLATFORM
+libsbiutils-objs-path-y=$(foreach obj,$(libsbiutils-objs-y),$(platform_build_dir)/lib/utils/$(obj))
 platform-objs-path-y=$(foreach obj,$(platform-objs-y),$(platform_build_dir)/$(obj))
 firmware-bins-path-y=$(foreach bin,$(firmware-bins-y),$(platform_build_dir)/firmware/$(bin))
 endif
@@ -461,7 +461,6 @@ compile_gen_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo "$(1:.dep=$(2)): $(3)" >> $(1)
 
 targets-y  = $(build_dir)/lib/libsbi.a
-targets-y  += $(build_dir)/lib/libsbiutils.a
 ifdef PLATFORM
 targets-y += $(platform_build_dir)/lib/libplatsbi.a
 endif
@@ -474,10 +473,8 @@ all: $(targets-y)
 # Preserve all intermediate files
 .SECONDARY:
 
+# Rules for lib/sbi sources
 $(build_dir)/lib/libsbi.a: $(libsbi-objs-path-y)
-	$(call compile_ar,$@,$^)
-
-$(build_dir)/lib/libsbiutils.a: $(libsbi-objs-path-y) $(libsbiutils-objs-path-y)
 	$(call compile_ar,$@,$^)
 
 $(platform_build_dir)/lib/libplatsbi.a: $(libsbi-objs-path-y) $(libsbiutils-objs-path-y) $(platform-objs-path-y)
@@ -503,21 +500,13 @@ $(build_dir)/%.dep: $(src_dir)/%.S $(KCONFIG_CONFIG)
 $(build_dir)/%.o: $(src_dir)/%.S
 	$(call compile_as,$@,$<)
 
-$(build_dir)/%.dep: $(src_dir)/%.carray $(KCONFIG_CONFIG)
+# Rules for platform sources
+$(platform_build_dir)/%.dep: $(platform_src_dir)/%.carray $(KCONFIG_CONFIG)
 	$(call compile_gen_dep,$@,.c,$< $(KCONFIG_CONFIG))
 	$(call compile_gen_dep,$@,.o,$(@:.dep=.c))
 
-$(build_dir)/%.c: $(src_dir)/%.carray
+$(platform_build_dir)/%.c: $(platform_src_dir)/%.carray
 	$(call compile_carray,$@,$<)
-
-$(platform_build_dir)/%.bin: $(platform_build_dir)/%.elf
-	$(call compile_objcopy,$@,$<)
-
-$(platform_build_dir)/%.elf: $(platform_build_dir)/%.o $(platform_build_dir)/%.elf.ld $(platform_build_dir)/lib/libplatsbi.a
-	$(call compile_elf,$@,$@.ld,$< $(platform_build_dir)/lib/libplatsbi.a)
-
-$(platform_build_dir)/%.ld: $(src_dir)/%.ldS
-	$(call compile_cpp,$@,$<)
 
 $(platform_build_dir)/%.dep: $(platform_src_dir)/%.c $(KCONFIG_CONFIG)
 	$(call compile_cc_dep,$@,$<)
@@ -541,6 +530,23 @@ $(platform_build_dir)/%.c: $(platform_build_dir)/%.dtb
 
 $(platform_build_dir)/%.dtb: $(platform_src_dir)/%.dts
 	$(call compile_dts,$@,$<)
+
+# Rules for lib/utils and firmware sources
+$(platform_build_dir)/%.bin: $(platform_build_dir)/%.elf
+	$(call compile_objcopy,$@,$<)
+
+$(platform_build_dir)/%.elf: $(platform_build_dir)/%.o $(platform_build_dir)/%.elf.ld $(platform_build_dir)/lib/libplatsbi.a
+	$(call compile_elf,$@,$@.ld,$< $(platform_build_dir)/lib/libplatsbi.a)
+
+$(platform_build_dir)/%.ld: $(src_dir)/%.ldS
+	$(call compile_cpp,$@,$<)
+
+$(platform_build_dir)/%.dep: $(src_dir)/%.carray $(KCONFIG_CONFIG)
+	$(call compile_gen_dep,$@,.c,$< $(KCONFIG_CONFIG))
+	$(call compile_gen_dep,$@,.o,$(@:.dep=.c))
+
+$(platform_build_dir)/%.c: $(src_dir)/%.carray
+	$(call compile_carray,$@,$<)
 
 $(platform_build_dir)/%.dep: $(src_dir)/%.c $(KCONFIG_CONFIG)
 	$(call compile_cc_dep,$@,$<)
@@ -592,7 +598,6 @@ endif
 endif
 
 install_targets-y  = install_libsbi
-install_targets-y  += install_libsbiutils
 ifdef PLATFORM
 install_targets-y += install_libplatsbi
 install_targets-y += install_firmwares
@@ -607,17 +612,12 @@ install_libsbi: $(build_dir)/lib/libsbi.a
 	$(call inst_header_dir,$(install_root_dir)/$(install_include_path),$(include_dir)/sbi)
 	$(call inst_file,$(install_root_dir)/$(install_lib_path)/libsbi.a,$(build_dir)/lib/libsbi.a)
 
-.PHONY: install_libsbiutils
-install_libsbiutils: $(build_dir)/lib/libsbiutils.a
-	$(call inst_header_dir,$(install_root_dir)/$(install_include_path),$(include_dir)/sbi_utils)
-	$(call inst_file,$(install_root_dir)/$(install_lib_path)/libsbiutils.a,$(build_dir)/lib/libsbiutils.a)
-
 .PHONY: install_libplatsbi
-install_libplatsbi: $(platform_build_dir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a $(build_dir)/lib/libsbiutils.a
+install_libplatsbi: $(platform_build_dir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a
 	$(call inst_file,$(install_root_dir)/$(install_lib_path)/opensbi/$(platform_subdir)/lib/libplatsbi.a,$(platform_build_dir)/lib/libplatsbi.a)
 
 .PHONY: install_firmwares
-install_firmwares: $(platform_build_dir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a $(build_dir)/lib/libsbiutils.a $(firmware-bins-path-y)
+install_firmwares: $(platform_build_dir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a $(firmware-bins-path-y)
 	$(call inst_file_list,$(install_root_dir),$(build_dir),$(install_firmware_path)/$(platform_subdir)/firmware,$(firmware-elfs-path-y))
 	$(call inst_file_list,$(install_root_dir),$(build_dir),$(install_firmware_path)/$(platform_subdir)/firmware,$(firmware-bins-path-y))
 
