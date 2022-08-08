@@ -2,6 +2,7 @@
 
 config PLATFORM_KENDRYTE_K210
 	bool
+	select IPI_MSWI
 	select SERIAL_SIFIVE
 	select TIMER_MTIMER
 	default y

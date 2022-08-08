@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+menu "IPI Device Support"
+
+config FDT_IPI
+	bool "FDT based ipi drivers"
+	default n
+
+if FDT_IPI
+
+config FDT_IPI_MSWI
+	bool "ACLINT MSWI FDT driver"
+	select IPI_MSWI
+	default n
+
+endif
+
+config IPI_MSWI
+	bool "ACLINT MSWI support"
+	default n
+
+endmenu

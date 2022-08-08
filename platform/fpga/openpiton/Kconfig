@@ -2,6 +2,7 @@
 
 config PLATFORM_OPENPITON_FPGA
 	bool
+	select IPI_MSWI
 	select SERIAL_UART8250
 	select TIMER_MTIMER
 	default y
