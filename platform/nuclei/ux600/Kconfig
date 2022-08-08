@@ -3,4 +3,5 @@
 config PLATFORM_NUCLEI_UX600
 	bool
 	select SERIAL_SIFIVE
+	select TIMER_MTIMER
 	default y

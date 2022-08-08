@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+menu "Timer Device Support"
+
+config FDT_TIMER
+	bool "FDT based timer drivers"
+	default n
+
+if FDT_TIMER
+
+config FDT_TIMER_MTIMER
+	bool "ACLINT MTIMER FDT driver"
+	select TIMER_MTIMER
+	default n
+
+endif
+
+config TIMER_MTIMER
+	bool "ACLINT MTIMER support"
+	default n
+
+endmenu
