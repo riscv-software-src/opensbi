@@ -401,8 +401,8 @@ int fdt_parse_sifive_uart_node(void *fdt, int nodeoffset,
 	return 0;
 }
 
-int fdt_parse_uart8250_node(void *fdt, int nodeoffset,
-			    struct platform_uart_data *uart)
+int fdt_parse_uart_node(void *fdt, int nodeoffset,
+			struct platform_uart_data *uart)
 {
 	int len, rc;
 	const fdt32_t *val;
@@ -447,7 +447,7 @@ int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
 	if (nodeoffset < 0)
 		return nodeoffset;
 
-	return fdt_parse_uart8250_node(fdt, nodeoffset, uart);
+	return fdt_parse_uart_node(fdt, nodeoffset, uart);
 }
 
 int fdt_parse_xlnx_uartlite_node(void *fdt, int nodeoffset,
