@@ -274,7 +274,7 @@ struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs)
 
 	if (mcause & (1UL << (__riscv_xlen - 1))) {
 		if (sbi_hart_has_extension(sbi_scratch_thishart_ptr(),
-					   SBI_HART_EXT_AIA))
+					   SBI_HART_EXT_SMAIA))
 			rc = sbi_trap_aia_irq(regs, mcause);
 		else
 			rc = sbi_trap_nonaia_irq(regs, mcause);

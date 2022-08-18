@@ -30,8 +30,8 @@ enum sbi_hart_extensions {
 	SBI_HART_EXT_SSCOFPMF = 0,
 	/** HART has HW time CSR (extension name not available) */
 	SBI_HART_EXT_TIME,
-	/** HART has AIA CSRs (extension name not available) */
-	SBI_HART_EXT_AIA,
+	/** HART has AIA M-mode CSRs */
+	SBI_HART_EXT_SMAIA,
 	/** HART has Smstateen CSR **/
 	SBI_HART_EXT_SMSTATEEN,
 	/** HART has Sstc extension */
