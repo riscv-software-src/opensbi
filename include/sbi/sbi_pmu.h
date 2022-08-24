@@ -19,9 +19,6 @@
 /* Maximum number of hardware events that can mapped by OpenSBI */
 #define SBI_PMU_HW_EVENT_MAX 256
 
-/* Maximum number of firmware events that can mapped by OpenSBI */
-#define SBI_PMU_FW_EVENT_MAX 32
-
 /* Counter related macros */
 #define SBI_PMU_FW_CTR_MAX 16
 #define SBI_PMU_HW_CTR_MAX 32
