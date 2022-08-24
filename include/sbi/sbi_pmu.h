@@ -25,6 +25,63 @@
 #define SBI_PMU_CTR_MAX	   (SBI_PMU_HW_CTR_MAX + SBI_PMU_FW_CTR_MAX)
 #define SBI_PMU_FIXED_CTR_MASK 0x07
 
+struct sbi_pmu_device {
+	/** Name of the PMU platform device */
+	char name[32];
+
+	/**
+	 * Validate event code of custom firmware event
+	 * Note: SBI_PMU_FW_MAX <= event_idx_code
+	 */
+	int (*fw_event_validate_code)(uint32_t event_idx_code);
+
+	/**
+	 * Match custom firmware counter with custom firmware event
+	 * Note: 0 <= counter_index < SBI_PMU_FW_CTR_MAX
+	 */
+	bool (*fw_counter_match_code)(uint32_t counter_index,
+				      uint32_t event_idx_code);
+
+	/**
+	 * Read value of custom firmware counter
+	 * Note: 0 <= counter_index < SBI_PMU_FW_CTR_MAX
+	 */
+	uint64_t (*fw_counter_read_value)(uint32_t counter_index);
+
+	/**
+	 * Start custom firmware counter
+	 * Note: SBI_PMU_FW_MAX <= event_idx_code
+	 * Note: 0 <= counter_index < SBI_PMU_FW_CTR_MAX
+	 */
+	int (*fw_counter_start)(uint32_t counter_index,
+				uint32_t event_idx_code,
+				uint64_t init_val, bool init_val_update);
+
+	/**
+	 * Stop custom firmware counter
+	 * Note: 0 <= counter_index < SBI_PMU_FW_CTR_MAX
+	 */
+	int (*fw_counter_stop)(uint32_t counter_index);
+
+	/**
+	 * Custom enable irq for hardware counter
+	 * Note: 0 <= counter_index < SBI_PMU_HW_CTR_MAX
+	 */
+	void (*hw_counter_enable_irq)(uint32_t counter_index);
+
+	/**
+	 * Custom disable irq for hardware counter
+	 * Note: 0 <= counter_index < SBI_PMU_HW_CTR_MAX
+	 */
+	void (*hw_counter_disable_irq)(uint32_t counter_index);
+};
+
+/** Get the PMU platform device */
+const struct sbi_pmu_device *sbi_pmu_get_device(void);
+
+/** Set the PMU platform device */
+void sbi_pmu_set_device(const struct sbi_pmu_device *dev);
+
 /** Initialize PMU */
 int sbi_pmu_init(struct sbi_scratch *scratch, bool cold_boot);
 
