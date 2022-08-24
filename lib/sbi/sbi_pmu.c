@@ -167,50 +167,19 @@ static int pmu_ctr_validate(uint32_t cidx, uint32_t *event_idx_code)
 	return event_idx_type;
 }
 
-static int pmu_ctr_read_fw(uint32_t cidx, unsigned long *cval,
-			       uint32_t fw_evt_code)
-{
-	u32 hartid = current_hartid();
-	struct sbi_pmu_fw_event fevent;
-
-	fevent = fw_event_map[hartid][fw_evt_code];
-	*cval = fevent.curr_count;
-
-	return 0;
-}
-
-/* Add a hardware counter read for completeness for future purpose */
-static int pmu_ctr_read_hw(uint32_t cidx, uint64_t *cval)
-{
-	/* Check for invalid hw counter read requests */
-	if (unlikely(cidx == 1))
-		return SBI_EINVAL;
-#if __riscv_xlen == 32
-	uint32_t temp, temph = 0;
-
-	temp = csr_read_num(CSR_MCYCLE + cidx);
-	temph = csr_read_num(CSR_MCYCLEH + cidx);
-	*cval = ((uint64_t)temph << 32) | temp;
-#else
-	*cval = csr_read_num(CSR_MCYCLE + cidx);
-#endif
-
-	return 0;
-}
-
-int sbi_pmu_ctr_read(uint32_t cidx, unsigned long *cval)
+int sbi_pmu_ctr_fw_read(uint32_t cidx, uint64_t *cval)
 {
 	int event_idx_type;
 	uint32_t event_code;
-	uint64_t cval64;
+	u32 hartid = current_hartid();
+	struct sbi_pmu_fw_event *fevent;
 
 	event_idx_type = pmu_ctr_validate(cidx, &event_code);
-	if (event_idx_type < 0)
+	if (event_idx_type != SBI_PMU_EVENT_TYPE_FW)
 		return SBI_EINVAL;
-	else if (event_idx_type == SBI_PMU_EVENT_TYPE_FW)
-		pmu_ctr_read_fw(cidx, cval, event_code);
-	else
-		pmu_ctr_read_hw(cidx, &cval64);
+
+	fevent = &fw_event_map[hartid][event_code];
+	*cval = fevent->curr_count;
 
 	return 0;
 }

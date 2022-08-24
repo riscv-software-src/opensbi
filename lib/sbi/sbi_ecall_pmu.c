@@ -51,7 +51,8 @@ static int sbi_ecall_pmu_handler(unsigned long extid, unsigned long funcid,
 
 		break;
 	case SBI_EXT_PMU_COUNTER_FW_READ:
-		ret = sbi_pmu_ctr_read(regs->a0, out_val);
+		ret = sbi_pmu_ctr_fw_read(regs->a0, &temp);
+		*out_val = temp;
 		break;
 	case SBI_EXT_PMU_COUNTER_START:
 

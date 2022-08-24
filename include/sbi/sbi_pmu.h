@@ -53,7 +53,7 @@ int sbi_pmu_add_hw_event_counter_map(u32 eidx_start, u32 eidx_end, u32 cmap);
 
 int sbi_pmu_add_raw_event_counter_map(uint64_t select, uint64_t select_mask, u32 cmap);
 
-int sbi_pmu_ctr_read(uint32_t cidx, unsigned long *cval);
+int sbi_pmu_ctr_fw_read(uint32_t cidx, uint64_t *cval);
 
 int sbi_pmu_ctr_stop(unsigned long cidx_base, unsigned long cidx_mask,
 		     unsigned long flag);
