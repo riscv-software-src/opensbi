@@ -63,6 +63,7 @@ static void sbi_boot_print_banner(struct sbi_scratch *scratch)
 static void sbi_boot_print_general(struct sbi_scratch *scratch)
 {
 	char str[128];
+	const struct sbi_pmu_device *pdev;
 	const struct sbi_hsm_device *hdev;
 	const struct sbi_ipi_device *idev;
 	const struct sbi_timer_device *tdev;
@@ -93,6 +94,9 @@ static void sbi_boot_print_general(struct sbi_scratch *scratch)
 	hdev = sbi_hsm_get_device();
 	sbi_printf("Platform HSM Device       : %s\n",
 		   (hdev) ? hdev->name : "---");
+	pdev = sbi_pmu_get_device();
+	sbi_printf("Platform PMU Device       : %s\n",
+		   (pdev) ? pdev->name : "---");
 	srdev = sbi_system_reset_get_device(SBI_SRST_RESET_TYPE_COLD_REBOOT, 0);
 	sbi_printf("Platform Reboot Device    : %s\n",
 		   (srdev) ? srdev->name : "---");
