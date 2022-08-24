@@ -11,9 +11,8 @@
 #define __SBI_PMU_H__
 
 #include <sbi/sbi_types.h>
-#include <sbi/sbi_hartmask.h>
-#include <sbi/sbi_scratch.h>
-#include <sbi/sbi_ecall_interface.h>
+
+struct sbi_scratch;
 
 /* Event related macros */
 /* Maximum number of hardware events that can mapped by OpenSBI */
