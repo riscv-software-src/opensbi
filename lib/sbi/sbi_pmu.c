@@ -36,7 +36,7 @@ struct sbi_pmu_hw_event {
 /** Representation of a firmware event */
 struct sbi_pmu_fw_event {
 	/* Current value of the counter */
-	unsigned long curr_count;
+	uint64_t curr_count;
 
 	/* A flag indicating pmu event monitoring is started */
 	bool bStarted;
@@ -719,8 +719,8 @@ int sbi_pmu_ctr_get_info(uint32_t cidx, unsigned long *ctr_info)
 	} else {
 		/* it's a firmware counter */
 		cinfo.type = SBI_PMU_CTR_TYPE_FW;
-		/* Firmware counters are XLEN bits wide */
-		cinfo.width = BITS_PER_LONG - 1;
+		/* Firmware counters are always 64 bits wide */
+		cinfo.width = 63;
 	}
 
 	*ctr_info = cinfo.value;
