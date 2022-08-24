@@ -35,9 +35,6 @@ struct sbi_pmu_hw_event {
 
 /** Representation of a firmware event */
 struct sbi_pmu_fw_event {
-	/* Event associated with the particular counter */
-	uint32_t event_idx;
-
 	/* Current value of the counter */
 	unsigned long curr_count;
 
