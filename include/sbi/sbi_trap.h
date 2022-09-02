@@ -10,6 +10,8 @@
 #ifndef __SBI_TRAP_H__
 #define __SBI_TRAP_H__
 
+#include <sbi/riscv_encoding.h>
+
 /* clang-format off */
 
 /** Index of zero member in sbi_trap_regs */
@@ -205,6 +207,22 @@ struct sbi_trap_info {
 	/** gva Guest virtual address in tval flag */
 	unsigned long gva;
 };
+
+static inline unsigned long sbi_regs_gva(const struct sbi_trap_regs *regs)
+{
+	/*
+	 * If the hypervisor extension is not implemented, mstatus[h].GVA is a
+	 * WPRI field, which is guaranteed to read as zero. In addition, in this
+	 * case we don't read mstatush and instead pretend it is zero, which
+	 * handles privileged spec version < 1.12.
+	 */
+
+#if __riscv_xlen == 32
+	return (regs->mstatusH & MSTATUSH_GVA) ? 1 : 0;
+#else
+	return (regs->mstatus & MSTATUS_GVA) ? 1 : 0;
+#endif
+}
 
 int sbi_trap_redirect(struct sbi_trap_regs *regs,
 		      struct sbi_trap_info *trap);
