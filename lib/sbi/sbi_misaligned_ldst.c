@@ -129,7 +129,7 @@ int sbi_misaligned_load_handler(ulong addr, ulong tval2, ulong tinst,
 		uptrap.tval = addr;
 		uptrap.tval2 = tval2;
 		uptrap.tinst = tinst;
-		uptrap.gva   = 0;
+		uptrap.gva   = sbi_regs_gva(regs);
 		return sbi_trap_redirect(regs, &uptrap);
 	}
 
@@ -245,7 +245,7 @@ int sbi_misaligned_store_handler(ulong addr, ulong tval2, ulong tinst,
 		uptrap.tval = addr;
 		uptrap.tval2 = tval2;
 		uptrap.tinst = tinst;
-		uptrap.gva   = 0;
+		uptrap.gva   = sbi_regs_gva(regs);
 		return sbi_trap_redirect(regs, &uptrap);
 	}
 
