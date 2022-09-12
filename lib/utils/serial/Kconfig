@@ -79,4 +79,8 @@ config SERIAL_XILINX_UARTLITE
 	bool "Xilinx UART Lite support"
 	default n
 
+config SERIAL_SEMIHOSTING
+	bool "Semihosting support"
+	default n
+
 endmenu

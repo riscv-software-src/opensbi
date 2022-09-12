@@ -23,6 +23,7 @@
 #include <sbi_utils/timer/fdt_timer.h>
 #include <sbi_utils/ipi/fdt_ipi.h>
 #include <sbi_utils/reset/fdt_reset.h>
+#include <sbi_utils/serial/semihosting.h>
 
 /* List of platform override modules generated at compile time */
 extern const struct platform_override *platform_override_modules[];
@@ -242,6 +243,14 @@ static uint64_t generic_pmu_xlate_to_mhpmevent(uint32_t event_idx,
 	return evt_val;
 }
 
+static int generic_console_init(void)
+{
+	if (semihosting_enabled())
+		return semihosting_init();
+	else
+		return fdt_serial_init();
+}
+
 const struct sbi_platform_operations platform_ops = {
 	.nascent_init		= generic_nascent_init,
 	.early_init		= generic_early_init,
@@ -249,7 +258,7 @@ const struct sbi_platform_operations platform_ops = {
 	.early_exit		= generic_early_exit,
 	.final_exit		= generic_final_exit,
 	.domains_init		= generic_domains_init,
-	.console_init		= fdt_serial_init,
+	.console_init		= generic_console_init,
 	.irqchip_init		= fdt_irqchip_init,
 	.irqchip_exit		= fdt_irqchip_exit,
 	.ipi_init		= fdt_ipi_init,
