@@ -202,18 +202,57 @@ do {									\
 					= (__type)(__ptr);		\
 } while (0)
 
-/** HART id to scratch table */
-extern struct sbi_scratch *hartid_to_scratch_table[];
+/** Last HART index having a sbi_scratch pointer */
+extern u32 last_hartindex_having_scratch;
+
+/** Get last HART index having a sbi_scratch pointer */
+#define sbi_scratch_last_hartindex()	last_hartindex_having_scratch
+
+/** Check whether a particular HART index is valid or not */
+#define sbi_hartindex_valid(__hartindex) \
+(((__hartindex) <= sbi_scratch_last_hartindex()) ? true : false)
+
+/** HART index to HART id table */
+extern u32 hartindex_to_hartid_table[];
+
+/** Get sbi_scratch from HART index */
+#define sbi_hartindex_to_hartid(__hartindex)		\
+({							\
+	((__hartindex) <= sbi_scratch_last_hartindex()) ?\
+	hartindex_to_hartid_table[__hartindex] : -1U;	\
+})
+
+/** HART index to scratch table */
+extern struct sbi_scratch *hartindex_to_scratch_table[];
+
+/** Get sbi_scratch from HART index */
+#define sbi_hartindex_to_scratch(__hartindex)		\
+({							\
+	((__hartindex) <= sbi_scratch_last_hartindex()) ?\
+	hartindex_to_scratch_table[__hartindex] : NULL;\
+})
+
+/**
+ * Get logical index for given HART id
+ * @param hartid physical HART id
+ * @returns value between 0 to SBI_HARTMASK_MAX_BITS upon success and
+ *	    SBI_HARTMASK_MAX_BITS upon failure.
+ */
+u32 sbi_hartid_to_hartindex(u32 hartid);
 
 /** Get sbi_scratch from HART id */
 #define sbi_hartid_to_scratch(__hartid) \
-	hartid_to_scratch_table[__hartid]
+	sbi_hartindex_to_scratch(sbi_hartid_to_hartindex(__hartid))
 
 /** Last HART id having a sbi_scratch pointer */
 extern u32 last_hartid_having_scratch;
 
 /** Get last HART id having a sbi_scratch pointer */
 #define sbi_scratch_last_hartid()	last_hartid_having_scratch
+
+/** Check whether particular HART id is valid or not */
+#define sbi_hartid_valid(__hartid)	\
+	sbi_hartindex_valid(sbi_hartid_to_hartindex(__hartid))
 
 #endif
 
