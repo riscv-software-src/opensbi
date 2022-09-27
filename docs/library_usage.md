@@ -73,7 +73,7 @@ firmware drivers based on the external firmware architecture.
 **OPENSBI_EXTERNAL_SBI_TYPES** identifier is introduced to *sbi_types.h* for selecting
 external header file during the build preprocess in order to define OpensSBI data types
 based on external firmware data type binding.
-For example, *bool* is declared as *int* in sbi_types.h. However in EDK2 build system,
+For example, *bool* is declared as *int* in sbi_types.h. However, in EDK2 build system,
 *bool* is declared as *BOOLEAN* which is defined as *unsigned char* data type.
 
 External firmware can define **OPENSBI_EXTERNAL_SBI_TYPES** in CFLAGS and specify it to the
