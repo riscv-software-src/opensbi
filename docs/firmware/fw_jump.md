@@ -41,6 +41,22 @@ follows:
   provided, then the OpenSBI firmware will pass the FDT address passed by the
   previous booting stage to the next booting stage.
 
+  When using the default *FW_JUMP_FDT_ADDR* with *PLATFORM=generic*, you must
+  ensure *FW_JUMP_FDT_ADDR* is set high enough to avoid overwriting the kernel.
+  You can use the following method.
+
+  ```
+  ${CROSS_COMPILE}objdump -h $KERNEL_ELF | sort -k 5,5 | awk -n '/^ +[0-9]+ /\
+  {addr="0x"$3; size="0x"$5; printf "0x""%x\n",addr+size}' \
+  | (( `tail -1` > 0x2200000 )) && echo fdt overlaps kernel,\
+  increase FW_JUMP_FDT_ADDR
+
+  ${LLVM}objdump -h --show-lma $KERNEL_ELF | sort -k 5,5 | \
+  awk -n '/^ +[0-9]+ / {addr="0x"$3; size="0x"$5; printf "0x""%x\n",addr+size}'\
+  | (( `tail -1` > 0x2200000 )) && echo fdt overlaps kernel,\
+  increase FW_JUMP_FDT_ADDR
+  ```
+
 *FW_JUMP* Example
 -----------------
 
