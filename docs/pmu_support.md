@@ -1,7 +1,7 @@
 OpenSBI SBI PMU extension support
 ==================================
 SBI PMU extension supports allow supervisor software to configure/start/stop
-any performance counter at anytime. Thus, an user can leverage full
+any performance counter at anytime. Thus, a user can leverage full
 capability of performance analysis tools such as perf if SBI PMU extension is
 enabled. The OpenSBI implementation makes the following assumptions about the
 hardware platform.
@@ -25,7 +25,7 @@ SBI PMU Device Tree Bindings
 ----------------------------
 
 Platforms may choose to describe PMU event selector and event to counter mapping
-values via device tree. The following sections describes the PMU DT node
+values via device tree. The following sections describe the PMU DT node
 bindings in details.
 
 * **compatible** (Mandatory) - The compatible string of SBI PMU device tree node.
@@ -42,7 +42,7 @@ This property shouldn't encode any raw hardware event.
 * **riscv,event-to-mhpmcounters**(Optional) - It represents a MANY-to-MANY
 mapping between a range of events and all the MHPMCOUNTERx in a bitmap format
 that can be used to monitor these range of events. The information is encoded in
-a table format where each row represent a certain range of events and
+a table format where each row represents a certain range of events and
 corresponding counters. The first column represents starting of the pmu event id
 and 2nd column represents the end of the pmu event id. The third column
 represent a bitmap of all the MHPMCOUNTERx. This property is mandatory if
@@ -53,10 +53,10 @@ shouldn't encode any raw event.
 or MANY-to-MANY mapping between the raw event(s) and all the MHPMCOUNTERx in
 a bitmap format that can be used to monitor that raw event. The encoding of the
 raw events are platform specific. The information is encoded in a table format
-where each row represent the specific raw event(s). The first column is a 64bit
+where each row represents the specific raw event(s). The first column is a 64bit
 match value where the invariant bits of range of events are set. The second
 column is a 64 bit mask that will have all the variant bits of the range of
-events cleared. Every other bits should be set in the mask.
+events cleared. All other bits should be set in the mask.
 The third column is a 32bit value to represent bitmap of all MHPMCOUNTERx that
 can monitor these set of event(s).
 If a platform directly encodes each raw PMU event as a unique ID, the value of

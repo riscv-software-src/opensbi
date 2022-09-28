@@ -2,7 +2,7 @@ OpenSBI Domain Support
 ======================
 
 An OpenSBI domain is a system-level partition (subset) of underlying hardware
-having it's own memory regions (RAM and MMIO devices) and HARTs. The OpenSBI
+having its own memory regions (RAM and MMIO devices) and HARTs. The OpenSBI
 will try to achieve secure isolation between domains using RISC-V platform
 features such as PMP, ePMP, IOPMP, SiFive Shield, etc.
 
@@ -15,7 +15,7 @@ Important entities which help implement OpenSBI domain support are:
 Each HART of a RISC-V platform must have an OpenSBI domain assigned to it.
 The OpenSBI platform support is responsible for populating domains and
 providing HART id to domain mapping. The OpenSBI domain support will by
-default assign **the ROOT domain** to all HARTs of a RISC-V platform so
+default assign **the ROOT domain** to all HARTs of a RISC-V platform, so
 it is not mandatory for the OpenSBI platform support to populate domains.
 
 Domain Memory Region
@@ -29,7 +29,7 @@ OpenSBI and has following details:
 * **base** - The base address of a memory region is **2 ^ order**
   aligned start address
 * **flags** - The flags of a memory region represent memory type (i.e.
-  RAM or MMIO) and allowed accesses (i.e. READ, WRITE, EXECUTE, etc)
+  RAM or MMIO) and allowed accesses (i.e. READ, WRITE, EXECUTE, etc.)
 
 Domain Instance
 ---------------
