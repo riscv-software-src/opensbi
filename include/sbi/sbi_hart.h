@@ -41,6 +41,17 @@ enum sbi_hart_extensions {
 	SBI_HART_EXT_MAX,
 };
 
+struct sbi_hart_features {
+	bool detected;
+	int priv_version;
+	unsigned long extensions;
+	unsigned int pmp_count;
+	unsigned int pmp_addr_bits;
+	unsigned long pmp_gran;
+	unsigned int mhpm_count;
+	unsigned int mhpm_bits;
+};
+
 struct sbi_scratch;
 
 int sbi_hart_reinit(struct sbi_scratch *scratch);
