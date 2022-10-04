@@ -672,7 +672,8 @@ __mhpm_skip:
 	}
 
 	/* Let platform populate extensions */
-	rc = sbi_platform_extensions_init(sbi_platform_thishart_ptr());
+	rc = sbi_platform_extensions_init(sbi_platform_thishart_ptr(),
+					  hfeatures);
 	if (rc)
 		return rc;
 
