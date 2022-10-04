@@ -19,6 +19,7 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_math.h>
 #include <sbi/sbi_platform.h>
+#include <sbi/sbi_pmu.h>
 #include <sbi/sbi_string.h>
 #include <sbi/sbi_trap.h>
 
@@ -208,8 +209,7 @@ static int delegate_traps(struct sbi_scratch *scratch)
 
 	/* Send M-mode interrupts and most exceptions to S-mode */
 	interrupts = MIP_SSIP | MIP_STIP | MIP_SEIP;
-	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SSCOFPMF))
-		interrupts |= MIP_LCOFIP;
+	interrupts |= sbi_pmu_irq_bit();
 
 	exceptions = (1U << CAUSE_MISALIGNED_FETCH) | (1U << CAUSE_BREAKPOINT) |
 		     (1U << CAUSE_USER_ECALL);

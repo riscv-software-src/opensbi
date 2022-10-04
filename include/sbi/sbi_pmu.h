@@ -73,6 +73,11 @@ struct sbi_pmu_device {
 	 * Note: 0 <= counter_index < SBI_PMU_HW_CTR_MAX
 	 */
 	void (*hw_counter_disable_irq)(uint32_t counter_index);
+
+	/**
+	 * Custom function returning the machine-specific irq-bit.
+	 */
+	int (*hw_counter_irq_bit)(void);
 };
 
 /** Get the PMU platform device */
@@ -86,6 +91,9 @@ int sbi_pmu_init(struct sbi_scratch *scratch, bool cold_boot);
 
 /** Reset PMU during hart exit */
 void sbi_pmu_exit(struct sbi_scratch *scratch);
+
+/** Return the pmu irq bit depending on extension existence */
+int sbi_pmu_irq_bit(void);
 
 /**
  * Add the hardware event to counter mapping information. This should be called

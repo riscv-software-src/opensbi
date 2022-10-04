@@ -344,6 +344,18 @@ skip_inhibit_update:
 	return 0;
 }
 
+int sbi_pmu_irq_bit(void)
+{
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+
+	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SSCOFPMF))
+		return MIP_LCOFIP;
+	if (pmu_dev && pmu_dev->hw_counter_irq_bit)
+		return pmu_dev->hw_counter_irq_bit();
+
+	return 0;
+}
+
 static int pmu_ctr_start_fw(uint32_t cidx, uint32_t event_code,
 			    uint64_t ival, bool ival_update)
 {
