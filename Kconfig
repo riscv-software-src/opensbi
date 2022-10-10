@@ -18,6 +18,8 @@ menu "Platform Options"
 source "$(OPENSBI_PLATFORM_SRC_DIR)/Kconfig"
 endmenu
 
+source "$(OPENSBI_SRC_DIR)/lib/sbi/Kconfig"
+
 source "$(OPENSBI_SRC_DIR)/lib/utils/Kconfig"
 
 source "$(OPENSBI_SRC_DIR)/firmware/Kconfig"

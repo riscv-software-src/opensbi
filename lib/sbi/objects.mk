@@ -16,22 +16,22 @@ libsbi-objs-y += sbi_ecall.o
 libsbi-objs-y += sbi_ecall_exts.o
 
 # The order of below extensions is performance optimized
-carray-sbi_ecall_exts-y += ecall_time
-carray-sbi_ecall_exts-y += ecall_rfence
-carray-sbi_ecall_exts-y += ecall_ipi
+carray-sbi_ecall_exts-$(CONFIG_SBI_ECALL_TIME) += ecall_time
+carray-sbi_ecall_exts-$(CONFIG_SBI_ECALL_RFENCE) += ecall_rfence
+carray-sbi_ecall_exts-$(CONFIG_SBI_ECALL_IPI) += ecall_ipi
 carray-sbi_ecall_exts-y += ecall_base
-carray-sbi_ecall_exts-y += ecall_hsm
-carray-sbi_ecall_exts-y += ecall_srst
-carray-sbi_ecall_exts-y += ecall_pmu
-carray-sbi_ecall_exts-y += ecall_legacy
-carray-sbi_ecall_exts-y += ecall_vendor
+carray-sbi_ecall_exts-$(CONFIG_SBI_ECALL_HSM) += ecall_hsm
+carray-sbi_ecall_exts-$(CONFIG_SBI_ECALL_SRST) += ecall_srst
+carray-sbi_ecall_exts-$(CONFIG_SBI_ECALL_PMU) += ecall_pmu
+carray-sbi_ecall_exts-$(CONFIG_SBI_ECALL_LEGACY) += ecall_legacy
+carray-sbi_ecall_exts-$(CONFIG_SBI_ECALL_VENDOR) += ecall_vendor
 
 libsbi-objs-y += sbi_ecall_base.o
-libsbi-objs-y += sbi_ecall_hsm.o
-libsbi-objs-y += sbi_ecall_legacy.o
-libsbi-objs-y += sbi_ecall_pmu.o
+libsbi-objs-$(CONFIG_SBI_ECALL_HSM) += sbi_ecall_hsm.o
+libsbi-objs-$(CONFIG_SBI_ECALL_LEGACY) += sbi_ecall_legacy.o
+libsbi-objs-$(CONFIG_SBI_ECALL_PMU) += sbi_ecall_pmu.o
 libsbi-objs-y += sbi_ecall_replace.o
-libsbi-objs-y += sbi_ecall_vendor.o
+libsbi-objs-$(CONFIG_SBI_ECALL_VENDOR) += sbi_ecall_vendor.o
 
 libsbi-objs-y += sbi_bitmap.o
 libsbi-objs-y += sbi_bitops.o
