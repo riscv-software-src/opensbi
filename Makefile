@@ -478,6 +478,13 @@ $(build_dir)/lib/libsbi.a: $(libsbi-objs-path-y)
 $(platform_build_dir)/lib/libplatsbi.a: $(libsbi-objs-path-y) $(libsbiutils-objs-path-y) $(platform-objs-path-y)
 	$(call compile_ar,$@,$^)
 
+$(build_dir)/%.dep: $(src_dir)/%.carray $(KCONFIG_CONFIG)
+	$(call compile_gen_dep,$@,.c,$< $(KCONFIG_CONFIG))
+	$(call compile_gen_dep,$@,.o,$(@:.dep=.c))
+
+$(build_dir)/%.c: $(src_dir)/%.carray
+	$(call compile_carray,$@,$<)
+
 $(build_dir)/%.dep: $(src_dir)/%.c $(KCONFIG_CONFIG)
 	$(call compile_cc_dep,$@,$<)
 
