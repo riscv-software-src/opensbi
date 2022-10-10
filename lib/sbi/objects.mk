@@ -12,17 +12,31 @@ libsbi-objs-y += riscv_atomic.o
 libsbi-objs-y += riscv_hardfp.o
 libsbi-objs-y += riscv_locks.o
 
-libsbi-objs-y += sbi_bitmap.o
-libsbi-objs-y += sbi_bitops.o
-libsbi-objs-y += sbi_console.o
-libsbi-objs-y += sbi_domain.o
 libsbi-objs-y += sbi_ecall.o
+libsbi-objs-y += sbi_ecall_exts.o
+
+# The order of below extensions is performance optimized
+carray-sbi_ecall_exts-y += ecall_time
+carray-sbi_ecall_exts-y += ecall_rfence
+carray-sbi_ecall_exts-y += ecall_ipi
+carray-sbi_ecall_exts-y += ecall_base
+carray-sbi_ecall_exts-y += ecall_hsm
+carray-sbi_ecall_exts-y += ecall_srst
+carray-sbi_ecall_exts-y += ecall_pmu
+carray-sbi_ecall_exts-y += ecall_legacy
+carray-sbi_ecall_exts-y += ecall_vendor
+
 libsbi-objs-y += sbi_ecall_base.o
 libsbi-objs-y += sbi_ecall_hsm.o
 libsbi-objs-y += sbi_ecall_legacy.o
 libsbi-objs-y += sbi_ecall_pmu.o
 libsbi-objs-y += sbi_ecall_replace.o
 libsbi-objs-y += sbi_ecall_vendor.o
+
+libsbi-objs-y += sbi_bitmap.o
+libsbi-objs-y += sbi_bitops.o
+libsbi-objs-y += sbi_console.o
+libsbi-objs-y += sbi_domain.o
 libsbi-objs-y += sbi_emulate_csr.o
 libsbi-objs-y += sbi_fifo.o
 libsbi-objs-y += sbi_hart.o
