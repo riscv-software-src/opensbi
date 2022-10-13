@@ -623,6 +623,17 @@ install_firmwares: $(platform_build_dir)/lib/libplatsbi.a $(build_dir)/lib/libsb
 install_docs: $(build_dir)/docs/latex/refman.pdf
 	$(call inst_file,$(install_root_dir)/$(install_docs_path)/refman.pdf,$(build_dir)/docs/latex/refman.pdf)
 
+.PHONY: cscope
+cscope:
+	$(CMD_PREFIX)find \
+		"$(src_dir)/firmware" \
+		"$(src_dir)/include" \
+		"$(src_dir)/lib" \
+		"$(platform_src_dir)" \
+	-name "*.[chS]" -print > cscope.files
+	$(CMD_PREFIX)echo "$(KCONFIG_AUTOHEADER)" >> cscope.files
+	$(CMD_PREFIX)cscope -bkq -i cscope.files -f cscope.out
+
 # Rule for "make clean"
 .PHONY: clean
 clean:
@@ -652,6 +663,8 @@ ifeq ($(install_root_dir),$(install_root_dir_default)/usr)
 	$(if $(V), @echo " RM        $(install_root_dir_default)")
 	$(CMD_PREFIX)rm -rf $(install_root_dir_default)
 endif
+	$(if $(V), @echo " RM        $(src_dir)/cscope*")
+	$(CMD_PREFIX)rm -f $(src_dir)/cscope*
 
 .PHONY: FORCE
 FORCE:
