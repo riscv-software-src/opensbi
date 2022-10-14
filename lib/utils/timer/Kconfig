@@ -14,10 +14,19 @@ config FDT_TIMER_MTIMER
 	select TIMER_MTIMER
 	default n
 
+config FDT_TIMER_PLMT
+	bool "Andes PLMT FDT driver"
+	select TIMER_PLMT
+	default n
+
 endif
 
 config TIMER_MTIMER
 	bool "ACLINT MTIMER support"
+	default n
+
+config TIMER_PLMT
+	bool "Andes PLMT support"
 	default n
 
 endmenu

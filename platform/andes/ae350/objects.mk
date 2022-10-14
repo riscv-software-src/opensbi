@@ -15,7 +15,7 @@ platform-asflags-y =
 platform-ldflags-y =
 
 # Objects to build
-platform-objs-y += cache.o platform.o plicsw.o plmt.o
+platform-objs-y += cache.o platform.o plicsw.o
 
 # Blobs to build
 FW_TEXT_START=0x00000000

@@ -6,6 +6,8 @@ config PLATFORM_ANDES_AE350
 	select IRQCHIP_PLIC
 	select FDT_SERIAL
 	select FDT_SERIAL_UART8250
+	select FDT_TIMER
+	select FDT_TIMER_PLMT
 	default y
 
 if PLATFORM_ANDES_AE350

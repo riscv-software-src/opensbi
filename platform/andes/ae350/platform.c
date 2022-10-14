@@ -19,9 +19,9 @@
 #include <sbi_utils/fdt/fdt_fixup.h>
 #include <sbi_utils/irqchip/plic.h>
 #include <sbi_utils/serial/fdt_serial.h>
+#include <sbi_utils/timer/fdt_timer.h>
 #include "platform.h"
 #include "plicsw.h"
-#include "plmt.h"
 #include "cache.h"
 
 static struct plic_data plic = {
@@ -81,21 +81,6 @@ static int ae350_ipi_init(bool cold_boot)
 	return plicsw_warm_ipi_init();
 }
 
-/* Initialize platform timer for current HART. */
-static int ae350_timer_init(bool cold_boot)
-{
-	int ret;
-
-	if (cold_boot) {
-		ret = plmt_cold_timer_init(AE350_PLMT_ADDR,
-					   AE350_HART_COUNT);
-		if (ret)
-			return ret;
-	}
-
-	return plmt_warm_timer_init();
-}
-
 /* Vendor-Specific SBI handler */
 static int ae350_vendor_ext_provider(long extid, long funcid,
 	const struct sbi_trap_regs *regs, unsigned long *out_value,
@@ -150,7 +135,7 @@ const struct sbi_platform_operations platform_ops = {
 
 	.ipi_init     = ae350_ipi_init,
 
-	.timer_init	   = ae350_timer_init,
+	.timer_init	   = fdt_timer_init,
 
 	.vendor_ext_provider = ae350_vendor_ext_provider
 };

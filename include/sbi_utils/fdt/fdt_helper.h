@@ -95,6 +95,9 @@ int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
 			  unsigned long *out_addr2, unsigned long *out_size2,
 			  u32 *out_first_hartid, u32 *out_hart_count);
 
+int fdt_parse_plmt_node(void *fdt, int nodeoffset, unsigned long *plmt_base,
+			  unsigned long *plmt_size, u32 *hart_count);
+
 int fdt_parse_compat_addr(void *fdt, uint64_t *addr,
 			  const char *compatible);
 
