@@ -34,25 +34,6 @@ static int ae350_final_init(bool cold_boot)
 {
 	void *fdt;
 
-	/* enable L1 cache */
-	uintptr_t mcache_ctl_val = csr_read(CSR_MCACHECTL);
-
-	if (!(mcache_ctl_val & V5_MCACHE_CTL_IC_EN))
-		mcache_ctl_val |= V5_MCACHE_CTL_IC_EN;
-	if (!(mcache_ctl_val & V5_MCACHE_CTL_DC_EN))
-		mcache_ctl_val |= V5_MCACHE_CTL_DC_EN;
-	if (!(mcache_ctl_val & V5_MCACHE_CTL_CCTL_SUEN))
-		mcache_ctl_val |= V5_MCACHE_CTL_CCTL_SUEN;
-	csr_write(CSR_MCACHECTL, mcache_ctl_val);
-
-	/* enable L2 cache */
-	uint32_t *l2c_ctl_base = (void *)AE350_L2C_ADDR + V5_L2C_CTL_OFFSET;
-	uint32_t l2c_ctl_val = *l2c_ctl_base;
-
-	if (!(l2c_ctl_val & V5_L2C_CTL_ENABLE_MASK))
-		l2c_ctl_val |= V5_L2C_CTL_ENABLE_MASK;
-	*l2c_ctl_base = l2c_ctl_val;
-
 	if (!cold_boot)
 		return 0;
 
