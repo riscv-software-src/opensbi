@@ -57,7 +57,7 @@ struct sbi_scratch {
 	unsigned long next_arg1;
 	/** Address of next booting stage for this HART */
 	unsigned long next_addr;
-	/** Priviledge mode of next booting stage for this HART */
+	/** Privilege mode of next booting stage for this HART */
 	unsigned long next_mode;
 	/** Warm boot entry point address for this HART */
 	unsigned long warmboot_addr;
