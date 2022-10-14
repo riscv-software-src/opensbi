@@ -10,6 +10,9 @@
 libsbiutils-objs-$(CONFIG_FDT_RESET) += reset/fdt_reset.o
 libsbiutils-objs-$(CONFIG_FDT_RESET) += reset/fdt_reset_drivers.o
 
+carray-fdt_reset_drivers-$(CONFIG_FDT_RESET_ATCWDT200) += fdt_reset_atcwdt200
+libsbiutils-objs-$(CONFIG_FDT_RESET_ATCWDT200) += reset/fdt_reset_atcwdt200.o
+
 carray-fdt_reset_drivers-$(CONFIG_FDT_RESET_GPIO) += fdt_poweroff_gpio
 carray-fdt_reset_drivers-$(CONFIG_FDT_RESET_GPIO) += fdt_reset_gpio
 libsbiutils-objs-$(CONFIG_FDT_RESET_GPIO) += reset/fdt_reset_gpio.o

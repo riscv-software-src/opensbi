@@ -18,6 +18,7 @@
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
 #include <sbi_utils/irqchip/plic.h>
+#include <sbi_utils/reset/fdt_reset.h>
 #include <sbi_utils/serial/fdt_serial.h>
 #include <sbi_utils/timer/fdt_timer.h>
 #include "platform.h"
@@ -36,6 +37,8 @@ static int ae350_final_init(bool cold_boot)
 
 	if (!cold_boot)
 		return 0;
+
+	fdt_reset_init();
 
 	fdt = fdt_get_address();
 	fdt_fixups(fdt);
