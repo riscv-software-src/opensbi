@@ -11,7 +11,7 @@
 #include <sbi/sbi_trap.h>
 
 	/*
-	 * We assume that faulting instruction is is 4-byte long and blindly
+	 * We assume that faulting instruction is 4-byte long and blindly
 	 * increment SEPC by 4.
 	 *
 	 * The trap info will be saved as follows:
