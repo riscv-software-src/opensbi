@@ -19,13 +19,14 @@
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_string.h>
 #include <sbi/sbi_trap.h>
-#include <sbi_utils/fdt/fdt_helper.h>
+#include <sbi_utils/fdt/fdt_domain.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
+#include <sbi_utils/fdt/fdt_helper.h>
+#include <sbi_utils/ipi/fdt_ipi.h>
 #include <sbi_utils/irqchip/fdt_irqchip.h>
 #include <sbi_utils/reset/fdt_reset.h>
 #include <sbi_utils/serial/fdt_serial.h>
 #include <sbi_utils/timer/fdt_timer.h>
-#include <sbi_utils/ipi/fdt_ipi.h>
 #include "platform.h"
 #include "cache.h"
 
@@ -84,6 +85,7 @@ static int ae350_final_init(bool cold_boot)
 
 	fdt = fdt_get_address();
 	fdt_fixups(fdt);
+	fdt_domain_fixup(fdt);
 
 	return 0;
 }
@@ -132,9 +134,16 @@ static int ae350_vendor_ext_provider(long extid, long funcid,
 	return ret;
 }
 
+static int ae350_domains_init(void)
+{
+	return fdt_domains_populate(fdt_get_address());
+}
+
 /* Platform descriptor. */
 const struct sbi_platform_operations platform_ops = {
 	.final_init = ae350_final_init,
+
+	.domains_init = ae350_domains_init,
 
 	.console_init = fdt_serial_init,
 
