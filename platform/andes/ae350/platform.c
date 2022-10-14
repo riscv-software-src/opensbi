@@ -25,8 +25,8 @@
 #include <sbi_utils/reset/fdt_reset.h>
 #include <sbi_utils/serial/fdt_serial.h>
 #include <sbi_utils/timer/fdt_timer.h>
+#include <sbi_utils/ipi/fdt_ipi.h>
 #include "platform.h"
-#include "plicsw.h"
 #include "cache.h"
 
 struct sbi_platform platform;
@@ -88,29 +88,6 @@ static int ae350_final_init(bool cold_boot)
 	return 0;
 }
 
-static struct sbi_ipi_device plicsw_ipi = {
-	.name = "ae350_plicsw",
-	.ipi_send = plicsw_ipi_send,
-	.ipi_clear = plicsw_ipi_clear
-};
-
-/* Initialize IPI for current HART. */
-static int ae350_ipi_init(bool cold_boot)
-{
-	int ret;
-
-	if (cold_boot) {
-		ret = plicsw_cold_ipi_init(AE350_PLICSW_ADDR,
-					   AE350_HART_COUNT);
-		if (ret)
-			return ret;
-
-		sbi_ipi_set_device(&plicsw_ipi);
-	}
-
-	return plicsw_warm_ipi_init();
-}
-
 /* Vendor-Specific SBI handler */
 static int ae350_vendor_ext_provider(long extid, long funcid,
 	const struct sbi_trap_regs *regs, unsigned long *out_value,
@@ -163,7 +140,7 @@ const struct sbi_platform_operations platform_ops = {
 
 	.irqchip_init = fdt_irqchip_init,
 
-	.ipi_init     = ae350_ipi_init,
+	.ipi_init     = fdt_ipi_init,
 
 	.timer_init	   = fdt_timer_init,
 

@@ -11,6 +11,8 @@ config PLATFORM_ANDES_AE350
 	select FDT_RESET_ATCWDT200
 	select FDT_IRQCHIP
 	select FDT_IRQCHIP_PLIC
+	select FDT_IPI
+	select FDT_IPI_PLICSW
 	default y
 
 if PLATFORM_ANDES_AE350

@@ -11,8 +11,6 @@
 #ifndef _AE350_PLATFORM_H_
 #define _AE350_PLATFORM_H_
 
-#define AE350_PLICSW_ADDR		0xe6400000
-
 #define AE350_L2C_ADDR			0xe0500000
 
 /*Memory and Miscellaneous Registers*/
