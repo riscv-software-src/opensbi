@@ -18,7 +18,7 @@
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
 #include <sbi_utils/irqchip/plic.h>
-#include <sbi_utils/serial/uart8250.h>
+#include <sbi_utils/serial/fdt_serial.h>
 #include "platform.h"
 #include "plicsw.h"
 #include "plmt.h"
@@ -41,17 +41,6 @@ static int ae350_final_init(bool cold_boot)
 	fdt_fixups(fdt);
 
 	return 0;
-}
-
-/* Initialize the platform console. */
-static int ae350_console_init(void)
-{
-	return uart8250_init(AE350_UART_ADDR,
-			     AE350_UART_FREQUENCY,
-			     AE350_UART_BAUDRATE,
-			     AE350_UART_REG_SHIFT,
-			     AE350_UART_REG_WIDTH,
-			     AE350_UART_REG_OFFSET);
 }
 
 /* Initialize the platform interrupt controller for current HART. */
@@ -155,7 +144,7 @@ static int ae350_vendor_ext_provider(long extid, long funcid,
 const struct sbi_platform_operations platform_ops = {
 	.final_init = ae350_final_init,
 
-	.console_init = ae350_console_init,
+	.console_init = fdt_serial_init,
 
 	.irqchip_init = ae350_irqchip_init,
 
