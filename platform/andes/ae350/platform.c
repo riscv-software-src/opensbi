@@ -17,18 +17,13 @@
 #include <sbi/sbi_trap.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
-#include <sbi_utils/irqchip/plic.h>
+#include <sbi_utils/irqchip/fdt_irqchip.h>
 #include <sbi_utils/reset/fdt_reset.h>
 #include <sbi_utils/serial/fdt_serial.h>
 #include <sbi_utils/timer/fdt_timer.h>
 #include "platform.h"
 #include "plicsw.h"
 #include "cache.h"
-
-static struct plic_data plic = {
-	.addr = AE350_PLIC_ADDR,
-	.num_src = AE350_PLIC_NUM_SOURCES,
-};
 
 /* Platform final initialization. */
 static int ae350_final_init(bool cold_boot)
@@ -44,21 +39,6 @@ static int ae350_final_init(bool cold_boot)
 	fdt_fixups(fdt);
 
 	return 0;
-}
-
-/* Initialize the platform interrupt controller for current HART. */
-static int ae350_irqchip_init(bool cold_boot)
-{
-	u32 hartid = current_hartid();
-	int ret;
-
-	if (cold_boot) {
-		ret = plic_cold_irqchip_init(&plic);
-		if (ret)
-			return ret;
-	}
-
-	return plic_warm_irqchip_init(&plic, 2 * hartid, 2 * hartid + 1);
 }
 
 static struct sbi_ipi_device plicsw_ipi = {
@@ -134,7 +114,7 @@ const struct sbi_platform_operations platform_ops = {
 
 	.console_init = fdt_serial_init,
 
-	.irqchip_init = ae350_irqchip_init,
+	.irqchip_init = fdt_irqchip_init,
 
 	.ipi_init     = ae350_ipi_init,
 

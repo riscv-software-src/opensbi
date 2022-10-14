@@ -3,13 +3,14 @@
 config PLATFORM_ANDES_AE350
 	bool
 	select FDT
-	select IRQCHIP_PLIC
 	select FDT_SERIAL
 	select FDT_SERIAL_UART8250
 	select FDT_TIMER
 	select FDT_TIMER_PLMT
 	select FDT_RESET
 	select FDT_RESET_ATCWDT200
+	select FDT_IRQCHIP
+	select FDT_IRQCHIP_PLIC
 	default y
 
 if PLATFORM_ANDES_AE350
