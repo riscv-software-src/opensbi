@@ -6,3 +6,21 @@ config PLATFORM_ANDES_AE350
 	select IRQCHIP_PLIC
 	select SERIAL_UART8250
 	default y
+
+if PLATFORM_ANDES_AE350
+
+config PLATFORM_ANDES_AE350_NAME
+	string "Platform default name"
+	default "Andes AE350"
+
+config PLATFORM_ANDES_AE350_MAJOR_VER
+	int "Platform major version"
+	range 0 65535
+	default 0
+
+config PLATFORM_ANDES_AE350_MINOR_VER
+	int "Platform minor version"
+	range 0 65535
+	default 1
+
+endif

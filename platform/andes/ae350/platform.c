@@ -168,8 +168,10 @@ const struct sbi_platform_operations platform_ops = {
 
 const struct sbi_platform platform = {
 	.opensbi_version = OPENSBI_VERSION,
-	.platform_version = SBI_PLATFORM_VERSION(0x0, 0x01),
-	.name = "Andes AE350",
+	.platform_version =
+		SBI_PLATFORM_VERSION(CONFIG_PLATFORM_ANDES_AE350_MAJOR_VER,
+				     CONFIG_PLATFORM_ANDES_AE350_MINOR_VER),
+	.name = CONFIG_PLATFORM_ANDES_AE350_NAME,
 	.features = SBI_PLATFORM_DEFAULT_FEATURES,
 	.hart_count = AE350_HART_COUNT,
 	.hart_stack_size = SBI_PLATFORM_DEFAULT_HART_STACK_SIZE,
