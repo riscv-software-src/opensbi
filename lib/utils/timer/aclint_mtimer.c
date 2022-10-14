@@ -142,34 +142,6 @@ int aclint_mtimer_warm_init(void)
 	return 0;
 }
 
-static int aclint_mtimer_add_regions(unsigned long addr, unsigned long size)
-{
-#define MTIMER_ADD_REGION_ALIGN		0x1000
-	int rc;
-	unsigned long pos, end, rsize;
-	struct sbi_domain_memregion reg;
-
-	pos = addr;
-	end = addr + size;
-	while (pos < end) {
-		rsize = pos & (MTIMER_ADD_REGION_ALIGN - 1);
-		if (rsize)
-			rsize = 1UL << sbi_ffs(pos);
-		else
-			rsize = ((end - pos) < MTIMER_ADD_REGION_ALIGN) ?
-				(end - pos) : MTIMER_ADD_REGION_ALIGN;
-
-		sbi_domain_memregion_init(pos, rsize,
-					  SBI_DOMAIN_MEMREGION_MMIO, &reg);
-		rc = sbi_domain_root_add_memregion(&reg);
-		if (rc)
-			return rc;
-		pos += rsize;
-	}
-
-	return 0;
-}
-
 int aclint_mtimer_cold_init(struct aclint_mtimer_data *mt,
 			    struct aclint_mtimer_data *reference)
 {
@@ -208,23 +180,29 @@ int aclint_mtimer_cold_init(struct aclint_mtimer_data *mt,
 
 	/* Add MTIMER regions to the root domain */
 	if (mt->mtime_addr == (mt->mtimecmp_addr + mt->mtimecmp_size)) {
-		rc = aclint_mtimer_add_regions(mt->mtimecmp_addr,
-					mt->mtime_size + mt->mtimecmp_size);
+		rc = sbi_domain_root_add_memrange(mt->mtimecmp_addr,
+					mt->mtime_size + mt->mtimecmp_size,
+					MTIMER_REGION_ALIGN,
+					SBI_DOMAIN_MEMREGION_MMIO);
 		if (rc)
 			return rc;
 	} else if (mt->mtimecmp_addr == (mt->mtime_addr + mt->mtime_size)) {
-		rc = aclint_mtimer_add_regions(mt->mtime_addr,
-					mt->mtime_size + mt->mtimecmp_size);
+		rc = sbi_domain_root_add_memrange(mt->mtime_addr,
+					mt->mtime_size + mt->mtimecmp_size,
+					MTIMER_REGION_ALIGN,
+					SBI_DOMAIN_MEMREGION_MMIO);
 		if (rc)
 			return rc;
 	} else {
-		rc = aclint_mtimer_add_regions(mt->mtime_addr,
-						mt->mtime_size);
+		rc = sbi_domain_root_add_memrange(mt->mtime_addr,
+						mt->mtime_size, MTIMER_REGION_ALIGN,
+						SBI_DOMAIN_MEMREGION_MMIO);
 		if (rc)
 			return rc;
 
-		rc = aclint_mtimer_add_regions(mt->mtimecmp_addr,
-						mt->mtimecmp_size);
+		rc = sbi_domain_root_add_memrange(mt->mtimecmp_addr,
+						mt->mtimecmp_size, MTIMER_REGION_ALIGN,
+						SBI_DOMAIN_MEMREGION_MMIO);
 		if (rc)
 			return rc;
 	}

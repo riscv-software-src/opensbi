@@ -522,6 +522,33 @@ int sbi_domain_root_add_memregion(const struct sbi_domain_memregion *reg)
 	return 0;
 }
 
+int sbi_domain_root_add_memrange(unsigned long addr, unsigned long size,
+			   unsigned long align, unsigned long region_flags)
+{
+	int rc;
+	unsigned long pos, end, rsize;
+	struct sbi_domain_memregion reg;
+
+	pos = addr;
+	end = addr + size;
+	while (pos < end) {
+		rsize = pos & (align - 1);
+		if (rsize)
+			rsize = 1UL << sbi_ffs(pos);
+		else
+			rsize = ((end - pos) < align) ?
+				(end - pos) : align;
+
+		sbi_domain_memregion_init(pos, rsize, region_flags, &reg);
+		rc = sbi_domain_root_add_memregion(&reg);
+		if (rc)
+			return rc;
+		pos += rsize;
+	}
+
+	return 0;
+}
+
 int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 {
 	int rc;
