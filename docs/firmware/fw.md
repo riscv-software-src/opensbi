@@ -53,7 +53,7 @@ the booting stage to follow OpenSBI firmware.
 A *FW_PAYLOAD* firmware is also useful for cases where the booting stage prior
 to OpenSBI firmware does not pass a *flattened device tree (FDT file)*. In such
 case, a *FW_PAYLOAD* firmware allows embedding a flattened device tree in the
-.text section of the final firmware.
+.rodata section of the final firmware.
 
 Firmware Configuration and Compilation
 --------------------------------------
