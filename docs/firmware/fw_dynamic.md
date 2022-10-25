@@ -31,6 +31,6 @@ directory.
 *FW_DYNAMIC* Firmware Configuration Options
 -------------------------------------------
 
-The *FW_DYNAMIC* firmware does not requires any platform specific configuration
+The *FW_DYNAMIC* firmware does not require any platform specific configuration
 parameters because all required information is passed by previous booting stage
 at runtime via *struct fw_dynamic_info*.
