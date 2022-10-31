@@ -350,43 +350,25 @@ static int fdt_parse_uart_node_common(void *fdt, int nodeoffset,
 int fdt_parse_gaisler_uart_node(void *fdt, int nodeoffset,
 				struct platform_uart_data *uart)
 {
-	int rc;
-
-	rc = fdt_parse_uart_node_common(fdt, nodeoffset, uart,
+	return fdt_parse_uart_node_common(fdt, nodeoffset, uart,
 					DEFAULT_UART_FREQ,
 					DEFAULT_UART_BAUD);
-
-	if (rc)
-		return rc;
-
-	return 0;
 }
 
 int fdt_parse_shakti_uart_node(void *fdt, int nodeoffset,
 			       struct platform_uart_data *uart)
 {
-	int rc;
-
-	rc = fdt_parse_uart_node_common(fdt, nodeoffset, uart,
+	return fdt_parse_uart_node_common(fdt, nodeoffset, uart,
 					DEFAULT_SHAKTI_UART_FREQ,
 					DEFAULT_SHAKTI_UART_BAUD);
-
-	return rc ? : 0;
 }
 
 int fdt_parse_sifive_uart_node(void *fdt, int nodeoffset,
 			       struct platform_uart_data *uart)
 {
-	int rc;
-
-	rc = fdt_parse_uart_node_common(fdt, nodeoffset, uart,
+	return fdt_parse_uart_node_common(fdt, nodeoffset, uart,
 					DEFAULT_SIFIVE_UART_FREQ,
 					DEFAULT_SIFIVE_UART_BAUD);
-
-	if (rc)
-		return rc;
-
-	return 0;
 }
 
 int fdt_parse_uart_node(void *fdt, int nodeoffset,
@@ -398,7 +380,6 @@ int fdt_parse_uart_node(void *fdt, int nodeoffset,
 	rc = fdt_parse_uart_node_common(fdt, nodeoffset, uart,
 					DEFAULT_UART_FREQ,
 					DEFAULT_UART_BAUD);
-
 	if (rc)
 		return rc;
 
@@ -441,11 +422,7 @@ int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
 int fdt_parse_xlnx_uartlite_node(void *fdt, int nodeoffset,
 			       struct platform_uart_data *uart)
 {
-	int rc;
-
-	rc = fdt_parse_uart_node_common(fdt, nodeoffset, uart, 0, 0);
-
-	return rc ? : 0;
+	return fdt_parse_uart_node_common(fdt, nodeoffset, uart, 0, 0);
 }
 
 int fdt_parse_aplic_node(void *fdt, int nodeoff, struct aplic_data *aplic)
