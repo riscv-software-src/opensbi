@@ -25,10 +25,6 @@
 
 #define DEFAULT_SIFIVE_UART_FREQ		0
 #define DEFAULT_SIFIVE_UART_BAUD		115200
-#define DEFAULT_SIFIVE_UART_REG_SHIFT		0
-#define DEFAULT_SIFIVE_UART_REG_IO_WIDTH	4
-
-#define DEFAULT_GAISLER_UART_REG_IO_WIDTH	4
 
 #define DEFAULT_SHAKTI_UART_FREQ		50000000
 #define DEFAULT_SHAKTI_UART_BAUD		115200
@@ -363,10 +359,6 @@ int fdt_parse_gaisler_uart_node(void *fdt, int nodeoffset,
 	if (rc)
 		return rc;
 
-	/* For Gaisler APBUART, the reg-shift and reg-io-width are fixed .*/
-	uart->reg_shift	   = DEFAULT_UART_REG_SHIFT;
-	uart->reg_io_width = DEFAULT_GAISLER_UART_REG_IO_WIDTH;
-
 	return 0;
 }
 
@@ -393,10 +385,6 @@ int fdt_parse_sifive_uart_node(void *fdt, int nodeoffset,
 
 	if (rc)
 		return rc;
-
-	/* For SiFive UART, the reg-shift and reg-io-width are fixed .*/
-	uart->reg_shift = DEFAULT_SIFIVE_UART_REG_SHIFT;
-	uart->reg_io_width = DEFAULT_SIFIVE_UART_REG_IO_WIDTH;
 
 	return 0;
 }
