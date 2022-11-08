@@ -154,8 +154,8 @@ static int semihosting_getc(void)
 	int ret;
 
 	if (semihosting_infd < 0)  {
-		ch = semihosting_trap(SYSREADC, NULL);
-		ret = ch > -1 ? ch : -1;
+		ret = semihosting_trap(SYSREADC, NULL);
+		ret = ret < 0 ? -1 : ret;
 	} else
 		ret = semihosting_read(semihosting_infd, &ch, 1) > 0 ? ch : -1;
 
