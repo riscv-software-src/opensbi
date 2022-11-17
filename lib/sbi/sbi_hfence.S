@@ -32,7 +32,7 @@ __sbi_hfence_gvma_vmid_gpa:
 	 * HFENCE.GVMA a0, a1
 	 * 0110001 01011 01010 000 00000 1110011
 	 */
-	.word 0x62b50073
+	RAW_INSN 0x62b50073
 	ret
 
 	.align 3
@@ -44,7 +44,7 @@ __sbi_hfence_gvma_vmid:
 	 * HFENCE.GVMA zero, a0
 	 * 0110001 01010 00000 000 00000 1110011
 	 */
-	.word 0x62a00073
+	RAW_INSN 0x62a00073
 	ret
 
 	.align 3
@@ -56,7 +56,7 @@ __sbi_hfence_gvma_gpa:
 	 * HFENCE.GVMA a0
 	 * 0110001 00000 01010 000 00000 1110011
 	 */
-	.word 0x62050073
+	RAW_INSN 0x62050073
 	ret
 
 	.align 3
@@ -68,7 +68,7 @@ __sbi_hfence_gvma_all:
 	 * HFENCE.GVMA
 	 * 0110001 00000 00000 000 00000 1110011
 	 */
-	.word 0x62000073
+	RAW_INSN 0x62000073
 	ret
 
 	/*
@@ -95,7 +95,7 @@ __sbi_hfence_vvma_asid_va:
 	 * HFENCE.VVMA a0, a1
 	 * 0010001 01011 01010 000 00000 1110011
 	 */
-	.word 0x22b50073
+	RAW_INSN 0x22b50073
 	ret
 
 	.align 3
@@ -107,7 +107,7 @@ __sbi_hfence_vvma_asid:
 	 * HFENCE.VVMA zero, a0
 	 * 0010001 01010 00000 000 00000 1110011
 	 */
-	.word 0x22a00073
+	RAW_INSN 0x22a00073
 	ret
 
 	.align 3
@@ -119,7 +119,7 @@ __sbi_hfence_vvma_va:
 	 * HFENCE.VVMA zero, a0
 	 * 0010001 00000 01010 000 00000 1110011
 	 */
-	.word 0x22050073
+	RAW_INSN 0x22050073
 	ret
 
 	.align 3
@@ -131,5 +131,5 @@ __sbi_hfence_vvma_all:
 	 * HFENCE.VVMA
 	 * 0010001 00000 00000 000 00000 1110011
 	 */
-	.word 0x22000073
+	RAW_INSN 0x22000073
 	ret
