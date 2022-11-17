@@ -173,6 +173,9 @@ CC_SUPPORT_SAVE_RESTORE := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) -nostdlib
 # Check whether the assembler and the compiler support the Zicsr and Zifencei extensions
 CC_SUPPORT_ZICSR_ZIFENCEI := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) -nostdlib -march=rv$(OPENSBI_CC_XLEN)imafd_zicsr_zifencei -x c /dev/null -o /dev/null 2>&1 | grep "zicsr\|zifencei" > /dev/null && echo n || echo y)
 
+# Check whether the assembler support the H extension with .option arch,+h
+AS_SUPPORT_H_EXT_BY_OPTION_ARCH := $(shell echo ".option arch,+h" | $(AS) $(CLANG_TARGET) $(RELAX_FLAG) -nostdlib -x assembler-with-cpp -c - -o /dev/null 2>&1 | grep -i "warning:.*option" > /dev/null && echo n || echo y)
+
 # Check whether the ".insn" directive on the assembler (with raw value) is supported
 AS_SUPPORT_INSN_RAW_DIRECTIVE := $(shell echo ".insn 0x1000000f" | $(AS) $(CLANG_TARGET) $(RELAX_FLAG) -nostdlib -x assembler-with-cpp -c - -o /dev/null >/dev/null 2>&1 && echo y || echo n)
 
@@ -330,6 +333,9 @@ ifeq ($(AS_SUPPORT_INSN_RAW_DIRECTIVE),y)
 GENFLAGS    +=  -DRAW_INSN=".insn"
 else
 GENFLAGS    +=  -DRAW_INSN=".word"
+endif
+ifeq ($(AS_SUPPORT_H_EXT_BY_OPTION_ARCH),y)
+GENFLAGS    +=  -DOPENSBI_H_EXT_BY_OPTION_ARCH_SUPPORTED
 endif
 ifdef PLATFORM
 GENFLAGS	+=	-include $(KCONFIG_AUTOHEADER)

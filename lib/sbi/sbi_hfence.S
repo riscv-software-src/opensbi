@@ -8,6 +8,10 @@
  *   Atish Patra <anup.patel@wdc.com>
  */
 
+#ifdef OPENSBI_H_EXT_BY_OPTION_ARCH_SUPPORTED
+	.option arch,+h
+#endif
+
 	/*
 	 * HFENCE.GVMA rs1, rs2
 	 * HFENCE.GVMA zero, rs2
