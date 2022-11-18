@@ -201,8 +201,6 @@ static int sun20i_d1_final_init(bool cold_boot, const struct fdt_match *match)
 	return 0;
 }
 
-#include <sbi/sbi_console.h>
-
 static void thead_c9xx_pmu_ctr_enable_irq(uint32_t ctr_idx)
 {
 	unsigned long mip_val;
