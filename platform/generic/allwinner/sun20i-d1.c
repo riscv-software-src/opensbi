@@ -146,14 +146,14 @@ static void sun20i_d1_riscv_cfg_restore(void)
 
 static void sun20i_d1_riscv_cfg_init(void)
 {
-	unsigned long entry = sbi_hartid_to_scratch(0)->warmboot_addr;
+	u64 entry = sbi_hartid_to_scratch(0)->warmboot_addr;
 
 	/* Enable MMIO access. */
 	writel_relaxed(CCU_BGR_ENABLE, SUN20I_D1_CCU_BASE + RISCV_CFG_BGR_REG);
 
 	/* Program the reset entry address. */
-	writel_relaxed((u32)entry, SUN20I_D1_RISCV_CFG_BASE + RESET_ENTRY_LO_REG);
-	writel_relaxed((u64)entry >> 32, SUN20I_D1_RISCV_CFG_BASE + RESET_ENTRY_HI_REG);
+	writel_relaxed(entry, SUN20I_D1_RISCV_CFG_BASE + RESET_ENTRY_LO_REG);
+	writel_relaxed(entry >> 32, SUN20I_D1_RISCV_CFG_BASE + RESET_ENTRY_HI_REG);
 }
 
 static int sun20i_d1_hart_suspend(u32 suspend_type)
