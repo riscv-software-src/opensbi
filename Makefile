@@ -224,7 +224,7 @@ $(KCONFIG_CONFIG): $(platform_src_dir)/configs/$(PLATFORM_DEFCONFIG) $(platform_
 
 $(KCONFIG_AUTOCMD): $(KCONFIG_CONFIG)
 	$(CMD_PREFIX)mkdir -p $(KCONFIG_DIR)
-	$(CMD_PREFIX)echo -n "$(KCONFIG_CONFIG): " > $(KCONFIG_AUTOCMD)
+	$(CMD_PREFIX)printf "%s: " $(KCONFIG_CONFIG) > $(KCONFIG_AUTOCMD)
 	$(CMD_PREFIX)cat $(KCONFIG_AUTOLIST) | tr '\n' ' ' >> $(KCONFIG_AUTOCMD)
 
 include $(KCONFIG_CONFIG)
