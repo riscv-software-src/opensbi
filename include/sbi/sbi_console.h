@@ -19,6 +19,9 @@ struct sbi_console_device {
 	/** Write a character to the console output */
 	void (*console_putc)(char ch);
 
+	/** Write a character string to the console output */
+	unsigned long (*console_puts)(const char *str, unsigned long len);
+
 	/** Read a character from the console input */
 	int (*console_getc)(void);
 };

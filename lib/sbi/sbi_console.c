@@ -12,6 +12,7 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
+#include <sbi/sbi_string.h>
 
 static const struct sbi_console_device *console_dev = NULL;
 static spinlock_t console_out_lock	       = SPIN_LOCK_INITIALIZER;
@@ -43,24 +44,38 @@ void sbi_putc(char ch)
 
 void sbi_puts(const char *str)
 {
+	unsigned long p, len;
+
 	spin_lock(&console_out_lock);
-	while (*str) {
-		sbi_putc(*str);
-		str++;
+	if (console_dev && console_dev->console_puts) {
+		p = 0;
+		len = sbi_strlen(str);
+		while (p < len)
+			p += console_dev->console_puts(&str[p], len - p);
+	} else {
+		while (*str) {
+			sbi_putc(*str);
+			str++;
+		}
 	}
 	spin_unlock(&console_out_lock);
 }
 
 unsigned long sbi_nputs(const char *str, unsigned long len)
 {
-	unsigned long i;
+	unsigned long i, ret;
 
 	spin_lock(&console_out_lock);
-	for (i = 0; i < len; i++)
-		sbi_putc(str[i]);
+	if (console_dev && console_dev->console_puts) {
+		ret = console_dev->console_puts(str, len);
+	} else {
+		for (i = 0; i < len; i++)
+			sbi_putc(str[i]);
+		ret = len;
+	}
 	spin_unlock(&console_out_lock);
 
-	return i;
+	return ret;
 }
 
 void sbi_gets(char *s, int maxwidth, char endchar)
