@@ -196,6 +196,21 @@ bool sbi_domain_check_addr(const struct sbi_domain *dom,
 			   unsigned long addr, unsigned long mode,
 			   unsigned long access_flags);
 
+/**
+ * Check whether we can access specified address range for given mode and
+ * memory region flags under a domain
+ * @param dom pointer to domain
+ * @param addr the start of the address range to be checked
+ * @param size the size of the address range to be checked
+ * @param mode the privilege mode of access
+ * @param access_flags bitmask of domain access types (enum sbi_domain_access)
+ * @return TRUE if access allowed otherwise FALSE
+ */
+bool sbi_domain_check_addr_range(const struct sbi_domain *dom,
+				 unsigned long addr, unsigned long size,
+				 unsigned long mode,
+				 unsigned long access_flags);
+
 /** Dump domain details on the console */
 void sbi_domain_dump(const struct sbi_domain *dom, const char *suffix);
 

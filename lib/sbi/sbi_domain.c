@@ -212,6 +212,44 @@ static bool is_region_before(const struct sbi_domain_memregion *regA,
 	return false;
 }
 
+static const struct sbi_domain_memregion *find_region(
+						const struct sbi_domain *dom,
+						unsigned long addr)
+{
+	unsigned long rstart, rend;
+	struct sbi_domain_memregion *reg;
+
+	sbi_domain_for_each_memregion(dom, reg) {
+		rstart = reg->base;
+		rend = (reg->order < __riscv_xlen) ?
+			rstart + ((1UL << reg->order) - 1) : -1UL;
+		if (rstart <= addr && addr <= rend)
+			return reg;
+	}
+
+	return NULL;
+}
+
+static const struct sbi_domain_memregion *find_next_subset_region(
+				const struct sbi_domain *dom,
+				const struct sbi_domain_memregion *reg,
+				unsigned long addr)
+{
+	struct sbi_domain_memregion *sreg, *ret = NULL;
+
+	sbi_domain_for_each_memregion(dom, sreg) {
+		if (sreg == reg || (sreg->base <= addr) ||
+		    !is_region_subset(sreg, reg))
+			continue;
+
+		if (!ret || (sreg->base < ret->base) ||
+		    ((sreg->base == ret->base) && (sreg->order < ret->order)))
+			ret = sreg;
+	}
+
+	return ret;
+}
+
 static int sanitize_domain(const struct sbi_platform *plat,
 			   struct sbi_domain *dom)
 {
@@ -318,6 +356,37 @@ static int sanitize_domain(const struct sbi_platform *plat,
 	}
 
 	return 0;
+}
+
+bool sbi_domain_check_addr_range(const struct sbi_domain *dom,
+				 unsigned long addr, unsigned long size,
+				 unsigned long mode,
+				 unsigned long access_flags)
+{
+	unsigned long max = addr + size;
+	const struct sbi_domain_memregion *reg, *sreg;
+
+	if (!dom)
+		return false;
+
+	while (addr < max) {
+		reg = find_region(dom, addr);
+		if (!reg)
+			return false;
+
+		if (!sbi_domain_check_addr(dom, addr, mode, access_flags))
+			return false;
+
+		sreg = find_next_subset_region(dom, reg, addr);
+		if (sreg)
+			addr = sreg->base;
+		else if (reg->order < __riscv_xlen)
+			addr = reg->base + (1UL << reg->order);
+		else
+			break;
+	}
+
+	return true;
 }
 
 void sbi_domain_dump(const struct sbi_domain *dom, const char *suffix)
