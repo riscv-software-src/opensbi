@@ -105,7 +105,7 @@ bool sbi_domain_check_addr(const struct sbi_domain *dom,
 			   unsigned long addr, unsigned long mode,
 			   unsigned long access_flags)
 {
-	bool mmio = FALSE;
+	bool rmmio, mmio = FALSE;
 	struct sbi_domain_memregion *reg;
 	unsigned long rstart, rend, rflags, rwx = 0;
 
@@ -130,8 +130,8 @@ bool sbi_domain_check_addr(const struct sbi_domain *dom,
 		rend = (reg->order < __riscv_xlen) ?
 			rstart + ((1UL << reg->order) - 1) : -1UL;
 		if (rstart <= addr && addr <= rend) {
-			if ((mmio && !(rflags & SBI_DOMAIN_MEMREGION_MMIO)) ||
-			    (!mmio && (rflags & SBI_DOMAIN_MEMREGION_MMIO)))
+			rmmio = (rflags & SBI_DOMAIN_MEMREGION_MMIO) ? TRUE : FALSE;
+			if (mmio != rmmio)
 				return FALSE;
 			return ((rflags & rwx) == rwx) ? TRUE : FALSE;
 		}
