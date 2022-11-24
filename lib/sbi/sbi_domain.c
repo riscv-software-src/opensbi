@@ -146,6 +146,9 @@ static bool is_region_valid(const struct sbi_domain_memregion *reg)
 	if (reg->order < 3 || __riscv_xlen < reg->order)
 		return FALSE;
 
+	if (reg->order == __riscv_xlen && reg->base != 0)
+		return FALSE;
+
 	if (reg->base & (BIT(reg->order) - 1))
 		return FALSE;
 
