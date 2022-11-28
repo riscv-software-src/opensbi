@@ -124,7 +124,7 @@ static int fdt_translate_address(void *fdt, uint64_t reg, int parent,
 	int i, rlen;
 	int cell_addr, cell_size;
 	const fdt32_t *ranges;
-	uint64_t offset = 0, caddr = 0, paddr = 0, rsize = 0;
+	uint64_t offset, caddr = 0, paddr = 0, rsize = 0;
 
 	cell_addr = fdt_address_cells(fdt, parent);
 	if (cell_addr < 1)
