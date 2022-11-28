@@ -772,7 +772,7 @@ int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
 			continue;
 
 		cpu_offset = fdt_parent_offset(fdt, cpu_intc_offset);
-		if (cpu_intc_offset < 0)
+		if (cpu_offset < 0)
 			continue;
 
 		rc = fdt_parse_hart_id(fdt, cpu_offset, &hartid);
