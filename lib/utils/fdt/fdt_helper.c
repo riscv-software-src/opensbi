@@ -868,7 +868,7 @@ int fdt_parse_plicsw_node(void *fdt, int nodeoffset, unsigned long *plicsw_base,
 
 	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
 				    &reg_addr, &reg_size);
-	if (rc < 0 || !plicsw_base || !size)
+	if (rc < 0)
 		return SBI_ENODEV;
 	*plicsw_base = reg_addr;
 	*size = reg_size;
