@@ -805,7 +805,7 @@ int fdt_parse_plmt_node(void *fdt, int nodeoffset, unsigned long *plmt_base,
 {
 	const fdt32_t *val;
 	int rc, i, count;
-	uint64_t reg_addr, reg_size, cpu_offset, cpu_intc_offset;
+	uint64_t reg_addr, reg_size;
 	u32 phandle, hwirq, hartid, hcount;
 
 	if (nodeoffset < 0 || !fdt || !plmt_base ||
@@ -826,6 +826,8 @@ int fdt_parse_plmt_node(void *fdt, int nodeoffset, unsigned long *plmt_base,
 
 	hcount = 0;
 	for (i = 0; i < (count / 2); i++) {
+		int cpu_offset, cpu_intc_offset;
+
 		phandle = fdt32_to_cpu(val[2 * i]);
 		hwirq = fdt32_to_cpu(val[2 * i + 1]);
 
@@ -834,7 +836,7 @@ int fdt_parse_plmt_node(void *fdt, int nodeoffset, unsigned long *plmt_base,
 			continue;
 
 		cpu_offset = fdt_parent_offset(fdt, cpu_intc_offset);
-		if (cpu_intc_offset < 0)
+		if (cpu_offset < 0)
 			continue;
 
 		rc = fdt_parse_hart_id(fdt, cpu_offset, &hartid);
