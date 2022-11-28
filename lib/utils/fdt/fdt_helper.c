@@ -814,7 +814,7 @@ int fdt_parse_plmt_node(void *fdt, int nodeoffset, unsigned long *plmt_base,
 
 	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
 				    &reg_addr, &reg_size);
-	if (rc < 0 || !plmt_base || !plmt_size)
+	if (rc < 0)
 		return SBI_ENODEV;
 	*plmt_base = reg_addr;
 	*plmt_size = reg_size;
