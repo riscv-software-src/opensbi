@@ -128,9 +128,9 @@ _relocate:
 	REG_L	t1, 0(t1)
 	lla	t2, _load_start
 	REG_L	t2, 0(t2)
+	beq	t0, t2, _relocate_done
 	sub	t3, t1, t0
 	add	t3, t3, t2
-	beq	t0, t2, _relocate_done
 	lla	t4, _relocate_done
 	sub	t4, t4, t2
 	add	t4, t4, t0
