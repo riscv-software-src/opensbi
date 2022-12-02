@@ -74,22 +74,23 @@ static void fdt_domain_based_fixup_one(void *fdt, int nodeoff)
 	}
 }
 
-void fdt_aplic_fixup(void *fdt)
+static void fdt_fixup_node(void *fdt, const char *compatible)
 {
 	int noff = 0;
 
 	while ((noff = fdt_node_offset_by_compatible(fdt, noff,
-						     "riscv,aplic")) >= 0)
+						     compatible)) >= 0)
 		fdt_domain_based_fixup_one(fdt, noff);
+}
+
+void fdt_aplic_fixup(void *fdt)
+{
+	fdt_fixup_node(fdt, "riscv,aplic");
 }
 
 void fdt_imsic_fixup(void *fdt)
 {
-	int noff = 0;
-
-	while ((noff = fdt_node_offset_by_compatible(fdt, noff,
-						     "riscv,imsics")) >= 0)
-		fdt_domain_based_fixup_one(fdt, noff);
+	fdt_fixup_node(fdt, "riscv,imsics");
 }
 
 void fdt_plic_fixup(void *fdt)
