@@ -178,7 +178,7 @@ DTS Example: (Quad-core AX45MP)
 			                        &CPU3_intc 7 >;
 		};
 
-		wdt: wdt@f0500000 {
+		wdt: watchdog@f0500000 {
 			compatible = "andestech,atcwdt200";
 			reg = <0x00000000 0xf0500000 0x00000000 0x00001000>;
 			interrupts = <3 4>;
