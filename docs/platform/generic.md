@@ -45,12 +45,14 @@ The *Generic* platform does not have any platform-specific options.
 RISC-V Platforms Using Generic Platform
 ---------------------------------------
 
+* **Andes AE350 Platform** (*[andes-ae350.md]*)
 * **QEMU RISC-V Virt Machine** (*[qemu_virt.md]*)
 * **Shakti C-class SoC Platform** (*[shakti_cclass.md]*)
 * **SiFive HiFive Unleashed** (*[sifive_fu540.md]*)
 * **Spike** (*[spike.md]*)
 * **T-HEAD C9xx series Processors** (*[thead-c9xx.md]*)
 
+[andes-ae350.md]: andse-ae350.md
 [qemu_virt.md]: qemu_virt.md
 [shakti_cclass.md]: shakti_cclass.md
 [sifive_fu540.md]: sifive_fu540.md

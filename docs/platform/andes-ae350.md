@@ -8,7 +8,7 @@ AHB/APB IPs suites a majority embedded systems, and the verified platform serves
 as a starting point to jump start SoC designs.
 
 To build platform specific library and firmwares, provide the
-*PLATFORM=andes/ae350* parameter to the top level make command.
+*PLATFORM=generic* parameter to the top level `make` command.
 
 Platform Options
 ----------------
@@ -23,13 +23,14 @@ AE350's dts is included in https://github.com/andestech/linux/tree/RISCV-Linux-5
 **Linux Kernel Payload**
 
 ```
-make PLATFORM=andes/ae350 FW_PAYLOAD_PATH=<linux_build_directory>/arch/riscv/boot/Image FW_FDT_PATH=<ae350.dtb path>
+make PLATFORM=generic FW_PAYLOAD_PATH=<linux_build_directory>/arch/riscv/boot/Image FW_FDT_PATH=<ae350.dtb path>
 ```
 
 DTS Example: (Quad-core AX45MP)
 -------------------------------
 
 ```
+	compatible = "andestech,ae350";
 	cpus {
 		#address-cells = <1>;
 		#size-cells = <0>;
