@@ -103,7 +103,6 @@ build_opensbi() {
 		BUILD_PLATFORM_SUBDIR+=("kendryte/k210")
 		BUILD_PLATFORM_SUBDIR+=("fpga/ariane")
 		BUILD_PLATFORM_SUBDIR+=("fpga/openpiton")
-		BUILD_PLATFORM_SUBDIR+=("andes/ae350")
 		BUILD_PLATFORM_SUBDIR+=("generic")
 		;;
 	*)
