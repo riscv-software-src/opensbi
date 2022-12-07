@@ -34,17 +34,17 @@ static const struct fdt_match *generic_plat_match = NULL;
 
 static void fw_platform_lookup_special(void *fdt, int root_offset)
 {
-	int pos, noff;
 	const struct platform_override *plat;
 	const struct fdt_match *match;
+	int pos;
 
 	for (pos = 0; pos < platform_override_modules_size; pos++) {
 		plat = platform_override_modules[pos];
 		if (!plat->match_table)
 			continue;
 
-		noff = fdt_find_match(fdt, -1, plat->match_table, &match);
-		if (noff < 0)
+		match = fdt_match_node(fdt, root_offset, plat->match_table);
+		if (!match)
 			continue;
 
 		generic_plat = plat;
