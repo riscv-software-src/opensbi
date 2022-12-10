@@ -24,6 +24,11 @@ config FDT_SERIAL_HTIF
 	select SYS_HTIF
 	default n
 
+config FDT_SERIAL_RENESAS_SCIF
+	bool "Renesas SCIF FDT driver"
+	select SERIAL_RENESAS_SCIF
+	default n
+
 config FDT_SERIAL_SHAKTI
 	bool "Shakti UART FDT driver"
 	select SERIAL_SHAKTI

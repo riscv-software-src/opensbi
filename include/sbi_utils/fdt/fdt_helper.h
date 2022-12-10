@@ -59,6 +59,9 @@ int fdt_parse_timebase_frequency(void *fdt, unsigned long *freq);
 int fdt_parse_gaisler_uart_node(void *fdt, int nodeoffset,
 				struct platform_uart_data *uart);
 
+int fdt_parse_renesas_scif_node(void *fdt, int nodeoffset,
+				struct platform_uart_data *uart);
+
 int fdt_parse_shakti_uart_node(void *fdt, int nodeoffset,
 			       struct platform_uart_data *uart);
 

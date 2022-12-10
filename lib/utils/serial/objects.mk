@@ -19,6 +19,9 @@ libsbiutils-objs-$(CONFIG_FDT_SERIAL_GAISLER) += serial/fdt_serial_gaisler.o
 carray-fdt_serial_drivers-$(CONFIG_FDT_SERIAL_HTIF) += fdt_serial_htif
 libsbiutils-objs-$(CONFIG_FDT_SERIAL_HTIF) += serial/fdt_serial_htif.o
 
+carray-fdt_serial_drivers-$(CONFIG_FDT_SERIAL_RENESAS_SCIF) += fdt_serial_renesas_scif
+libsbiutils-objs-$(CONFIG_FDT_SERIAL_RENESAS_SCIF) += serial/fdt_serial_renesas_scif.o
+
 carray-fdt_serial_drivers-$(CONFIG_FDT_SERIAL_SHAKTI) += fdt_serial_shakti
 libsbiutils-objs-$(CONFIG_FDT_SERIAL_SHAKTI) += serial/fdt_serial_shakti.o
 

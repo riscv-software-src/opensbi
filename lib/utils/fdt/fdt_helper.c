@@ -23,6 +23,9 @@
 #define DEFAULT_UART_REG_IO_WIDTH	1
 #define DEFAULT_UART_REG_OFFSET		0
 
+#define DEFAULT_RENESAS_SCIF_FREQ		100000000
+#define DEFAULT_RENESAS_SCIF_BAUD		115200
+
 #define DEFAULT_SIFIVE_UART_FREQ		0
 #define DEFAULT_SIFIVE_UART_BAUD		115200
 
@@ -353,6 +356,14 @@ int fdt_parse_gaisler_uart_node(void *fdt, int nodeoffset,
 	return fdt_parse_uart_node_common(fdt, nodeoffset, uart,
 					DEFAULT_UART_FREQ,
 					DEFAULT_UART_BAUD);
+}
+
+int fdt_parse_renesas_scif_node(void *fdt, int nodeoffset,
+				struct platform_uart_data *uart)
+{
+	return fdt_parse_uart_node_common(fdt, nodeoffset, uart,
+					  DEFAULT_RENESAS_SCIF_FREQ,
+					  DEFAULT_RENESAS_SCIF_BAUD);
 }
 
 int fdt_parse_shakti_uart_node(void *fdt, int nodeoffset,
