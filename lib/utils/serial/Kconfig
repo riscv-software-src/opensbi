@@ -59,6 +59,10 @@ config SERIAL_GAISLER
 	bool "Gaisler UART support"
 	default n
 
+config SERIAL_RENESAS_SCIF
+	bool "Renesas SCIF support"
+	default n
+
 config SERIAL_SHAKTI
 	bool "Shakti UART support"
 	default n
