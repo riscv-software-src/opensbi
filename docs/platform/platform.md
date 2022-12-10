@@ -39,6 +39,10 @@ OpenSBI currently supports the following virtual and hardware platforms:
   processor based SOCs. More details on this platform can be found in the
   file *[shakti_cclass.md]*.
 
+* **Renesas RZ/Five SoC**: Platform support for Renesas RZ/Five (R9A07G043F) SoC
+  used on the Renesas RZ/Five SMARC EVK board. More details on this platform can
+  be found in the file *[renesas-rzfive.md]*.
+
 The code for these supported platforms can be used as example to implement
 support for other platforms. The *platform/template* directory also provides
 template files for implementing support for a new platform. The *objects.mk*,
@@ -54,3 +58,4 @@ comments to facilitate the implementation.
 [spike.md]: spike.md
 [fpga-openpiton.md]: fpga-openpiton.md
 [shakti_cclass.md]: shakti_cclass.md
+[renesas-rzfive.md]: renesas-rzfive.md

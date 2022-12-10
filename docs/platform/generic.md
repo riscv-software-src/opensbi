@@ -47,6 +47,7 @@ RISC-V Platforms Using Generic Platform
 
 * **Andes AE350 Platform** (*[andes-ae350.md]*)
 * **QEMU RISC-V Virt Machine** (*[qemu_virt.md]*)
+* **Renesas RZ/Five SoC** (*[renesas-rzfive.md]*)
 * **Shakti C-class SoC Platform** (*[shakti_cclass.md]*)
 * **SiFive HiFive Unleashed** (*[sifive_fu540.md]*)
 * **Spike** (*[spike.md]*)
@@ -54,6 +55,7 @@ RISC-V Platforms Using Generic Platform
 
 [andes-ae350.md]: andse-ae350.md
 [qemu_virt.md]: qemu_virt.md
+[renesas-rzfive.md]: renesas-rzfive.md
 [shakti_cclass.md]: shakti_cclass.md
 [sifive_fu540.md]: sifive_fu540.md
 [spike.md]: spike.md
