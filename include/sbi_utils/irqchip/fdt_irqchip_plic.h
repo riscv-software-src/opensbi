@@ -23,9 +23,10 @@ void fdt_plic_priority_save(u8 *priority, u32 num);
  */
 void fdt_plic_priority_restore(const u8 *priority, u32 num);
 
-void fdt_plic_context_save(bool smode, u32 *enable, u32 *threshold);
+void fdt_plic_context_save(bool smode, u32 *enable, u32 *threshold, u32 num);
 
-void fdt_plic_context_restore(bool smode, const u32 *enable, u32 threshold);
+void fdt_plic_context_restore(bool smode, const u32 *enable, u32 threshold,
+			      u32 num);
 
 void thead_plic_restore(void);
 

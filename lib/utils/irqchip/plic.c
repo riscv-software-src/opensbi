@@ -92,22 +92,28 @@ static void plic_set_ie(const struct plic_data *plic, u32 cntxid,
 }
 
 void plic_context_save(const struct plic_data *plic, int context_id,
-		       u32 *enable, u32 *threshold)
+		       u32 *enable, u32 *threshold, u32 num)
 {
 	u32 ie_words = plic->num_src / 32 + 1;
 
-	for (u32 i = 0; i < ie_words; i++)
+	if (num > ie_words)
+		num = ie_words;
+
+	for (u32 i = 0; i < num; i++)
 		enable[i] = plic_get_ie(plic, context_id, i);
 
 	*threshold = plic_get_thresh(plic, context_id);
 }
 
 void plic_context_restore(const struct plic_data *plic, int context_id,
-			  const u32 *enable, u32 threshold)
+			  const u32 *enable, u32 threshold, u32 num)
 {
 	u32 ie_words = plic->num_src / 32 + 1;
 
-	for (u32 i = 0; i < ie_words; i++)
+	if (num > ie_words)
+		num = ie_words;
+
+	for (u32 i = 0; i < num; i++)
 		plic_set_ie(plic, context_id, i, enable[i]);
 
 	plic_set_thresh(plic, context_id, threshold);

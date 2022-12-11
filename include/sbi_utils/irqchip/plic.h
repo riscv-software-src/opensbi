@@ -24,10 +24,10 @@ void plic_priority_restore(const struct plic_data *plic, const u8 *priority,
 			   u32 num);
 
 void plic_context_save(const struct plic_data *plic, int context_id,
-		       u32 *enable, u32 *threshold);
+		       u32 *enable, u32 *threshold, u32 num);
 
 void plic_context_restore(const struct plic_data *plic, int context_id,
-			  const u32 *enable, u32 threshold);
+			  const u32 *enable, u32 threshold, u32 num);
 
 int plic_context_init(const struct plic_data *plic, int context_id,
 		      bool enable, u32 threshold);

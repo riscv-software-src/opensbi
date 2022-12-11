@@ -78,7 +78,7 @@ static u32 plic_threshold;
 
 static void sun20i_d1_plic_save(void)
 {
-	fdt_plic_context_save(true, plic_sie, &plic_threshold);
+	fdt_plic_context_save(true, plic_sie, &plic_threshold, PLIC_IE_WORDS);
 	fdt_plic_priority_save(plic_priority, PLIC_SOURCES);
 }
 
@@ -86,7 +86,8 @@ static void sun20i_d1_plic_restore(void)
 {
 	thead_plic_restore();
 	fdt_plic_priority_restore(plic_priority, PLIC_SOURCES);
-	fdt_plic_context_restore(true, plic_sie, plic_threshold);
+	fdt_plic_context_restore(true, plic_sie, plic_threshold,
+				 PLIC_IE_WORDS);
 }
 
 /*

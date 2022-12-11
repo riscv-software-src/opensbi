@@ -38,22 +38,23 @@ void fdt_plic_priority_restore(const u8 *priority, u32 num)
 	plic_priority_restore(plic, priority, num);
 }
 
-void fdt_plic_context_save(bool smode, u32 *enable, u32 *threshold)
+void fdt_plic_context_save(bool smode, u32 *enable, u32 *threshold, u32 num)
 {
 	u32 hartid = current_hartid();
 
 	plic_context_save(plic_hartid2data[hartid],
 			  plic_hartid2context[hartid][smode],
-			  enable, threshold);
+			  enable, threshold, num);
 }
 
-void fdt_plic_context_restore(bool smode, const u32 *enable, u32 threshold)
+void fdt_plic_context_restore(bool smode, const u32 *enable, u32 threshold,
+			      u32 num)
 {
 	u32 hartid = current_hartid();
 
 	plic_context_restore(plic_hartid2data[hartid],
 			     plic_hartid2context[hartid][smode],
-			     enable, threshold);
+			     enable, threshold, num);
 }
 
 static int irqchip_plic_warm_init(void)
