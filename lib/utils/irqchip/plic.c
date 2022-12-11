@@ -121,7 +121,7 @@ int plic_context_init(const struct plic_data *plic, int context_id,
 	if (!plic || context_id < 0)
 		return SBI_EINVAL;
 
-	ie_words = (plic->num_src + 31) / 32;
+	ie_words = plic->num_src / 32 + 1;
 	ie_value = enable ? 0xffffffffU : 0U;
 
 	for (u32 i = 0; i < ie_words; i++)
