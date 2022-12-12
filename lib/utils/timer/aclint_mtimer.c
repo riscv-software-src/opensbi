@@ -149,10 +149,10 @@ int aclint_mtimer_cold_init(struct aclint_mtimer_data *mt,
 	int rc;
 
 	/* Sanity checks */
-	if (!mt || !mt->mtime_size ||
+	if (!mt ||
 	    (mt->hart_count && !mt->mtimecmp_size) ||
-	    (mt->mtime_addr & (ACLINT_MTIMER_ALIGN - 1)) ||
-	    (mt->mtime_size & (ACLINT_MTIMER_ALIGN - 1)) ||
+	    (mt->mtime_size && (mt->mtime_addr & (ACLINT_MTIMER_ALIGN - 1))) ||
+	    (mt->mtime_size && (mt->mtime_size & (ACLINT_MTIMER_ALIGN - 1))) ||
 	    (mt->mtimecmp_addr & (ACLINT_MTIMER_ALIGN - 1)) ||
 	    (mt->mtimecmp_size & (ACLINT_MTIMER_ALIGN - 1)) ||
 	    (mt->first_hartid >= SBI_HARTMASK_MAX_BITS) ||
@@ -177,6 +177,11 @@ int aclint_mtimer_cold_init(struct aclint_mtimer_data *mt,
 	/* Update MTIMER hartid table */
 	for (i = 0; i < mt->hart_count; i++)
 		mtimer_hartid2data[mt->first_hartid + i] = mt;
+
+	if (!mt->mtime_size) {
+		/* Disable reading mtime when mtime is not available */
+		mtimer.timer_value = NULL;
+	}
 
 	/* Add MTIMER regions to the root domain */
 	if (mt->mtime_addr == (mt->mtimecmp_addr + mt->mtimecmp_size)) {
