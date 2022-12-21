@@ -33,7 +33,7 @@ struct sbi_domain root = {
 	.name = "root",
 	.possible_harts = &root_hmask,
 	.regions = root_memregs,
-	.system_reset_allowed = TRUE,
+	.system_reset_allowed = true,
 };
 
 bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartid)
@@ -41,7 +41,7 @@ bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartid)
 	if (dom)
 		return sbi_hartmask_test_hart(hartid, &dom->assigned_harts);
 
-	return FALSE;
+	return false;
 }
 
 ulong sbi_domain_get_assigned_hartmask(const struct sbi_domain *dom,
@@ -105,12 +105,12 @@ bool sbi_domain_check_addr(const struct sbi_domain *dom,
 			   unsigned long addr, unsigned long mode,
 			   unsigned long access_flags)
 {
-	bool rmmio, mmio = FALSE;
+	bool rmmio, mmio = false;
 	struct sbi_domain_memregion *reg;
 	unsigned long rstart, rend, rflags, rwx = 0;
 
 	if (!dom)
-		return FALSE;
+		return false;
 
 	if (access_flags & SBI_DOMAIN_READ)
 		rwx |= SBI_DOMAIN_MEMREGION_READABLE;
@@ -119,7 +119,7 @@ bool sbi_domain_check_addr(const struct sbi_domain *dom,
 	if (access_flags & SBI_DOMAIN_EXECUTE)
 		rwx |= SBI_DOMAIN_MEMREGION_EXECUTABLE;
 	if (access_flags & SBI_DOMAIN_MMIO)
-		mmio = TRUE;
+		mmio = true;
 
 	sbi_domain_for_each_memregion(dom, reg) {
 		rflags = reg->flags;
@@ -130,29 +130,29 @@ bool sbi_domain_check_addr(const struct sbi_domain *dom,
 		rend = (reg->order < __riscv_xlen) ?
 			rstart + ((1UL << reg->order) - 1) : -1UL;
 		if (rstart <= addr && addr <= rend) {
-			rmmio = (rflags & SBI_DOMAIN_MEMREGION_MMIO) ? TRUE : FALSE;
+			rmmio = (rflags & SBI_DOMAIN_MEMREGION_MMIO) ? true : false;
 			if (mmio != rmmio)
-				return FALSE;
-			return ((rflags & rwx) == rwx) ? TRUE : FALSE;
+				return false;
+			return ((rflags & rwx) == rwx) ? true : false;
 		}
 	}
 
-	return (mode == PRV_M) ? TRUE : FALSE;
+	return (mode == PRV_M) ? true : false;
 }
 
 /* Check if region complies with constraints */
 static bool is_region_valid(const struct sbi_domain_memregion *reg)
 {
 	if (reg->order < 3 || __riscv_xlen < reg->order)
-		return FALSE;
+		return false;
 
 	if (reg->order == __riscv_xlen && reg->base != 0)
-		return FALSE;
+		return false;
 
 	if (reg->order < __riscv_xlen && (reg->base & (BIT(reg->order) - 1)))
-		return FALSE;
+		return false;
 
-	return TRUE;
+	return true;
 }
 
 /** Check if regionA is sub-region of regionB */
@@ -168,9 +168,9 @@ static bool is_region_subset(const struct sbi_domain_memregion *regA,
 	    (regA_start < regB_end) &&
 	    (regB_start < regA_end) &&
 	    (regA_end <= regB_end))
-		return TRUE;
+		return true;
 
-	return FALSE;
+	return false;
 }
 
 /** Check if regionA conflicts regionB */
@@ -179,9 +179,9 @@ static bool is_region_conflict(const struct sbi_domain_memregion *regA,
 {
 	if ((is_region_subset(regA, regB) || is_region_subset(regB, regA)) &&
 	    regA->flags == regB->flags)
-		return TRUE;
+		return true;
 
-	return FALSE;
+	return false;
 }
 
 /** Check if regionA should be placed before regionB */
@@ -189,13 +189,13 @@ static bool is_region_before(const struct sbi_domain_memregion *regA,
 			     const struct sbi_domain_memregion *regB)
 {
 	if (regA->order < regB->order)
-		return TRUE;
+		return true;
 
 	if ((regA->order == regB->order) &&
 	    (regA->base < regB->base))
-		return TRUE;
+		return true;
 
-	return FALSE;
+	return false;
 }
 
 static int sanitize_domain(const struct sbi_platform *plat,
@@ -237,12 +237,12 @@ static int sanitize_domain(const struct sbi_platform *plat,
 
 	/* Count memory regions and check presence of firmware region */
 	count = 0;
-	have_fw_reg = FALSE;
+	have_fw_reg = false;
 	sbi_domain_for_each_memregion(dom, reg) {
 		if (reg->order == root_fw_region.order &&
 		    reg->base == root_fw_region.base &&
 		    reg->flags == root_fw_region.flags)
-			have_fw_reg = TRUE;
+			have_fw_reg = true;
 		count++;
 	}
 	if (!have_fw_reg) {

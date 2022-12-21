@@ -344,16 +344,16 @@ static inline u32 sbi_platform_hart_stack_size(const struct sbi_platform *plat)
  * @param plat pointer to struct sbi_platform
  * @param hartid HART ID
  *
- * @return TRUE if HART is invalid and FALSE otherwise
+ * @return true if HART is invalid and false otherwise
  */
 static inline bool sbi_platform_hart_invalid(const struct sbi_platform *plat,
 					     u32 hartid)
 {
 	if (!plat)
-		return TRUE;
+		return true;
 	if (plat->hart_count <= sbi_platform_hart_index(plat, hartid))
-		return TRUE;
-	return FALSE;
+		return true;
+	return false;
 }
 
 /**
@@ -377,7 +377,7 @@ static inline int sbi_platform_nascent_init(const struct sbi_platform *plat)
  * Early initialization for current HART
  *
  * @param plat pointer to struct sbi_platform
- * @param cold_boot whether cold boot (TRUE) or warm_boot (FALSE)
+ * @param cold_boot whether cold boot (true) or warm_boot (false)
  *
  * @return 0 on success and negative error code on failure
  */
@@ -393,7 +393,7 @@ static inline int sbi_platform_early_init(const struct sbi_platform *plat,
  * Final initialization for current HART
  *
  * @param plat pointer to struct sbi_platform
- * @param cold_boot whether cold boot (TRUE) or warm_boot (FALSE)
+ * @param cold_boot whether cold boot (true) or warm_boot (false)
  *
  * @return 0 on success and negative error code on failure
  */
@@ -538,7 +538,7 @@ static inline int sbi_platform_console_init(const struct sbi_platform *plat)
  * Initialize the platform interrupt controller for current HART
  *
  * @param plat pointer to struct sbi_platform
- * @param cold_boot whether cold boot (TRUE) or warm_boot (FALSE)
+ * @param cold_boot whether cold boot (true) or warm_boot (false)
  *
  * @return 0 on success and negative error code on failure
  */
@@ -565,7 +565,7 @@ static inline void sbi_platform_irqchip_exit(const struct sbi_platform *plat)
  * Initialize the platform IPI support for current HART
  *
  * @param plat pointer to struct sbi_platform
- * @param cold_boot whether cold boot (TRUE) or warm_boot (FALSE)
+ * @param cold_boot whether cold boot (true) or warm_boot (false)
  *
  * @return 0 on success and negative error code on failure
  */
@@ -592,7 +592,7 @@ static inline void sbi_platform_ipi_exit(const struct sbi_platform *plat)
  * Initialize the platform timer for current HART
  *
  * @param plat pointer to struct sbi_platform
- * @param cold_boot whether cold boot (TRUE) or warm_boot (FALSE)
+ * @param cold_boot whether cold boot (true) or warm_boot (false)
  *
  * @return 0 on success and negative error code on failure
  */

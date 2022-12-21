@@ -255,15 +255,15 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (!init_count_offset)
 		sbi_hart_hang();
 
-	rc = sbi_hsm_init(scratch, hartid, TRUE);
+	rc = sbi_hsm_init(scratch, hartid, true);
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_platform_early_init(plat, TRUE);
+	rc = sbi_platform_early_init(plat, true);
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_hart_init(scratch, TRUE);
+	rc = sbi_hart_init(scratch, true);
 	if (rc)
 		sbi_hart_hang();
 
@@ -271,32 +271,32 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_pmu_init(scratch, TRUE);
+	rc = sbi_pmu_init(scratch, true);
 	if (rc)
 		sbi_hart_hang();
 
 	sbi_boot_print_banner(scratch);
 
-	rc = sbi_irqchip_init(scratch, TRUE);
+	rc = sbi_irqchip_init(scratch, true);
 	if (rc) {
 		sbi_printf("%s: irqchip init failed (error %d)\n",
 			   __func__, rc);
 		sbi_hart_hang();
 	}
 
-	rc = sbi_ipi_init(scratch, TRUE);
+	rc = sbi_ipi_init(scratch, true);
 	if (rc) {
 		sbi_printf("%s: ipi init failed (error %d)\n", __func__, rc);
 		sbi_hart_hang();
 	}
 
-	rc = sbi_tlb_init(scratch, TRUE);
+	rc = sbi_tlb_init(scratch, true);
 	if (rc) {
 		sbi_printf("%s: tlb init failed (error %d)\n", __func__, rc);
 		sbi_hart_hang();
 	}
 
-	rc = sbi_timer_init(scratch, TRUE);
+	rc = sbi_timer_init(scratch, true);
 	if (rc) {
 		sbi_printf("%s: timer init failed (error %d)\n", __func__, rc);
 		sbi_hart_hang();
@@ -332,7 +332,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	 * Note: Platform final initialization should be last so that
 	 * it sees correct domain assignment and PMP configuration.
 	 */
-	rc = sbi_platform_final_init(plat, TRUE);
+	rc = sbi_platform_final_init(plat, true);
 	if (rc) {
 		sbi_printf("%s: platform final init failed (error %d)\n",
 			   __func__, rc);
@@ -352,7 +352,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 
 	sbi_hsm_prepare_next_jump(scratch, hartid);
 	sbi_hart_switch_mode(hartid, scratch->next_arg1, scratch->next_addr,
-			     scratch->next_mode, FALSE);
+			     scratch->next_mode, false);
 }
 
 static void init_warm_startup(struct sbi_scratch *scratch, u32 hartid)
@@ -364,35 +364,35 @@ static void init_warm_startup(struct sbi_scratch *scratch, u32 hartid)
 	if (!init_count_offset)
 		sbi_hart_hang();
 
-	rc = sbi_hsm_init(scratch, hartid, FALSE);
+	rc = sbi_hsm_init(scratch, hartid, false);
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_platform_early_init(plat, FALSE);
+	rc = sbi_platform_early_init(plat, false);
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_hart_init(scratch, FALSE);
+	rc = sbi_hart_init(scratch, false);
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_pmu_init(scratch, FALSE);
+	rc = sbi_pmu_init(scratch, false);
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_irqchip_init(scratch, FALSE);
+	rc = sbi_irqchip_init(scratch, false);
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_ipi_init(scratch, FALSE);
+	rc = sbi_ipi_init(scratch, false);
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_tlb_init(scratch, FALSE);
+	rc = sbi_tlb_init(scratch, false);
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_timer_init(scratch, FALSE);
+	rc = sbi_timer_init(scratch, false);
 	if (rc)
 		sbi_hart_hang();
 
@@ -400,7 +400,7 @@ static void init_warm_startup(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_platform_final_init(plat, FALSE);
+	rc = sbi_platform_final_init(plat, false);
 	if (rc)
 		sbi_hart_hang();
 
@@ -444,7 +444,7 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 
 	sbi_hart_switch_mode(hartid, scratch->next_arg1,
 			     scratch->next_addr,
-			     scratch->next_mode, FALSE);
+			     scratch->next_mode, false);
 }
 
 static atomic_t coldboot_lottery = ATOMIC_INITIALIZER(0);
@@ -463,8 +463,8 @@ static atomic_t coldboot_lottery = ATOMIC_INITIALIZER(0);
  */
 void __noreturn sbi_init(struct sbi_scratch *scratch)
 {
-	bool next_mode_supported	= FALSE;
-	bool coldboot			= FALSE;
+	bool next_mode_supported	= false;
+	bool coldboot			= false;
 	u32 hartid			= current_hartid();
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
@@ -474,15 +474,15 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 
 	switch (scratch->next_mode) {
 	case PRV_M:
-		next_mode_supported = TRUE;
+		next_mode_supported = true;
 		break;
 	case PRV_S:
 		if (misa_extension('S'))
-			next_mode_supported = TRUE;
+			next_mode_supported = true;
 		break;
 	case PRV_U:
 		if (misa_extension('U'))
-			next_mode_supported = TRUE;
+			next_mode_supported = true;
 		break;
 	default:
 		sbi_hart_hang();
@@ -499,7 +499,7 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 	 */
 
 	if (next_mode_supported && atomic_xchg(&coldboot_lottery, 1) == 0)
-		coldboot = TRUE;
+		coldboot = true;
 
 	/*
 	 * Do platform specific nascent (very early) initialization so

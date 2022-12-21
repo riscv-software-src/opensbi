@@ -33,7 +33,7 @@ static int sbi_ecall_hsm_handler(unsigned long extid, unsigned long funcid,
 					 regs->a0, regs->a1, smode, regs->a2);
 		break;
 	case SBI_EXT_HSM_HART_STOP:
-		ret = sbi_hsm_hart_stop(scratch, TRUE);
+		ret = sbi_hsm_hart_stop(scratch, true);
 		break;
 	case SBI_EXT_HSM_HART_GET_STATUS:
 		ret = sbi_hsm_hart_get_state(sbi_domain_thishart_ptr(),

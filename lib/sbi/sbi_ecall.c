@@ -78,7 +78,7 @@ int sbi_ecall_register_extension(struct sbi_ecall_extension *ext)
 
 void sbi_ecall_unregister_extension(struct sbi_ecall_extension *ext)
 {
-	bool found = FALSE;
+	bool found = false;
 	struct sbi_ecall_extension *t;
 
 	if (!ext)
@@ -86,7 +86,7 @@ void sbi_ecall_unregister_extension(struct sbi_ecall_extension *ext)
 
 	sbi_list_for_each_entry(t, &ecall_exts_list, head) {
 		if (t == ext) {
-			found = TRUE;
+			found = true;
 			break;
 		}
 	}

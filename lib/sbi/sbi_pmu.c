@@ -85,7 +85,7 @@ static uint32_t total_ctrs;
  * @param evtA Pointer to the existing hw event structure
  * @param evtB Pointer to the new hw event structure
  *
- * Return FALSE if the range doesn't overlap, TRUE otherwise
+ * Return false if the range doesn't overlap, true otherwise
  */
 static bool pmu_event_range_overlap(struct sbi_pmu_hw_event *evtA,
 				    struct sbi_pmu_hw_event *evtB)
@@ -93,17 +93,17 @@ static bool pmu_event_range_overlap(struct sbi_pmu_hw_event *evtA,
 	/* check if the range of events overlap with a previous entry */
 	if (((evtA->end_idx < evtB->start_idx) && (evtA->end_idx < evtB->end_idx)) ||
 	   ((evtA->start_idx > evtB->start_idx) && (evtA->start_idx > evtB->end_idx)))
-		return FALSE;
-	return TRUE;
+		return false;
+	return true;
 }
 
 static bool pmu_event_select_overlap(struct sbi_pmu_hw_event *evt,
 				     uint64_t select_val, uint64_t select_mask)
 {
 	if ((evt->select == select_val) && (evt->select_mask == select_mask))
-		return TRUE;
+		return true;
 
-	return FALSE;
+	return false;
 }
 
 static int pmu_event_validate(unsigned long event_idx)
@@ -384,14 +384,14 @@ int sbi_pmu_ctr_start(unsigned long cbase, unsigned long cmask,
 	int event_idx_type;
 	uint32_t event_code;
 	int ret = SBI_EINVAL;
-	bool bUpdate = FALSE;
+	bool bUpdate = false;
 	int i, cidx;
 
 	if ((cbase + sbi_fls(cmask)) >= total_ctrs)
 		return ret;
 
 	if (flags & SBI_PMU_START_FLAG_SET_INIT_VALUE)
-		bUpdate = TRUE;
+		bUpdate = true;
 
 	for_each_set_bit(i, &cmask, total_ctrs) {
 		cidx = i + cbase;

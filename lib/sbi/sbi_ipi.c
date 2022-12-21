@@ -163,7 +163,7 @@ void sbi_ipi_clear_smode(void)
 
 static void sbi_ipi_process_halt(struct sbi_scratch *scratch)
 {
-	sbi_hsm_hart_stop(scratch, TRUE);
+	sbi_hsm_hart_stop(scratch, true);
 }
 
 static struct sbi_ipi_event_ops ipi_halt_ops = {

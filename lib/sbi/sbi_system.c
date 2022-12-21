@@ -79,7 +79,7 @@ void __noreturn sbi_system_reset(u32 reset_type, u32 reset_reason)
 	}
 
 	/* Stop current HART */
-	sbi_hsm_hart_stop(scratch, FALSE);
+	sbi_hsm_hart_stop(scratch, false);
 
 	/* Platform specific reset if domain allowed system reset */
 	if (dom->system_reset_allowed) {

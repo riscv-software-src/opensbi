@@ -20,9 +20,9 @@ bool sbi_isprintable(char c)
 {
 	if (((31 < c) && (c < 127)) || (c == '\f') || (c == '\r') ||
 	    (c == '\n') || (c == '\t')) {
-		return TRUE;
+		return true;
 	}
-	return FALSE;
+	return false;
 }
 
 int sbi_getc(void)

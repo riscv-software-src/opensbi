@@ -88,12 +88,12 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 {
 	ulong hstatus, vsstatus, prev_mode;
 #if __riscv_xlen == 32
-	bool prev_virt = (regs->mstatusH & MSTATUSH_MPV) ? TRUE : FALSE;
+	bool prev_virt = (regs->mstatusH & MSTATUSH_MPV) ? true : false;
 #else
-	bool prev_virt = (regs->mstatus & MSTATUS_MPV) ? TRUE : FALSE;
+	bool prev_virt = (regs->mstatus & MSTATUS_MPV) ? true : false;
 #endif
 	/* By default, we redirect to HS-mode */
-	bool next_virt = FALSE;
+	bool next_virt = false;
 
 	/* Sanity check on previous mode */
 	prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
@@ -106,7 +106,7 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 	if (misa_extension('H') && prev_virt) {
 		if ((trap->cause < __riscv_xlen) &&
 		    (csr_read(CSR_HEDELEG) & BIT(trap->cause))) {
-			next_virt = TRUE;
+			next_virt = true;
 		}
 	}
 

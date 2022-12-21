@@ -205,7 +205,7 @@ static int da9063_reset_init(void *fdt, int nodeoff,
 }
 
 static const struct fdt_match da9063_reset_match[] = {
-	{ .compatible = "dlg,da9063", .data = (void *)TRUE },
+	{ .compatible = "dlg,da9063", .data = (void *)true },
 	{ },
 };
 

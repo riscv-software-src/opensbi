@@ -113,7 +113,7 @@ extern struct sbi_domain *domidx_to_domain_table[];
  * Check whether given HART is assigned to specified domain
  * @param dom pointer to domain
  * @param hartid the HART ID
- * @return TRUE if HART is assigned to domain otherwise FALSE
+ * @return true if HART is assigned to domain otherwise false
  */
 bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartid);
 
@@ -148,7 +148,7 @@ void sbi_domain_memregion_init(unsigned long addr,
  * @param addr the address to be checked
  * @param mode the privilege mode of access
  * @param access_flags bitmask of domain access types (enum sbi_domain_access)
- * @return TRUE if access allowed otherwise FALSE
+ * @return true if access allowed otherwise false
  */
 bool sbi_domain_check_addr(const struct sbi_domain *dom,
 			   unsigned long addr, unsigned long mode,

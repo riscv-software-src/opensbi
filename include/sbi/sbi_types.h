@@ -54,10 +54,8 @@ typedef unsigned long		virtual_size_t;
 typedef unsigned long		physical_addr_t;
 typedef unsigned long		physical_size_t;
 
-#define TRUE			1
-#define FALSE			0
-#define true			TRUE
-#define false			FALSE
+#define true			1
+#define false			0
 
 #define NULL			((void *)0)
 
