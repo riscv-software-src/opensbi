@@ -6,9 +6,6 @@ capability of performance analysis tools such as perf if SBI PMU extension is
 enabled. The OpenSBI implementation makes the following assumptions about the
 hardware platform.
 
- * MCOUNTINHIBIT CSR must be implemented in the hardware. Otherwise, SBI PMU
-extension will not be enabled.
-
  * The platform must provide information about PMU event to counter mapping
 via device tree or platform specific hooks. Otherwise, SBI PMU extension will
 not be enabled.
