@@ -46,7 +46,7 @@ a table format where each row represents a certain range of events and
 corresponding counters. The first column represents starting of the pmu event id
 and 2nd column represents the end of the pmu event id. The third column
 represent a bitmap of all the MHPMCOUNTERx. This property is mandatory if
-event-to-mhpmevent is present. Otherwise, it can be omitted. This property
+riscv,event-to-mhpmevent is present. Otherwise, it can be omitted. This property
 shouldn't encode any raw event.
 
 * **riscv,raw-event-to-mhpmcounters**(Optional) - It represents an ONE-to-MANY
