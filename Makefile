@@ -369,7 +369,7 @@ ASFLAGS		+=	$(firmware-asflags-y)
 ARFLAGS		=	rcs
 
 ELFFLAGS	+=	$(USE_LD_FLAG)
-ELFFLAGS	+=	-Wl,--build-id=none -Wl,-N
+ELFFLAGS	+=	-Wl,--build-id=none
 ELFFLAGS	+=	$(platform-ldflags-y)
 ELFFLAGS	+=	$(firmware-ldflags-y)
 
