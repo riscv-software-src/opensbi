@@ -135,11 +135,11 @@ static void do_tohost_fromhost(uint64_t dev, uint64_t cmd, uint64_t data)
 	__set_tohost(HTIF_DEV_SYSTEM, cmd, data);
 
 	while (1) {
-		uint64_t fh = fromhost;
+		uint64_t fh = __read_fromhost();
 		if (fh) {
 			if (FROMHOST_DEV(fh) == HTIF_DEV_SYSTEM &&
 			    FROMHOST_CMD(fh) == cmd) {
-				fromhost = 0;
+				__write_fromhost(0);
 				break;
 			}
 			__check_fromhost();
