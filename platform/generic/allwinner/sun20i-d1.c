@@ -69,10 +69,10 @@ static void sun20i_d1_csr_restore(void)
  * PLIC
  */
 
-#define PLIC_SOURCES			176
-#define PLIC_IE_WORDS			((PLIC_SOURCES + 31) / 32)
+#define PLIC_SOURCES			175
+#define PLIC_IE_WORDS			(PLIC_SOURCES / 32 + 1)
 
-static u8 plic_priority[PLIC_SOURCES];
+static u8 plic_priority[1 + PLIC_SOURCES];
 static u32 plic_sie[PLIC_IE_WORDS];
 static u32 plic_threshold;
 
