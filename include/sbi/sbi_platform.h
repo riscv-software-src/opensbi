@@ -65,6 +65,9 @@ enum sbi_platform_features {
 
 /** Platform functions */
 struct sbi_platform_operations {
+	/* Check if specified HART is allowed to do cold boot */
+	bool (*cold_boot_allowed)(u32 hartid);
+
 	/* Platform nascent initialization */
 	int (*nascent_init)(void);
 
@@ -354,6 +357,23 @@ static inline bool sbi_platform_hart_invalid(const struct sbi_platform *plat,
 	if (plat->hart_count <= sbi_platform_hart_index(plat, hartid))
 		return true;
 	return false;
+}
+
+/**
+ * Check whether given HART is allowed to do cold boot
+ *
+ * @param plat pointer to struct sbi_platform
+ * @param hartid HART ID
+ *
+ * @return true if HART is allowed to do cold boot and false otherwise
+ */
+static inline bool sbi_platform_cold_boot_allowed(
+					const struct sbi_platform *plat,
+					u32 hartid)
+{
+	if (plat && sbi_platform_ops(plat)->cold_boot_allowed)
+		return sbi_platform_ops(plat)->cold_boot_allowed(hartid);
+	return true;
 }
 
 /**

@@ -498,8 +498,11 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 	 * HARTs which satisfy above condition.
 	 */
 
-	if (next_mode_supported && atomic_xchg(&coldboot_lottery, 1) == 0)
-		coldboot = true;
+	if (sbi_platform_cold_boot_allowed(plat, hartid)) {
+		if (next_mode_supported &&
+		    atomic_xchg(&coldboot_lottery, 1) == 0)
+			coldboot = true;
+	}
 
 	/*
 	 * Do platform specific nascent (very early) initialization so
