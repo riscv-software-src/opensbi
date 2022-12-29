@@ -45,4 +45,8 @@ config PLATFORM_SIFIVE_FU740
 	depends on FDT_RESET && FDT_I2C
 	default n
 
+config PLATFORM_STARFIVE_JH7110
+	bool "StarFive JH7110 support"
+	default n
+
 endif
