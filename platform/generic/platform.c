@@ -122,6 +122,14 @@ fail:
 		wfi();
 }
 
+static bool generic_cold_boot_allowed(u32 hartid)
+{
+	if (generic_plat && generic_plat->cold_boot_allowed)
+		return generic_plat->cold_boot_allowed(
+						hartid, generic_plat_match);
+	return true;
+}
+
 static int generic_nascent_init(void)
 {
 	if (platform_has_mlevel_imsic)
@@ -261,6 +269,7 @@ static int generic_console_init(void)
 }
 
 const struct sbi_platform_operations platform_ops = {
+	.cold_boot_allowed	= generic_cold_boot_allowed,
 	.nascent_init		= generic_nascent_init,
 	.early_init		= generic_early_init,
 	.final_init		= generic_final_init,
