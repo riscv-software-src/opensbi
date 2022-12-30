@@ -161,7 +161,7 @@ The DT properties of a domain instance DT node are as follows:
   and access permissions for the domain instance. Each list entry is a pair
   of DT node phandle and access permissions. The access permissions are
   represented as a 32bit bitmask having bits: **readable** (BIT[0]),
-  **writeable** (BIT[1]), **executable** (BIT[2]), and **m-mode** (BIT[3]).
+  **writeable** (BIT[1]), **executable** (BIT[2]), and **M-mode** (BIT[3]).
 * **boot-hart** (Optional) - The DT node phandle of the HART booting the
   domain instance. If coldboot HART is assigned to the domain instance then
   this DT property is ignored and the coldboot HART is assumed to be the
@@ -180,7 +180,7 @@ The DT properties of a domain instance DT node are as follows:
   is used as default value.
 * **next-mode** (Optional) - The 32 bit next booting stage mode for the
   domain instance. The possible values of this DT property are: **0x1**
-  (s-mode), and **0x0** (u-mode). If this DT property is not available
+  (S-mode), and **0x0** (U-mode). If this DT property is not available
   and coldboot HART is not assigned to the domain instance then **0x1**
   is used as default value. If this DT property is not available and
   coldboot HART is assigned to the domain instance then **next booting
