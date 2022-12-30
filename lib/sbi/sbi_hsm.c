@@ -248,7 +248,7 @@ fail_exit:
 
 int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 		       const struct sbi_domain *dom,
-		       u32 hartid, ulong saddr, ulong smode, ulong priv)
+		       u32 hartid, ulong saddr, ulong smode, ulong arg1)
 {
 	unsigned long init_count;
 	unsigned int hstate;
@@ -281,7 +281,7 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 		return SBI_EINVAL;
 
 	init_count = sbi_init_count(hartid);
-	rscratch->next_arg1 = priv;
+	rscratch->next_arg1 = arg1;
 	rscratch->next_addr = saddr;
 	rscratch->next_mode = smode;
 
@@ -402,7 +402,7 @@ void sbi_hsm_hart_resume_finish(struct sbi_scratch *scratch)
 }
 
 int sbi_hsm_hart_suspend(struct sbi_scratch *scratch, u32 suspend_type,
-			 ulong raddr, ulong rmode, ulong priv)
+			 ulong raddr, ulong rmode, ulong arg1)
 {
 	int oldstate, ret;
 	const struct sbi_domain *dom = sbi_domain_thishart_ptr();
@@ -433,7 +433,7 @@ int sbi_hsm_hart_suspend(struct sbi_scratch *scratch, u32 suspend_type,
 	}
 
 	/* Save the resume address and resume mode */
-	scratch->next_arg1 = priv;
+	scratch->next_arg1 = arg1;
 	scratch->next_addr = raddr;
 	scratch->next_mode = rmode;
 
