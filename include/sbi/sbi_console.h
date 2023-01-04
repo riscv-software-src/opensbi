@@ -37,6 +37,8 @@ unsigned long sbi_nputs(const char *str, unsigned long len);
 
 void sbi_gets(char *s, int maxwidth, char endchar);
 
+unsigned long sbi_ngets(char *str, unsigned long len);
+
 int __printf(2, 3) sbi_sprintf(char *out, const char *format, ...);
 
 int __printf(3, 4) sbi_snprintf(char *out, u32 out_sz, const char *format, ...);

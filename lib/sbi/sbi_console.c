@@ -76,6 +76,21 @@ void sbi_gets(char *s, int maxwidth, char endchar)
 	*retval = '\0';
 }
 
+unsigned long sbi_ngets(char *str, unsigned long len)
+{
+	int ch;
+	unsigned long i;
+
+	for (i = 0; i < len; i++) {
+		ch = sbi_getc();
+		if (ch < 0)
+			break;
+		str[i] = ch;
+	}
+
+	return i;
+}
+
 #define PAD_RIGHT 1
 #define PAD_ZERO 2
 #define PAD_ALTERNATE 4
