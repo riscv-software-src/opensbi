@@ -239,6 +239,20 @@ static int __fdt_parse_region(void *fdt, int domain_offset,
 	u32 *region_count = opaque;
 	struct sbi_domain_memregion *region;
 
+	/*
+	 * Non-root domains cannot add a region with only M-mode
+	 * access permissions. M-mode regions can only be part of
+	 * root domain.
+	 *
+	 * SU permission bits can't be all zeroes and M-mode permission
+	 * bits must be all set.
+	 */
+	if (!((region_access & SBI_DOMAIN_MEMREGION_SU_ACCESS_MASK)
+	     & SBI_DOMAIN_MEMREGION_SU_RWX)
+	    && ((region_access & SBI_DOMAIN_MEMREGION_M_ACCESS_MASK)
+		& SBI_DOMAIN_MEMREGION_M_RWX))
+		return SBI_EINVAL;
+
 	/* Find next region of the domain */
 	if (FDT_DOMAIN_REGION_MAX_COUNT <= *region_count)
 		return SBI_EINVAL;
