@@ -303,14 +303,20 @@ int sbi_hart_pmp_configure(struct sbi_scratch *scratch)
 			break;
 
 		pmp_flags = 0;
-		if (reg->flags & SBI_DOMAIN_MEMREGION_READABLE)
-			pmp_flags |= PMP_R;
-		if (reg->flags & SBI_DOMAIN_MEMREGION_WRITEABLE)
-			pmp_flags |= PMP_W;
-		if (reg->flags & SBI_DOMAIN_MEMREGION_EXECUTABLE)
-			pmp_flags |= PMP_X;
-		if (reg->flags & SBI_DOMAIN_MEMREGION_MMODE)
+
+		/*
+		 * If permissions are to be enforced for all modes on this
+		 * region, the lock bit should be set.
+		 */
+		if (reg->flags & SBI_DOMAIN_MEMREGION_ENF_PERMISSIONS)
 			pmp_flags |= PMP_L;
+
+		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_READABLE)
+			pmp_flags |= PMP_R;
+		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_WRITABLE)
+			pmp_flags |= PMP_W;
+		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_EXECUTABLE)
+			pmp_flags |= PMP_X;
 
 		pmp_addr =  reg->base >> PMP_SHIFT;
 		if (pmp_gran_log2 <= reg->order && pmp_addr < pmp_addr_max)
