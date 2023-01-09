@@ -107,24 +107,34 @@ bool sbi_domain_check_addr(const struct sbi_domain *dom,
 {
 	bool rmmio, mmio = false;
 	struct sbi_domain_memregion *reg;
-	unsigned long rstart, rend, rflags, rwx = 0;
+	unsigned long rstart, rend, rflags, rwx = 0, rrwx = 0;
 
 	if (!dom)
 		return false;
 
+	/*
+	 * Use M_{R/W/X} bits because the SU-bits are at the
+	 * same relative offsets. If the mode is not M, the SU
+	 * bits will fall at same offsets after the shift.
+	 */
 	if (access_flags & SBI_DOMAIN_READ)
-		rwx |= SBI_DOMAIN_MEMREGION_READABLE;
+		rwx |= SBI_DOMAIN_MEMREGION_M_READABLE;
+
 	if (access_flags & SBI_DOMAIN_WRITE)
-		rwx |= SBI_DOMAIN_MEMREGION_WRITEABLE;
+		rwx |= SBI_DOMAIN_MEMREGION_M_WRITABLE;
+
 	if (access_flags & SBI_DOMAIN_EXECUTE)
-		rwx |= SBI_DOMAIN_MEMREGION_EXECUTABLE;
+		rwx |= SBI_DOMAIN_MEMREGION_M_EXECUTABLE;
+
 	if (access_flags & SBI_DOMAIN_MMIO)
 		mmio = true;
 
 	sbi_domain_for_each_memregion(dom, reg) {
 		rflags = reg->flags;
-		if (mode == PRV_M && !(rflags & SBI_DOMAIN_MEMREGION_MMODE))
-			continue;
+		rrwx = (mode == PRV_M ?
+			(rflags & SBI_DOMAIN_MEMREGION_M_ACCESS_MASK) :
+			(rflags & SBI_DOMAIN_MEMREGION_SU_ACCESS_MASK)
+			>> SBI_DOMAIN_MEMREGION_SU_ACCESS_SHIFT);
 
 		rstart = reg->base;
 		rend = (reg->order < __riscv_xlen) ?
@@ -133,7 +143,7 @@ bool sbi_domain_check_addr(const struct sbi_domain *dom,
 			rmmio = (rflags & SBI_DOMAIN_MEMREGION_MMIO) ? true : false;
 			if (mmio != rmmio)
 				return false;
-			return ((rflags & rwx) == rwx) ? true : false;
+			return ((rrwx & rwx) == rwx) ? true : false;
 		}
 	}
 
