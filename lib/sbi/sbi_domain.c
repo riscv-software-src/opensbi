@@ -345,15 +345,25 @@ void sbi_domain_dump(const struct sbi_domain *dom, const char *suffix)
 			   dom->index, i, suffix, rstart, rend);
 
 		k = 0;
-		if (reg->flags & SBI_DOMAIN_MEMREGION_MMODE)
-			sbi_printf("%cM", (k++) ? ',' : '(');
+
+		sbi_printf("M: ");
 		if (reg->flags & SBI_DOMAIN_MEMREGION_MMIO)
 			sbi_printf("%cI", (k++) ? ',' : '(');
-		if (reg->flags & SBI_DOMAIN_MEMREGION_READABLE)
+		if (reg->flags & SBI_DOMAIN_MEMREGION_M_READABLE)
 			sbi_printf("%cR", (k++) ? ',' : '(');
-		if (reg->flags & SBI_DOMAIN_MEMREGION_WRITEABLE)
+		if (reg->flags & SBI_DOMAIN_MEMREGION_M_WRITABLE)
 			sbi_printf("%cW", (k++) ? ',' : '(');
-		if (reg->flags & SBI_DOMAIN_MEMREGION_EXECUTABLE)
+		if (reg->flags & SBI_DOMAIN_MEMREGION_M_EXECUTABLE)
+			sbi_printf("%cX", (k++) ? ',' : '(');
+		sbi_printf("%s ", (k++) ? ")" : "()");
+
+		k = 0;
+		sbi_printf("S/U: ");
+		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_READABLE)
+			sbi_printf("%cR", (k++) ? ',' : '(');
+		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_WRITABLE)
+			sbi_printf("%cW", (k++) ? ',' : '(');
+		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_EXECUTABLE)
 			sbi_printf("%cX", (k++) ? ',' : '(');
 		sbi_printf("%s\n", (k++) ? ")" : "()");
 
