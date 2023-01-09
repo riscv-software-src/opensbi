@@ -338,9 +338,9 @@ static int __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 	 * 2) mmio regions protecting M-mode only mmio devices
 	 */
 	sbi_domain_for_each_memregion(&root, reg) {
-		if ((reg->flags & SBI_DOMAIN_MEMREGION_READABLE) ||
-		    (reg->flags & SBI_DOMAIN_MEMREGION_WRITEABLE) ||
-		    (reg->flags & SBI_DOMAIN_MEMREGION_EXECUTABLE))
+		if ((reg->flags & SBI_DOMAIN_MEMREGION_SU_READABLE) ||
+		    (reg->flags & SBI_DOMAIN_MEMREGION_SU_WRITABLE) ||
+		    (reg->flags & SBI_DOMAIN_MEMREGION_SU_EXECUTABLE))
 			continue;
 		if (FDT_DOMAIN_REGION_MAX_COUNT <= val32)
 			return SBI_EINVAL;
