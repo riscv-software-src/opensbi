@@ -160,8 +160,16 @@ The DT properties of a domain instance DT node are as follows:
 * **regions** (Optional) - The list of domain memory region DT node phandle
   and access permissions for the domain instance. Each list entry is a pair
   of DT node phandle and access permissions. The access permissions are
-  represented as a 32bit bitmask having bits: **readable** (BIT[0]),
-  **writeable** (BIT[1]), **executable** (BIT[2]), and **M-mode** (BIT[3]).
+  represented as a 32bit bitmask having bits: **M readable** (BIT[0]),
+  **M writeable** (BIT[1]), **M executable** (BIT[2]), **SU readable**
+  (BIT[3]), **SU writable** (BIT[4]), and **SU executable** (BIT[5]).
+  The enforce permission bit (BIT[6]), if set, will lock the permissions
+  in the PMP. This will enforce the permissions on M-mode as well which
+  otherwise will have unrestricted access. This bit must be used with
+  caution because no changes can be made to a PMP entry once its locked
+  until the hart is reset.
+  Any region of a domain defined in DT node cannot have only M-bits set
+  in access permissions i.e. it cannot be an m-mode only accessible region.
 * **boot-hart** (Optional) - The DT node phandle of the HART booting the
   domain instance. If coldboot HART is assigned to the domain instance then
   this DT property is ignored and the coldboot HART is assumed to be the
