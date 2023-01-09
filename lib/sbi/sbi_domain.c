@@ -629,7 +629,8 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	/* Root domain firmware memory region */
-	sbi_domain_memregion_init(scratch->fw_start, scratch->fw_size, 0,
+	sbi_domain_memregion_init(scratch->fw_start, scratch->fw_size,
+				  SBI_DOMAIN_MEMREGION_M_RWX,
 				  &root_fw_region);
 	domain_memregion_initfw(&root_memregs[root_memregs_count++]);
 
