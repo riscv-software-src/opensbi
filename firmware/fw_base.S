@@ -428,9 +428,15 @@ _start_warm:
 	li	ra, 0
 	call	_reset_regs
 
-	/* Disable and clear all interrupts */
+	/* Disable all interrupts */
 	csrw	CSR_MIE, zero
-	csrw	CSR_MIP, zero
+	/*
+	 * Only clear the MIP_SSIP and MIP_STIP. For the platform like QEMU,
+	 * If we clear other interrupts like MIP_SEIP and the pendings of
+	 * PLIC still exist, the QEMU may not set it back immediately.
+	 */
+	li	t0, (MIP_SSIP | MIP_STIP)
+	csrc	CSR_MIP, t0
 
 	/* Find HART count and HART stack size */
 	lla	a4, platform
