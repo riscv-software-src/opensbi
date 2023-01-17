@@ -357,7 +357,7 @@ static void __sbi_hsm_suspend_non_ret_restore(struct sbi_scratch *scratch)
 							    hart_data_offset);
 
 	csr_write(CSR_MIE, hdata->saved_mie);
-	csr_write(CSR_MIP, (hdata->saved_mip & (MIP_SSIP | MIP_STIP)));
+	csr_set(CSR_MIP, (hdata->saved_mip & (MIP_SSIP | MIP_STIP)));
 }
 
 void sbi_hsm_hart_resume_start(struct sbi_scratch *scratch)
