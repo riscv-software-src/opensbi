@@ -638,11 +638,31 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 	u32 i;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
+	if (scratch->fw_rw_offset == 0 ||
+	    (scratch->fw_rw_offset & (scratch->fw_rw_offset - 1)) != 0) {
+		sbi_printf("%s: fw_rw_offset is not a power of 2 (0x%lx)\n",
+			   __func__, scratch->fw_rw_offset);
+		return SBI_EINVAL;
+	}
+
+	if ((scratch->fw_start & (scratch->fw_rw_offset - 1)) != 0) {
+		sbi_printf("%s: fw_start and fw_rw_offset not aligned\n",
+			   __func__);
+		return SBI_EINVAL;
+	}
+
 	/* Root domain firmware memory region */
-	sbi_domain_memregion_init(scratch->fw_start, scratch->fw_size,
-				  SBI_DOMAIN_MEMREGION_M_RWX,
+	sbi_domain_memregion_init(scratch->fw_start, scratch->fw_rw_offset,
+				  (SBI_DOMAIN_MEMREGION_M_READABLE |
+				   SBI_DOMAIN_MEMREGION_M_EXECUTABLE),
 				  &root_fw_region);
 	domain_memregion_initfw(&root_memregs[root_memregs_count++]);
+
+	sbi_domain_memregion_init((scratch->fw_start + scratch->fw_rw_offset),
+				  (scratch->fw_size - scratch->fw_rw_offset),
+				  (SBI_DOMAIN_MEMREGION_M_READABLE |
+				   SBI_DOMAIN_MEMREGION_M_WRITABLE),
+				  &root_memregs[root_memregs_count++]);
 
 	/* Root domain allow everything memory region */
 	sbi_domain_memregion_init(0, ~0UL,
