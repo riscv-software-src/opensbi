@@ -298,6 +298,12 @@ _scratch_init:
 	sub	a5, t3, a4
 	REG_S	a4, SBI_SCRATCH_FW_START_OFFSET(tp)
 	REG_S	a5, SBI_SCRATCH_FW_SIZE_OFFSET(tp)
+
+	/* Store R/W section's offset in scratch space */
+	lla	a4, __fw_rw_offset
+	REG_L	a5, 0(a4)
+	REG_S	a5, SBI_SCRATCH_FW_RW_OFFSET(tp)
+
 	/* Store next arg1 in scratch space */
 	MOV_3R	s0, a0, s1, a1, s2, a2
 	call	fw_next_arg1
@@ -519,6 +525,8 @@ _link_start:
 	RISCV_PTR	FW_TEXT_START
 _link_end:
 	RISCV_PTR	_fw_reloc_end
+__fw_rw_offset:
+	RISCV_PTR	_fw_rw_offset
 
 	.section .entry, "ax", %progbits
 	.align 3
