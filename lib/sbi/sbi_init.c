@@ -108,6 +108,7 @@ static void sbi_boot_print_general(struct sbi_scratch *scratch)
 	sbi_printf("Firmware Base             : 0x%lx\n", scratch->fw_start);
 	sbi_printf("Firmware Size             : %d KB\n",
 		   (u32)(scratch->fw_size / 1024));
+	sbi_printf("Firmware RW Offset        : 0x%lx\n", scratch->fw_rw_offset);
 
 	/* SBI details */
 	sbi_printf("Runtime SBI Version       : %d.%d\n",
