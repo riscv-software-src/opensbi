@@ -42,6 +42,14 @@
 
 	. = ALIGN(0x1000); /* Ensure next section is page aligned */
 
+	/*
+	 * PMP regions must be to be power-of-2. RO/RW will have separate
+	 * regions, so ensure that the split is power-of-2.
+	 */
+	. = ALIGN(1 << LOG2CEIL(SIZEOF(.rodata) + SIZEOF(.text)));
+
+	PROVIDE(_fw_rw_offset = (.  - _fw_start));
+
 	/* Beginning of the read-write data sections */
 
 	.data :
