@@ -9,3 +9,4 @@
 
 libsbiutils-objs-$(CONFIG_SYS_HTIF) += sys/htif.o
 libsbiutils-objs-$(CONFIG_SYS_SIFIVE_TEST) += sys/sifive_test.o
+libsbiutils-objs-$(CONFIG_SYS_ATCSMU) += sys/atcsmu.o

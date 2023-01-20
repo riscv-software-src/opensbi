@@ -30,6 +30,7 @@ config PLATFORM_ALLWINNER_D1
 
 config PLATFORM_ANDES_AE350
 	bool "Andes AE350 support"
+	select SYS_ATCSMU
 	default n
 
 config PLATFORM_RENESAS_RZFIVE
