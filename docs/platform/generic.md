@@ -53,7 +53,7 @@ RISC-V Platforms Using Generic Platform
 * **Spike** (*[spike.md]*)
 * **T-HEAD C9xx series Processors** (*[thead-c9xx.md]*)
 
-[andes-ae350.md]: andse-ae350.md
+[andes-ae350.md]: andes-ae350.md
 [qemu_virt.md]: qemu_virt.md
 [renesas-rzfive.md]: renesas-rzfive.md
 [shakti_cclass.md]: shakti_cclass.md
