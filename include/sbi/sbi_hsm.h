@@ -21,8 +21,12 @@ struct sbi_hsm_device {
 	int (*hart_start)(u32 hartid, ulong saddr);
 
 	/**
-	 * Stop (or power-down) the current hart from running. This call
-	 * doesn't expect to return if success.
+	 * Stop (or power-down) the current hart from running.
+	 *
+	 * Return SBI_ENOTSUPP if the hart does not support platform-specific
+	 * stop actions.
+	 *
+	 * For successful stop, the call won't return.
 	 */
 	int (*hart_stop)(void);
 
