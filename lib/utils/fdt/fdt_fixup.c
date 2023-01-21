@@ -259,11 +259,11 @@ int fdt_reserved_memory_fixup(void *fdt)
 		/* Ignore MMIO or READABLE or WRITABLE or EXECUTABLE regions */
 		if (reg->flags & SBI_DOMAIN_MEMREGION_MMIO)
 			continue;
-		if (reg->flags & SBI_DOMAIN_MEMREGION_READABLE)
+		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_READABLE)
 			continue;
-		if (reg->flags & SBI_DOMAIN_MEMREGION_WRITEABLE)
+		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_WRITABLE)
 			continue;
-		if (reg->flags & SBI_DOMAIN_MEMREGION_EXECUTABLE)
+		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_EXECUTABLE)
 			continue;
 
 		addr = reg->base;
