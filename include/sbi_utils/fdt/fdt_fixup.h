@@ -9,6 +9,29 @@
 #ifndef __FDT_FIXUP_H__
 #define __FDT_FIXUP_H__
 
+struct sbi_cpu_idle_state {
+	const char *name;
+	uint32_t suspend_param;
+	bool local_timer_stop;
+	uint32_t entry_latency_us;
+	uint32_t exit_latency_us;
+	uint32_t min_residency_us;
+	uint32_t wakeup_latency_us;
+};
+
+/**
+ * Add CPU idle states to cpu nodes in the DT
+ *
+ * Add information about CPU idle states to the devicetree. This function
+ * assumes that CPU idle states are not already present in the devicetree, and
+ * that all CPU states are equally applicable to all CPUs.
+ *
+ * @param fdt: device tree blob
+ * @param states: array of idle state descriptions, ending with empty element
+ * @return zero on success and -ve on failure
+ */
+int fdt_add_cpu_idle_states(void *dtb, const struct sbi_cpu_idle_state *state);
+
 /**
  * Fix up the CPU node in the device tree
  *
