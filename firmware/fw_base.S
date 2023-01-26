@@ -526,7 +526,7 @@ _link_start:
 _link_end:
 	RISCV_PTR	_fw_reloc_end
 __fw_rw_offset:
-	RISCV_PTR	_fw_rw_offset
+	RISCV_PTR	_fw_rw_start - _fw_start
 
 	.section .entry, "ax", %progbits
 	.align 3

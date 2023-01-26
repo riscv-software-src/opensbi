@@ -64,7 +64,7 @@
 	. = ALIGN(1 << LOG2CEIL((SIZEOF(.rodata) + SIZEOF(.text)
 				+ SIZEOF(.dynsym) + SIZEOF(.rela.dyn))));
 
-	PROVIDE(_fw_rw_offset = (.  - _fw_start));
+	PROVIDE(_fw_rw_start = .);
 
 	/* Beginning of the read-write data sections */
 
