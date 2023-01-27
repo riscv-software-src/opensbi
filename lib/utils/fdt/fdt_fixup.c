@@ -1,3 +1,4 @@
+
 // SPDX-License-Identifier: BSD-2-Clause
 /*
  * fdt_fixup.c - Flat Device Tree parsing helper routines
@@ -14,6 +15,7 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_string.h>
+#include <sbi/sbi_error.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
 #include <sbi_utils/fdt/fdt_pmu.h>
 #include <sbi_utils/fdt/fdt_helper.h>
@@ -285,8 +287,10 @@ int fdt_reserved_memory_fixup(void *fdt)
 	struct sbi_domain_memregion *reg;
 	struct sbi_domain *dom = sbi_domain_thishart_ptr();
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	unsigned long filtered_base[PMP_COUNT] = { 0 };
+	unsigned char filtered_order[PMP_COUNT] = { 0 };
 	unsigned long addr, size;
-	int err, parent, i;
+	int err, parent, i, j;
 	int na = fdt_address_cells(fdt, 0);
 	int ns = fdt_size_cells(fdt, 0);
 
@@ -351,11 +355,33 @@ int fdt_reserved_memory_fixup(void *fdt)
 		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_EXECUTABLE)
 			continue;
 
+		if (i > PMP_COUNT) {
+			sbi_printf("%s: Too many memory regions to fixup.\n",
+				   __func__);
+			return SBI_ENOSPC;
+		}
+
 		addr = reg->base;
-		size = 1UL << reg->order;
-		fdt_resv_memory_update_node(fdt, addr, size, i, parent,
-			(sbi_hart_pmp_count(scratch)) ? false : true);
+		for (j = 0; j < i; j++) {
+			if (addr == filtered_base[j]
+			    && filtered_order[j] < reg->order) {
+				filtered_order[j] = reg->order;
+				goto next_entry;
+			}
+		}
+
+		filtered_base[i] = reg->base;
+		filtered_order[i] = reg->order;
 		i++;
+	next_entry:
+	}
+
+	for (j = 0; j < i; j++) {
+		addr = filtered_base[j];
+		size = 1UL << filtered_order[j];
+		fdt_resv_memory_update_node(fdt, addr, size, j, parent,
+					    (sbi_hart_pmp_count(scratch))
+					    ? false : true);
 	}
 
 	return 0;
