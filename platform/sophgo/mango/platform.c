@@ -171,6 +171,7 @@ static int sg2040_early_init(bool cold_boot)
 		csr_write(CSR_MHINT, sg2040_regs.mhint);
 		csr_write(CSR_MHINT2, sg2040_regs.mhint2);
 		csr_write(CSR_MXSTATUS, sg2040_regs.mxstatus);
+		csr_write(CSR_MCCR2, sg2040_regs.mccr2);
 	}
 
 	spin_unlock(&init_lock);
