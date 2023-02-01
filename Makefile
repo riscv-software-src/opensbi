@@ -254,6 +254,7 @@ deps-y=$(platform-objs-path-y:.o=.dep)
 deps-y+=$(libsbi-objs-path-y:.o=.dep)
 deps-y+=$(libsbiutils-objs-path-y:.o=.dep)
 deps-y+=$(firmware-objs-path-y:.o=.dep)
+deps-y+=$(firmware-elfs-path-y:=.dep)
 
 # Setup platform ABI, ISA and Code Model
 ifndef PLATFORM_RISCV_ABI
@@ -413,6 +414,11 @@ inst_file_list = $(CMD_PREFIX)if [ ! -z "$(4)" ]; then \
 inst_header_dir =  $(CMD_PREFIX)mkdir -p $(1); \
 	     echo " INSTALL   $(subst $(install_root_dir)/,,$(1))"; \
 	     cp -rf $(2) $(1)
+compile_cpp_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
+	     echo " CPP-DEP   $(subst $(build_dir)/,,$(1))"; \
+	     printf %s `dirname $(1)`/  > $(1) && \
+	     $(CC) $(CPPFLAGS) -x c -MM $(3) \
+	       -MT `basename $(1:.dep=$(2))` >> $(1) || rm -f $(1)
 compile_cpp = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " CPP       $(subst $(build_dir)/,,$(1))"; \
 	     $(CPP) $(CPPFLAGS) -x c $(2) | grep -v "\#" > $(1)
@@ -542,6 +548,9 @@ $(platform_build_dir)/%.bin: $(platform_build_dir)/%.elf
 
 $(platform_build_dir)/%.elf: $(platform_build_dir)/%.o $(platform_build_dir)/%.elf.ld $(platform_build_dir)/lib/libplatsbi.a
 	$(call compile_elf,$@,$@.ld,$< $(platform_build_dir)/lib/libplatsbi.a)
+
+$(platform_build_dir)/%.dep: $(src_dir)/%.ldS $(KCONFIG_CONFIG)
+	$(call compile_cpp_dep,$@,.ld,$<)
 
 $(platform_build_dir)/%.ld: $(src_dir)/%.ldS
 	$(call compile_cpp,$@,$<)
