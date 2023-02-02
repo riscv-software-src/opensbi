@@ -38,9 +38,9 @@
 #define strlen		sbi_strlen
 #define strnlen		sbi_strnlen
 
-typedef uint16_t FDT_BITWISE fdt16_t;
-typedef uint32_t FDT_BITWISE fdt32_t;
-typedef uint64_t FDT_BITWISE fdt64_t;
+typedef be16_t FDT_BITWISE fdt16_t;
+typedef be32_t FDT_BITWISE fdt32_t;
+typedef be64_t FDT_BITWISE fdt64_t;
 
 static inline uint16_t fdt16_to_cpu(fdt16_t x)
 {

@@ -54,6 +54,13 @@ typedef unsigned long		virtual_size_t;
 typedef unsigned long		physical_addr_t;
 typedef unsigned long		physical_size_t;
 
+typedef uint16_t		le16_t;
+typedef uint16_t		be16_t;
+typedef uint32_t		le32_t;
+typedef uint32_t		be32_t;
+typedef uint64_t		le64_t;
+typedef uint64_t		be64_t;
+
 #define true			1
 #define false			0
 
