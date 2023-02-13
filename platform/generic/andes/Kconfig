@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+config ANDES45_PMA
+	bool "Andes PMA support"
+	default n
