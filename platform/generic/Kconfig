@@ -35,6 +35,7 @@ config PLATFORM_ANDES_AE350
 
 config PLATFORM_RENESAS_RZFIVE
 	bool "Renesas RZ/Five support"
+	select ANDES45_PMA
 	default n
 
 config PLATFORM_SIFIVE_FU540
