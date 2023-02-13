@@ -129,7 +129,7 @@ struct sbi_platform_operations {
 	/** Check if SBI vendor extension is implemented or not */
 	bool (*vendor_ext_check)(void);
 	/** platform specific SBI extension implementation provider */
-	int (*vendor_ext_provider)(long extid, long funcid,
+	int (*vendor_ext_provider)(long funcid,
 				   const struct sbi_trap_regs *regs,
 				   unsigned long *out_value,
 				   struct sbi_trap_info *out_trap);
@@ -655,7 +655,6 @@ static inline bool sbi_platform_vendor_ext_check(
  * Invoke platform specific vendor SBI extension implementation.
  *
  * @param plat pointer to struct sbi_platform
- * @param extid	vendor SBI extension id
  * @param funcid SBI function id within the extension id
  * @param regs pointer to trap registers passed by the caller
  * @param out_value output value that can be filled by the callee
@@ -665,14 +664,14 @@ static inline bool sbi_platform_vendor_ext_check(
  */
 static inline int sbi_platform_vendor_ext_provider(
 					const struct sbi_platform *plat,
-					long extid, long funcid,
+					long funcid,
 					const struct sbi_trap_regs *regs,
 					unsigned long *out_value,
 					struct sbi_trap_info *out_trap)
 {
 	if (plat && sbi_platform_ops(plat)->vendor_ext_provider) {
-		return sbi_platform_ops(plat)->vendor_ext_provider(extid,
-								funcid, regs,
+		return sbi_platform_ops(plat)->vendor_ext_provider(funcid,
+								regs,
 								out_value,
 								out_trap);
 	}

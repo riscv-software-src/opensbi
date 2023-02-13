@@ -43,7 +43,7 @@ static int sbi_ecall_vendor_handler(unsigned long extid, unsigned long funcid,
 		return SBI_ERR_NOT_SUPPORTED;
 
 	return sbi_platform_vendor_ext_provider(sbi_platform_thishart_ptr(),
-						extid, funcid, regs,
+						funcid, regs,
 						out_val, out_trap);
 }
 

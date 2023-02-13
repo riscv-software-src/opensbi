@@ -186,12 +186,12 @@ static bool generic_vendor_ext_check(void)
 		true : false;
 }
 
-static int generic_vendor_ext_provider(long extid, long funcid,
+static int generic_vendor_ext_provider(long funcid,
 				       const struct sbi_trap_regs *regs,
 				       unsigned long *out_value,
 				       struct sbi_trap_info *out_trap)
 {
-	return generic_plat->vendor_ext_provider(extid, funcid, regs,
+	return generic_plat->vendor_ext_provider(funcid, regs,
 						 out_value, out_trap,
 						 generic_plat_match);
 }
