@@ -126,8 +126,8 @@ struct sbi_platform_operations {
 	/** Exit platform timer for current HART */
 	void (*timer_exit)(void);
 
-	/** platform specific SBI extension implementation probe function */
-	int (*vendor_ext_check)(long extid);
+	/** Check if SBI vendor extension is implemented or not */
+	bool (*vendor_ext_check)(void);
 	/** platform specific SBI extension implementation provider */
 	int (*vendor_ext_provider)(long extid, long funcid,
 				   const struct sbi_trap_regs *regs,
@@ -636,20 +636,19 @@ static inline void sbi_platform_timer_exit(const struct sbi_platform *plat)
 }
 
 /**
- * Check if a vendor extension is implemented or not.
+ * Check if SBI vendor extension is implemented or not.
  *
  * @param plat pointer to struct sbi_platform
- * @param extid	vendor SBI extension id
  *
- * @return 0 if extid is not implemented and 1 if implemented
+ * @return false if not implemented and true if implemented
  */
-static inline int sbi_platform_vendor_ext_check(const struct sbi_platform *plat,
-						long extid)
+static inline bool sbi_platform_vendor_ext_check(
+					const struct sbi_platform *plat)
 {
 	if (plat && sbi_platform_ops(plat)->vendor_ext_check)
-		return sbi_platform_ops(plat)->vendor_ext_check(extid);
+		return sbi_platform_ops(plat)->vendor_ext_check();
 
-	return 0;
+	return false;
 }
 
 /**

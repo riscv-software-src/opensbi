@@ -180,13 +180,10 @@ static int generic_final_init(bool cold_boot)
 	return 0;
 }
 
-static int generic_vendor_ext_check(long extid)
+static bool generic_vendor_ext_check(void)
 {
-	if (generic_plat && generic_plat->vendor_ext_check)
-		return generic_plat->vendor_ext_check(extid,
-						      generic_plat_match);
-
-	return 0;
+	return (generic_plat && generic_plat->vendor_ext_provider) ?
+		true : false;
 }
 
 static int generic_vendor_ext_provider(long extid, long funcid,
@@ -194,13 +191,9 @@ static int generic_vendor_ext_provider(long extid, long funcid,
 				       unsigned long *out_value,
 				       struct sbi_trap_info *out_trap)
 {
-	if (generic_plat && generic_plat->vendor_ext_provider) {
-		return generic_plat->vendor_ext_provider(extid, funcid, regs,
-							 out_value, out_trap,
-							 generic_plat_match);
-	}
-
-	return SBI_ENOTSUPP;
+	return generic_plat->vendor_ext_provider(extid, funcid, regs,
+						 out_value, out_trap,
+						 generic_plat_match);
 }
 
 static void generic_early_exit(void)
