@@ -14,6 +14,9 @@ config FDT_GPIO_SIFIVE
 	bool "SiFive GPIO FDT driver"
 	default n
 
+config FDT_GPIO_STARFIVE
+	bool "StarFive GPIO FDT driver"
+	default n
 endif
 
 config GPIO
