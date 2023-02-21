@@ -361,19 +361,22 @@ int fdt_reserved_memory_fixup(void *fdt)
 			return SBI_ENOSPC;
 		}
 
+		bool overlap = false;
 		addr = reg->base;
 		for (j = 0; j < i; j++) {
 			if (addr == filtered_base[j]
 			    && filtered_order[j] < reg->order) {
+				overlap = true;
 				filtered_order[j] = reg->order;
-				goto next_entry;
+				break;
 			}
 		}
 
-		filtered_base[i] = reg->base;
-		filtered_order[i] = reg->order;
-		i++;
-	next_entry:
+		if (!overlap) {
+			filtered_base[i] = reg->base;
+			filtered_order[i] = reg->order;
+			i++;
+		}
 	}
 
 	for (j = 0; j < i; j++) {
