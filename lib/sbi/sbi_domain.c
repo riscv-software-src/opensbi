@@ -337,7 +337,7 @@ static int sanitize_domain(const struct sbi_platform *plat,
 	/*
 	 * Check next mode
 	 *
-	 * We only allow next mode to be S-mode or U-mode.so that we can
+	 * We only allow next mode to be S-mode or U-mode, so that we can
 	 * protect M-mode context and enforce checks on memory accesses.
 	 */
 	if (dom->next_mode != PRV_S &&
@@ -347,7 +347,7 @@ static int sanitize_domain(const struct sbi_platform *plat,
 		return SBI_EINVAL;
 	}
 
-	/* Check next address and next mode*/
+	/* Check next address and next mode */
 	if (!sbi_domain_check_addr(dom, dom->next_addr, dom->next_mode,
 				   SBI_DOMAIN_EXECUTE)) {
 		sbi_printf("%s: %s next booting stage address 0x%lx can't "
