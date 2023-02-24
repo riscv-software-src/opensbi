@@ -244,13 +244,11 @@ static int __fdt_parse_region(void *fdt, int domain_offset,
 	 * access permissions. M-mode regions can only be part of
 	 * root domain.
 	 *
-	 * SU permission bits can't be all zeroes and M-mode permission
-	 * bits must be all set.
+	 * SU permission bits can't be all zeroes when M-mode permission
+	 * bits have at least one bit set.
 	 */
-	if (!((region_access & SBI_DOMAIN_MEMREGION_SU_ACCESS_MASK)
-	     & SBI_DOMAIN_MEMREGION_SU_RWX)
-	    && ((region_access & SBI_DOMAIN_MEMREGION_M_ACCESS_MASK)
-		& SBI_DOMAIN_MEMREGION_M_RWX))
+	if (!(region_access & SBI_DOMAIN_MEMREGION_SU_ACCESS_MASK)
+	    && (region_access & SBI_DOMAIN_MEMREGION_M_ACCESS_MASK))
 		return SBI_EINVAL;
 
 	/* Find next region of the domain */
