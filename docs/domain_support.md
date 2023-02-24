@@ -254,7 +254,7 @@ be done:
             tdomain: trusted-domain {
                 compatible = "opensbi,domain,instance";
                 possible-harts = <&cpu0>;
-                regions = <&tmem 0x7>, <&tuart 0x7>;
+                regions = <&tmem 0x3f>, <&tuart 0x3f>;
                 boot-hart = <&cpu0>;
                 next-arg1 = <0x0 0x0>;
                 next-addr = <0x0 0x80100000>;
@@ -265,7 +265,7 @@ be done:
             udomain: untrusted-domain {
                 compatible = "opensbi,domain,instance";
                 possible-harts = <&cpu1 &cpu2 &cpu3 &cpu4>;
-                regions = <&tmem 0x0>, <&tuart 0x0>, <&allmem 0x7>;
+                regions = <&tmem 0x0>, <&tuart 0x0>, <&allmem 0x3f>;
             };
         };
     };
