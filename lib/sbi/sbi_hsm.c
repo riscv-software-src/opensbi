@@ -428,10 +428,8 @@ int sbi_hsm_hart_suspend(struct sbi_scratch *scratch, u32 suspend_type,
 
 	/* Directly move from STARTED to SUSPENDED state */
 	if (!__sbi_hsm_hart_change_state(hdata, SBI_HSM_STATE_STARTED,
-					 SBI_HSM_STATE_SUSPENDED)) {
-		ret = SBI_EDENIED;
-		goto fail_restore_state;
-	}
+					 SBI_HSM_STATE_SUSPENDED))
+		return SBI_EDENIED;
 
 	/* Save the suspend type */
 	hdata->suspend_type = suspend_type;
@@ -466,7 +464,6 @@ int sbi_hsm_hart_suspend(struct sbi_scratch *scratch, u32 suspend_type,
 		jump_warmboot();
 	}
 
-fail_restore_state:
 	/*
 	 * We might have successfully resumed from retentive suspend
 	 * or suspend failed. In both cases, we restore state of hart.
