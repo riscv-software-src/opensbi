@@ -13,6 +13,7 @@
 #include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_string.h>
+#include <sbi/sbi_system.h>
 #include <sbi_utils/fdt/fdt_domain.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
 #include <sbi_utils/fdt/fdt_helper.h>
@@ -219,7 +220,24 @@ static int generic_extensions_init(struct sbi_hart_features *hfeatures)
 
 static int generic_domains_init(void)
 {
-	return fdt_domains_populate(fdt_get_address());
+	void *fdt = fdt_get_address();
+	int offset, ret;
+
+	ret = fdt_domains_populate(fdt);
+	if (ret < 0)
+		return ret;
+
+	offset = fdt_path_offset(fdt, "/chosen");
+
+	if (offset >= 0) {
+		offset = fdt_node_offset_by_compatible(fdt, offset,
+						       "opensbi,domain,config");
+		if (offset >= 0 &&
+		    fdt_get_property(fdt, offset, "system-suspend-test", NULL))
+			sbi_system_suspend_test_enable();
+	}
+
+	return 0;
 }
 
 static u64 generic_tlbr_flush_limit(void)

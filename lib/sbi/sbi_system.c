@@ -17,6 +17,7 @@
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_init.h>
+#include <sbi/sbi_timer.h>
 
 static SBI_LIST_HEAD(reset_devices_list);
 
@@ -106,6 +107,36 @@ void sbi_system_suspend_set_device(struct sbi_system_suspend_device *dev)
 		return;
 
 	suspend_dev = dev;
+}
+
+static int sbi_system_suspend_test_check(u32 sleep_type)
+{
+	return sleep_type == SBI_SUSP_SLEEP_TYPE_SUSPEND;
+}
+
+static int sbi_system_suspend_test_suspend(u32 sleep_type,
+					   unsigned long mmode_resume_addr)
+{
+	if (sleep_type != SBI_SUSP_SLEEP_TYPE_SUSPEND)
+		return SBI_EINVAL;
+
+	sbi_timer_mdelay(5000);
+
+	/* Wait for interrupt */
+	wfi();
+
+	return SBI_OK;
+}
+
+static struct sbi_system_suspend_device sbi_system_suspend_test = {
+	.name = "system-suspend-test",
+	.system_suspend_check = sbi_system_suspend_test_check,
+	.system_suspend = sbi_system_suspend_test_suspend,
+};
+
+void sbi_system_suspend_test_enable(void)
+{
+	sbi_system_suspend_set_device(&sbi_system_suspend_test);
 }
 
 bool sbi_system_suspend_supported(u32 sleep_type)
