@@ -38,6 +38,7 @@ struct sbi_domain root = {
 	.possible_harts = &root_hmask,
 	.regions = root_memregs,
 	.system_reset_allowed = true,
+	.system_suspend_allowed = true,
 };
 
 bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartid)
@@ -467,6 +468,9 @@ void sbi_domain_dump(const struct sbi_domain *dom, const char *suffix)
 
 	sbi_printf("Domain%d SysReset    %s: %s\n",
 		   dom->index, suffix, (dom->system_reset_allowed) ? "yes" : "no");
+
+	sbi_printf("Domain%d SysSuspend  %s: %s\n",
+		   dom->index, suffix, (dom->system_suspend_allowed) ? "yes" : "no");
 }
 
 void sbi_domain_dump_all(const char *suffix)

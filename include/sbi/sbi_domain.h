@@ -120,6 +120,8 @@ struct sbi_domain {
 	unsigned long next_mode;
 	/** Is domain allowed to reset the system */
 	bool system_reset_allowed;
+	/** Is domain allowed to suspend the system */
+	bool system_suspend_allowed;
 };
 
 /** The root domain instance */

@@ -52,6 +52,7 @@ has following details:
 * **next_mode** - Privilege mode of the next booting stage for this
   domain. This can be either S-mode or U-mode.
 * **system_reset_allowed** - Is domain allowed to reset the system?
+* **system_suspend_allowed** - Is domain allowed to suspend the system?
 
 The memory regions represented by **regions** in **struct sbi_domain** have
 following additional constraints to align with RISC-V PMP requirements:
@@ -91,6 +92,7 @@ following manner:
 * **next_mode** - Next booting stage mode in coldboot HART scratch space
   is the next mode for the ROOT domain
 * **system_reset_allowed** - The ROOT domain is allowed to reset the system
+* **system_suspend_allowed** - The ROOT domain is allowed to suspend the system
 
 Domain Effects
 --------------
@@ -195,6 +197,8 @@ The DT properties of a domain instance DT node are as follows:
   stage mode of coldboot HART** is used as default value.
 * **system-reset-allowed** (Optional) - A boolean flag representing
   whether the domain instance is allowed to do system reset.
+* **system-suspend-allowed** (Optional) - A boolean flag representing
+  whether the domain instance is allowed to do system suspend.
 
 ### Assigning HART To Domain Instance
 
@@ -260,6 +264,7 @@ be done:
                 next-addr = <0x0 0x80100000>;
                 next-mode = <0x0>;
                 system-reset-allowed;
+                system-suspend-allowed;
             };
 
             udomain: untrusted-domain {
