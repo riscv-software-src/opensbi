@@ -116,5 +116,60 @@ bool sbi_system_suspend_supported(u32 sleep_type)
 
 int sbi_system_suspend(u32 sleep_type, ulong resume_addr, ulong opaque)
 {
-	return 0;
+	int ret = SBI_ENOTSUPP;
+	const struct sbi_domain *dom = sbi_domain_thishart_ptr();
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	void (*jump_warmboot)(void) = (void (*)(void))scratch->warmboot_addr;
+	unsigned int hartid = current_hartid();
+	unsigned long prev_mode;
+	unsigned long i;
+
+	if (!dom || !dom->system_suspend_allowed)
+		return SBI_EFAIL;
+
+	if (!suspend_dev || !suspend_dev->system_suspend)
+		return SBI_EFAIL;
+
+	if (!sbi_system_suspend_supported(sleep_type))
+		return SBI_ENOTSUPP;
+
+	prev_mode = (csr_read(CSR_MSTATUS) & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
+	if (prev_mode != PRV_S && prev_mode != PRV_U)
+		return SBI_EFAIL;
+
+	sbi_hartmask_for_each_hart(i, &dom->assigned_harts) {
+		if (i == hartid)
+			continue;
+		if (__sbi_hsm_hart_get_state(i) != SBI_HSM_STATE_STOPPED)
+			return SBI_EFAIL;
+	}
+
+	if (!sbi_domain_check_addr(dom, resume_addr, prev_mode,
+				   SBI_DOMAIN_EXECUTE))
+		return SBI_EINVALID_ADDR;
+
+	if (!sbi_hsm_hart_change_state(scratch, SBI_HSM_STATE_STARTED,
+				       SBI_HSM_STATE_SUSPENDED))
+		return SBI_EFAIL;
+
+	/* Prepare for resume */
+	scratch->next_mode = prev_mode;
+	scratch->next_addr = resume_addr;
+	scratch->next_arg1 = opaque;
+
+	__sbi_hsm_suspend_non_ret_save(scratch);
+
+	/* Suspend */
+	ret = suspend_dev->system_suspend(sleep_type, scratch->warmboot_addr);
+	if (ret != SBI_OK) {
+		if (!sbi_hsm_hart_change_state(scratch, SBI_HSM_STATE_SUSPENDED,
+					       SBI_HSM_STATE_STARTED))
+			sbi_hart_hang();
+		return ret;
+	}
+
+	/* Resume */
+	jump_warmboot();
+
+	__builtin_unreachable();
 }
