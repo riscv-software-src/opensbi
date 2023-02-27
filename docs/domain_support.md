@@ -207,9 +207,9 @@ platform support can provide the HART to domain instance assignment using
 platform specific callback.
 
 The HART to domain instance assignment can be parsed from the device tree
-using optional DT property **opensbi,domain** in each CPU DT node. The
-value of DT property **opensbi,domain** is the DT phandle of the domain
-instance DT node. If **opensbi,domain** DT property is not specified then
+using optional DT property **opensbi-domain** in each CPU DT node. The
+value of DT property **opensbi-domain** is the DT phandle of the domain
+instance DT node. If **opensbi-domain** DT property is not specified then
 corresponding HART is assigned to **the ROOT domain**.
 
 ### Domain Configuration Only Accessible to OpenSBI
