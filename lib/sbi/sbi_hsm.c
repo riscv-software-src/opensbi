@@ -46,7 +46,15 @@ struct sbi_hsm_data {
 	unsigned long saved_mip;
 };
 
-static inline int __sbi_hsm_hart_get_state(u32 hartid)
+bool sbi_hsm_hart_change_state(struct sbi_scratch *scratch, long oldstate,
+			       long newstate)
+{
+	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
+							    hart_data_offset);
+	return __sbi_hsm_hart_change_state(hdata, oldstate, newstate);
+}
+
+int __sbi_hsm_hart_get_state(u32 hartid)
 {
 	struct sbi_hsm_data *hdata;
 	struct sbi_scratch *scratch;
@@ -328,7 +336,7 @@ static int __sbi_hsm_suspend_default(struct sbi_scratch *scratch)
 	return 0;
 }
 
-static void __sbi_hsm_suspend_non_ret_save(struct sbi_scratch *scratch)
+void __sbi_hsm_suspend_non_ret_save(struct sbi_scratch *scratch)
 {
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
 							    hart_data_offset);
