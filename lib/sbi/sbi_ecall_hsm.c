@@ -12,7 +12,6 @@
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_trap.h>
-#include <sbi/sbi_version.h>
 #include <sbi/sbi_hsm.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/riscv_asm.h>
@@ -45,7 +44,8 @@ static int sbi_ecall_hsm_handler(unsigned long extid, unsigned long funcid,
 		break;
 	default:
 		ret = SBI_ENOTSUPP;
-	};
+	}
+
 	if (ret >= 0) {
 		*out_val = ret;
 		ret = 0;
