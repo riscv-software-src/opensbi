@@ -298,6 +298,19 @@ NOTE: Using `BUILD_INFO=y` without specifying SOURCE_DATE_EPOCH will violate
 purpose, and should NOT be used in a product which follows "reproducible
 builds".
 
+Building with optimization off for debugging
+--------------------------------------------
+
+When debugging OpenSBI, we may want to turn off the compiler optimization and
+make debugging produce the expected results for a better debugging experience.
+To build with optimization off we can just simply add `DEBUG=1`, like:
+```
+make DEBUG=1
+```
+
+This definition is ONLY for development and debug purpose, and should NOT be
+used in a product build.
+
 Contributing to OpenSBI
 -----------------------
 
