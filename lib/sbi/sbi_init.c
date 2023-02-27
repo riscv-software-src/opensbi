@@ -69,6 +69,7 @@ static void sbi_boot_print_general(struct sbi_scratch *scratch)
 	const struct sbi_timer_device *tdev;
 	const struct sbi_console_device *cdev;
 	const struct sbi_system_reset_device *srdev;
+	const struct sbi_system_suspend_device *susp_dev;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if (scratch->options & SBI_SCRATCH_NO_BOOT_PRINTS)
@@ -103,6 +104,9 @@ static void sbi_boot_print_general(struct sbi_scratch *scratch)
 	srdev = sbi_system_reset_get_device(SBI_SRST_RESET_TYPE_SHUTDOWN, 0);
 	sbi_printf("Platform Shutdown Device  : %s\n",
 		   (srdev) ? srdev->name : "---");
+	susp_dev = sbi_system_suspend_get_device();
+	sbi_printf("Platform Suspend Device   : %s\n",
+		   (susp_dev) ? susp_dev->name : "---");
 
 	/* Firmware details */
 	sbi_printf("Firmware Base             : 0x%lx\n", scratch->fw_start);

@@ -92,3 +92,29 @@ void __noreturn sbi_system_reset(u32 reset_type, u32 reset_reason)
 	/* If platform specific reset did not work then do sbi_exit() */
 	sbi_exit(scratch);
 }
+
+static const struct sbi_system_suspend_device *suspend_dev = NULL;
+
+const struct sbi_system_suspend_device *sbi_system_suspend_get_device(void)
+{
+	return suspend_dev;
+}
+
+void sbi_system_suspend_set_device(struct sbi_system_suspend_device *dev)
+{
+	if (!dev || suspend_dev)
+		return;
+
+	suspend_dev = dev;
+}
+
+bool sbi_system_suspend_supported(u32 sleep_type)
+{
+	return suspend_dev && suspend_dev->system_suspend_check &&
+	       suspend_dev->system_suspend_check(sleep_type);
+}
+
+int sbi_system_suspend(u32 sleep_type, ulong resume_addr, ulong opaque)
+{
+	return 0;
+}

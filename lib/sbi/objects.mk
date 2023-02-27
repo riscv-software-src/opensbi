@@ -34,6 +34,9 @@ libsbi-objs-$(CONFIG_SBI_ECALL_HSM) += sbi_ecall_hsm.o
 carray-sbi_ecall_exts-$(CONFIG_SBI_ECALL_SRST) += ecall_srst
 libsbi-objs-$(CONFIG_SBI_ECALL_SRST) += sbi_ecall_srst.o
 
+carray-sbi_ecall_exts-$(CONFIG_SBI_ECALL_SUSP) += ecall_susp
+libsbi-objs-$(CONFIG_SBI_ECALL_SUSP) += sbi_ecall_susp.o
+
 carray-sbi_ecall_exts-$(CONFIG_SBI_ECALL_PMU) += ecall_pmu
 libsbi-objs-$(CONFIG_SBI_ECALL_PMU) += sbi_ecall_pmu.o
 

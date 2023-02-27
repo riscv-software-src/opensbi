@@ -30,6 +30,7 @@
 #define SBI_EXT_SRST				0x53525354
 #define SBI_EXT_PMU				0x504D55
 #define SBI_EXT_DBCN				0x4442434E
+#define SBI_EXT_SUSP				0x53555350
 
 /* SBI function IDs for BASE extension*/
 #define SBI_EXT_BASE_GET_SPEC_VERSION		0x0
@@ -235,6 +236,13 @@ enum sbi_pmu_ctr_type {
 #define SBI_EXT_DBCN_CONSOLE_WRITE		0x0
 #define SBI_EXT_DBCN_CONSOLE_READ		0x1
 #define SBI_EXT_DBCN_CONSOLE_WRITE_BYTE		0x2
+
+/* SBI function IDs for SUSP extension */
+#define SBI_EXT_SUSP_SUSPEND			0x0
+
+#define SBI_SUSP_SLEEP_TYPE_SUSPEND		0x0
+#define SBI_SUSP_SLEEP_TYPE_LAST		SBI_SUSP_SLEEP_TYPE_SUSPEND
+#define SBI_SUSP_PLATFORM_SLEEP_START		0x80000000
 
 /* SBI base specification related macros */
 #define SBI_SPEC_VERSION_MAJOR_OFFSET		24

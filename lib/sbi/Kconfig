@@ -22,6 +22,10 @@ config SBI_ECALL_SRST
 	bool "System Reset extension"
 	default y
 
+config SBI_ECALL_SUSP
+	bool "System Suspend extension"
+	default y
+
 config SBI_ECALL_PMU
 	bool "Performance Monitoring Unit extension"
 	default y
