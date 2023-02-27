@@ -398,8 +398,6 @@ int sbi_hsm_hart_suspend(struct sbi_scratch *scratch, u32 suspend_type,
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
 							    hart_data_offset);
 
-	/* For now, we only allow suspend from S-mode or U-mode. */
-
 	/* Sanity check on domain assigned to current HART */
 	if (!dom)
 		return SBI_EFAIL;
@@ -414,6 +412,10 @@ int sbi_hsm_hart_suspend(struct sbi_scratch *scratch, u32 suspend_type,
 
 	/* Additional sanity check for non-retentive suspend */
 	if (suspend_type & SBI_HSM_SUSP_NON_RET_BIT) {
+		/*
+		 * For now, we only allow non-retentive suspend from
+		 * S-mode or U-mode.
+		 */
 		if (rmode != PRV_S && rmode != PRV_U)
 			return SBI_EFAIL;
 		if (dom && !sbi_domain_check_addr(dom, raddr, rmode,
