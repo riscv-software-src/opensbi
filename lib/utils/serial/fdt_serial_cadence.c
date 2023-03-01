@@ -24,6 +24,7 @@ static int serial_cadence_init(void *fdt, int nodeoff,
 }
 
 static const struct fdt_match serial_cadence_match[] = {
+	{ .compatible = "cdns,uart-r1p8", },
 	{ .compatible = "cdns,uart-r1p12" },
 	{ .compatible = "starfive,jh8100-uart" },
 	{ },
