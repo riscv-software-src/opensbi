@@ -44,6 +44,7 @@ struct sbi_hsm_data {
 	unsigned long suspend_type;
 	unsigned long saved_mie;
 	unsigned long saved_mip;
+	atomic_t start_ticket;
 };
 
 bool sbi_hsm_hart_change_state(struct sbi_scratch *scratch, long oldstate,
@@ -73,6 +74,32 @@ int sbi_hsm_hart_get_state(const struct sbi_domain *dom, u32 hartid)
 		return SBI_EINVAL;
 
 	return __sbi_hsm_hart_get_state(hartid);
+}
+
+/*
+ * Try to acquire the ticket for the given target hart to make sure only
+ * one hart prepares the start of the target hart.
+ * Returns true if the ticket has been acquired, false otherwise.
+ *
+ * The function has "acquire" semantics: no memory operations following it
+ * in the current hart can be seen before it by other harts.
+ * atomic_cmpxchg() provides the memory barriers needed for that.
+ */
+static bool hsm_start_ticket_acquire(struct sbi_hsm_data *hdata)
+{
+	return (atomic_cmpxchg(&hdata->start_ticket, 0, 1) == 0);
+}
+
+/*
+ * Release the ticket for the given target hart.
+ *
+ * The function has "release" semantics: no memory operations preceding it
+ * in the current hart can be seen after it by other harts.
+ */
+static void hsm_start_ticket_release(struct sbi_hsm_data *hdata)
+{
+	RISCV_FENCE(rw, w);
+	atomic_write(&hdata->start_ticket, 0);
 }
 
 /**
@@ -113,6 +140,9 @@ int sbi_hsm_hart_interruptible_mask(const struct sbi_domain *dom,
 void __noreturn sbi_hsm_hart_start_finish(struct sbi_scratch *scratch,
 					  u32 hartid)
 {
+	unsigned long next_arg1;
+	unsigned long next_addr;
+	unsigned long next_mode;
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
 							    hart_data_offset);
 
@@ -120,8 +150,12 @@ void __noreturn sbi_hsm_hart_start_finish(struct sbi_scratch *scratch,
 					 SBI_HSM_STATE_STARTED))
 		sbi_hart_hang();
 
-	sbi_hart_switch_mode(hartid, scratch->next_arg1, scratch->next_addr,
-			     scratch->next_mode, false);
+	next_arg1 = scratch->next_arg1;
+	next_addr = scratch->next_addr;
+	next_mode = scratch->next_mode;
+	hsm_start_ticket_release(hdata);
+
+	sbi_hart_switch_mode(hartid, next_arg1, next_addr, next_mode, false);
 }
 
 static void sbi_hsm_hart_wait(struct sbi_scratch *scratch, u32 hartid)
@@ -226,6 +260,7 @@ int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 				    (i == hartid) ?
 				    SBI_HSM_STATE_START_PENDING :
 				    SBI_HSM_STATE_STOPPED);
+			ATOMIC_INIT(&hdata->start_ticket, 0);
 		}
 	} else {
 		sbi_hsm_hart_wait(scratch, hartid);
@@ -270,6 +305,7 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 	unsigned int hstate;
 	struct sbi_scratch *rscratch;
 	struct sbi_hsm_data *hdata;
+	int rc;
 
 	/* For now, we only allow start mode to be S-mode or U-mode. */
 	if (smode != PRV_S && smode != PRV_U)
@@ -283,17 +319,9 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 	rscratch = sbi_hartid_to_scratch(hartid);
 	if (!rscratch)
 		return SBI_EINVAL;
-	hdata = sbi_scratch_offset_ptr(rscratch, hart_data_offset);
-	hstate = atomic_cmpxchg(&hdata->state, SBI_HSM_STATE_STOPPED,
-				SBI_HSM_STATE_START_PENDING);
-	if (hstate == SBI_HSM_STATE_STARTED)
-		return SBI_EALREADY;
 
-	/**
-	 * if a hart is already transition to start or stop, another start call
-	 * is considered as invalid request.
-	 */
-	if (hstate != SBI_HSM_STATE_STOPPED)
+	hdata = sbi_scratch_offset_ptr(rscratch, hart_data_offset);
+	if (!hsm_start_ticket_acquire(hdata))
 		return SBI_EINVAL;
 
 	init_count = sbi_init_count(hartid);
@@ -301,16 +329,39 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 	rscratch->next_addr = saddr;
 	rscratch->next_mode = smode;
 
-	if (hsm_device_has_hart_hotplug() ||
-	   (hsm_device_has_hart_secondary_boot() && !init_count)) {
-		return hsm_device_hart_start(hartid, scratch->warmboot_addr);
-	} else {
-		int rc = sbi_ipi_raw_send(hartid);
-		if (rc)
-		    return rc;
+	/*
+	 * atomic_cmpxchg() is an implicit barrier. It makes sure that
+	 * other harts see reading of init_count and writing to *rscratch
+	 * before hdata->state is set to SBI_HSM_STATE_START_PENDING.
+	 */
+	hstate = atomic_cmpxchg(&hdata->state, SBI_HSM_STATE_STOPPED,
+				SBI_HSM_STATE_START_PENDING);
+	if (hstate == SBI_HSM_STATE_STARTED) {
+		rc = SBI_EALREADY;
+		goto err;
 	}
 
-	return 0;
+	/**
+	 * if a hart is already transition to start or stop, another start call
+	 * is considered as invalid request.
+	 */
+	if (hstate != SBI_HSM_STATE_STOPPED) {
+		rc = SBI_EINVAL;
+		goto err;
+	}
+
+	if (hsm_device_has_hart_hotplug() ||
+	   (hsm_device_has_hart_secondary_boot() && !init_count)) {
+		rc = hsm_device_hart_start(hartid, scratch->warmboot_addr);
+	} else {
+		rc = sbi_ipi_raw_send(hartid);
+	}
+
+	if (!rc)
+		return 0;
+err:
+	hsm_start_ticket_release(hdata);
+	return rc;
 }
 
 int sbi_hsm_hart_stop(struct sbi_scratch *scratch, bool exitnow)
