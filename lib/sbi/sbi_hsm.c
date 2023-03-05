@@ -110,7 +110,8 @@ int sbi_hsm_hart_interruptible_mask(const struct sbi_domain *dom,
 	return 0;
 }
 
-void sbi_hsm_prepare_next_jump(struct sbi_scratch *scratch, u32 hartid)
+void __noreturn sbi_hsm_hart_start_finish(struct sbi_scratch *scratch,
+					  u32 hartid)
 {
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
 							    hart_data_offset);
@@ -118,6 +119,9 @@ void sbi_hsm_prepare_next_jump(struct sbi_scratch *scratch, u32 hartid)
 	if (!__sbi_hsm_hart_change_state(hdata, SBI_HSM_STATE_START_PENDING,
 					 SBI_HSM_STATE_STARTED))
 		sbi_hart_hang();
+
+	sbi_hart_switch_mode(hartid, scratch->next_arg1, scratch->next_addr,
+			     scratch->next_mode, false);
 }
 
 static void sbi_hsm_hart_wait(struct sbi_scratch *scratch, u32 hartid)
@@ -381,7 +385,8 @@ void sbi_hsm_hart_resume_start(struct sbi_scratch *scratch)
 	hsm_device_hart_resume();
 }
 
-void sbi_hsm_hart_resume_finish(struct sbi_scratch *scratch)
+void __noreturn sbi_hsm_hart_resume_finish(struct sbi_scratch *scratch,
+					   u32 hartid)
 {
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
 							    hart_data_offset);
@@ -396,6 +401,10 @@ void sbi_hsm_hart_resume_finish(struct sbi_scratch *scratch)
 	 * the warm-boot sequence.
 	 */
 	__sbi_hsm_suspend_non_ret_restore(scratch);
+
+	sbi_hart_switch_mode(hartid, scratch->next_arg1,
+			     scratch->next_addr,
+			     scratch->next_mode, false);
 }
 
 int sbi_hsm_hart_suspend(struct sbi_scratch *scratch, u32 suspend_type,

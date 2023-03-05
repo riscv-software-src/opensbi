@@ -355,12 +355,11 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	init_count = sbi_scratch_offset_ptr(scratch, init_count_offset);
 	(*init_count)++;
 
-	sbi_hsm_prepare_next_jump(scratch, hartid);
-	sbi_hart_switch_mode(hartid, scratch->next_arg1, scratch->next_addr,
-			     scratch->next_mode, false);
+	sbi_hsm_hart_start_finish(scratch, hartid);
 }
 
-static void init_warm_startup(struct sbi_scratch *scratch, u32 hartid)
+static void __noreturn init_warm_startup(struct sbi_scratch *scratch,
+					 u32 hartid)
 {
 	int rc;
 	unsigned long *init_count;
@@ -412,10 +411,11 @@ static void init_warm_startup(struct sbi_scratch *scratch, u32 hartid)
 	init_count = sbi_scratch_offset_ptr(scratch, init_count_offset);
 	(*init_count)++;
 
-	sbi_hsm_prepare_next_jump(scratch, hartid);
+	sbi_hsm_hart_start_finish(scratch, hartid);
 }
 
-static void init_warm_resume(struct sbi_scratch *scratch)
+static void __noreturn init_warm_resume(struct sbi_scratch *scratch,
+					u32 hartid)
 {
 	int rc;
 
@@ -429,7 +429,7 @@ static void init_warm_resume(struct sbi_scratch *scratch)
 	if (rc)
 		sbi_hart_hang();
 
-	sbi_hsm_hart_resume_finish(scratch);
+	sbi_hsm_hart_resume_finish(scratch, hartid);
 }
 
 static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
@@ -443,13 +443,9 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 
 	if (hstate == SBI_HSM_STATE_SUSPENDED)
-		init_warm_resume(scratch);
+		init_warm_resume(scratch, hartid);
 	else
 		init_warm_startup(scratch, hartid);
-
-	sbi_hart_switch_mode(hartid, scratch->next_arg1,
-			     scratch->next_addr,
-			     scratch->next_mode, false);
 }
 
 static atomic_t coldboot_lottery = ATOMIC_INITIALIZER(0);
