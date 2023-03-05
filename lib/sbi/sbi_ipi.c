@@ -217,6 +217,12 @@ int sbi_ipi_raw_send(u32 target_hart)
 	return 0;
 }
 
+void sbi_ipi_raw_clear(u32 target_hart)
+{
+	if (ipi_dev && ipi_dev->ipi_clear)
+		ipi_dev->ipi_clear(target_hart);
+}
+
 const struct sbi_ipi_device *sbi_ipi_get_device(void)
 {
 	return ipi_dev;

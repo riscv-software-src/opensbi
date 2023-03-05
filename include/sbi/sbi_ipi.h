@@ -77,6 +77,8 @@ void sbi_ipi_process(void);
 
 int sbi_ipi_raw_send(u32 target_hart);
 
+void sbi_ipi_raw_clear(u32 target_hart);
+
 const struct sbi_ipi_device *sbi_ipi_get_device(void);
 
 void sbi_ipi_set_device(const struct sbi_ipi_device *dev);

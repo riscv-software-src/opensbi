@@ -442,10 +442,12 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 	if (hstate < 0)
 		sbi_hart_hang();
 
-	if (hstate == SBI_HSM_STATE_SUSPENDED)
+	if (hstate == SBI_HSM_STATE_SUSPENDED) {
 		init_warm_resume(scratch, hartid);
-	else
+	} else {
+		sbi_ipi_raw_clear(hartid);
 		init_warm_startup(scratch, hartid);
+	}
 }
 
 static atomic_t coldboot_lottery = ATOMIC_INITIALIZER(0);
