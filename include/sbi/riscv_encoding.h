@@ -708,8 +708,22 @@
 #define CSR_MVIPH			0x319
 #define CSR_MIPH			0x354
 
-/* ===== Trap/Exception Causes ===== */
+/* Custom CSR from C920 */
+#define CSR_MCOR		0x7c2
+#define CSR_MHCR		0x7c1
+#define CSR_MCCR2		0x7c3
+#define CSR_MHINT		0x7c5
+#define CSR_MHINT2		0x7cc
+#define CSR_MHINT4		0x7ce
+#define CSR_MXSTATUS		0x7c0
+#define CSR_PLIC_BASE		0xfc1
+#define CSR_MRMR		0x7c6
+#define CSR_MRVBR		0x7c7
+#define CSR_MCOUNTERWEN		0x7c9
+#define CSR_MCPUID		0xfc0
+#define CSR_MSMPR		0x7f3
 
+/* ===== Trap/Exception Causes ===== */
 #define CAUSE_MISALIGNED_FETCH		0x0
 #define CAUSE_FETCH_ACCESS		0x1
 #define CAUSE_ILLEGAL_INSTRUCTION	0x2

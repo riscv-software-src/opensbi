@@ -47,6 +47,24 @@
 	.globl _start
 	.globl _start_warm
 _start:
+#ifndef MANGO_DVM
+	/* disable dvm */
+	li	t0, 0x20
+	csrw	CSR_MHINT4, t0
+#endif
+
+#ifdef MANGO_C920
+	li	t0, 1
+	csrw	CSR_MSMPR, t0
+#endif
+
+#ifdef MANGO_PLATFORM_PLD
+	/* hartid, maybe unused */
+	li	a0, MANGO_COLD_BOOT_A0
+	/* dtb load address */
+	li	a1, MANGO_COLD_BOOT_A1
+#endif
+
 	/* Find preferred boot HART id */
 	MOV_3R	s0, a0, s1, a1, s2, a2
 	call	fw_boot_hart
