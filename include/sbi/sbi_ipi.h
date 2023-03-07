@@ -41,6 +41,10 @@ struct sbi_ipi_event_ops {
 	 * Update callback to save/enqueue data for remote HART
 	 * Note: This is an optional callback and it is called just before
 	 * triggering IPI to remote HART.
+	 * @return 0  success
+	 * @return -1 break IPI, done on local hart
+	 * @return -2 need retry
+
 	 */
 	int (* update)(struct sbi_scratch *scratch,
 			struct sbi_scratch *remote_scratch,
