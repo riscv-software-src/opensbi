@@ -185,6 +185,17 @@ enum sbi_pmu_fw_event_code_id {
 	SBI_PMU_FW_HFENCE_VVMA_ASID_SENT = 20,
 	SBI_PMU_FW_HFENCE_VVMA_ASID_RCVD = 21,
 	SBI_PMU_FW_MAX,
+	/*
+	 * Event codes 22 to 255 are reserved for future use.
+	 * Event codes 256 to 65534 are reserved for SBI implementation
+	 * specific custom firmware events.
+	 */
+	SBI_PMU_FW_RESERVED_MAX = 0xFFFE,
+	/*
+	 * Event code 0xFFFF is used for platform specific firmware
+	 * events where the event data contains any event specific information.
+	 */
+	SBI_PMU_FW_PLATFORM = 0xFFFF,
 };
 
 /** SBI PMU event idx type */
