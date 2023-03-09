@@ -30,16 +30,15 @@ struct sbi_pmu_device {
 
 	/**
 	 * Validate event code of custom firmware event
-	 * Note: SBI_PMU_FW_MAX <= event_idx_code
 	 */
-	int (*fw_event_validate_code)(uint32_t event_idx_code);
+	int (*fw_event_validate_encoding)(uint64_t event_data);
 
 	/**
 	 * Match custom firmware counter with custom firmware event
 	 * Note: 0 <= counter_index < SBI_PMU_FW_CTR_MAX
 	 */
-	bool (*fw_counter_match_code)(uint32_t counter_index,
-				      uint32_t event_idx_code);
+	bool (*fw_counter_match_encoding)(uint32_t counter_index,
+					  uint64_t event_data);
 
 	/**
 	 * Fetch the max width of this counter in number of bits.
@@ -58,7 +57,7 @@ struct sbi_pmu_device {
 	 * Note: 0 <= counter_index < SBI_PMU_FW_CTR_MAX
 	 */
 	int (*fw_counter_start)(uint32_t counter_index,
-				uint32_t event_idx_code,
+				uint64_t event_data,
 				uint64_t init_val, bool init_val_update);
 
 	/**
