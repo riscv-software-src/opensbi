@@ -31,13 +31,14 @@ struct sbi_pmu_device {
 	/**
 	 * Validate event code of custom firmware event
 	 */
-	int (*fw_event_validate_encoding)(uint64_t event_data);
+	int (*fw_event_validate_encoding)(uint32_t hartid, uint64_t event_data);
 
 	/**
 	 * Match custom firmware counter with custom firmware event
 	 * Note: 0 <= counter_index < SBI_PMU_FW_CTR_MAX
 	 */
-	bool (*fw_counter_match_encoding)(uint32_t counter_index,
+	bool (*fw_counter_match_encoding)(uint32_t hartid,
+					  uint32_t counter_index,
 					  uint64_t event_data);
 
 	/**
@@ -49,27 +50,28 @@ struct sbi_pmu_device {
 	 * Read value of custom firmware counter
 	 * Note: 0 <= counter_index < SBI_PMU_FW_CTR_MAX
 	 */
-	uint64_t (*fw_counter_read_value)(uint32_t counter_index);
+	uint64_t (*fw_counter_read_value)(uint32_t hartid,
+					  uint32_t counter_index);
 
 	/**
 	 * Write value to custom firmware counter
 	 * Note: 0 <= counter_index < SBI_PMU_FW_CTR_MAX
 	 */
-	void (*fw_counter_write_value)(uint32_t counter_index,
+	void (*fw_counter_write_value)(uint32_t hartid, uint32_t counter_index,
 				       uint64_t value);
 
 	/**
 	 * Start custom firmware counter
 	 * Note: 0 <= counter_index < SBI_PMU_FW_CTR_MAX
 	 */
-	int (*fw_counter_start)(uint32_t counter_index,
+	int (*fw_counter_start)(uint32_t hartid, uint32_t counter_index,
 				uint64_t event_data);
 
 	/**
 	 * Stop custom firmware counter
 	 * Note: 0 <= counter_index < SBI_PMU_FW_CTR_MAX
 	 */
-	int (*fw_counter_stop)(uint32_t counter_index);
+	int (*fw_counter_stop)(uint32_t hartid, uint32_t counter_index);
 
 	/**
 	 * Custom enable irq for hardware counter
