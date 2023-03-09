@@ -14,7 +14,15 @@ config FDT_I2C_SIFIVE
 	bool "SiFive I2C FDT driver"
 	default n
 
+config FDT_I2C_DW
+	bool "Synopsys Designware I2C FDT driver"
+	select I2C_DW
+	default n
 endif
+
+config I2C_DW
+	bool "Synopsys Designware I2C support"
+	default n
 
 config I2C
 	bool "I2C support"
