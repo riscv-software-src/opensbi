@@ -52,13 +52,18 @@ struct sbi_pmu_device {
 	uint64_t (*fw_counter_read_value)(uint32_t counter_index);
 
 	/**
+	 * Write value to custom firmware counter
+	 * Note: 0 <= counter_index < SBI_PMU_FW_CTR_MAX
+	 */
+	void (*fw_counter_write_value)(uint32_t counter_index,
+				       uint64_t value);
+
+	/**
 	 * Start custom firmware counter
-	 * Note: SBI_PMU_FW_MAX <= event_idx_code
 	 * Note: 0 <= counter_index < SBI_PMU_FW_CTR_MAX
 	 */
 	int (*fw_counter_start)(uint32_t counter_index,
-				uint64_t event_data,
-				uint64_t init_val, bool init_val_update);
+				uint64_t event_data);
 
 	/**
 	 * Stop custom firmware counter
