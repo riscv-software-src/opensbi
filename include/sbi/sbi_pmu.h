@@ -42,6 +42,11 @@ struct sbi_pmu_device {
 				      uint32_t event_idx_code);
 
 	/**
+	 * Fetch the max width of this counter in number of bits.
+	 */
+	int (*fw_counter_width)(void);
+
+	/**
 	 * Read value of custom firmware counter
 	 * Note: 0 <= counter_index < SBI_PMU_FW_CTR_MAX
 	 */

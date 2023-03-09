@@ -761,6 +761,7 @@ unsigned long sbi_pmu_num_ctr(void)
 
 int sbi_pmu_ctr_get_info(uint32_t cidx, unsigned long *ctr_info)
 {
+	int width;
 	union sbi_pmu_ctr_info cinfo = {0};
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
@@ -782,6 +783,11 @@ int sbi_pmu_ctr_get_info(uint32_t cidx, unsigned long *ctr_info)
 		cinfo.type = SBI_PMU_CTR_TYPE_FW;
 		/* Firmware counters are always 64 bits wide */
 		cinfo.width = 63;
+		if (pmu_dev && pmu_dev->fw_counter_width) {
+			width = pmu_dev->fw_counter_width();
+			if (width)
+				cinfo.width = width - 1;
+		}
 	}
 
 	*ctr_info = cinfo.value;
