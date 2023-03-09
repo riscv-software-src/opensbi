@@ -101,6 +101,7 @@
 #define SBI_EXT_PMU_COUNTER_START	0x3
 #define SBI_EXT_PMU_COUNTER_STOP	0x4
 #define SBI_EXT_PMU_COUNTER_FW_READ	0x5
+#define SBI_EXT_PMU_COUNTER_FW_READ_HI	0x6
 
 /** General pmu event codes specified in SBI PMU extension */
 enum sbi_pmu_hw_generic_events_t {
