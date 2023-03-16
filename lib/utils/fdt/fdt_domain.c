@@ -358,6 +358,7 @@ static int __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 			return SBI_EINVAL;
 		memcpy(&regions[val32++], reg, sizeof(*reg));
 	}
+	dom->fw_region_inited = root.fw_region_inited;
 
 	/* Read "boot-hart" DT property */
 	val32 = -1U;

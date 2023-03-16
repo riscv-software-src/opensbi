@@ -122,6 +122,8 @@ struct sbi_domain {
 	bool system_reset_allowed;
 	/** Is domain allowed to suspend the system */
 	bool system_suspend_allowed;
+	/** Identifies whether to include the firmware region */
+	bool fw_region_inited;
 };
 
 /** The root domain instance */

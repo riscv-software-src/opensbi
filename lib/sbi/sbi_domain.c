@@ -30,7 +30,6 @@ static struct sbi_hartmask root_hmask = { 0 };
 
 #define ROOT_REGION_MAX	16
 static u32 root_memregs_count = 0;
-static struct sbi_domain_memregion root_fw_region;
 static struct sbi_domain_memregion root_memregs[ROOT_REGION_MAX + 1] = { 0 };
 
 struct sbi_domain root = {
@@ -39,6 +38,7 @@ struct sbi_domain root = {
 	.regions = root_memregs,
 	.system_reset_allowed = true,
 	.system_suspend_allowed = true,
+	.fw_region_inited = false,
 };
 
 bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartid)
@@ -67,14 +67,6 @@ ulong sbi_domain_get_assigned_hartmask(const struct sbi_domain *dom,
 	}
 
 	return ret;
-}
-
-static void domain_memregion_initfw(struct sbi_domain_memregion *reg)
-{
-	if (!reg)
-		return;
-
-	sbi_memcpy(reg, &root_fw_region, sizeof(*reg));
 }
 
 void sbi_domain_memregion_init(unsigned long addr,
@@ -255,7 +247,6 @@ static int sanitize_domain(const struct sbi_platform *plat,
 			   struct sbi_domain *dom)
 {
 	u32 i, j, count;
-	bool have_fw_reg;
 	struct sbi_domain_memregion treg, *reg, *reg1;
 
 	/* Check possible HARTs */
@@ -288,17 +279,13 @@ static int sanitize_domain(const struct sbi_platform *plat,
 		}
 	}
 
-	/* Count memory regions and check presence of firmware region */
+	/* Count memory regions */
 	count = 0;
-	have_fw_reg = false;
-	sbi_domain_for_each_memregion(dom, reg) {
-		if (reg->order == root_fw_region.order &&
-		    reg->base == root_fw_region.base &&
-		    reg->flags == root_fw_region.flags)
-			have_fw_reg = true;
+	sbi_domain_for_each_memregion(dom, reg)
 		count++;
-	}
-	if (!have_fw_reg) {
+
+	/* Check presence of firmware regions */
+	if (!dom->fw_region_inited) {
 		sbi_printf("%s: %s does not have firmware region\n",
 			   __func__, dom->name);
 		return SBI_EINVAL;
@@ -732,14 +719,15 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 	sbi_domain_memregion_init(scratch->fw_start, scratch->fw_rw_offset,
 				  (SBI_DOMAIN_MEMREGION_M_READABLE |
 				   SBI_DOMAIN_MEMREGION_M_EXECUTABLE),
-				  &root_fw_region);
-	domain_memregion_initfw(&root_memregs[root_memregs_count++]);
+				  &root_memregs[root_memregs_count++]);
 
 	sbi_domain_memregion_init((scratch->fw_start + scratch->fw_rw_offset),
 				  (scratch->fw_size - scratch->fw_rw_offset),
 				  (SBI_DOMAIN_MEMREGION_M_READABLE |
 				   SBI_DOMAIN_MEMREGION_M_WRITABLE),
 				  &root_memregs[root_memregs_count++]);
+
+	root.fw_region_inited = true;
 
 	/* Root domain allow everything memory region */
 	sbi_domain_memregion_init(0, ~0UL,
