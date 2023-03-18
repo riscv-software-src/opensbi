@@ -96,13 +96,13 @@
 /* T-HEAD C9xx U mode CSR.  */
 #define THEAD_C9XX_CSR_FXCR		0x800
 
-/* T-HEAD C9xx MMU extentions.  */
+/* T-HEAD C9xx MMU extensions.  */
 #define THEAD_C9XX_CSR_SMIR		0x9c0
 #define THEAD_C9XX_CSR_SMEL		0x9c1
 #define THEAD_C9XX_CSR_SMEH		0x9c2
 #define THEAD_C9XX_CSR_SMCIR		0x9c3
 
-/* T-HEAD C9xx Security CSR(May be droped).  */
+/* T-HEAD C9xx Security CSR(May be dropped).  */
 #define THEAD_C9XX_CSR_MEBR		0xbe0
 #define THEAD_C9XX_CSR_NT_MSTATUS	0xbe1
 #define THEAD_C9XX_CSR_NT_MIE		0xbe2

@@ -76,7 +76,7 @@ static void __noreturn sbi_trap_error(const char *msg, int rc,
 }
 
 /**
- * Redirect trap to lower privledge mode (S-mode or U-mode)
+ * Redirect trap to lower privilege mode (S-mode or U-mode)
  *
  * @param regs pointer to register state
  * @param trap pointer to trap details

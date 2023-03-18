@@ -332,7 +332,7 @@ int sbi_hart_pmp_configure(struct sbi_scratch *scratch)
 	/*
 	 * As per section 3.7.2 of privileged specification v1.12,
 	 * virtual address translations can be speculatively performed
-	 * (even before actual access). These, along with PMP traslations,
+	 * (even before actual access). These, along with PMP translations,
 	 * can be cached. This can pose a problem with CPU hotplug
 	 * and non-retentive suspend scenario because PMP states are
 	 * not preserved.
