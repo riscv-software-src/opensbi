@@ -301,7 +301,7 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 		       const struct sbi_domain *dom,
 		       u32 hartid, ulong saddr, ulong smode, ulong arg1)
 {
-	unsigned long init_count;
+	unsigned long init_count, entry_count;
 	unsigned int hstate;
 	struct sbi_scratch *rscratch;
 	struct sbi_hsm_data *hdata;
@@ -325,6 +325,8 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 		return SBI_EINVAL;
 
 	init_count = sbi_init_count(hartid);
+	entry_count = sbi_entry_count(hartid);
+
 	rscratch->next_arg1 = arg1;
 	rscratch->next_addr = saddr;
 	rscratch->next_mode = smode;
@@ -350,7 +352,7 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 		goto err;
 	}
 
-	if (hsm_device_has_hart_hotplug() ||
+	if ((hsm_device_has_hart_hotplug() && (entry_count == init_count)) ||
 	   (hsm_device_has_hart_secondary_boot() && !init_count)) {
 		rc = hsm_device_hart_start(hartid, scratch->warmboot_addr);
 	} else {
