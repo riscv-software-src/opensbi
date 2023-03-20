@@ -238,12 +238,13 @@ static void wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 	spin_unlock(&coldboot_lock);
 }
 
+static unsigned long entry_count_offset;
 static unsigned long init_count_offset;
 
 static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 {
 	int rc;
-	unsigned long *init_count;
+	unsigned long *count;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	/* Note: This has to be first thing in coldboot init sequence */
@@ -256,9 +257,16 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
+	entry_count_offset = sbi_scratch_alloc_offset(__SIZEOF_POINTER__);
+	if (!entry_count_offset)
+		sbi_hart_hang();
+
 	init_count_offset = sbi_scratch_alloc_offset(__SIZEOF_POINTER__);
 	if (!init_count_offset)
 		sbi_hart_hang();
+
+	count = sbi_scratch_offset_ptr(scratch, entry_count_offset);
+	(*count)++;
 
 	rc = sbi_hsm_init(scratch, hartid, true);
 	if (rc)
@@ -352,8 +360,8 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 
 	wake_coldboot_harts(scratch, hartid);
 
-	init_count = sbi_scratch_offset_ptr(scratch, init_count_offset);
-	(*init_count)++;
+	count = sbi_scratch_offset_ptr(scratch, init_count_offset);
+	(*count)++;
 
 	sbi_hsm_hart_start_finish(scratch, hartid);
 }
@@ -362,11 +370,14 @@ static void __noreturn init_warm_startup(struct sbi_scratch *scratch,
 					 u32 hartid)
 {
 	int rc;
-	unsigned long *init_count;
+	unsigned long *count;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	if (!init_count_offset)
+	if (!entry_count_offset || !init_count_offset)
 		sbi_hart_hang();
+
+	count = sbi_scratch_offset_ptr(scratch, entry_count_offset);
+	(*count)++;
 
 	rc = sbi_hsm_init(scratch, hartid, false);
 	if (rc)
@@ -408,8 +419,8 @@ static void __noreturn init_warm_startup(struct sbi_scratch *scratch,
 	if (rc)
 		sbi_hart_hang();
 
-	init_count = sbi_scratch_offset_ptr(scratch, init_count_offset);
-	(*init_count)++;
+	count = sbi_scratch_offset_ptr(scratch, init_count_offset);
+	(*count)++;
 
 	sbi_hsm_hart_start_finish(scratch, hartid);
 }
@@ -519,6 +530,23 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 		init_coldboot(scratch, hartid);
 	else
 		init_warmboot(scratch, hartid);
+}
+
+unsigned long sbi_entry_count(u32 hartid)
+{
+	struct sbi_scratch *scratch;
+	unsigned long *entry_count;
+
+	if (!entry_count_offset)
+		return 0;
+
+	scratch = sbi_hartid_to_scratch(hartid);
+	if (!scratch)
+		return 0;
+
+	entry_count = sbi_scratch_offset_ptr(scratch, entry_count_offset);
+
+	return *entry_count;
 }
 
 unsigned long sbi_init_count(u32 hartid)
