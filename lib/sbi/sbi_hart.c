@@ -733,6 +733,12 @@ int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot)
 {
 	int rc;
 
+	/*
+	 * Clear mip CSR before proceeding with init to avoid any spurious
+	 * external interrupts in S-mode.
+	 */
+	csr_write(CSR_MIP, 0);
+
 	if (cold_boot) {
 		if (misa_extension('H'))
 			sbi_hart_expected_trap = &__sbi_expected_trap_hext;
