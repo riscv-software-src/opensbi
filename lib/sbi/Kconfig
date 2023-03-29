@@ -34,6 +34,10 @@ config SBI_ECALL_DBCN
 	bool "Debug Console extension"
 	default y
 
+config SBI_ECALL_CPPC
+	bool "CPPC extension"
+	default y
+
 config SBI_ECALL_LEGACY
 	bool "SBI v0.1 legacy extensions"
 	default y
