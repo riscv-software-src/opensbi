@@ -81,7 +81,8 @@ static uint32_t num_hw_ctrs;
 static uint32_t total_ctrs;
 
 /* Helper macros to retrieve event idx and code type */
-#define get_cidx_type(x) ((x & SBI_PMU_EVENT_IDX_TYPE_MASK) >> 16)
+#define get_cidx_type(x) \
+  (((x) & SBI_PMU_EVENT_IDX_TYPE_MASK) >> SBI_PMU_EVENT_IDX_TYPE_OFFSET)
 #define get_cidx_code(x) (x & SBI_PMU_EVENT_IDX_CODE_MASK)
 
 /**
@@ -903,10 +904,10 @@ int sbi_pmu_init(struct sbi_scratch *scratch, bool cold_boot)
 	pmu_reset_event_map(hartid);
 
 	/* First three counters are fixed by the priv spec and we enable it by default */
-	active_events[hartid][0] = SBI_PMU_EVENT_TYPE_HW << SBI_PMU_EVENT_IDX_OFFSET |
+	active_events[hartid][0] = SBI_PMU_EVENT_TYPE_HW << SBI_PMU_EVENT_IDX_TYPE_OFFSET |
 				   SBI_PMU_HW_CPU_CYCLES;
 	active_events[hartid][1] = SBI_PMU_EVENT_IDX_INVALID;
-	active_events[hartid][2] = SBI_PMU_EVENT_TYPE_HW << SBI_PMU_EVENT_IDX_OFFSET |
+	active_events[hartid][2] = SBI_PMU_EVENT_TYPE_HW << SBI_PMU_EVENT_IDX_TYPE_OFFSET |
 				   SBI_PMU_HW_INSTRUCTIONS;
 
 	return 0;
