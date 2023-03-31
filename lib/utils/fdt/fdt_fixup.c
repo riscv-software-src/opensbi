@@ -355,7 +355,7 @@ int fdt_reserved_memory_fixup(void *fdt)
 		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_EXECUTABLE)
 			continue;
 
-		if (i > PMP_COUNT) {
+		if (i >= PMP_COUNT) {
 			sbi_printf("%s: Too many memory regions to fixup.\n",
 				   __func__);
 			return SBI_ENOSPC;
