@@ -95,7 +95,6 @@ _try_lottery:
 	lla	t4, __dyn_sym_start
 
 4:
-	REG_L	t5, -(REGBYTES*2)(t0)	/* t5 <-- relocation info:type */
 	srli	t6, t5, SYM_INDEX	/* t6 <--- sym table index */
 	andi	t5, t5, 0xFF		/* t5 <--- relocation type */
 	li	t3, RELOC_TYPE
