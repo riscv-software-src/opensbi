@@ -231,7 +231,7 @@ static void wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 
 static unsigned long init_count_offset;
 
-static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
+static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid, bool flag)
 {
 	int rc;
 	unsigned long *init_count;
@@ -272,6 +272,10 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 
 	sbi_boot_print_banner(scratch);
+
+	if(flag == false){
+		sbi_panic("Error validating security monitor, STOP BOOTING");
+	}	
 
 	rc = sbi_irqchip_init(scratch, TRUE);
 	if (rc) {
@@ -457,7 +461,7 @@ static atomic_t coldboot_lottery = ATOMIC_INITIALIZER(0);
  *
  * @param scratch pointer to sbi_scratch of current HART
  */
-void __noreturn sbi_init(struct sbi_scratch *scratch)
+void __noreturn sbi_init(struct sbi_scratch *scratch, bool flag)
 {
 	bool next_mode_supported	= FALSE;
 	bool coldboot			= FALSE;
@@ -506,7 +510,7 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 		sbi_hart_hang();
 
 	if (coldboot)
-		init_coldboot(scratch, hartid);
+		init_coldboot(scratch, hartid, flag);
 	else
 		init_warmboot(scratch, hartid);
 }
@@ -558,4 +562,8 @@ void __noreturn sbi_exit(struct sbi_scratch *scratch)
 	sbi_platform_final_exit(plat);
 
 	sbi_hsm_exit(scratch);
+}
+
+void to_be_stopped(struct sbi_scratch *scratch, bool flag){
+	sbi_init(scratch, 0);
 }
