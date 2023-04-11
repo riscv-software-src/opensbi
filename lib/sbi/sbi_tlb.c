@@ -229,30 +229,23 @@ static void tlb_entry_process(struct sbi_tlb_info *tinfo)
 	}
 }
 
-static void tlb_process_count(struct sbi_scratch *scratch, int count)
+static bool tlb_process_once(struct sbi_scratch *scratch)
 {
 	struct sbi_tlb_info tinfo;
-	unsigned int deq_count = 0;
 	struct sbi_fifo *tlb_fifo =
 			sbi_scratch_offset_ptr(scratch, tlb_fifo_off);
 
-	while (!sbi_fifo_dequeue(tlb_fifo, &tinfo)) {
+	if (!sbi_fifo_dequeue(tlb_fifo, &tinfo)) {
 		tlb_entry_process(&tinfo);
-		deq_count++;
-		if (deq_count > count)
-			break;
-
+		return true;
 	}
+
+	return false;
 }
 
 static void tlb_process(struct sbi_scratch *scratch)
 {
-	struct sbi_tlb_info tinfo;
-	struct sbi_fifo *tlb_fifo =
-			sbi_scratch_offset_ptr(scratch, tlb_fifo_off);
-
-	while (!sbi_fifo_dequeue(tlb_fifo, &tinfo))
-		tlb_entry_process(&tinfo);
+	while (tlb_process_once(scratch));
 }
 
 static void tlb_sync(struct sbi_scratch *scratch)
@@ -265,7 +258,7 @@ static void tlb_sync(struct sbi_scratch *scratch)
 		 * While we are waiting for remote hart to set the sync,
 		 * consume fifo requests to avoid deadlock.
 		 */
-		tlb_process_count(scratch, 1);
+		tlb_process_once(scratch);
 	}
 
 	return;
@@ -380,7 +373,7 @@ static int tlb_update(struct sbi_scratch *scratch,
 		 * TODO: Introduce a wait/wakeup event mechanism to handle
 		 * this properly.
 		 */
-		tlb_process_count(scratch, 1);
+		tlb_process_once(scratch);
 		sbi_dprintf("hart%d: hart%d tlb fifo full\n",
 			    curr_hartid, remote_hartid);
 	}
