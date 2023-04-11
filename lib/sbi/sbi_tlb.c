@@ -215,7 +215,7 @@ static void tlb_entry_process(struct sbi_tlb_info *tinfo)
 {
 	u32 rhartid;
 	struct sbi_scratch *rscratch = NULL;
-	unsigned long *rtlb_sync = NULL;
+	atomic_t *rtlb_sync = NULL;
 
 	tinfo->local_fn(tinfo);
 
@@ -225,7 +225,7 @@ static void tlb_entry_process(struct sbi_tlb_info *tinfo)
 			continue;
 
 		rtlb_sync = sbi_scratch_offset_ptr(rscratch, tlb_sync_off);
-		while (atomic_raw_xchg_ulong(rtlb_sync, 1)) ;
+		atomic_sub_return(rtlb_sync, 1);
 	}
 }
 
@@ -257,10 +257,10 @@ static void tlb_process(struct sbi_scratch *scratch)
 
 static void tlb_sync(struct sbi_scratch *scratch)
 {
-	unsigned long *tlb_sync =
+	atomic_t *tlb_sync =
 			sbi_scratch_offset_ptr(scratch, tlb_sync_off);
 
-	while (!atomic_raw_xchg_ulong(tlb_sync, 0)) {
+	while (atomic_read(tlb_sync) > 0) {
 		/*
 		 * While we are waiting for remote hart to set the sync,
 		 * consume fifo requests to avoid deadlock.
@@ -343,6 +343,7 @@ static int tlb_update(struct sbi_scratch *scratch,
 			  u32 remote_hartid, void *data)
 {
 	int ret;
+	atomic_t *tlb_sync;
 	struct sbi_fifo *tlb_fifo_r;
 	struct sbi_tlb_info *tinfo = data;
 	u32 curr_hartid = current_hartid();
@@ -369,11 +370,8 @@ static int tlb_update(struct sbi_scratch *scratch,
 	tlb_fifo_r = sbi_scratch_offset_ptr(remote_scratch, tlb_fifo_off);
 
 	ret = sbi_fifo_inplace_update(tlb_fifo_r, data, tlb_update_cb);
-	if (ret != SBI_FIFO_UNCHANGED) {
-		return 1;
-	}
 
-	while (sbi_fifo_enqueue(tlb_fifo_r, data) < 0) {
+	while (ret == SBI_FIFO_UNCHANGED && sbi_fifo_enqueue(tlb_fifo_r, data) < 0) {
 		/**
 		 * For now, Busy loop until there is space in the fifo.
 		 * There may be case where target hart is also
@@ -386,6 +384,9 @@ static int tlb_update(struct sbi_scratch *scratch,
 		sbi_dprintf("hart%d: hart%d tlb fifo full\n",
 			    curr_hartid, remote_hartid);
 	}
+
+	tlb_sync = sbi_scratch_offset_ptr(scratch, tlb_sync_off);
+	atomic_add_return(tlb_sync, 1);
 
 	return 0;
 }
@@ -413,7 +414,7 @@ int sbi_tlb_init(struct sbi_scratch *scratch, bool cold_boot)
 {
 	int ret;
 	void *tlb_mem;
-	unsigned long *tlb_sync;
+	atomic_t *tlb_sync;
 	struct sbi_fifo *tlb_q;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
@@ -455,7 +456,7 @@ int sbi_tlb_init(struct sbi_scratch *scratch, bool cold_boot)
 	tlb_q = sbi_scratch_offset_ptr(scratch, tlb_fifo_off);
 	tlb_mem = sbi_scratch_offset_ptr(scratch, tlb_fifo_mem_off);
 
-	*tlb_sync = 0;
+	ATOMIC_INIT(tlb_sync, 0);
 
 	sbi_fifo_init(tlb_q, tlb_mem,
 		      SBI_TLB_FIFO_NUM_ENTRIES, SBI_TLB_INFO_SIZE);
