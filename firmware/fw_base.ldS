@@ -128,3 +128,4 @@
   /* 64 Bytes : security monitor's signature by device */
   PROVIDE( sanctum_sm_signature = . );
   . += 0x40;
+

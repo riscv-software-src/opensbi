@@ -13,6 +13,6 @@ ENTRY(_start)
 SECTIONS
 {
 	#include "fw_base.ldS"
-
+	#include "sanctum_params_mod.lds"
 	PROVIDE(_fw_reloc_end = .);
 }
