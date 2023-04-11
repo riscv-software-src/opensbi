@@ -3,3 +3,7 @@
 config ANDES45_PMA
 	bool "Andes PMA support"
 	default n
+
+config ANDES_SBI
+	bool "Andes SBI support"
+	default n
