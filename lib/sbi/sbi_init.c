@@ -290,8 +290,11 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 
 	rc = sbi_pmu_init(scratch, true);
-	if (rc)
+	if (rc) {
+		sbi_printf("%s: pmu init failed (error %d)\n",
+			   __func__, rc);
 		sbi_hart_hang();
+	}
 
 	sbi_boot_print_banner(scratch);
 
