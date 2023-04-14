@@ -53,7 +53,7 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartid,
 	if (ipi_ops->update) {
 		ret = ipi_ops->update(scratch, remote_scratch,
 				      remote_hartid, data);
-		if (ret < 0)
+		if (ret != SBI_IPI_UPDATE_SUCCESS)
 			return ret;
 	}
 
@@ -95,50 +95,48 @@ static int sbi_ipi_sync(struct sbi_scratch *scratch, u32 event)
 int sbi_ipi_send_many(ulong hmask, ulong hbase, u32 event, void *data)
 {
 	int rc;
-	ulong i, m, n;
+	bool retry_needed;
+	ulong i, m;
+	struct sbi_hartmask target_mask = {0};
 	struct sbi_domain *dom = sbi_domain_thishart_ptr();
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
+	/* Find the target harts */
 	if (hbase != -1UL) {
 		rc = sbi_hsm_hart_interruptible_mask(dom, hbase, &m);
 		if (rc)
 			return rc;
 		m &= hmask;
-		n = m;
 
-		/* Send IPIs */
 		for (i = hbase; m; i++, m >>= 1) {
 			if (m & 1UL)
-				sbi_ipi_send(scratch, i, event, data);
-		}
-
-		/* Sync IPIs */
-		m = n;
-		for (i = hbase; m; i++, m >>= 1) {
-			if (m & 1UL)
-				sbi_ipi_sync(scratch, event);
+				sbi_hartmask_set_hart(i, &target_mask);
 		}
 	} else {
-		/* Send IPIs */
 		hbase = 0;
 		while (!sbi_hsm_hart_interruptible_mask(dom, hbase, &m)) {
 			for (i = hbase; m; i++, m >>= 1) {
 				if (m & 1UL)
-					sbi_ipi_send(scratch, i, event, data);
-			}
-			hbase += BITS_PER_LONG;
-		}
-
-		/* Sync IPIs */
-		hbase = 0;
-		while (!sbi_hsm_hart_interruptible_mask(dom, hbase, &m)) {
-			for (i = hbase; m; i++, m >>= 1) {
-				if (m & 1UL)
-					sbi_ipi_sync(scratch, event);
+					sbi_hartmask_set_hart(i, &target_mask);
 			}
 			hbase += BITS_PER_LONG;
 		}
 	}
+
+	/* Send IPIs */
+	do {
+		retry_needed = false;
+		sbi_hartmask_for_each_hart(i, &target_mask) {
+			rc = sbi_ipi_send(scratch, i, event, data);
+			if (rc == SBI_IPI_UPDATE_RETRY)
+				retry_needed = true;
+			else
+				sbi_hartmask_clear_hart(i, &target_mask);
+		}
+	} while (retry_needed);
+
+	/* Sync IPIs */
+	sbi_ipi_sync(scratch, event);
 
 	return 0;
 }

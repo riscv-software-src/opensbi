@@ -357,14 +357,14 @@ static int tlb_update(struct sbi_scratch *scratch,
 	 */
 	if (remote_hartid == curr_hartid) {
 		tinfo->local_fn(tinfo);
-		return -1;
+		return SBI_IPI_UPDATE_BREAK;
 	}
 
 	tlb_fifo_r = sbi_scratch_offset_ptr(remote_scratch, tlb_fifo_off);
 
 	ret = sbi_fifo_inplace_update(tlb_fifo_r, data, tlb_update_cb);
 
-	while (ret == SBI_FIFO_UNCHANGED && sbi_fifo_enqueue(tlb_fifo_r, data) < 0) {
+	if (ret == SBI_FIFO_UNCHANGED && sbi_fifo_enqueue(tlb_fifo_r, data) < 0) {
 		/**
 		 * For now, Busy loop until there is space in the fifo.
 		 * There may be case where target hart is also
@@ -376,12 +376,13 @@ static int tlb_update(struct sbi_scratch *scratch,
 		tlb_process_once(scratch);
 		sbi_dprintf("hart%d: hart%d tlb fifo full\n",
 			    curr_hartid, remote_hartid);
+		return SBI_IPI_UPDATE_RETRY;
 	}
 
 	tlb_sync = sbi_scratch_offset_ptr(scratch, tlb_sync_off);
 	atomic_add_return(tlb_sync, 1);
 
-	return 0;
+	return SBI_IPI_UPDATE_SUCCESS;
 }
 
 static struct sbi_ipi_event_ops tlb_ops = {

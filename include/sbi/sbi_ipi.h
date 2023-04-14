@@ -30,6 +30,12 @@ struct sbi_ipi_device {
 	void (*ipi_clear)(u32 target_hart);
 };
 
+enum sbi_ipi_update_type {
+	SBI_IPI_UPDATE_SUCCESS,
+	SBI_IPI_UPDATE_BREAK,
+	SBI_IPI_UPDATE_RETRY,
+};
+
 struct sbi_scratch;
 
 /** IPI event operations or callbacks */
@@ -41,6 +47,10 @@ struct sbi_ipi_event_ops {
 	 * Update callback to save/enqueue data for remote HART
 	 * Note: This is an optional callback and it is called just before
 	 * triggering IPI to remote HART.
+	 * @return < 0, error or failure
+	 * @return SBI_IPI_UPDATE_SUCCESS, success
+	 * @return SBI_IPI_UPDATE_BREAK, break IPI, done on local hart
+	 * @return SBI_IPI_UPDATE_RETRY, need retry
 	 */
 	int (* update)(struct sbi_scratch *scratch,
 			struct sbi_scratch *remote_scratch,
