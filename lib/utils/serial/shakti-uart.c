@@ -19,21 +19,21 @@
 #define REG_RX_THRES	0x20
 
 #define UART_TX_FULL  0x2
+#define UART_RX_NOT_EMPTY 0x4
 #define UART_RX_FULL  0x8
 
 static volatile char *uart_base;
 
 static void shakti_uart_putc(char ch)
 {
-	while((readw(uart_base + REG_STATUS) & UART_TX_FULL))
+	while ((readb(uart_base + REG_STATUS) & UART_TX_FULL))
 		;
 	writeb(ch, uart_base + REG_TX);
 }
 
 static int shakti_uart_getc(void)
 {
-	u16 status = readw(uart_base + REG_STATUS);
-	if (status & UART_RX_FULL)
+	if (readb(uart_base + REG_STATUS) & UART_RX_NOT_EMPTY)
 		return readb(uart_base + REG_RX);
 	return -1;
 }
@@ -47,8 +47,12 @@ static struct sbi_console_device shakti_console = {
 int shakti_uart_init(unsigned long base, u32 in_freq, u32 baudrate)
 {
 	uart_base = (volatile char *)base;
-	u16 baud = (u16)(in_freq/(16 * baudrate));
-	writew(baud, uart_base + REG_BAUD);
+	u16 baud;
+
+	if (baudrate) {
+		baud = (u16)(in_freq / (16 * baudrate));
+		writew(baud, uart_base + REG_BAUD);
+	}
 
 	sbi_console_set_device(&shakti_console);
 

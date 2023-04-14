@@ -30,8 +30,8 @@ enum sbi_hart_extensions {
 	SBI_HART_EXT_SSCOFPMF = 0,
 	/** HART has HW time CSR (extension name not available) */
 	SBI_HART_EXT_TIME,
-	/** HART has AIA CSRs (extension name not available) */
-	SBI_HART_EXT_AIA,
+	/** HART has AIA M-mode CSRs */
+	SBI_HART_EXT_SMAIA,
 	/** HART has Smstateen CSR **/
 	SBI_HART_EXT_SMSTATEEN,
 	/** HART has Sstc extension */
@@ -39,6 +39,17 @@ enum sbi_hart_extensions {
 
 	/** Maximum index of Hart extension */
 	SBI_HART_EXT_MAX,
+};
+
+struct sbi_hart_features {
+	bool detected;
+	int priv_version;
+	unsigned long extensions;
+	unsigned int pmp_count;
+	unsigned int pmp_addr_bits;
+	unsigned long pmp_gran;
+	unsigned int mhpm_count;
+	unsigned int mhpm_bits;
 };
 
 struct sbi_scratch;

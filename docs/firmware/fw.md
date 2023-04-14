@@ -53,7 +53,7 @@ the booting stage to follow OpenSBI firmware.
 A *FW_PAYLOAD* firmware is also useful for cases where the booting stage prior
 to OpenSBI firmware does not pass a *flattened device tree (FDT file)*. In such
 case, a *FW_PAYLOAD* firmware allows embedding a flattened device tree in the
-.text section of the final firmware.
+.rodata section of the final firmware.
 
 Firmware Configuration and Compilation
 --------------------------------------
@@ -61,7 +61,7 @@ Firmware Configuration and Compilation
 All firmware types support the following common compile time configuration
 parameters:
 
-* **FW_TEXT_ADDR** - Defines the execution address of the OpenSBI firmware.
+* **FW_TEXT_START** - Defines the execution address of the OpenSBI firmware.
   This configuration parameter is mandatory.
 * **FW_FDT_PATH** - Path to an external flattened device tree binary file to
   be embedded in the *.rodata* section of the final firmware. If this option

@@ -2,7 +2,7 @@ OpenSBI Domain Support
 ======================
 
 An OpenSBI domain is a system-level partition (subset) of underlying hardware
-having it's own memory regions (RAM and MMIO devices) and HARTs. The OpenSBI
+having its own memory regions (RAM and MMIO devices) and HARTs. The OpenSBI
 will try to achieve secure isolation between domains using RISC-V platform
 features such as PMP, ePMP, IOPMP, SiFive Shield, etc.
 
@@ -15,7 +15,7 @@ Important entities which help implement OpenSBI domain support are:
 Each HART of a RISC-V platform must have an OpenSBI domain assigned to it.
 The OpenSBI platform support is responsible for populating domains and
 providing HART id to domain mapping. The OpenSBI domain support will by
-default assign **the ROOT domain** to all HARTs of a RISC-V platform so
+default assign **the ROOT domain** to all HARTs of a RISC-V platform, so
 it is not mandatory for the OpenSBI platform support to populate domains.
 
 Domain Memory Region
@@ -29,7 +29,7 @@ OpenSBI and has following details:
 * **base** - The base address of a memory region is **2 ^ order**
   aligned start address
 * **flags** - The flags of a memory region represent memory type (i.e.
-  RAM or MMIO) and allowed accesses (i.e. READ, WRITE, EXECUTE, etc)
+  RAM or MMIO) and allowed accesses (i.e. READ, WRITE, EXECUTE, etc.)
 
 Domain Instance
 ---------------
@@ -52,6 +52,7 @@ has following details:
 * **next_mode** - Privilege mode of the next booting stage for this
   domain. This can be either S-mode or U-mode.
 * **system_reset_allowed** - Is domain allowed to reset the system?
+* **system_suspend_allowed** - Is domain allowed to suspend the system?
 
 The memory regions represented by **regions** in **struct sbi_domain** have
 following additional constraints to align with RISC-V PMP requirements:
@@ -91,6 +92,7 @@ following manner:
 * **next_mode** - Next booting stage mode in coldboot HART scratch space
   is the next mode for the ROOT domain
 * **system_reset_allowed** - The ROOT domain is allowed to reset the system
+* **system_suspend_allowed** - The ROOT domain is allowed to suspend the system
 
 Domain Effects
 --------------
@@ -123,6 +125,9 @@ The DT properties of a domain configuration DT node are as follows:
 
 * **compatible** (Mandatory) - The compatible string of the domain
   configuration. This DT property should have value *"opensbi,domain,config"*
+
+* **system-suspend-test** (Optional) - When present, enable a system
+  suspend test implementation which simply waits five seconds and issues a WFI.
 
 ### Domain Memory Region Node
 
@@ -160,8 +165,16 @@ The DT properties of a domain instance DT node are as follows:
 * **regions** (Optional) - The list of domain memory region DT node phandle
   and access permissions for the domain instance. Each list entry is a pair
   of DT node phandle and access permissions. The access permissions are
-  represented as a 32bit bitmask having bits: **readable** (BIT[0]),
-  **writeable** (BIT[1]), **executable** (BIT[2]), and **m-mode** (BIT[3]).
+  represented as a 32bit bitmask having bits: **M readable** (BIT[0]),
+  **M writeable** (BIT[1]), **M executable** (BIT[2]), **SU readable**
+  (BIT[3]), **SU writable** (BIT[4]), and **SU executable** (BIT[5]).
+  The enforce permission bit (BIT[6]), if set, will lock the permissions
+  in the PMP. This will enforce the permissions on M-mode as well which
+  otherwise will have unrestricted access. This bit must be used with
+  caution because no changes can be made to a PMP entry once its locked
+  until the hart is reset.
+  Any region of a domain defined in DT node cannot have only M-bits set
+  in access permissions i.e. it cannot be an m-mode only accessible region.
 * **boot-hart** (Optional) - The DT node phandle of the HART booting the
   domain instance. If coldboot HART is assigned to the domain instance then
   this DT property is ignored and the coldboot HART is assumed to be the
@@ -180,13 +193,15 @@ The DT properties of a domain instance DT node are as follows:
   is used as default value.
 * **next-mode** (Optional) - The 32 bit next booting stage mode for the
   domain instance. The possible values of this DT property are: **0x1**
-  (s-mode), and **0x0** (u-mode). If this DT property is not available
+  (S-mode), and **0x0** (U-mode). If this DT property is not available
   and coldboot HART is not assigned to the domain instance then **0x1**
   is used as default value. If this DT property is not available and
   coldboot HART is assigned to the domain instance then **next booting
   stage mode of coldboot HART** is used as default value.
 * **system-reset-allowed** (Optional) - A boolean flag representing
   whether the domain instance is allowed to do system reset.
+* **system-suspend-allowed** (Optional) - A boolean flag representing
+  whether the domain instance is allowed to do system suspend.
 
 ### Assigning HART To Domain Instance
 
@@ -195,9 +210,9 @@ platform support can provide the HART to domain instance assignment using
 platform specific callback.
 
 The HART to domain instance assignment can be parsed from the device tree
-using optional DT property **opensbi,domain** in each CPU DT node. The
-value of DT property **opensbi,domain** is the DT phandle of the domain
-instance DT node. If **opensbi,domain** DT property is not specified then
+using optional DT property **opensbi-domain** in each CPU DT node. The
+value of DT property **opensbi-domain** is the DT phandle of the domain
+instance DT node. If **opensbi-domain** DT property is not specified then
 corresponding HART is assigned to **the ROOT domain**.
 
 ### Domain Configuration Only Accessible to OpenSBI
@@ -222,6 +237,7 @@ be done:
     chosen {
         opensbi-domains {
             compatible = "opensbi,domain,config";
+            system-suspend-test;
 
             tmem: tmem {
                 compatible = "opensbi,domain,memregion";
@@ -246,18 +262,19 @@ be done:
             tdomain: trusted-domain {
                 compatible = "opensbi,domain,instance";
                 possible-harts = <&cpu0>;
-                regions = <&tmem 0x7>, <&tuart 0x7>;
+                regions = <&tmem 0x3f>, <&tuart 0x3f>;
                 boot-hart = <&cpu0>;
                 next-arg1 = <0x0 0x0>;
                 next-addr = <0x0 0x80100000>;
                 next-mode = <0x0>;
                 system-reset-allowed;
+                system-suspend-allowed;
             };
 
             udomain: untrusted-domain {
                 compatible = "opensbi,domain,instance";
                 possible-harts = <&cpu1 &cpu2 &cpu3 &cpu4>;
-                regions = <&tmem 0x0>, <&tuart 0x0>, <&allmem 0x7>;
+                regions = <&tmem 0x0>, <&tuart 0x0>, <&allmem 0x3f>;
             };
         };
     };

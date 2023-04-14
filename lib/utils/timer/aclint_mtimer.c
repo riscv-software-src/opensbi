@@ -142,34 +142,6 @@ int aclint_mtimer_warm_init(void)
 	return 0;
 }
 
-static int aclint_mtimer_add_regions(unsigned long addr, unsigned long size)
-{
-#define MTIMER_ADD_REGION_ALIGN		0x1000
-	int rc;
-	unsigned long pos, end, rsize;
-	struct sbi_domain_memregion reg;
-
-	pos = addr;
-	end = addr + size;
-	while (pos < end) {
-		rsize = pos & (MTIMER_ADD_REGION_ALIGN - 1);
-		if (rsize)
-			rsize = 1UL << sbi_ffs(pos);
-		else
-			rsize = ((end - pos) < MTIMER_ADD_REGION_ALIGN) ?
-				(end - pos) : MTIMER_ADD_REGION_ALIGN;
-
-		sbi_domain_memregion_init(pos, rsize,
-					  SBI_DOMAIN_MEMREGION_MMIO, &reg);
-		rc = sbi_domain_root_add_memregion(&reg);
-		if (rc)
-			return rc;
-		pos += rsize;
-	}
-
-	return 0;
-}
-
 int aclint_mtimer_cold_init(struct aclint_mtimer_data *mt,
 			    struct aclint_mtimer_data *reference)
 {
@@ -177,10 +149,10 @@ int aclint_mtimer_cold_init(struct aclint_mtimer_data *mt,
 	int rc;
 
 	/* Sanity checks */
-	if (!mt || !mt->mtime_size ||
+	if (!mt ||
 	    (mt->hart_count && !mt->mtimecmp_size) ||
-	    (mt->mtime_addr & (ACLINT_MTIMER_ALIGN - 1)) ||
-	    (mt->mtime_size & (ACLINT_MTIMER_ALIGN - 1)) ||
+	    (mt->mtime_size && (mt->mtime_addr & (ACLINT_MTIMER_ALIGN - 1))) ||
+	    (mt->mtime_size && (mt->mtime_size & (ACLINT_MTIMER_ALIGN - 1))) ||
 	    (mt->mtimecmp_addr & (ACLINT_MTIMER_ALIGN - 1)) ||
 	    (mt->mtimecmp_size & (ACLINT_MTIMER_ALIGN - 1)) ||
 	    (mt->first_hartid >= SBI_HARTMASK_MAX_BITS) ||
@@ -206,25 +178,44 @@ int aclint_mtimer_cold_init(struct aclint_mtimer_data *mt,
 	for (i = 0; i < mt->hart_count; i++)
 		mtimer_hartid2data[mt->first_hartid + i] = mt;
 
+	if (!mt->mtime_size) {
+		/* Disable reading mtime when mtime is not available */
+		mtimer.timer_value = NULL;
+	}
+
 	/* Add MTIMER regions to the root domain */
 	if (mt->mtime_addr == (mt->mtimecmp_addr + mt->mtimecmp_size)) {
-		rc = aclint_mtimer_add_regions(mt->mtimecmp_addr,
-					mt->mtime_size + mt->mtimecmp_size);
+		rc = sbi_domain_root_add_memrange(mt->mtimecmp_addr,
+					mt->mtime_size + mt->mtimecmp_size,
+					MTIMER_REGION_ALIGN,
+					(SBI_DOMAIN_MEMREGION_MMIO |
+					 SBI_DOMAIN_MEMREGION_M_READABLE |
+					 SBI_DOMAIN_MEMREGION_M_WRITABLE));
 		if (rc)
 			return rc;
 	} else if (mt->mtimecmp_addr == (mt->mtime_addr + mt->mtime_size)) {
-		rc = aclint_mtimer_add_regions(mt->mtime_addr,
-					mt->mtime_size + mt->mtimecmp_size);
+		rc = sbi_domain_root_add_memrange(mt->mtime_addr,
+					mt->mtime_size + mt->mtimecmp_size,
+					MTIMER_REGION_ALIGN,
+					(SBI_DOMAIN_MEMREGION_MMIO |
+					 SBI_DOMAIN_MEMREGION_M_READABLE |
+					 SBI_DOMAIN_MEMREGION_M_WRITABLE));
 		if (rc)
 			return rc;
 	} else {
-		rc = aclint_mtimer_add_regions(mt->mtime_addr,
-						mt->mtime_size);
+		rc = sbi_domain_root_add_memrange(mt->mtime_addr,
+						mt->mtime_size, MTIMER_REGION_ALIGN,
+						(SBI_DOMAIN_MEMREGION_MMIO |
+						 SBI_DOMAIN_MEMREGION_M_READABLE |
+						 SBI_DOMAIN_MEMREGION_M_WRITABLE));
 		if (rc)
 			return rc;
 
-		rc = aclint_mtimer_add_regions(mt->mtimecmp_addr,
-						mt->mtimecmp_size);
+		rc = sbi_domain_root_add_memrange(mt->mtimecmp_addr,
+						mt->mtimecmp_size, MTIMER_REGION_ALIGN,
+						(SBI_DOMAIN_MEMREGION_MMIO |
+						 SBI_DOMAIN_MEMREGION_M_READABLE |
+						 SBI_DOMAIN_MEMREGION_M_WRITABLE));
 		if (rc)
 			return rc;
 	}

@@ -10,7 +10,7 @@ To handle this, we have two types of RISC-V platform requirements:
 2. **Release specific platform requirements** which apply to a OpenSBI
    release and later releases
 
-Currently, we don't have any **Release specific platform requirements**
+Currently, we don't have any **Release specific platform requirements**,
 but such platform requirements will be added in future.
 
 Base Platform Requirements

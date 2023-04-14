@@ -18,6 +18,7 @@
 struct timer_mtimer_quirks {
 	unsigned int	mtime_offset;
 	bool		has_64bit_mmio;
+	bool		without_mtime;
 };
 
 static unsigned long mtimer_count = 0;
@@ -53,12 +54,16 @@ static int timer_mtimer_cold_init(void *fdt, int nodeoff,
 		/* Set CLINT addresses */
 		mt->mtimecmp_addr = addr[0] + ACLINT_DEFAULT_MTIMECMP_OFFSET;
 		mt->mtimecmp_size = ACLINT_DEFAULT_MTIMECMP_SIZE;
-		mt->mtime_addr = addr[0] + ACLINT_DEFAULT_MTIME_OFFSET;
-		mt->mtime_size = size[0] - mt->mtimecmp_size;
-		/* Adjust MTIMER address and size for CLINT device */
-		mt->mtime_addr += quirks->mtime_offset;
+		if (!quirks->without_mtime) {
+			mt->mtime_addr = addr[0] + ACLINT_DEFAULT_MTIME_OFFSET;
+			mt->mtime_size = size[0] - mt->mtimecmp_size;
+			/* Adjust MTIMER address and size for CLINT device */
+			mt->mtime_addr += quirks->mtime_offset;
+			mt->mtime_size -= quirks->mtime_offset;
+		} else {
+			mt->mtime_addr = mt->mtime_size = 0;
+		}
 		mt->mtimecmp_addr += quirks->mtime_offset;
-		mt->mtime_size -= quirks->mtime_offset;
 		/* Apply additional CLINT quirks */
 		mt->has_64bit_mmio = quirks->has_64bit_mmio;
 	} else { /* RISC-V ACLINT MTIMER */
@@ -70,12 +75,17 @@ static int timer_mtimer_cold_init(void *fdt, int nodeoff,
 	}
 
 	/* Check if MTIMER device has shared MTIME address */
-	mt->has_shared_mtime = false;
-	for (i = 0; i < mtimer_count; i++) {
-		if (mtimer[i].mtime_addr == mt->mtime_addr) {
-			mt->has_shared_mtime = true;
-			break;
+	if (mt->mtime_size) {
+		mt->has_shared_mtime = false;
+		for (i = 0; i < mtimer_count; i++) {
+			if (mtimer[i].mtime_addr == mt->mtime_addr) {
+				mt->has_shared_mtime = true;
+				break;
+			}
 		}
+	} else {
+		/* Assume shared time CSR */
+		mt->has_shared_mtime = true;
 	}
 
 	/* Initialize the MTIMER device */
@@ -114,9 +124,15 @@ static const struct timer_mtimer_quirks sifive_clint_quirks = {
 	.has_64bit_mmio	= true,
 };
 
+static const struct timer_mtimer_quirks thead_clint_quirks = {
+	.mtime_offset	= CLINT_MTIMER_OFFSET,
+	.without_mtime  = true,
+};
+
 static const struct fdt_match timer_mtimer_match[] = {
 	{ .compatible = "riscv,clint0", .data = &sifive_clint_quirks },
 	{ .compatible = "sifive,clint0", .data = &sifive_clint_quirks },
+	{ .compatible = "thead,c900-clint", .data = &thead_clint_quirks },
 	{ .compatible = "riscv,aclint-mtimer" },
 	{ },
 };

@@ -13,7 +13,7 @@ Platform Options
 ----------------
 
 The *T-HEAD C9xx* does not have any platform-specific compile options
-because it use generic platform.
+because it uses generic platform.
 
 ```
 CROSS_COMPILE=riscv64-linux-gnu- PLATFORM=generic /usr/bin/make

@@ -26,7 +26,7 @@ void sbi_fifo_init(struct sbi_fifo *fifo, void *queue_mem, u16 entries,
 /* Note: must be called with fifo->qlock held */
 static inline bool __sbi_fifo_is_full(struct sbi_fifo *fifo)
 {
-	return (fifo->avail == fifo->num_entries) ? TRUE : FALSE;
+	return (fifo->avail == fifo->num_entries) ? true : false;
 }
 
 u16 sbi_fifo_avail(struct sbi_fifo *fifo)
@@ -75,7 +75,7 @@ static inline void  __sbi_fifo_enqueue(struct sbi_fifo *fifo, void *data)
 /* Note: must be called with fifo->qlock held */
 static inline bool __sbi_fifo_is_empty(struct sbi_fifo *fifo)
 {
-	return (fifo->avail == 0) ? TRUE : FALSE;
+	return (fifo->avail == 0) ? true : false;
 }
 
 int sbi_fifo_is_empty(struct sbi_fifo *fifo)
@@ -105,13 +105,13 @@ static inline void __sbi_fifo_reset(struct sbi_fifo *fifo)
 bool sbi_fifo_reset(struct sbi_fifo *fifo)
 {
 	if (!fifo)
-		return FALSE;
+		return false;
 
 	spin_lock(&fifo->qlock);
 	__sbi_fifo_reset(fifo);
 	spin_unlock(&fifo->qlock);
 
-	return TRUE;
+	return true;
 }
 
 /**

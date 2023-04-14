@@ -1,3 +1,4 @@
+
 // SPDX-License-Identifier: BSD-2-Clause
 /*
  * fdt_fixup.c - Flat Device Tree parsing helper routines
@@ -14,9 +15,95 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_string.h>
+#include <sbi/sbi_error.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
 #include <sbi_utils/fdt/fdt_pmu.h>
 #include <sbi_utils/fdt/fdt_helper.h>
+
+int fdt_add_cpu_idle_states(void *fdt, const struct sbi_cpu_idle_state *state)
+{
+	int cpu_node, cpus_node, err, idle_states_node;
+	uint32_t count, phandle;
+
+	err = fdt_open_into(fdt, fdt, fdt_totalsize(fdt) + 1024);
+	if (err < 0)
+		return err;
+
+	err = fdt_find_max_phandle(fdt, &phandle);
+	phandle++;
+	if (err < 0)
+		return err;
+
+	cpus_node = fdt_path_offset(fdt, "/cpus");
+	if (cpus_node < 0)
+		return cpus_node;
+
+	/* Do nothing if the idle-states node already exists. */
+	idle_states_node = fdt_subnode_offset(fdt, cpus_node, "idle-states");
+	if (idle_states_node >= 0)
+		return 0;
+
+	/* Create the idle-states node and its child nodes. */
+	idle_states_node = fdt_add_subnode(fdt, cpus_node, "idle-states");
+	if (idle_states_node < 0)
+		return idle_states_node;
+
+	for (count = 0; state->name; count++, phandle++, state++) {
+		int idle_state_node;
+
+		idle_state_node = fdt_add_subnode(fdt, idle_states_node,
+						  state->name);
+		if (idle_state_node < 0)
+			return idle_state_node;
+
+		fdt_setprop_string(fdt, idle_state_node, "compatible",
+				   "riscv,idle-state");
+		fdt_setprop_u32(fdt, idle_state_node,
+				"riscv,sbi-suspend-param",
+				state->suspend_param);
+		if (state->local_timer_stop)
+			fdt_setprop_empty(fdt, idle_state_node,
+					  "local-timer-stop");
+		fdt_setprop_u32(fdt, idle_state_node, "entry-latency-us",
+				state->entry_latency_us);
+		fdt_setprop_u32(fdt, idle_state_node, "exit-latency-us",
+				state->exit_latency_us);
+		fdt_setprop_u32(fdt, idle_state_node, "min-residency-us",
+				state->min_residency_us);
+		if (state->wakeup_latency_us)
+			fdt_setprop_u32(fdt, idle_state_node,
+					"wakeup-latency-us",
+					state->wakeup_latency_us);
+		fdt_setprop_u32(fdt, idle_state_node, "phandle", phandle);
+	}
+
+	if (count == 0)
+		return 0;
+
+	/* Link each cpu node to the idle state nodes. */
+	fdt_for_each_subnode(cpu_node, fdt, cpus_node) {
+		const char *device_type;
+		fdt32_t *value;
+
+		/* Only process child nodes with device_type = "cpu". */
+		device_type = fdt_getprop(fdt, cpu_node, "device_type", NULL);
+		if (!device_type || strcmp(device_type, "cpu"))
+			continue;
+
+		/* Allocate space for the list of phandles. */
+		err = fdt_setprop_placeholder(fdt, cpu_node, "cpu-idle-states",
+					      count * sizeof(phandle),
+					      (void **)&value);
+		if (err < 0)
+			return err;
+
+		/* Fill in the phandles of the idle state nodes. */
+		for (uint32_t i = 0; i < count; ++i)
+			value[i] = cpu_to_fdt32(phandle - count + i);
+	}
+
+	return 0;
+}
 
 void fdt_cpu_fixup(void *fdt)
 {
@@ -74,22 +161,23 @@ static void fdt_domain_based_fixup_one(void *fdt, int nodeoff)
 	}
 }
 
-void fdt_aplic_fixup(void *fdt)
+static void fdt_fixup_node(void *fdt, const char *compatible)
 {
 	int noff = 0;
 
 	while ((noff = fdt_node_offset_by_compatible(fdt, noff,
-						     "riscv,aplic")) >= 0)
+						     compatible)) >= 0)
 		fdt_domain_based_fixup_one(fdt, noff);
+}
+
+void fdt_aplic_fixup(void *fdt)
+{
+	fdt_fixup_node(fdt, "riscv,aplic");
 }
 
 void fdt_imsic_fixup(void *fdt)
 {
-	int noff = 0;
-
-	while ((noff = fdt_node_offset_by_compatible(fdt, noff,
-						     "riscv,imsics")) >= 0)
-		fdt_domain_based_fixup_one(fdt, noff);
+	fdt_fixup_node(fdt, "riscv,imsics");
 }
 
 void fdt_plic_fixup(void *fdt)
@@ -199,8 +287,10 @@ int fdt_reserved_memory_fixup(void *fdt)
 	struct sbi_domain_memregion *reg;
 	struct sbi_domain *dom = sbi_domain_thishart_ptr();
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	unsigned long filtered_base[PMP_COUNT] = { 0 };
+	unsigned char filtered_order[PMP_COUNT] = { 0 };
 	unsigned long addr, size;
-	int err, parent, i;
+	int err, parent, i, j;
 	int na = fdt_address_cells(fdt, 0);
 	int ns = fdt_size_cells(fdt, 0);
 
@@ -258,18 +348,43 @@ int fdt_reserved_memory_fixup(void *fdt)
 		/* Ignore MMIO or READABLE or WRITABLE or EXECUTABLE regions */
 		if (reg->flags & SBI_DOMAIN_MEMREGION_MMIO)
 			continue;
-		if (reg->flags & SBI_DOMAIN_MEMREGION_READABLE)
+		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_READABLE)
 			continue;
-		if (reg->flags & SBI_DOMAIN_MEMREGION_WRITEABLE)
+		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_WRITABLE)
 			continue;
-		if (reg->flags & SBI_DOMAIN_MEMREGION_EXECUTABLE)
+		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_EXECUTABLE)
 			continue;
 
+		if (i >= PMP_COUNT) {
+			sbi_printf("%s: Too many memory regions to fixup.\n",
+				   __func__);
+			return SBI_ENOSPC;
+		}
+
+		bool overlap = false;
 		addr = reg->base;
-		size = 1UL << reg->order;
-		fdt_resv_memory_update_node(fdt, addr, size, i, parent,
-			(sbi_hart_pmp_count(scratch)) ? false : true);
-		i++;
+		for (j = 0; j < i; j++) {
+			if (addr == filtered_base[j]
+			    && filtered_order[j] < reg->order) {
+				overlap = true;
+				filtered_order[j] = reg->order;
+				break;
+			}
+		}
+
+		if (!overlap) {
+			filtered_base[i] = reg->base;
+			filtered_order[i] = reg->order;
+			i++;
+		}
+	}
+
+	for (j = 0; j < i; j++) {
+		addr = filtered_base[j];
+		size = 1UL << filtered_order[j];
+		fdt_resv_memory_update_node(fdt, addr, size, j, parent,
+					    (sbi_hart_pmp_count(scratch))
+					    ? false : true);
 	}
 
 	return 0;

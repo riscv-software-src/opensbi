@@ -33,6 +33,8 @@ struct imsic_data {
 	struct imsic_regs regs[IMSIC_MAX_REGS];
 };
 
+#ifdef CONFIG_IRQCHIP_IMSIC
+
 int imsic_map_hartid_to_data(u32 hartid, struct imsic_data *imsic, int file);
 
 struct imsic_data *imsic_get_data(u32 hartid);
@@ -46,5 +48,13 @@ int imsic_warm_irqchip_init(void);
 int imsic_data_check(struct imsic_data *imsic);
 
 int imsic_cold_irqchip_init(struct imsic_data *imsic);
+
+#else
+
+static inline void imsic_local_irqchip_init(void) { }
+
+static inline int imsic_data_check(struct imsic_data *imsic) { return 0; }
+
+#endif
 
 #endif

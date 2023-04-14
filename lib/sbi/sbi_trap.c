@@ -9,6 +9,7 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
+#include <sbi/sbi_bitops.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_error.h>
@@ -87,12 +88,12 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 {
 	ulong hstatus, vsstatus, prev_mode;
 #if __riscv_xlen == 32
-	bool prev_virt = (regs->mstatusH & MSTATUSH_MPV) ? TRUE : FALSE;
+	bool prev_virt = (regs->mstatusH & MSTATUSH_MPV) ? true : false;
 #else
-	bool prev_virt = (regs->mstatus & MSTATUS_MPV) ? TRUE : FALSE;
+	bool prev_virt = (regs->mstatus & MSTATUS_MPV) ? true : false;
 #endif
 	/* By default, we redirect to HS-mode */
-	bool next_virt = FALSE;
+	bool next_virt = false;
 
 	/* Sanity check on previous mode */
 	prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
@@ -105,7 +106,7 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 	if (misa_extension('H') && prev_virt) {
 		if ((trap->cause < __riscv_xlen) &&
 		    (csr_read(CSR_HEDELEG) & BIT(trap->cause))) {
-			next_virt = TRUE;
+			next_virt = true;
 		}
 	}
 
@@ -118,14 +119,18 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 	regs->mstatus |= (next_virt) ? MSTATUS_MPV : 0UL;
 #endif
 
-	/* Update HSTATUS for VS/VU-mode to HS-mode transition */
-	if (misa_extension('H') && prev_virt && !next_virt) {
-		/* Update HSTATUS SPVP and SPV bits */
+	/* Update hypervisor CSRs if going to HS-mode */
+	if (misa_extension('H') && !next_virt) {
 		hstatus = csr_read(CSR_HSTATUS);
-		hstatus &= ~HSTATUS_SPVP;
-		hstatus |= (prev_mode == PRV_S) ? HSTATUS_SPVP : 0;
+		if (prev_virt) {
+			/* hstatus.SPVP is only updated if coming from VS/VU-mode */
+			hstatus &= ~HSTATUS_SPVP;
+			hstatus |= (prev_mode == PRV_S) ? HSTATUS_SPVP : 0;
+		}
 		hstatus &= ~HSTATUS_SPV;
 		hstatus |= (prev_virt) ? HSTATUS_SPV : 0;
+		hstatus &= ~HSTATUS_GVA;
+		hstatus |= (trap->gva) ? HSTATUS_GVA : 0;
 		csr_write(CSR_HSTATUS, hstatus);
 		csr_write(CSR_HTVAL, trap->tval2);
 		csr_write(CSR_HTINST, trap->tinst);
@@ -270,7 +275,7 @@ struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs)
 
 	if (mcause & (1UL << (__riscv_xlen - 1))) {
 		if (sbi_hart_has_extension(sbi_scratch_thishart_ptr(),
-					   SBI_HART_EXT_AIA))
+					   SBI_HART_EXT_SMAIA))
 			rc = sbi_trap_aia_irq(regs, mcause);
 		else
 			rc = sbi_trap_nonaia_irq(regs, mcause);
@@ -311,6 +316,8 @@ struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs)
 		trap.tval = mtval;
 		trap.tval2 = mtval2;
 		trap.tinst = mtinst;
+		trap.gva   = sbi_regs_gva(regs);
+
 		rc = sbi_trap_redirect(regs, &trap);
 		break;
 	};

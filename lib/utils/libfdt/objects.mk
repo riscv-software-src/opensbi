@@ -12,5 +12,5 @@ libfdt_files = fdt.o fdt_addresses.o fdt_check.o fdt_empty_tree.o fdt_ro.o fdt_r
 $(foreach file, $(libfdt_files), \
         $(eval CFLAGS_$(file) = -I$(src)/../../utils/libfdt))
 
-libsbiutils-objs-y += $(addprefix libfdt/,$(libfdt_files))
+libsbiutils-objs-$(CONFIG_LIBFDT) += $(addprefix libfdt/,$(libfdt_files))
 libsbiutils-genflags-y  += -I$(libsbiutils_dir)/libfdt/

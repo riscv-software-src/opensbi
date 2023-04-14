@@ -15,7 +15,7 @@ static int serial_gaisler_init(void *fdt, int nodeoff,
 			       const struct fdt_match *match)
 {
 	int rc;
-	struct platform_uart_data uart;
+	struct platform_uart_data uart = { 0 };
 
 	rc = fdt_parse_gaisler_uart_node(fdt, nodeoff, &uart);
 	if (rc)

@@ -47,10 +47,13 @@ ifdef PLATFORM_DIR
     platform_parent_dir=$(platform_dir_path)
   else
     PLATFORM=$(shell basename $(platform_dir_path))
-    platform_parent_dir=$(subst $(PLATFORM),,$(platform_dir_path))
+    platform_parent_dir=$(shell realpath ${platform_dir_path}/..)
   endif
 else
  platform_parent_dir=$(src_dir)/platform
+endif
+ifndef PLATFORM_DEFCONFIG
+PLATFORM_DEFCONFIG=defconfig
 endif
 
 # Check if verbosity is ON for build process
@@ -69,6 +72,20 @@ export include_dir=$(CURDIR)/include
 export libsbi_dir=$(CURDIR)/lib/sbi
 export libsbiutils_dir=$(CURDIR)/lib/utils
 export firmware_dir=$(CURDIR)/firmware
+
+# Setup variables for kconfig
+ifdef PLATFORM
+export PYTHONDONTWRITEBYTECODE=1
+export KCONFIG_DIR=$(platform_build_dir)/kconfig
+export KCONFIG_AUTOLIST=$(KCONFIG_DIR)/auto.list
+export KCONFIG_AUTOHEADER=$(KCONFIG_DIR)/autoconf.h
+export KCONFIG_AUTOCMD=$(KCONFIG_DIR)/auto.conf.cmd
+export KCONFIG_CONFIG=$(KCONFIG_DIR)/.config
+# Additional exports for include paths in Kconfig files
+export OPENSBI_SRC_DIR=$(src_dir)
+export OPENSBI_PLATFORM=$(PLATFORM)
+export OPENSBI_PLATFORM_SRC_DIR=$(platform_src_dir)
+endif
 
 # Find library version
 OPENSBI_VERSION_MAJOR=`grep "define OPENSBI_VERSION_MAJOR" $(include_dir)/sbi/sbi_version.h | sed 's/.*MAJOR.*\([0-9][0-9]*\)/\1/'`
@@ -183,12 +200,38 @@ libsbi-object-mks=$(shell if [ -d $(libsbi_dir) ]; then find $(libsbi_dir) -inam
 libsbiutils-object-mks=$(shell if [ -d $(libsbiutils_dir) ]; then find $(libsbiutils_dir) -iname "objects.mk" | sort -r; fi)
 firmware-object-mks=$(shell if [ -d $(firmware_dir) ]; then find $(firmware_dir) -iname "objects.mk" | sort -r; fi)
 
-# Include platform specifig config.mk
+# The "make all" rule should always be first rule
+.PHONY: all
+all:
+
+# Include platform specific .config
 ifdef PLATFORM
-include $(platform_src_dir)/config.mk
+.PHONY: menuconfig
+menuconfig: $(platform_src_dir)/Kconfig $(src_dir)/Kconfig
+	$(CMD_PREFIX)mkdir -p $(KCONFIG_DIR)
+	$(CMD_PREFIX)$(src_dir)/scripts/Kconfiglib/menuconfig.py $(src_dir)/Kconfig
+	$(CMD_PREFIX)$(src_dir)/scripts/Kconfiglib/genconfig.py --header-path $(KCONFIG_AUTOHEADER) --sync-deps $(KCONFIG_DIR) --file-list $(KCONFIG_AUTOLIST) $(src_dir)/Kconfig
+
+.PHONY: savedefconfig
+savedefconfig: $(platform_src_dir)/Kconfig $(src_dir)/Kconfig
+	$(CMD_PREFIX)mkdir -p $(KCONFIG_DIR)
+	$(CMD_PREFIX)$(src_dir)/scripts/Kconfiglib/savedefconfig.py --kconfig $(src_dir)/Kconfig --out $(KCONFIG_DIR)/defconfig
+
+$(KCONFIG_CONFIG): $(platform_src_dir)/configs/$(PLATFORM_DEFCONFIG) $(platform_src_dir)/Kconfig $(src_dir)/Kconfig
+	$(CMD_PREFIX)mkdir -p $(KCONFIG_DIR)
+	$(CMD_PREFIX)$(src_dir)/scripts/Kconfiglib/defconfig.py --kconfig $(src_dir)/Kconfig $(platform_src_dir)/configs/$(PLATFORM_DEFCONFIG)
+	$(CMD_PREFIX)$(src_dir)/scripts/Kconfiglib/genconfig.py --header-path $(KCONFIG_AUTOHEADER) --sync-deps $(KCONFIG_DIR) --file-list $(KCONFIG_AUTOLIST) $(src_dir)/Kconfig
+
+$(KCONFIG_AUTOCMD): $(KCONFIG_CONFIG)
+	$(CMD_PREFIX)mkdir -p $(KCONFIG_DIR)
+	$(CMD_PREFIX)printf "%s: " $(KCONFIG_CONFIG) > $(KCONFIG_AUTOCMD)
+	$(CMD_PREFIX)cat $(KCONFIG_AUTOLIST) | tr '\n' ' ' >> $(KCONFIG_AUTOCMD)
+
+include $(KCONFIG_CONFIG)
+include $(KCONFIG_AUTOCMD)
 endif
 
-# Include all object.mk files
+# Include all objects.mk files
 ifdef PLATFORM
 include $(platform-object-mks)
 endif
@@ -198,8 +241,8 @@ include $(firmware-object-mks)
 
 # Setup list of objects
 libsbi-objs-path-y=$(foreach obj,$(libsbi-objs-y),$(build_dir)/lib/sbi/$(obj))
-libsbiutils-objs-path-y=$(foreach obj,$(libsbiutils-objs-y),$(build_dir)/lib/utils/$(obj))
 ifdef PLATFORM
+libsbiutils-objs-path-y=$(foreach obj,$(libsbiutils-objs-y),$(platform_build_dir)/lib/utils/$(obj))
 platform-objs-path-y=$(foreach obj,$(platform-objs-y),$(platform_build_dir)/$(obj))
 firmware-bins-path-y=$(foreach bin,$(firmware-bins-y),$(platform_build_dir)/firmware/$(bin))
 endif
@@ -211,6 +254,7 @@ deps-y=$(platform-objs-path-y:.o=.dep)
 deps-y+=$(libsbi-objs-path-y:.o=.dep)
 deps-y+=$(libsbiutils-objs-path-y:.o=.dep)
 deps-y+=$(firmware-objs-path-y:.o=.dep)
+deps-y+=$(firmware-elfs-path-y:=.dep)
 
 # Setup platform ABI, ISA and Code Model
 ifndef PLATFORM_RISCV_ABI
@@ -280,11 +324,19 @@ ifeq ($(BUILD_INFO),y)
 GENFLAGS	+=	-DOPENSBI_BUILD_TIME_STAMP="\"$(OPENSBI_BUILD_TIME_STAMP)\""
 GENFLAGS	+=	-DOPENSBI_BUILD_COMPILER_VERSION="\"$(OPENSBI_BUILD_COMPILER_VERSION)\""
 endif
+ifdef PLATFORM
+GENFLAGS	+=	-include $(KCONFIG_AUTOHEADER)
+endif
 GENFLAGS	+=	$(libsbiutils-genflags-y)
 GENFLAGS	+=	$(platform-genflags-y)
 GENFLAGS	+=	$(firmware-genflags-y)
 
-CFLAGS		=	-g -Wall -Werror -ffreestanding -nostdlib -fno-stack-protector -fno-strict-aliasing -O2
+CFLAGS		=	-g -Wall -Werror -ffreestanding -nostdlib -fno-stack-protector -fno-strict-aliasing
+ifneq ($(DEBUG),)
+CFLAGS		+=	-O0
+else
+CFLAGS		+=	-O2
+endif
 CFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls -mstrict-align
 # enable -m(no-)save-restore option by CC_SUPPORT_SAVE_RESTORE
 ifeq ($(CC_SUPPORT_SAVE_RESTORE),y)
@@ -323,7 +375,7 @@ ASFLAGS		+=	$(firmware-asflags-y)
 ARFLAGS		=	rcs
 
 ELFFLAGS	+=	$(USE_LD_FLAG)
-ELFFLAGS	+=	-Wl,--build-id=none -Wl,-N
+ELFFLAGS	+=	-Wl,--build-id=none
 ELFFLAGS	+=	$(platform-ldflags-y)
 ELFFLAGS	+=	$(firmware-ldflags-y)
 
@@ -367,6 +419,11 @@ inst_file_list = $(CMD_PREFIX)if [ ! -z "$(4)" ]; then \
 inst_header_dir =  $(CMD_PREFIX)mkdir -p $(1); \
 	     echo " INSTALL   $(subst $(install_root_dir)/,,$(1))"; \
 	     cp -rf $(2) $(1)
+compile_cpp_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
+	     echo " CPP-DEP   $(subst $(build_dir)/,,$(1))"; \
+	     printf %s `dirname $(1)`/  > $(1) && \
+	     $(CC) $(CPPFLAGS) -x c -MM $(3) \
+	       -MT `basename $(1:.dep=$(2))` >> $(1) || rm -f $(1)
 compile_cpp = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " CPP       $(subst $(build_dir)/,,$(1))"; \
 	     $(CPP) $(CPPFLAGS) -x c $(2) | grep -v "\#" > $(1)
@@ -413,29 +470,33 @@ compile_gen_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo "$(1:.dep=$(2)): $(3)" >> $(1)
 
 targets-y  = $(build_dir)/lib/libsbi.a
-targets-y  += $(build_dir)/lib/libsbiutils.a
 ifdef PLATFORM
 targets-y += $(platform_build_dir)/lib/libplatsbi.a
 endif
 targets-y += $(firmware-bins-path-y)
 
-# Default rule "make" should always be first rule
+# The default "make all" rule
 .PHONY: all
 all: $(targets-y)
 
 # Preserve all intermediate files
 .SECONDARY:
 
+# Rules for lib/sbi sources
 $(build_dir)/lib/libsbi.a: $(libsbi-objs-path-y)
-	$(call compile_ar,$@,$^)
-
-$(build_dir)/lib/libsbiutils.a: $(libsbi-objs-path-y) $(libsbiutils-objs-path-y)
 	$(call compile_ar,$@,$^)
 
 $(platform_build_dir)/lib/libplatsbi.a: $(libsbi-objs-path-y) $(libsbiutils-objs-path-y) $(platform-objs-path-y)
 	$(call compile_ar,$@,$^)
 
-$(build_dir)/%.dep: $(src_dir)/%.c
+$(build_dir)/%.dep: $(src_dir)/%.carray $(KCONFIG_CONFIG)
+	$(call compile_gen_dep,$@,.c,$< $(KCONFIG_CONFIG))
+	$(call compile_gen_dep,$@,.o,$(@:.dep=.c))
+
+$(build_dir)/%.c: $(src_dir)/%.carray
+	$(call compile_carray,$@,$<)
+
+$(build_dir)/%.dep: $(src_dir)/%.c $(KCONFIG_CONFIG)
 	$(call compile_cc_dep,$@,$<)
 
 $(build_dir)/%.o: $(src_dir)/%.c
@@ -449,32 +510,24 @@ $(build_dir)/lib/sbi/sbi_init.o: $(libsbi_dir)/sbi_init.c FORCE
 	$(call compile_cc,$@,$<)
 endif
 
-$(build_dir)/%.dep: $(src_dir)/%.S
+$(build_dir)/%.dep: $(src_dir)/%.S $(KCONFIG_CONFIG)
 	$(call compile_as_dep,$@,$<)
 
 $(build_dir)/%.o: $(src_dir)/%.S
 	$(call compile_as,$@,$<)
 
-$(build_dir)/%.dep: $(src_dir)/%.carray
-	$(call compile_gen_dep,$@,.c,$<)
+# Rules for platform sources
+$(platform_build_dir)/%.dep: $(platform_src_dir)/%.carray $(KCONFIG_CONFIG)
+	$(call compile_gen_dep,$@,.c,$< $(KCONFIG_CONFIG))
 	$(call compile_gen_dep,$@,.o,$(@:.dep=.c))
 
-$(build_dir)/%.c: $(src_dir)/%.carray
+$(platform_build_dir)/%.c: $(platform_src_dir)/%.carray
 	$(call compile_carray,$@,$<)
 
-$(platform_build_dir)/%.bin: $(platform_build_dir)/%.elf
-	$(call compile_objcopy,$@,$<)
-
-$(platform_build_dir)/%.elf: $(platform_build_dir)/%.o $(platform_build_dir)/%.elf.ld $(platform_build_dir)/lib/libplatsbi.a
-	$(call compile_elf,$@,$@.ld,$< $(platform_build_dir)/lib/libplatsbi.a)
-
-$(platform_build_dir)/%.ld: $(src_dir)/%.ldS
-	$(call compile_cpp,$@,$<)
-
-$(platform_build_dir)/%.dep: $(platform_src_dir)/%.c
+$(platform_build_dir)/%.dep: $(platform_src_dir)/%.c $(KCONFIG_CONFIG)
 	$(call compile_cc_dep,$@,$<)
 
-$(platform_build_dir)/%.o: $(platform_src_dir)/%.c
+$(platform_build_dir)/%.o: $(platform_src_dir)/%.c $(KCONFIG_CONFIG)
 	$(call compile_cc,$@,$<)
 
 $(platform_build_dir)/%.dep: $(platform_src_dir)/%.S
@@ -483,8 +536,8 @@ $(platform_build_dir)/%.dep: $(platform_src_dir)/%.S
 $(platform_build_dir)/%.o: $(platform_src_dir)/%.S
 	$(call compile_as,$@,$<)
 
-$(platform_build_dir)/%.dep: $(platform_src_dir)/%.dts
-	$(call compile_gen_dep,$@,.dtb,$<)
+$(platform_build_dir)/%.dep: $(platform_src_dir)/%.dts $(KCONFIG_CONFIG)
+	$(call compile_gen_dep,$@,.dtb,$< $(KCONFIG_CONFIG))
 	$(call compile_gen_dep,$@,.c,$(@:.dep=.dtb))
 	$(call compile_gen_dep,$@,.o,$(@:.dep=.c))
 
@@ -494,13 +547,33 @@ $(platform_build_dir)/%.c: $(platform_build_dir)/%.dtb
 $(platform_build_dir)/%.dtb: $(platform_src_dir)/%.dts
 	$(call compile_dts,$@,$<)
 
-$(platform_build_dir)/%.dep: $(src_dir)/%.c
+# Rules for lib/utils and firmware sources
+$(platform_build_dir)/%.bin: $(platform_build_dir)/%.elf
+	$(call compile_objcopy,$@,$<)
+
+$(platform_build_dir)/%.elf: $(platform_build_dir)/%.o $(platform_build_dir)/%.elf.ld $(platform_build_dir)/lib/libplatsbi.a
+	$(call compile_elf,$@,$@.ld,$< $(platform_build_dir)/lib/libplatsbi.a)
+
+$(platform_build_dir)/%.dep: $(src_dir)/%.ldS $(KCONFIG_CONFIG)
+	$(call compile_cpp_dep,$@,.ld,$<)
+
+$(platform_build_dir)/%.ld: $(src_dir)/%.ldS
+	$(call compile_cpp,$@,$<)
+
+$(platform_build_dir)/%.dep: $(src_dir)/%.carray $(KCONFIG_CONFIG)
+	$(call compile_gen_dep,$@,.c,$< $(KCONFIG_CONFIG))
+	$(call compile_gen_dep,$@,.o,$(@:.dep=.c))
+
+$(platform_build_dir)/%.c: $(src_dir)/%.carray
+	$(call compile_carray,$@,$<)
+
+$(platform_build_dir)/%.dep: $(src_dir)/%.c $(KCONFIG_CONFIG)
 	$(call compile_cc_dep,$@,$<)
 
 $(platform_build_dir)/%.o: $(src_dir)/%.c
 	$(call compile_cc,$@,$<)
 
-$(platform_build_dir)/%.dep: $(src_dir)/%.S
+$(platform_build_dir)/%.dep: $(src_dir)/%.S $(KCONFIG_CONFIG)
 	$(call compile_as_dep,$@,$<)
 
 $(platform_build_dir)/%.o: $(src_dir)/%.S
@@ -544,7 +617,6 @@ endif
 endif
 
 install_targets-y  = install_libsbi
-install_targets-y  += install_libsbiutils
 ifdef PLATFORM
 install_targets-y += install_libplatsbi
 install_targets-y += install_firmwares
@@ -559,23 +631,29 @@ install_libsbi: $(build_dir)/lib/libsbi.a
 	$(call inst_header_dir,$(install_root_dir)/$(install_include_path),$(include_dir)/sbi)
 	$(call inst_file,$(install_root_dir)/$(install_lib_path)/libsbi.a,$(build_dir)/lib/libsbi.a)
 
-.PHONY: install_libsbiutils
-install_libsbiutils: $(build_dir)/lib/libsbiutils.a
-	$(call inst_header_dir,$(install_root_dir)/$(install_include_path),$(include_dir)/sbi_utils)
-	$(call inst_file,$(install_root_dir)/$(install_lib_path)/libsbiutils.a,$(build_dir)/lib/libsbiutils.a)
-
 .PHONY: install_libplatsbi
-install_libplatsbi: $(platform_build_dir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a $(build_dir)/lib/libsbiutils.a
+install_libplatsbi: $(platform_build_dir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a
 	$(call inst_file,$(install_root_dir)/$(install_lib_path)/opensbi/$(platform_subdir)/lib/libplatsbi.a,$(platform_build_dir)/lib/libplatsbi.a)
 
 .PHONY: install_firmwares
-install_firmwares: $(platform_build_dir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a $(build_dir)/lib/libsbiutils.a $(firmware-bins-path-y)
+install_firmwares: $(platform_build_dir)/lib/libplatsbi.a $(build_dir)/lib/libsbi.a $(firmware-bins-path-y)
 	$(call inst_file_list,$(install_root_dir),$(build_dir),$(install_firmware_path)/$(platform_subdir)/firmware,$(firmware-elfs-path-y))
 	$(call inst_file_list,$(install_root_dir),$(build_dir),$(install_firmware_path)/$(platform_subdir)/firmware,$(firmware-bins-path-y))
 
 .PHONY: install_docs
 install_docs: $(build_dir)/docs/latex/refman.pdf
 	$(call inst_file,$(install_root_dir)/$(install_docs_path)/refman.pdf,$(build_dir)/docs/latex/refman.pdf)
+
+.PHONY: cscope
+cscope:
+	$(CMD_PREFIX)find \
+		"$(src_dir)/firmware" \
+		"$(src_dir)/include" \
+		"$(src_dir)/lib" \
+		"$(platform_src_dir)" \
+	-name "*.[chS]" -print > cscope.files
+	$(CMD_PREFIX)echo "$(KCONFIG_AUTOHEADER)" >> cscope.files
+	$(CMD_PREFIX)cscope -bkq -i cscope.files -f cscope.out
 
 # Rule for "make clean"
 .PHONY: clean
@@ -606,6 +684,8 @@ ifeq ($(install_root_dir),$(install_root_dir_default)/usr)
 	$(if $(V), @echo " RM        $(install_root_dir_default)")
 	$(CMD_PREFIX)rm -rf $(install_root_dir_default)
 endif
+	$(if $(V), @echo " RM        $(src_dir)/cscope*")
+	$(CMD_PREFIX)rm -f $(src_dir)/cscope*
 
 .PHONY: FORCE
 FORCE:

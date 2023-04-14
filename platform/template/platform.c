@@ -11,7 +11,7 @@
 
 /*
  * Include these files as needed.
- * See config.mk PLATFORM_xxx configuration parameters.
+ * See objects.mk PLATFORM_xxx configuration parameters.
  */
 #include <sbi_utils/ipi/aclint_mswi.h>
 #include <sbi_utils/irqchip/plic.h>
@@ -53,7 +53,7 @@ static struct aclint_mtimer_data mtimer = {
 	.mtimecmp_size = ACLINT_DEFAULT_MTIMECMP_SIZE,
 	.first_hartid = 0,
 	.hart_count = PLATFORM_HART_COUNT,
-	.has_64bit_mmio = TRUE,
+	.has_64bit_mmio = true,
 };
 
 /*

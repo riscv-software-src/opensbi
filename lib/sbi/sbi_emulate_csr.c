@@ -39,7 +39,7 @@ static bool hpm_allowed(int hpm_num, ulong prev_mode, bool virt)
 			cen = 0;
 	}
 
-	return ((cen >> hpm_num) & 1) ? TRUE : FALSE;
+	return ((cen >> hpm_num) & 1) ? true : false;
 }
 
 int sbi_emulate_csr_read(int csr_num, struct sbi_trap_regs *regs,
@@ -49,9 +49,9 @@ int sbi_emulate_csr_read(int csr_num, struct sbi_trap_regs *regs,
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	ulong prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
 #if __riscv_xlen == 32
-	bool virt = (regs->mstatusH & MSTATUSH_MPV) ? TRUE : FALSE;
+	bool virt = (regs->mstatusH & MSTATUSH_MPV) ? true : false;
 #else
-	bool virt = (regs->mstatus & MSTATUS_MPV) ? TRUE : FALSE;
+	bool virt = (regs->mstatus & MSTATUS_MPV) ? true : false;
 #endif
 
 	switch (csr_num) {
@@ -164,9 +164,9 @@ int sbi_emulate_csr_write(int csr_num, struct sbi_trap_regs *regs,
 	int ret = 0;
 	ulong prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
 #if __riscv_xlen == 32
-	bool virt = (regs->mstatusH & MSTATUSH_MPV) ? TRUE : FALSE;
+	bool virt = (regs->mstatusH & MSTATUSH_MPV) ? true : false;
 #else
-	bool virt = (regs->mstatus & MSTATUS_MPV) ? TRUE : FALSE;
+	bool virt = (regs->mstatus & MSTATUS_MPV) ? true : false;
 #endif
 
 	switch (csr_num) {

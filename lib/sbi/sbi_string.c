@@ -59,7 +59,6 @@ size_t sbi_strnlen(const char *str, size_t count)
 	while (*str != '\0' && ret < count) {
 		ret++;
 		str++;
-		count--;
 	}
 
 	return ret;

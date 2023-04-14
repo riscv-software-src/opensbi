@@ -12,6 +12,8 @@
 
 #include <sbi/sbi_types.h>
 
+#ifdef CONFIG_FDT_IPI
+
 struct fdt_ipi {
 	const struct fdt_match *match_table;
 	int (*cold_init)(void *fdt, int nodeoff, const struct fdt_match *match);
@@ -22,5 +24,12 @@ struct fdt_ipi {
 void fdt_ipi_exit(void);
 
 int fdt_ipi_init(bool cold_boot);
+
+#else
+
+static inline void fdt_ipi_exit(void) { }
+static inline int fdt_ipi_init(bool cold_boot) { return 0; }
+
+#endif
 
 #endif

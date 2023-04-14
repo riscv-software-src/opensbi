@@ -30,6 +30,7 @@ static int truly_illegal_insn(ulong insn, struct sbi_trap_regs *regs)
 	trap.tval = insn;
 	trap.tval2 = 0;
 	trap.tinst = 0;
+	trap.gva   = 0;
 
 	return sbi_trap_redirect(regs, &trap);
 }
@@ -39,6 +40,7 @@ static int misc_mem_opcode_insn(ulong insn, struct sbi_trap_regs *regs)
 	/* Errata workaround: emulate `fence.tso` as `fence rw, rw`. */
 	if ((insn & INSN_MASK_FENCE_TSO) == INSN_MATCH_FENCE_TSO) {
 		smp_mb();
+		regs->mepc += 4;
 		return 0;
 	}
 

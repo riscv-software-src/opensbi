@@ -48,6 +48,24 @@ static inline void sbi_timer_udelay(ulong usecs)
 	sbi_timer_delay_loop(usecs, 1000000, NULL, NULL);
 }
 
+/**
+ * A blocking function that will wait until @p predicate returns true or
+ * @p timeout_ms milliseconds elapsed. @p arg will be passed as argument to
+ * @p predicate function.
+ *
+ * @param predicate Pointer to a function that returns true if certain
+ * condition is met. It shouldn't block the code execution.
+ * @param arg Argument to pass to @p predicate.
+ * @param timeout_ms Timeout value in milliseconds. The function will return
+ * false if @p timeout_ms time period elapsed but still @p predicate doesn't
+ * return true.
+ *
+ * @return true if @p predicate returns true within @p timeout_ms, false
+ * otherwise.
+ */
+bool sbi_timer_waitms_until(bool (*predicate)(void *), void *arg,
+			    uint64_t timeout_ms);
+
 /** Get timer value for current HART */
 u64 sbi_timer_value(void);
 

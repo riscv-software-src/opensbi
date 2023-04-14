@@ -88,7 +88,10 @@ int aclint_mswi_cold_init(struct aclint_mswi_data *mswi)
 		region_size = ((mswi->size - pos) < ACLINT_MSWI_ALIGN) ?
 			      (mswi->size - pos) : ACLINT_MSWI_ALIGN;
 		sbi_domain_memregion_init(mswi->addr + pos, region_size,
-					  SBI_DOMAIN_MEMREGION_MMIO, &reg);
+					  (SBI_DOMAIN_MEMREGION_MMIO |
+					   SBI_DOMAIN_MEMREGION_M_READABLE |
+					   SBI_DOMAIN_MEMREGION_M_WRITABLE),
+					  &reg);
 		rc = sbi_domain_root_add_memregion(&reg);
 		if (rc)
 			return rc;

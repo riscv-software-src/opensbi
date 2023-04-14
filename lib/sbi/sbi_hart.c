@@ -19,24 +19,16 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_math.h>
 #include <sbi/sbi_platform.h>
+#include <sbi/sbi_pmu.h>
 #include <sbi/sbi_string.h>
 #include <sbi/sbi_trap.h>
+#include <sbi/sbi_hfence.h>
 
 extern void __sbi_expected_trap(void);
 extern void __sbi_expected_trap_hext(void);
 
 void (*sbi_hart_expected_trap)(void) = &__sbi_expected_trap;
 
-struct hart_features {
-	bool detected;
-	int priv_version;
-	unsigned long extensions;
-	unsigned int pmp_count;
-	unsigned int pmp_addr_bits;
-	unsigned long pmp_gran;
-	unsigned int mhpm_count;
-	unsigned int mhpm_bits;
-};
 static unsigned long hart_features_offset;
 
 static void mstatus_init(struct sbi_scratch *scratch)
@@ -98,9 +90,10 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		mstateen_val |= ((uint64_t)csr_read(CSR_MSTATEEN0H)) << 32;
 #endif
 		mstateen_val |= SMSTATEEN_STATEN;
+		mstateen_val |= SMSTATEEN0_CONTEXT;
 		mstateen_val |= SMSTATEEN0_HSENVCFG;
 
-		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_AIA))
+		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SMAIA))
 			mstateen_val |= (SMSTATEEN0_AIA | SMSTATEEN0_SVSLCT |
 					SMSTATEEN0_IMSIC);
 		else
@@ -208,8 +201,7 @@ static int delegate_traps(struct sbi_scratch *scratch)
 
 	/* Send M-mode interrupts and most exceptions to S-mode */
 	interrupts = MIP_SSIP | MIP_STIP | MIP_SEIP;
-	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SSCOFPMF))
-		interrupts |= MIP_LCOFIP;
+	interrupts |= sbi_pmu_irq_bit();
 
 	exceptions = (1U << CAUSE_MISALIGNED_FETCH) | (1U << CAUSE_BREAKPOINT) |
 		     (1U << CAUSE_USER_ECALL);
@@ -254,7 +246,7 @@ void sbi_hart_delegation_dump(struct sbi_scratch *scratch,
 
 unsigned int sbi_hart_mhpm_count(struct sbi_scratch *scratch)
 {
-	struct hart_features *hfeatures =
+	struct sbi_hart_features *hfeatures =
 			sbi_scratch_offset_ptr(scratch, hart_features_offset);
 
 	return hfeatures->mhpm_count;
@@ -262,7 +254,7 @@ unsigned int sbi_hart_mhpm_count(struct sbi_scratch *scratch)
 
 unsigned int sbi_hart_pmp_count(struct sbi_scratch *scratch)
 {
-	struct hart_features *hfeatures =
+	struct sbi_hart_features *hfeatures =
 			sbi_scratch_offset_ptr(scratch, hart_features_offset);
 
 	return hfeatures->pmp_count;
@@ -270,7 +262,7 @@ unsigned int sbi_hart_pmp_count(struct sbi_scratch *scratch)
 
 unsigned long sbi_hart_pmp_granularity(struct sbi_scratch *scratch)
 {
-	struct hart_features *hfeatures =
+	struct sbi_hart_features *hfeatures =
 			sbi_scratch_offset_ptr(scratch, hart_features_offset);
 
 	return hfeatures->pmp_gran;
@@ -278,7 +270,7 @@ unsigned long sbi_hart_pmp_granularity(struct sbi_scratch *scratch)
 
 unsigned int sbi_hart_pmp_addrbits(struct sbi_scratch *scratch)
 {
-	struct hart_features *hfeatures =
+	struct sbi_hart_features *hfeatures =
 			sbi_scratch_offset_ptr(scratch, hart_features_offset);
 
 	return hfeatures->pmp_addr_bits;
@@ -286,7 +278,7 @@ unsigned int sbi_hart_pmp_addrbits(struct sbi_scratch *scratch)
 
 unsigned int sbi_hart_mhpm_bits(struct sbi_scratch *scratch)
 {
-	struct hart_features *hfeatures =
+	struct sbi_hart_features *hfeatures =
 			sbi_scratch_offset_ptr(scratch, hart_features_offset);
 
 	return hfeatures->mhpm_bits;
@@ -312,14 +304,20 @@ int sbi_hart_pmp_configure(struct sbi_scratch *scratch)
 			break;
 
 		pmp_flags = 0;
-		if (reg->flags & SBI_DOMAIN_MEMREGION_READABLE)
-			pmp_flags |= PMP_R;
-		if (reg->flags & SBI_DOMAIN_MEMREGION_WRITEABLE)
-			pmp_flags |= PMP_W;
-		if (reg->flags & SBI_DOMAIN_MEMREGION_EXECUTABLE)
-			pmp_flags |= PMP_X;
-		if (reg->flags & SBI_DOMAIN_MEMREGION_MMODE)
+
+		/*
+		 * If permissions are to be enforced for all modes on this
+		 * region, the lock bit should be set.
+		 */
+		if (reg->flags & SBI_DOMAIN_MEMREGION_ENF_PERMISSIONS)
 			pmp_flags |= PMP_L;
+
+		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_READABLE)
+			pmp_flags |= PMP_R;
+		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_WRITABLE)
+			pmp_flags |= PMP_W;
+		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_EXECUTABLE)
+			pmp_flags |= PMP_X;
 
 		pmp_addr =  reg->base >> PMP_SHIFT;
 		if (pmp_gran_log2 <= reg->order && pmp_addr < pmp_addr_max)
@@ -331,12 +329,33 @@ int sbi_hart_pmp_configure(struct sbi_scratch *scratch)
 		}
 	}
 
+	/*
+	 * As per section 3.7.2 of privileged specification v1.12,
+	 * virtual address translations can be speculatively performed
+	 * (even before actual access). These, along with PMP traslations,
+	 * can be cached. This can pose a problem with CPU hotplug
+	 * and non-retentive suspend scenario because PMP states are
+	 * not preserved.
+	 * It is advisable to flush the caching structures under such
+	 * conditions.
+	 */
+	if (misa_extension('S')) {
+		__asm__ __volatile__("sfence.vma");
+
+		/*
+		 * If hypervisor mode is supported, flush caching
+		 * structures in guest mode too.
+		 */
+		if (misa_extension('H'))
+			__sbi_hfence_gvma_all();
+	}
+
 	return 0;
 }
 
 int sbi_hart_priv_version(struct sbi_scratch *scratch)
 {
-	struct hart_features *hfeatures =
+	struct sbi_hart_features *hfeatures =
 			sbi_scratch_offset_ptr(scratch, hart_features_offset);
 
 	return hfeatures->priv_version;
@@ -346,7 +365,7 @@ void sbi_hart_get_priv_version_str(struct sbi_scratch *scratch,
 				   char *version_str, int nvstr)
 {
 	char *temp;
-	struct hart_features *hfeatures =
+	struct sbi_hart_features *hfeatures =
 			sbi_scratch_offset_ptr(scratch, hart_features_offset);
 
 	switch (hfeatures->priv_version) {
@@ -368,7 +387,7 @@ void sbi_hart_get_priv_version_str(struct sbi_scratch *scratch,
 }
 
 static inline void __sbi_hart_update_extension(
-					struct hart_features *hfeatures,
+					struct sbi_hart_features *hfeatures,
 					enum sbi_hart_extensions ext,
 					bool enable)
 {
@@ -389,7 +408,7 @@ void sbi_hart_update_extension(struct sbi_scratch *scratch,
 			       enum sbi_hart_extensions ext,
 			       bool enable)
 {
-	struct hart_features *hfeatures =
+	struct sbi_hart_features *hfeatures =
 			sbi_scratch_offset_ptr(scratch, hart_features_offset);
 
 	__sbi_hart_update_extension(hfeatures, ext, enable);
@@ -405,7 +424,7 @@ void sbi_hart_update_extension(struct sbi_scratch *scratch,
 bool sbi_hart_has_extension(struct sbi_scratch *scratch,
 			    enum sbi_hart_extensions ext)
 {
-	struct hart_features *hfeatures =
+	struct sbi_hart_features *hfeatures =
 			sbi_scratch_offset_ptr(scratch, hart_features_offset);
 
 	if (hfeatures->extensions & BIT(ext))
@@ -425,8 +444,8 @@ static inline char *sbi_hart_extension_id2string(int ext)
 	case SBI_HART_EXT_TIME:
 		estr = "time";
 		break;
-	case SBI_HART_EXT_AIA:
-		estr = "aia";
+	case SBI_HART_EXT_SMAIA:
+		estr = "smaia";
 		break;
 	case SBI_HART_EXT_SSTC:
 		estr = "sstc";
@@ -453,7 +472,7 @@ static inline char *sbi_hart_extension_id2string(int ext)
 void sbi_hart_get_extensions_str(struct sbi_scratch *scratch,
 				 char *extensions_str, int nestr)
 {
-	struct hart_features *hfeatures =
+	struct sbi_hart_features *hfeatures =
 			sbi_scratch_offset_ptr(scratch, hart_features_offset);
 	int offset = 0, ext = 0;
 	char *temp;
@@ -539,7 +558,7 @@ static int hart_pmu_get_allowed_bits(void)
 static int hart_detect_features(struct sbi_scratch *scratch)
 {
 	struct sbi_trap_info trap = {0};
-	struct hart_features *hfeatures =
+	struct sbi_hart_features *hfeatures =
 		sbi_scratch_offset_ptr(scratch, hart_features_offset);
 	unsigned long val, oldval;
 	int rc;
@@ -663,7 +682,7 @@ __mhpm_skip:
 	csr_read_allowed(CSR_MTOPI, (unsigned long)&trap);
 	if (!trap.cause)
 		__sbi_hart_update_extension(hfeatures,
-					SBI_HART_EXT_AIA, true);
+					SBI_HART_EXT_SMAIA, true);
 
 	/* Detect if hart supports stimecmp CSR(Sstc extension) */
 	if (hfeatures->priv_version >= SBI_HART_PRIV_VER_1_12) {
@@ -682,7 +701,8 @@ __mhpm_skip:
 	}
 
 	/* Let platform populate extensions */
-	rc = sbi_platform_extensions_init(sbi_platform_thishart_ptr());
+	rc = sbi_platform_extensions_init(sbi_platform_thishart_ptr(),
+					  hfeatures);
 	if (rc)
 		return rc;
 
@@ -713,12 +733,18 @@ int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot)
 {
 	int rc;
 
+	/*
+	 * Clear mip CSR before proceeding with init to avoid any spurious
+	 * external interrupts in S-mode.
+	 */
+	csr_write(CSR_MIP, 0);
+
 	if (cold_boot) {
 		if (misa_extension('H'))
 			sbi_hart_expected_trap = &__sbi_expected_trap_hext;
 
 		hart_features_offset = sbi_scratch_alloc_offset(
-						sizeof(struct hart_features));
+					sizeof(struct sbi_hart_features));
 		if (!hart_features_offset)
 			return SBI_ENOMEM;
 	}
@@ -769,19 +795,12 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 #if __riscv_xlen == 32
 	if (misa_extension('H')) {
 		valH = csr_read(CSR_MSTATUSH);
-		if (next_virt)
-			valH = INSERT_FIELD(valH, MSTATUSH_MPV, 1);
-		else
-			valH = INSERT_FIELD(valH, MSTATUSH_MPV, 0);
+		valH = INSERT_FIELD(valH, MSTATUSH_MPV, next_virt);
 		csr_write(CSR_MSTATUSH, valH);
 	}
 #else
-	if (misa_extension('H')) {
-		if (next_virt)
-			val = INSERT_FIELD(val, MSTATUS_MPV, 1);
-		else
-			val = INSERT_FIELD(val, MSTATUS_MPV, 0);
-	}
+	if (misa_extension('H'))
+		val = INSERT_FIELD(val, MSTATUS_MPV, next_virt);
 #endif
 	csr_write(CSR_MSTATUS, val);
 	csr_write(CSR_MEPC, next_addr);

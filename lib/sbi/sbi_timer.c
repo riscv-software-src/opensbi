@@ -76,6 +76,19 @@ void sbi_timer_delay_loop(ulong units, u64 unit_freq,
 		delay_fn(opaque);
 }
 
+bool sbi_timer_waitms_until(bool (*predicate)(void *), void *arg,
+			    uint64_t timeout_ms)
+{
+	uint64_t start_time = sbi_timer_value();
+	uint64_t ticks =
+		(sbi_timer_get_device()->timer_freq / 1000) *
+		timeout_ms;
+	while(!predicate(arg))
+		if (sbi_timer_value() - start_time  >= ticks)
+			return false;
+	return true;
+}
+
 u64 sbi_timer_value(void)
 {
 	if (get_time_val)

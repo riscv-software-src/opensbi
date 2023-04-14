@@ -17,6 +17,7 @@
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_init.h>
+#include <sbi/sbi_timer.h>
 
 static SBI_LIST_HEAD(reset_devices_list);
 
@@ -79,7 +80,7 @@ void __noreturn sbi_system_reset(u32 reset_type, u32 reset_reason)
 	}
 
 	/* Stop current HART */
-	sbi_hsm_hart_stop(scratch, FALSE);
+	sbi_hsm_hart_stop(scratch, false);
 
 	/* Platform specific reset if domain allowed system reset */
 	if (dom->system_reset_allowed) {
@@ -91,4 +92,115 @@ void __noreturn sbi_system_reset(u32 reset_type, u32 reset_reason)
 
 	/* If platform specific reset did not work then do sbi_exit() */
 	sbi_exit(scratch);
+}
+
+static const struct sbi_system_suspend_device *suspend_dev = NULL;
+
+const struct sbi_system_suspend_device *sbi_system_suspend_get_device(void)
+{
+	return suspend_dev;
+}
+
+void sbi_system_suspend_set_device(struct sbi_system_suspend_device *dev)
+{
+	if (!dev || suspend_dev)
+		return;
+
+	suspend_dev = dev;
+}
+
+static int sbi_system_suspend_test_check(u32 sleep_type)
+{
+	return sleep_type == SBI_SUSP_SLEEP_TYPE_SUSPEND;
+}
+
+static int sbi_system_suspend_test_suspend(u32 sleep_type,
+					   unsigned long mmode_resume_addr)
+{
+	if (sleep_type != SBI_SUSP_SLEEP_TYPE_SUSPEND)
+		return SBI_EINVAL;
+
+	sbi_timer_mdelay(5000);
+
+	/* Wait for interrupt */
+	wfi();
+
+	return SBI_OK;
+}
+
+static struct sbi_system_suspend_device sbi_system_suspend_test = {
+	.name = "system-suspend-test",
+	.system_suspend_check = sbi_system_suspend_test_check,
+	.system_suspend = sbi_system_suspend_test_suspend,
+};
+
+void sbi_system_suspend_test_enable(void)
+{
+	sbi_system_suspend_set_device(&sbi_system_suspend_test);
+}
+
+bool sbi_system_suspend_supported(u32 sleep_type)
+{
+	return suspend_dev && suspend_dev->system_suspend_check &&
+	       suspend_dev->system_suspend_check(sleep_type);
+}
+
+int sbi_system_suspend(u32 sleep_type, ulong resume_addr, ulong opaque)
+{
+	int ret = SBI_ENOTSUPP;
+	const struct sbi_domain *dom = sbi_domain_thishart_ptr();
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	void (*jump_warmboot)(void) = (void (*)(void))scratch->warmboot_addr;
+	unsigned int hartid = current_hartid();
+	unsigned long prev_mode;
+	unsigned long i;
+
+	if (!dom || !dom->system_suspend_allowed)
+		return SBI_EFAIL;
+
+	if (!suspend_dev || !suspend_dev->system_suspend)
+		return SBI_EFAIL;
+
+	if (!sbi_system_suspend_supported(sleep_type))
+		return SBI_ENOTSUPP;
+
+	prev_mode = (csr_read(CSR_MSTATUS) & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
+	if (prev_mode != PRV_S && prev_mode != PRV_U)
+		return SBI_EFAIL;
+
+	sbi_hartmask_for_each_hart(i, &dom->assigned_harts) {
+		if (i == hartid)
+			continue;
+		if (__sbi_hsm_hart_get_state(i) != SBI_HSM_STATE_STOPPED)
+			return SBI_EFAIL;
+	}
+
+	if (!sbi_domain_check_addr(dom, resume_addr, prev_mode,
+				   SBI_DOMAIN_EXECUTE))
+		return SBI_EINVALID_ADDR;
+
+	if (!sbi_hsm_hart_change_state(scratch, SBI_HSM_STATE_STARTED,
+				       SBI_HSM_STATE_SUSPENDED))
+		return SBI_EFAIL;
+
+	/* Prepare for resume */
+	scratch->next_mode = prev_mode;
+	scratch->next_addr = resume_addr;
+	scratch->next_arg1 = opaque;
+
+	__sbi_hsm_suspend_non_ret_save(scratch);
+
+	/* Suspend */
+	ret = suspend_dev->system_suspend(sleep_type, scratch->warmboot_addr);
+	if (ret != SBI_OK) {
+		if (!sbi_hsm_hart_change_state(scratch, SBI_HSM_STATE_SUSPENDED,
+					       SBI_HSM_STATE_STARTED))
+			sbi_hart_hang();
+		return ret;
+	}
+
+	/* Resume */
+	jump_warmboot();
+
+	__builtin_unreachable();
 }

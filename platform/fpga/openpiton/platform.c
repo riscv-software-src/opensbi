@@ -60,7 +60,7 @@ static struct aclint_mtimer_data mtimer = {
 	.mtimecmp_size = ACLINT_DEFAULT_MTIMECMP_SIZE,
 	.first_hartid = 0,
 	.hart_count = OPENPITON_DEFAULT_HART_COUNT,
-	.has_64bit_mmio = TRUE,
+	.has_64bit_mmio = true,
 };
 
 /*
@@ -69,7 +69,7 @@ static struct aclint_mtimer_data mtimer = {
 static int openpiton_early_init(bool cold_boot)
 {
 	void *fdt;
-	struct platform_uart_data uart_data;
+	struct platform_uart_data uart_data = { 0 };
 	struct plic_data plic_data;
 	unsigned long aclint_freq;
 	uint64_t clint_addr;

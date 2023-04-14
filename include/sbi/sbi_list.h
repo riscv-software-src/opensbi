@@ -47,7 +47,7 @@ static inline void __sbi_list_add(struct sbi_dlist *new,
  * Checks if the list is empty or not.
  * @param head List head
  *
- * Retruns TRUE if list is empty, FALSE otherwise.
+ * Returns true if list is empty, false otherwise.
  */
 static inline bool sbi_list_empty(struct sbi_dlist *head)
 {

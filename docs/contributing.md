@@ -29,7 +29,7 @@ and "top:".
 5. Maintainers should use "Rebase and Merge" when using GitHub to merge pull
 requests to avoid creating unnecessary merge commits.
 6. Maintainers should avoid creating branches directly in the main
-riscv/opensbi repository. Instead prefer using a fork of the riscv/opensbi main
+riscv/opensbi repository. Instead, prefer using a fork of the riscv/opensbi main
 repository and branches within that fork to create pull requests.
 7. A maintainer cannot merge his own pull requests in the riscv/opensbi main
 repository.

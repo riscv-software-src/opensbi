@@ -23,12 +23,11 @@
 #define DEFAULT_UART_REG_IO_WIDTH	1
 #define DEFAULT_UART_REG_OFFSET		0
 
+#define DEFAULT_RENESAS_SCIF_FREQ		100000000
+#define DEFAULT_RENESAS_SCIF_BAUD		115200
+
 #define DEFAULT_SIFIVE_UART_FREQ		0
 #define DEFAULT_SIFIVE_UART_BAUD		115200
-#define DEFAULT_SIFIVE_UART_REG_SHIFT		0
-#define DEFAULT_SIFIVE_UART_REG_IO_WIDTH	4
-
-#define DEFAULT_GAISLER_UART_REG_IO_WIDTH	4
 
 #define DEFAULT_SHAKTI_UART_FREQ		50000000
 #define DEFAULT_SHAKTI_UART_BAUD		115200
@@ -128,7 +127,7 @@ static int fdt_translate_address(void *fdt, uint64_t reg, int parent,
 	int i, rlen;
 	int cell_addr, cell_size;
 	const fdt32_t *ranges;
-	uint64_t offset = 0, caddr = 0, paddr = 0, rsize = 0;
+	uint64_t offset, caddr = 0, paddr = 0, rsize = 0;
 
 	cell_addr = fdt_address_cells(fdt, parent);
 	if (cell_addr < 1)
@@ -314,8 +313,10 @@ int fdt_parse_timebase_frequency(void *fdt, unsigned long *freq)
 	return 0;
 }
 
-int fdt_parse_gaisler_uart_node(void *fdt, int nodeoffset,
-				struct platform_uart_data *uart)
+static int fdt_parse_uart_node_common(void *fdt, int nodeoffset,
+				      struct platform_uart_data *uart,
+				      unsigned long default_freq,
+				      unsigned long default_baud)
 {
 	int len, rc;
 	const fdt32_t *val;
@@ -338,126 +339,60 @@ int fdt_parse_gaisler_uart_node(void *fdt, int nodeoffset,
 	if (len > 0 && val)
 		uart->freq = fdt32_to_cpu(*val);
 	else
-		uart->freq = DEFAULT_UART_FREQ;
+		uart->freq = default_freq;
 
 	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "current-speed", &len);
 	if (len > 0 && val)
 		uart->baud = fdt32_to_cpu(*val);
 	else
-		uart->baud = DEFAULT_UART_BAUD;
-
-	/* For Gaisler APBUART, the reg-shift and reg-io-width are fixed .*/
-	uart->reg_shift	   = DEFAULT_UART_REG_SHIFT;
-	uart->reg_io_width = DEFAULT_GAISLER_UART_REG_IO_WIDTH;
+		uart->baud = default_baud;
 
 	return 0;
+}
+
+int fdt_parse_gaisler_uart_node(void *fdt, int nodeoffset,
+				struct platform_uart_data *uart)
+{
+	return fdt_parse_uart_node_common(fdt, nodeoffset, uart,
+					DEFAULT_UART_FREQ,
+					DEFAULT_UART_BAUD);
+}
+
+int fdt_parse_renesas_scif_node(void *fdt, int nodeoffset,
+				struct platform_uart_data *uart)
+{
+	return fdt_parse_uart_node_common(fdt, nodeoffset, uart,
+					  DEFAULT_RENESAS_SCIF_FREQ,
+					  DEFAULT_RENESAS_SCIF_BAUD);
 }
 
 int fdt_parse_shakti_uart_node(void *fdt, int nodeoffset,
 			       struct platform_uart_data *uart)
 {
-	int len, rc;
-	const fdt32_t *val;
-	uint64_t reg_addr, reg_size;
-
-	if (nodeoffset < 0 || !uart || !fdt)
-		return SBI_ENODEV;
-
-	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
-				    &reg_addr, &reg_size);
-	if (rc < 0 || !reg_addr || !reg_size)
-		return SBI_ENODEV;
-	uart->addr = reg_addr;
-
-	/**
-	 * UART address is mandaotry. clock-frequency and current-speed
-	 * may not be present. Don't return error.
-	 */
-	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "clock-frequency", &len);
-	if (len > 0 && val)
-		uart->freq = fdt32_to_cpu(*val);
-	else
-		uart->freq = DEFAULT_SHAKTI_UART_FREQ;
-
-	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "current-speed", &len);
-	if (len > 0 && val)
-		uart->baud = fdt32_to_cpu(*val);
-	else
-		uart->baud = DEFAULT_SHAKTI_UART_BAUD;
-
-	return 0;
+	return fdt_parse_uart_node_common(fdt, nodeoffset, uart,
+					DEFAULT_SHAKTI_UART_FREQ,
+					DEFAULT_SHAKTI_UART_BAUD);
 }
 
 int fdt_parse_sifive_uart_node(void *fdt, int nodeoffset,
 			       struct platform_uart_data *uart)
 {
-	int len, rc;
-	const fdt32_t *val;
-	uint64_t reg_addr, reg_size;
-
-	if (nodeoffset < 0 || !uart || !fdt)
-		return SBI_ENODEV;
-
-	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
-				    &reg_addr, &reg_size);
-	if (rc < 0 || !reg_addr || !reg_size)
-		return SBI_ENODEV;
-	uart->addr = reg_addr;
-
-	/**
-	 * UART address is mandaotry. clock-frequency and current-speed
-	 * may not be present. Don't return error.
-	 */
-	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "clock-frequency", &len);
-	if (len > 0 && val)
-		uart->freq = fdt32_to_cpu(*val);
-	else
-		uart->freq = DEFAULT_SIFIVE_UART_FREQ;
-
-	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "current-speed", &len);
-	if (len > 0 && val)
-		uart->baud = fdt32_to_cpu(*val);
-	else
-		uart->baud = DEFAULT_SIFIVE_UART_BAUD;
-
-	/* For SiFive UART, the reg-shift and reg-io-width are fixed .*/
-	uart->reg_shift = DEFAULT_SIFIVE_UART_REG_SHIFT;
-	uart->reg_io_width = DEFAULT_SIFIVE_UART_REG_IO_WIDTH;
-
-	return 0;
+	return fdt_parse_uart_node_common(fdt, nodeoffset, uart,
+					DEFAULT_SIFIVE_UART_FREQ,
+					DEFAULT_SIFIVE_UART_BAUD);
 }
 
-int fdt_parse_uart8250_node(void *fdt, int nodeoffset,
-			    struct platform_uart_data *uart)
+int fdt_parse_uart_node(void *fdt, int nodeoffset,
+			struct platform_uart_data *uart)
 {
 	int len, rc;
 	const fdt32_t *val;
-	uint64_t reg_addr, reg_size;
 
-	if (nodeoffset < 0 || !uart || !fdt)
-		return SBI_ENODEV;
-
-	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
-				    &reg_addr, &reg_size);
-	if (rc < 0 || !reg_addr || !reg_size)
-		return SBI_ENODEV;
-	uart->addr = reg_addr;
-
-	/**
-	 * UART address is mandaotry. clock-frequency and current-speed
-	 * may not be present. Don't return error.
-	 */
-	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "clock-frequency", &len);
-	if (len > 0 && val)
-		uart->freq = fdt32_to_cpu(*val);
-	else
-		uart->freq = DEFAULT_UART_FREQ;
-
-	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "current-speed", &len);
-	if (len > 0 && val)
-		uart->baud = fdt32_to_cpu(*val);
-	else
-		uart->baud = DEFAULT_UART_BAUD;
+	rc = fdt_parse_uart_node_common(fdt, nodeoffset, uart,
+					DEFAULT_UART_FREQ,
+					DEFAULT_UART_BAUD);
+	if (rc)
+		return rc;
 
 	val = (fdt32_t *)fdt_getprop(fdt, nodeoffset, "reg-shift", &len);
 	if (len > 0 && val)
@@ -492,25 +427,13 @@ int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
 	if (nodeoffset < 0)
 		return nodeoffset;
 
-	return fdt_parse_uart8250_node(fdt, nodeoffset, uart);
+	return fdt_parse_uart_node(fdt, nodeoffset, uart);
 }
 
 int fdt_parse_xlnx_uartlite_node(void *fdt, int nodeoffset,
 			       struct platform_uart_data *uart)
 {
-	int rc;
-	uint64_t reg_addr, reg_size;
-
-	if (nodeoffset < 0 || !uart || !fdt)
-		return SBI_ENODEV;
-
-	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
-				    &reg_addr, &reg_size);
-	if (rc < 0 || !reg_addr || !reg_size)
-		return SBI_ENODEV;
-	uart->addr = reg_addr;
-
-	return 0;
+	return fdt_parse_uart_node_common(fdt, nodeoffset, uart, 0, 0);
 }
 
 int fdt_parse_aplic_node(void *fdt, int nodeoff, struct aplic_data *aplic)
@@ -860,7 +783,7 @@ int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
 			continue;
 
 		cpu_offset = fdt_parent_offset(fdt, cpu_intc_offset);
-		if (cpu_intc_offset < 0)
+		if (cpu_offset < 0)
 			continue;
 
 		rc = fdt_parse_hart_id(fdt, cpu_offset, &hartid);
@@ -884,6 +807,118 @@ int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
 		count = last_hartid - first_hartid + 1;
 		*out_hart_count = (hart_count < count) ? hart_count : count;
 	}
+
+	return 0;
+}
+
+int fdt_parse_plmt_node(void *fdt, int nodeoffset, unsigned long *plmt_base,
+			  unsigned long *plmt_size, u32 *hart_count)
+{
+	const fdt32_t *val;
+	int rc, i, count;
+	uint64_t reg_addr, reg_size;
+	u32 phandle, hwirq, hartid, hcount;
+
+	if (nodeoffset < 0 || !fdt || !plmt_base ||
+	    !hart_count || !plmt_size)
+		return SBI_EINVAL;
+
+	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
+				    &reg_addr, &reg_size);
+	if (rc < 0)
+		return SBI_ENODEV;
+	*plmt_base = reg_addr;
+	*plmt_size = reg_size;
+
+	val = fdt_getprop(fdt, nodeoffset, "interrupts-extended", &count);
+	if (!val || count < sizeof(fdt32_t))
+		return 0;
+	count = count / sizeof(fdt32_t);
+
+	hcount = 0;
+	for (i = 0; i < (count / 2); i++) {
+		int cpu_offset, cpu_intc_offset;
+
+		phandle = fdt32_to_cpu(val[2 * i]);
+		hwirq = fdt32_to_cpu(val[2 * i + 1]);
+
+		cpu_intc_offset = fdt_node_offset_by_phandle(fdt, phandle);
+		if (cpu_intc_offset < 0)
+			continue;
+
+		cpu_offset = fdt_parent_offset(fdt, cpu_intc_offset);
+		if (cpu_offset < 0)
+			continue;
+
+		rc = fdt_parse_hart_id(fdt, cpu_offset, &hartid);
+
+		if (rc)
+			continue;
+
+		if (SBI_HARTMASK_MAX_BITS <= hartid)
+			continue;
+
+		if (hwirq == IRQ_M_TIMER)
+			hcount++;
+	}
+
+	*hart_count = hcount;
+
+	return 0;
+}
+
+int fdt_parse_plicsw_node(void *fdt, int nodeoffset, unsigned long *plicsw_base,
+			  unsigned long *size, u32 *hart_count)
+{
+	const fdt32_t *val;
+	int rc, i, count;
+	uint64_t reg_addr, reg_size;
+	u32 phandle, hwirq, hartid, hcount;
+
+	if (nodeoffset < 0 || !fdt || !plicsw_base ||
+	    !hart_count || !size)
+		return SBI_EINVAL;
+
+	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
+				    &reg_addr, &reg_size);
+	if (rc < 0)
+		return SBI_ENODEV;
+	*plicsw_base = reg_addr;
+	*size = reg_size;
+
+	val = fdt_getprop(fdt, nodeoffset, "interrupts-extended", &count);
+	if (!val || count < sizeof(fdt32_t))
+		return 0;
+	count = count / sizeof(fdt32_t);
+
+	hcount = 0;
+	for (i = 0; i < (count / 2); i++) {
+		int cpu_offset, cpu_intc_offset;
+
+		phandle = fdt32_to_cpu(val[2 * i]);
+		hwirq = fdt32_to_cpu(val[2 * i + 1]);
+
+		cpu_intc_offset = fdt_node_offset_by_phandle(fdt, phandle);
+		if (cpu_intc_offset < 0)
+			continue;
+
+		cpu_offset = fdt_parent_offset(fdt, cpu_intc_offset);
+		if (cpu_offset < 0)
+			continue;
+
+		rc = fdt_parse_hart_id(fdt, cpu_offset, &hartid);
+
+		if (rc)
+			continue;
+
+		if (SBI_HARTMASK_MAX_BITS <= hartid)
+			continue;
+
+		if (hwirq == IRQ_M_SOFT)
+			hcount++;
+	}
+
+	*hart_count = hcount;
 
 	return 0;
 }

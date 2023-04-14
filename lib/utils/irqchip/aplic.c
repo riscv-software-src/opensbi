@@ -269,7 +269,10 @@ int aplic_cold_irqchip_init(struct aplic_data *aplic)
 	    (last_deleg_irq == aplic->num_source) &&
 	    (first_deleg_irq == 1))) {
 		sbi_domain_memregion_init(aplic->addr, aplic->size,
-					  SBI_DOMAIN_MEMREGION_MMIO, &reg);
+					  (SBI_DOMAIN_MEMREGION_MMIO |
+					   SBI_DOMAIN_MEMREGION_M_READABLE |
+					   SBI_DOMAIN_MEMREGION_M_WRITABLE),
+					  &reg);
 		rc = sbi_domain_root_add_memregion(&reg);
 		if (rc)
 			return rc;

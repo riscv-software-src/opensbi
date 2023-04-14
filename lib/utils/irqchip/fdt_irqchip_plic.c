@@ -24,36 +24,37 @@ static struct plic_data plic[PLIC_MAX_NR];
 static struct plic_data *plic_hartid2data[SBI_HARTMASK_MAX_BITS];
 static int plic_hartid2context[SBI_HARTMASK_MAX_BITS][2];
 
-void fdt_plic_priority_save(u8 *priority)
+void fdt_plic_priority_save(u8 *priority, u32 num)
 {
 	struct plic_data *plic = plic_hartid2data[current_hartid()];
 
-	plic_priority_save(plic, priority);
+	plic_priority_save(plic, priority, num);
 }
 
-void fdt_plic_priority_restore(const u8 *priority)
+void fdt_plic_priority_restore(const u8 *priority, u32 num)
 {
 	struct plic_data *plic = plic_hartid2data[current_hartid()];
 
-	plic_priority_restore(plic, priority);
+	plic_priority_restore(plic, priority, num);
 }
 
-void fdt_plic_context_save(bool smode, u32 *enable, u32 *threshold)
+void fdt_plic_context_save(bool smode, u32 *enable, u32 *threshold, u32 num)
 {
 	u32 hartid = current_hartid();
 
 	plic_context_save(plic_hartid2data[hartid],
 			  plic_hartid2context[hartid][smode],
-			  enable, threshold);
+			  enable, threshold, num);
 }
 
-void fdt_plic_context_restore(bool smode, const u32 *enable, u32 threshold)
+void fdt_plic_context_restore(bool smode, const u32 *enable, u32 threshold,
+			      u32 num)
 {
 	u32 hartid = current_hartid();
 
 	plic_context_restore(plic_hartid2data[hartid],
 			     plic_hartid2context[hartid][smode],
-			     enable, threshold);
+			     enable, threshold, num);
 }
 
 static int irqchip_plic_warm_init(void)
@@ -86,7 +87,7 @@ static int irqchip_plic_update_hartid_table(void *fdt, int nodeoff,
 			continue;
 
 		cpu_offset = fdt_parent_offset(fdt, cpu_intc_offset);
-		if (cpu_intc_offset < 0)
+		if (cpu_offset < 0)
 			continue;
 
 		err = fdt_parse_hart_id(fdt, cpu_offset, &hartid);
@@ -159,11 +160,12 @@ void thead_plic_restore(void)
 }
 
 static const struct fdt_match irqchip_plic_match[] = {
+	{ .compatible = "andestech,nceplic100" },
 	{ .compatible = "riscv,plic0" },
 	{ .compatible = "sifive,plic-1.0.0" },
 	{ .compatible = "thead,c900-plic",
 	  .data = thead_plic_plat_init },
-	{ },
+	{ /* sentinel */ }
 };
 
 struct fdt_irqchip fdt_irqchip_plic = {

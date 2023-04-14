@@ -17,6 +17,8 @@ struct fdt_reset {
 	int (*init)(void *fdt, int nodeoff, const struct fdt_match *match);
 };
 
+#ifdef CONFIG_FDT_RESET
+
 /**
  * fdt_reset_driver_init() - initialize reset driver based on the device-tree
  */
@@ -28,5 +30,15 @@ int fdt_reset_driver_init(void *fdt, struct fdt_reset *drv);
  * This function shall be invoked in final init.
  */
 void fdt_reset_init(void);
+
+#else
+
+static inline int fdt_reset_driver_init(void *fdt, struct fdt_reset *drv)
+{
+	return 0;
+}
+static inline void fdt_reset_init(void) { }
+
+#endif
 
 #endif

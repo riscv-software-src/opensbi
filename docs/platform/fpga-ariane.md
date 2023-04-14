@@ -7,7 +7,7 @@ Linux.
 
 The FPGA SoC currently contains the following peripherals:
 - DDR3 memory controller
-- SPI controller to conncet to an SDCard
+- SPI controller to connect to an SDCard
 - Ethernet controller
 - JTAG port (see debugging section below)
 - Bootrom containing zero stage bootloader and device tree.

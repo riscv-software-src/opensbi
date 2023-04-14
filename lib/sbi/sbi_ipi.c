@@ -163,7 +163,7 @@ void sbi_ipi_clear_smode(void)
 
 static void sbi_ipi_process_halt(struct sbi_scratch *scratch)
 {
-	sbi_hsm_hart_stop(scratch, TRUE);
+	sbi_hsm_hart_stop(scratch, true);
 }
 
 static struct sbi_ipi_event_ops ipi_halt_ops = {
@@ -208,10 +208,19 @@ skip:
 	};
 }
 
-void sbi_ipi_raw_send(u32 target_hart)
+int sbi_ipi_raw_send(u32 target_hart)
 {
-	if (ipi_dev && ipi_dev->ipi_send)
-		ipi_dev->ipi_send(target_hart);
+	if (!ipi_dev || !ipi_dev->ipi_send)
+		return SBI_EINVAL;
+
+	ipi_dev->ipi_send(target_hart);
+	return 0;
+}
+
+void sbi_ipi_raw_clear(u32 target_hart)
+{
+	if (ipi_dev && ipi_dev->ipi_clear)
+		ipi_dev->ipi_clear(target_hart);
 }
 
 const struct sbi_ipi_device *sbi_ipi_get_device(void)

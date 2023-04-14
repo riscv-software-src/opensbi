@@ -70,7 +70,7 @@ int gaisler_uart_init(unsigned long base, u32 in_freq, u32 baudrate)
 	uart_base = (volatile char *)base;
 
 	/* Configure baudrate */
-	if (in_freq)
+	if (in_freq && baudrate)
 		set_reg(UART_REG_SCALER, in_freq / (baudrate * 8 + 7));
 
 	ctrl = get_reg(UART_REG_CTRL);

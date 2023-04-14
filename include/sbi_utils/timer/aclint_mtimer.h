@@ -22,6 +22,8 @@
 
 #define CLINT_MTIMER_OFFSET		0x4000
 
+#define MTIMER_REGION_ALIGN		0x1000
+
 struct aclint_mtimer_data {
 	/* Public details */
 	unsigned long mtime_freq;

@@ -59,8 +59,8 @@ unsigned long sbi_scratch_alloc_offset(unsigned long size)
 	if (!size)
 		return 0;
 
-	if (size & (__SIZEOF_POINTER__ - 1))
-		size = (size & ~(__SIZEOF_POINTER__ - 1)) + __SIZEOF_POINTER__;
+	size += __SIZEOF_POINTER__ - 1;
+	size &= ~((unsigned long)__SIZEOF_POINTER__ - 1);
 
 	spin_lock(&extra_lock);
 

@@ -9,3 +9,5 @@ install/
 
 # Development friendly files
 tags
+cscope*
+*.swp

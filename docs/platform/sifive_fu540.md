@@ -150,7 +150,7 @@ If you want to test OpenSBI with QEMU 'sifive_u' machine, please follow the
 same instructions above, with the exception of not passing FW_FDT_PATH.
 
 This is because QEMU generates a device tree blob on the fly based on the
-command line parameters and it's compatible with the one used in the upstream
+command line parameters, and it's compatible with the one used in the upstream
 Linux kernel.
 
 When U-Boot v2021.07 (or higher) is used as the payload, as the SiFive FU540

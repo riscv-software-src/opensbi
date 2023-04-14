@@ -48,12 +48,12 @@ static inline unsigned int uart_min_clk_divisor(uint64_t in_freq,
 						uint64_t max_target_hz)
 {
 	uint64_t quotient = (in_freq + max_target_hz - 1) / (max_target_hz);
+
 	/* Avoid underflow */
-	if (quotient == 0) {
+	if (quotient == 0)
 		return 0;
-	} else {
+	else
 		return quotient - 1;
-	}
 }
 
 static u32 get_reg(u32 num)
@@ -77,8 +77,10 @@ static void sifive_uart_putc(char ch)
 static int sifive_uart_getc(void)
 {
 	u32 ret = get_reg(UART_REG_RXFIFO);
+
 	if (!(ret & UART_RXFIFO_EMPTY))
 		return ret & UART_RXFIFO_DATA;
+
 	return -1;
 }
 
@@ -95,12 +97,15 @@ int sifive_uart_init(unsigned long base, u32 in_freq, u32 baudrate)
 	uart_baudrate = baudrate;
 
 	/* Configure baudrate */
-	if (in_freq)
+	if (in_freq && baudrate)
 		set_reg(UART_REG_DIV, uart_min_clk_divisor(in_freq, baudrate));
+
 	/* Disable interrupts */
 	set_reg(UART_REG_IE, 0);
+
 	/* Enable TX */
 	set_reg(UART_REG_TXCTRL, UART_TXCTRL_TXEN);
+
 	/* Enable Rx */
 	set_reg(UART_REG_RXCTRL, UART_RXCTRL_RXEN);
 

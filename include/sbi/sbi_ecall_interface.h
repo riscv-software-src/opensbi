@@ -29,6 +29,9 @@
 #define SBI_EXT_HSM				0x48534D
 #define SBI_EXT_SRST				0x53525354
 #define SBI_EXT_PMU				0x504D55
+#define SBI_EXT_DBCN				0x4442434E
+#define SBI_EXT_SUSP				0x53555350
+#define SBI_EXT_CPPC				0x43505043
 
 /* SBI function IDs for BASE extension*/
 #define SBI_EXT_BASE_GET_SPEC_VERSION		0x0
@@ -99,6 +102,7 @@
 #define SBI_EXT_PMU_COUNTER_START	0x3
 #define SBI_EXT_PMU_COUNTER_STOP	0x4
 #define SBI_EXT_PMU_COUNTER_FW_READ	0x5
+#define SBI_EXT_PMU_COUNTER_FW_READ_HI	0x6
 
 /** General pmu event codes specified in SBI PMU extension */
 enum sbi_pmu_hw_generic_events_t {
@@ -182,6 +186,17 @@ enum sbi_pmu_fw_event_code_id {
 	SBI_PMU_FW_HFENCE_VVMA_ASID_SENT = 20,
 	SBI_PMU_FW_HFENCE_VVMA_ASID_RCVD = 21,
 	SBI_PMU_FW_MAX,
+	/*
+	 * Event codes 22 to 255 are reserved for future use.
+	 * Event codes 256 to 65534 are reserved for SBI implementation
+	 * specific custom firmware events.
+	 */
+	SBI_PMU_FW_RESERVED_MAX = 0xFFFE,
+	/*
+	 * Event code 0xFFFF is used for platform specific firmware
+	 * events where the event data contains any event specific information.
+	 */
+	SBI_PMU_FW_PLATFORM = 0xFFFF,
 };
 
 /** SBI PMU event idx type */
@@ -200,13 +215,19 @@ enum sbi_pmu_ctr_type {
 };
 
 /* Helper macros to decode event idx */
-#define SBI_PMU_EVENT_IDX_OFFSET 20
 #define SBI_PMU_EVENT_IDX_MASK 0xFFFFF
+#define SBI_PMU_EVENT_IDX_TYPE_OFFSET 16
+#define SBI_PMU_EVENT_IDX_TYPE_MASK (0xF << SBI_PMU_EVENT_IDX_TYPE_OFFSET)
 #define SBI_PMU_EVENT_IDX_CODE_MASK 0xFFFF
-#define SBI_PMU_EVENT_IDX_TYPE_MASK 0xF0000
 #define SBI_PMU_EVENT_RAW_IDX 0x20000
 
 #define SBI_PMU_EVENT_IDX_INVALID 0xFFFFFFFF
+
+#define SBI_PMU_EVENT_HW_CACHE_OPS_RESULT	0x1
+#define SBI_PMU_EVENT_HW_CACHE_OPS_ID_MASK	0x6
+#define SBI_PMU_EVENT_HW_CACHE_OPS_ID_OFFSET	1
+#define SBI_PMU_EVENT_HW_CACHE_ID_MASK		0xfff8
+#define SBI_PMU_EVENT_HW_CACHE_ID_OFFSET	3
 
 /* Flags defined for config matching function */
 #define SBI_PMU_CFG_FLAG_SKIP_MATCH	(1 << 0)
@@ -223,6 +244,51 @@ enum sbi_pmu_ctr_type {
 
 /* Flags defined for counter stop function */
 #define SBI_PMU_STOP_FLAG_RESET (1 << 0)
+
+/* SBI function IDs for DBCN extension */
+#define SBI_EXT_DBCN_CONSOLE_WRITE		0x0
+#define SBI_EXT_DBCN_CONSOLE_READ		0x1
+#define SBI_EXT_DBCN_CONSOLE_WRITE_BYTE		0x2
+
+/* SBI function IDs for SUSP extension */
+#define SBI_EXT_SUSP_SUSPEND			0x0
+
+#define SBI_SUSP_SLEEP_TYPE_SUSPEND		0x0
+#define SBI_SUSP_SLEEP_TYPE_LAST		SBI_SUSP_SLEEP_TYPE_SUSPEND
+#define SBI_SUSP_PLATFORM_SLEEP_START		0x80000000
+
+/* SBI function IDs for CPPC extension */
+#define SBI_EXT_CPPC_PROBE			0x0
+#define SBI_EXT_CPPC_READ			0x1
+#define SBI_EXT_CPPC_READ_HI			0x2
+#define SBI_EXT_CPPC_WRITE			0x3
+
+enum sbi_cppc_reg_id {
+	SBI_CPPC_HIGHEST_PERF		= 0x00000000,
+	SBI_CPPC_NOMINAL_PERF		= 0x00000001,
+	SBI_CPPC_LOW_NON_LINEAR_PERF	= 0x00000002,
+	SBI_CPPC_LOWEST_PERF		= 0x00000003,
+	SBI_CPPC_GUARANTEED_PERF	= 0x00000004,
+	SBI_CPPC_DESIRED_PERF		= 0x00000005,
+	SBI_CPPC_MIN_PERF		= 0x00000006,
+	SBI_CPPC_MAX_PERF		= 0x00000007,
+	SBI_CPPC_PERF_REDUC_TOLERANCE	= 0x00000008,
+	SBI_CPPC_TIME_WINDOW		= 0x00000009,
+	SBI_CPPC_CTR_WRAP_TIME		= 0x0000000A,
+	SBI_CPPC_REFERENCE_CTR		= 0x0000000B,
+	SBI_CPPC_DELIVERED_CTR		= 0x0000000C,
+	SBI_CPPC_PERF_LIMITED		= 0x0000000D,
+	SBI_CPPC_ENABLE			= 0x0000000E,
+	SBI_CPPC_AUTO_SEL_ENABLE	= 0x0000000F,
+	SBI_CPPC_AUTO_ACT_WINDOW	= 0x00000010,
+	SBI_CPPC_ENERGY_PERF_PREFERENCE	= 0x00000011,
+	SBI_CPPC_REFERENCE_PERF		= 0x00000012,
+	SBI_CPPC_LOWEST_FREQ		= 0x00000013,
+	SBI_CPPC_NOMINAL_FREQ		= 0x00000014,
+	SBI_CPPC_ACPI_LAST		= SBI_CPPC_NOMINAL_FREQ,
+	SBI_CPPC_TRANSITION_LATENCY	= 0x80000000,
+	SBI_CPPC_NON_ACPI_LAST		= SBI_CPPC_TRANSITION_LATENCY,
+};
 
 /* SBI base specification related macros */
 #define SBI_SPEC_VERSION_MAJOR_OFFSET		24

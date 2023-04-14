@@ -13,12 +13,23 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_trap.h>
+#include <sbi/riscv_asm.h>
+
+static inline unsigned long sbi_ecall_vendor_id(void)
+{
+	return SBI_EXT_VENDOR_START +
+		(csr_read(CSR_MVENDORID) &
+		 (SBI_EXT_VENDOR_END - SBI_EXT_VENDOR_START));
+}
 
 static int sbi_ecall_vendor_probe(unsigned long extid,
 				  unsigned long *out_val)
 {
-	*out_val = sbi_platform_vendor_ext_check(sbi_platform_thishart_ptr(),
-						 extid);
+	if (!sbi_platform_vendor_ext_check(sbi_platform_thishart_ptr()) ||
+	    extid != sbi_ecall_vendor_id())
+		*out_val = 0;
+	else
+		*out_val = 1;
 	return 0;
 }
 
@@ -27,8 +38,12 @@ static int sbi_ecall_vendor_handler(unsigned long extid, unsigned long funcid,
 				    unsigned long *out_val,
 				    struct sbi_trap_info *out_trap)
 {
+	if (!sbi_platform_vendor_ext_check(sbi_platform_thishart_ptr()) ||
+	    extid != sbi_ecall_vendor_id())
+		return SBI_ERR_NOT_SUPPORTED;
+
 	return sbi_platform_vendor_ext_provider(sbi_platform_thishart_ptr(),
-						extid, funcid, regs,
+						funcid, regs,
 						out_val, out_trap);
 }
 
