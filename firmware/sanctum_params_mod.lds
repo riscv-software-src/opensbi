@@ -19,6 +19,15 @@ PROVIDE( sanctum_sm_key_pub = . );
 PROVIDE( test = . );
 . += 0x40;
 
+/* 64 Bytes : security monitor's signature by device */
+PROVIDE( sanctum_sm_signature_drk = . );
+. += 0x40;
+
+/* 64 Bytes : security monitor's signature by device */
+PROVIDE( sanctum_device_root_key_pub = . );
+. += 0x40;
+
+
 /* 4 Byte : security monitor's signature by device */
 PROVIDE( sanctum_length_cert = . );
 . += 0x04;
