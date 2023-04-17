@@ -29,12 +29,16 @@
 #define SBI_PLATFORM_HART_COUNT_OFFSET (0x50)
 /** Offset of hart_stack_size in struct sbi_platform */
 #define SBI_PLATFORM_HART_STACK_SIZE_OFFSET (0x54)
+/** Offset of heap_size in struct sbi_platform */
+#define SBI_PLATFORM_HEAP_SIZE_OFFSET (0x58)
+/** Offset of reserved in struct sbi_platform */
+#define SBI_PLATFORM_RESERVED_OFFSET (0x5c)
 /** Offset of platform_ops_addr in struct sbi_platform */
-#define SBI_PLATFORM_OPS_OFFSET (0x58)
+#define SBI_PLATFORM_OPS_OFFSET (0x60)
 /** Offset of firmware_context in struct sbi_platform */
-#define SBI_PLATFORM_FIRMWARE_CONTEXT_OFFSET (0x58 + __SIZEOF_POINTER__)
+#define SBI_PLATFORM_FIRMWARE_CONTEXT_OFFSET (0x60 + __SIZEOF_POINTER__)
 /** Offset of hart_index2id in struct sbi_platform */
-#define SBI_PLATFORM_HART_INDEX2ID_OFFSET (0x58 + (__SIZEOF_POINTER__ * 2))
+#define SBI_PLATFORM_HART_INDEX2ID_OFFSET (0x60 + (__SIZEOF_POINTER__ * 2))
 
 #define SBI_PLATFORM_TLB_RANGE_FLUSH_LIMIT_DEFAULT		(1UL << 12)
 
@@ -138,6 +142,10 @@ struct sbi_platform_operations {
 /** Platform default per-HART stack size for exception/interrupt handling */
 #define SBI_PLATFORM_DEFAULT_HART_STACK_SIZE	8192
 
+/** Platform default heap size */
+#define SBI_PLATFORM_DEFAULT_HEAP_SIZE(__num_hart)	\
+					(0x8000 + 0x800 * (__num_hart))
+
 /** Representation of a platform */
 struct sbi_platform {
 	/**
@@ -160,6 +168,10 @@ struct sbi_platform {
 	u32 hart_count;
 	/** Per-HART stack size for exception/interrupt handling */
 	u32 hart_stack_size;
+	/** Size of heap shared by all HARTs */
+	u32 heap_size;
+	/** Reserved for future use */
+	u32 reserved;
 	/** Pointer to sbi platform operations */
 	unsigned long platform_ops_addr;
 	/** Pointer to system firmware specific context */

@@ -115,7 +115,7 @@ unsigned long fw_platform_init(unsigned long arg0, unsigned long arg1,
 	}
 
 	platform.hart_count = hart_count;
-
+	platform.heap_size = SBI_PLATFORM_DEFAULT_HEAP_SIZE(hart_count);
 	platform_has_mlevel_imsic = fdt_check_imsic_mlevel(fdt);
 
 	/* Return original FDT pointer */
@@ -315,5 +315,6 @@ struct sbi_platform platform = {
 	.hart_count		= SBI_HARTMASK_MAX_BITS,
 	.hart_index2id		= generic_hart_index2id,
 	.hart_stack_size	= SBI_PLATFORM_DEFAULT_HART_STACK_SIZE,
+	.heap_size		= SBI_PLATFORM_DEFAULT_HEAP_SIZE(0),
 	.platform_ops_addr	= (unsigned long)&platform_ops
 };

@@ -255,20 +255,28 @@ _bss_zero:
 	/* Preload HART details
 	 * s7 -> HART Count
 	 * s8 -> HART Stack Size
+	 * s9 -> Heap Size
+	 * s10 -> Heap Offset
 	 */
 	lla	a4, platform
 #if __riscv_xlen > 32
 	lwu	s7, SBI_PLATFORM_HART_COUNT_OFFSET(a4)
 	lwu	s8, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(a4)
+	lwu	s9, SBI_PLATFORM_HEAP_SIZE_OFFSET(a4)
 #else
 	lw	s7, SBI_PLATFORM_HART_COUNT_OFFSET(a4)
 	lw	s8, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(a4)
+	lw	s9, SBI_PLATFORM_HEAP_SIZE_OFFSET(a4)
 #endif
 
 	/* Setup scratch space for all the HARTs*/
 	lla	tp, _fw_end
 	mul	a5, s7, s8
 	add	tp, tp, a5
+	/* Setup heap base address */
+	lla	s10, _fw_start
+	sub	s10, tp, s10
+	add	tp, tp, s9
 	/* Keep a copy of tp */
 	add	t3, tp, zero
 	/* Counter */
@@ -283,8 +291,11 @@ _scratch_init:
 	 * t3 -> the firmware end address
 	 * s7 -> HART count
 	 * s8 -> HART stack size
+	 * s9 -> Heap Size
+	 * s10 -> Heap Offset
 	 */
 	add	tp, t3, zero
+	sub	tp, tp, s9
 	mul	a5, s8, t1
 	sub	tp, tp, a5
 	li	a5, SBI_SCRATCH_SIZE
@@ -301,6 +312,10 @@ _scratch_init:
 	lla	a4, __fw_rw_offset
 	REG_L	a5, 0(a4)
 	REG_S	a5, SBI_SCRATCH_FW_RW_OFFSET(tp)
+
+	/* Store fw_heap_offset and fw_heap_size in scratch space */
+	REG_S	s10, SBI_SCRATCH_FW_HEAP_OFFSET(tp)
+	REG_S	s9, SBI_SCRATCH_FW_HEAP_SIZE_OFFSET(tp)
 
 	/* Store next arg1 in scratch space */
 	MOV_3R	s0, a0, s1, a1, s2, a2
