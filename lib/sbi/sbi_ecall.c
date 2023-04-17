@@ -120,7 +120,9 @@ int sbi_ecall_handler(struct sbi_trap_regs *regs)
 		trap.epc = regs->mepc;
 		sbi_trap_redirect(regs, &trap);
 	} else {
-		if (ret < SBI_LAST_ERR || SBI_SUCCESS < ret) {
+		if (ret < SBI_LAST_ERR ||
+		    (extension_id != SBI_EXT_0_1_CONSOLE_GETCHAR &&
+		     SBI_SUCCESS < ret)) {
 			sbi_printf("%s: Invalid error %d for ext=0x%lx "
 				   "func=0x%lx\n", __func__, ret,
 				   extension_id, func_id);
