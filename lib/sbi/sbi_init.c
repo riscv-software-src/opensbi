@@ -17,6 +17,7 @@
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_hartmask.h>
+#include <sbi/sbi_heap.h>
 #include <sbi/sbi_hsm.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_irqchip.h>
@@ -118,6 +119,15 @@ static void sbi_boot_print_general(struct sbi_scratch *scratch)
 	sbi_printf("Firmware Size             : %d KB\n",
 		   (u32)(scratch->fw_size / 1024));
 	sbi_printf("Firmware RW Offset        : 0x%lx\n", scratch->fw_rw_offset);
+	sbi_printf("Firmware RW Size          : %d KB\n",
+		   (u32)((scratch->fw_size - scratch->fw_rw_offset) / 1024));
+	sbi_printf("Firmware Heap Offset      : 0x%lx\n", scratch->fw_heap_offset);
+	sbi_printf("Firmware Heap Size        : "
+		   "%d KB (total), %d KB (reserved), %d KB (used), %d KB (free)\n",
+		   (u32)(scratch->fw_heap_size / 1024),
+		   (u32)(sbi_heap_reserved_space() / 1024),
+		   (u32)(sbi_heap_used_space() / 1024),
+		   (u32)(sbi_heap_free_space() / 1024));
 
 	/* SBI details */
 	sbi_printf("Runtime SBI Version       : %d.%d\n",
@@ -258,6 +268,11 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 
 	/* Note: This has to be second thing in coldboot init sequence */
+	rc = sbi_heap_init(scratch);
+	if (rc)
+		sbi_hart_hang();
+
+	/* Note: This has to be the third thing in coldboot init sequence */
 	rc = sbi_domain_init(scratch, hartid);
 	if (rc)
 		sbi_hart_hang();
