@@ -9,11 +9,11 @@
 
 #include <sbi/riscv_io.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_heap.h>
 #include <sbi/sbi_console.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/gpio/fdt_gpio.h>
 
-#define STARFIVE_GPIO_CHIP_MAX		2
 #define STARFIVE_GPIO_PINS_DEF		64
 #define STARFIVE_GPIO_OUTVAL		0x40
 #define STARFIVE_GPIO_MASK		0xff
@@ -24,9 +24,6 @@ struct starfive_gpio_chip {
 	unsigned long addr;
 	struct gpio_chip chip;
 };
-
-static unsigned int starfive_gpio_chip_count;
-static struct starfive_gpio_chip starfive_gpio_chip_array[STARFIVE_GPIO_CHIP_MAX];
 
 static int starfive_gpio_direction_output(struct gpio_pin *gp, int value)
 {
@@ -82,13 +79,15 @@ static int starfive_gpio_init(void *fdt, int nodeoff, u32 phandle,
 	struct starfive_gpio_chip *chip;
 	u64 addr;
 
-	if (starfive_gpio_chip_count >= STARFIVE_GPIO_CHIP_MAX)
-		return SBI_ENOSPC;
-	chip = &starfive_gpio_chip_array[starfive_gpio_chip_count];
+	chip = sbi_zalloc(sizeof(*chip));
+	if (!chip)
+		return SBI_ENOMEM;
 
 	rc = fdt_get_node_addr_size(fdt, nodeoff, 0, &addr, NULL);
-	if (rc)
+	if (rc) {
+		sbi_free(chip);
 		return rc;
+	}
 
 	chip->addr = addr;
 	chip->chip.driver = &fdt_gpio_starfive;
@@ -97,10 +96,11 @@ static int starfive_gpio_init(void *fdt, int nodeoff, u32 phandle,
 	chip->chip.direction_output = starfive_gpio_direction_output;
 	chip->chip.set = starfive_gpio_set;
 	rc = gpio_chip_add(&chip->chip);
-	if (rc)
+	if (rc) {
+		sbi_free(chip);
 		return rc;
+	}
 
-	starfive_gpio_chip_count++;
 	return 0;
 }
 

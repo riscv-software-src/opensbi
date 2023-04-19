@@ -9,10 +9,9 @@
 
 #include <sbi/riscv_io.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_heap.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/gpio/fdt_gpio.h>
-
-#define SIFIVE_GPIO_CHIP_MAX	2
 
 #define SIFIVE_GPIO_PINS_MIN	1
 #define SIFIVE_GPIO_PINS_MAX	32
@@ -26,9 +25,6 @@ struct sifive_gpio_chip {
 	unsigned long addr;
 	struct gpio_chip chip;
 };
-
-static unsigned int sifive_gpio_chip_count;
-static struct sifive_gpio_chip sifive_gpio_chip_array[SIFIVE_GPIO_CHIP_MAX];
 
 static int sifive_gpio_direction_output(struct gpio_pin *gp, int value)
 {
@@ -73,13 +69,15 @@ static int sifive_gpio_init(void *fdt, int nodeoff, u32 phandle,
 	struct sifive_gpio_chip *chip;
 	uint64_t addr;
 
-	if (SIFIVE_GPIO_CHIP_MAX <= sifive_gpio_chip_count)
-		return SBI_ENOSPC;
-	chip = &sifive_gpio_chip_array[sifive_gpio_chip_count];
+	chip = sbi_zalloc(sizeof(*chip));
+	if (!chip)
+		return SBI_ENOMEM;
 
 	rc = fdt_get_node_addr_size(fdt, nodeoff, 0, &addr, NULL);
-	if (rc)
+	if (rc) {
+		sbi_free(chip);
 		return rc;
+	}
 
 	chip->addr = addr;
 	chip->chip.driver = &fdt_gpio_sifive;
@@ -88,10 +86,11 @@ static int sifive_gpio_init(void *fdt, int nodeoff, u32 phandle,
 	chip->chip.direction_output = sifive_gpio_direction_output;
 	chip->chip.set = sifive_gpio_set;
 	rc = gpio_chip_add(&chip->chip);
-	if (rc)
+	if (rc) {
+		sbi_free(chip);
 		return rc;
+	}
 
-	sifive_gpio_chip_count++;
 	return 0;
 }
 
