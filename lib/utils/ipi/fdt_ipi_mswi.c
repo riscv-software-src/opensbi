@@ -8,14 +8,10 @@
  */
 
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_heap.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/ipi/fdt_ipi.h>
 #include <sbi_utils/ipi/aclint_mswi.h>
-
-#define MSWI_MAX_NR			16
-
-static unsigned long mswi_count = 0;
-static struct aclint_mswi_data mswi[MSWI_MAX_NR];
 
 static int ipi_mswi_cold_init(void *fdt, int nodeoff,
 			      const struct fdt_match *match)
@@ -24,15 +20,17 @@ static int ipi_mswi_cold_init(void *fdt, int nodeoff,
 	unsigned long offset;
 	struct aclint_mswi_data *ms;
 
-	if (MSWI_MAX_NR <= mswi_count)
-		return SBI_ENOSPC;
-	ms = &mswi[mswi_count];
+	ms = sbi_zalloc(sizeof(*ms));
+	if (!ms)
+		return SBI_ENOMEM;
 
 	rc = fdt_parse_aclint_node(fdt, nodeoff, false,
 				   &ms->addr, &ms->size, NULL, NULL,
 				   &ms->first_hartid, &ms->hart_count);
-	if (rc)
+	if (rc) {
+		sbi_free(ms);
 		return rc;
+	}
 
 	if (match->data) {
 		/* Adjust MSWI address and size for CLINT device */
@@ -44,10 +42,11 @@ static int ipi_mswi_cold_init(void *fdt, int nodeoff,
 	}
 
 	rc = aclint_mswi_cold_init(ms);
-	if (rc)
+	if (rc) {
+		sbi_free(ms);
 		return rc;
+	}
 
-	mswi_count++;
 	return 0;
 }
 
