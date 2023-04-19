@@ -11,18 +11,14 @@
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_io.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_heap.h>
 #include <sbi/sbi_hartmask.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/irqchip/fdt_irqchip.h>
 #include <sbi_utils/irqchip/plic.h>
 
-#define PLIC_MAX_NR			16
-
-static unsigned long plic_count = 0;
-static struct plic_data plic[PLIC_MAX_NR];
-
 static struct plic_data *plic_hartid2data[SBI_HARTMASK_MAX_BITS];
-static int plic_hartid2context[SBI_HARTMASK_MAX_BITS][2];
+static int plic_hartid2context[SBI_HARTMASK_MAX_BITS][2] = { { -1 } };
 
 void fdt_plic_priority_save(u8 *priority, u32 num)
 {
@@ -114,16 +110,16 @@ static int irqchip_plic_update_hartid_table(void *fdt, int nodeoff,
 static int irqchip_plic_cold_init(void *fdt, int nodeoff,
 				  const struct fdt_match *match)
 {
-	int i, rc;
+	int rc;
 	struct plic_data *pd;
 
-	if (PLIC_MAX_NR <= plic_count)
-		return SBI_ENOSPC;
-	pd = &plic[plic_count++];
+	pd = sbi_zalloc(sizeof(*pd));
+	if (!pd)
+		return SBI_ENOMEM;
 
 	rc = fdt_parse_plic_node(fdt, nodeoff, pd);
 	if (rc)
-		return rc;
+		goto fail_free_data;
 
 	if (match->data) {
 		void (*plic_plat_init)(struct plic_data *) = match->data;
@@ -132,17 +128,17 @@ static int irqchip_plic_cold_init(void *fdt, int nodeoff,
 
 	rc = plic_cold_irqchip_init(pd);
 	if (rc)
-		return rc;
+		goto fail_free_data;
 
-	if (plic_count == 1) {
-		for (i = 0; i < SBI_HARTMASK_MAX_BITS; i++) {
-			plic_hartid2data[i] = NULL;
-			plic_hartid2context[i][0] = -1;
-			plic_hartid2context[i][1] = -1;
-		}
-	}
+	rc = irqchip_plic_update_hartid_table(fdt, nodeoff, pd);
+	if (rc)
+		goto fail_free_data;
 
-	return irqchip_plic_update_hartid_table(fdt, nodeoff, pd);
+	return 0;
+
+fail_free_data:
+	sbi_free(pd);
+	return rc;
 }
 
 #define THEAD_PLIC_CTRL_REG 0x1ffffc

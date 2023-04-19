@@ -11,14 +11,10 @@
 #include <libfdt.h>
 #include <sbi/riscv_asm.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_heap.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/irqchip/fdt_irqchip.h>
 #include <sbi_utils/irqchip/aplic.h>
-
-#define APLIC_MAX_NR			16
-
-static unsigned long aplic_count = 0;
-static struct aplic_data aplic[APLIC_MAX_NR];
 
 static int irqchip_aplic_warm_init(void)
 {
@@ -32,15 +28,23 @@ static int irqchip_aplic_cold_init(void *fdt, int nodeoff,
 	int rc;
 	struct aplic_data *pd;
 
-	if (APLIC_MAX_NR <= aplic_count)
-		return SBI_ENOSPC;
-	pd = &aplic[aplic_count++];
+	pd = sbi_zalloc(sizeof(*pd));
+	if (!pd)
+		return SBI_ENOMEM;
 
 	rc = fdt_parse_aplic_node(fdt, nodeoff, pd);
 	if (rc)
-		return rc;
+		goto fail_free_data;
 
-	return aplic_cold_irqchip_init(pd);
+	rc = aplic_cold_irqchip_init(pd);
+	if (rc)
+		goto fail_free_data;
+
+	return 0;
+
+fail_free_data:
+	sbi_free(pd);
+	return rc;
 }
 
 static const struct fdt_match irqchip_aplic_match[] = {
