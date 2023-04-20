@@ -175,6 +175,9 @@ unsigned long sbi_scratch_alloc_offset(unsigned long size);
 /** Free-up extra space in sbi_scratch */
 void sbi_scratch_free_offset(unsigned long offset);
 
+/** Amount (in bytes) of used space in in sbi_scratch */
+unsigned long sbi_scratch_used_space(void);
+
 /** Get pointer from offset in sbi_scratch */
 #define sbi_scratch_offset_ptr(scratch, offset)	(void *)((char *)(scratch) + (offset))
 

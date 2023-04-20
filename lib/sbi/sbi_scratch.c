@@ -97,3 +97,14 @@ void sbi_scratch_free_offset(unsigned long offset)
 	 * brain-dead allocator.
 	 */
 }
+
+unsigned long sbi_scratch_used_space(void)
+{
+	unsigned long ret = 0;
+
+	spin_lock(&extra_lock);
+	ret = extra_offset;
+	spin_unlock(&extra_lock);
+
+	return ret;
+}

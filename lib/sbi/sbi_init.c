@@ -128,6 +128,11 @@ static void sbi_boot_print_general(struct sbi_scratch *scratch)
 		   (u32)(sbi_heap_reserved_space() / 1024),
 		   (u32)(sbi_heap_used_space() / 1024),
 		   (u32)(sbi_heap_free_space() / 1024));
+	sbi_printf("Firmware Scratch Size     : "
+		   "%d B (total), %d B (used), %d B (free)\n",
+		   SBI_SCRATCH_SIZE,
+		   (u32)sbi_scratch_used_space(),
+		   (u32)(SBI_SCRATCH_SIZE - sbi_scratch_used_space()));
 
 	/* SBI details */
 	sbi_printf("Runtime SBI Version       : %d.%d\n",
