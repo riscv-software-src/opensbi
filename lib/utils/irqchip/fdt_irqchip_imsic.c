@@ -12,7 +12,6 @@
 #include <sbi/riscv_asm.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_heap.h>
-#include <sbi/sbi_hartmask.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/irqchip/fdt_irqchip.h>
 #include <sbi_utils/irqchip/imsic.h>
@@ -43,8 +42,6 @@ static int irqchip_imsic_update_hartid_table(void *fdt, int nodeoff,
 
 		err = fdt_parse_hart_id(fdt, cpu_offset, &hartid);
 		if (err)
-			return SBI_EINVAL;
-		if (SBI_HARTMASK_MAX_BITS <= hartid)
 			return SBI_EINVAL;
 
 		switch (hwirq) {
