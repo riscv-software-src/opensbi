@@ -13,10 +13,10 @@
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_domain.h>
-#include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_irqchip.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_scratch.h>
 #include <sbi_utils/irqchip/imsic.h>
 
 #define IMSIC_MMIO_PAGE_LE		0x00
@@ -79,33 +79,65 @@ do { \
 	csr_clear(CSR_MIREG, __v); \
 } while (0)
 
-static struct imsic_data *imsic_hartid2data[SBI_HARTMASK_MAX_BITS];
-static int imsic_hartid2file[SBI_HARTMASK_MAX_BITS];
+static unsigned long imsic_ptr_offset;
+
+#define imsic_get_hart_data_ptr(__scratch)				\
+	sbi_scratch_read_type((__scratch), void *, imsic_ptr_offset)
+
+#define imsic_set_hart_data_ptr(__scratch, __imsic)			\
+	sbi_scratch_write_type((__scratch), void *, imsic_ptr_offset, (__imsic))
+
+static unsigned long imsic_file_offset;
+
+#define imsic_get_hart_file(__scratch)					\
+	sbi_scratch_read_type((__scratch), long, imsic_file_offset)
+
+#define imsic_set_hart_file(__scratch, __file)				\
+	sbi_scratch_write_type((__scratch), long, imsic_file_offset, (__file))
 
 int imsic_map_hartid_to_data(u32 hartid, struct imsic_data *imsic, int file)
 {
-	if (!imsic || !imsic->targets_mmode ||
-	    (SBI_HARTMASK_MAX_BITS <= hartid))
+	struct sbi_scratch *scratch;
+
+	if (!imsic || !imsic->targets_mmode)
 		return SBI_EINVAL;
 
-	imsic_hartid2data[hartid] = imsic;
-	imsic_hartid2file[hartid] = file;
+	/*
+	 * We don't need to fail if scratch pointer is not available
+	 * because we might be dealing with hartid of a HART disabled
+	 * in device tree. For HARTs disabled in device tree, the
+	 * imsic_get_data() and imsic_get_target_file() will anyway
+	 * fail.
+	 */
+	scratch = sbi_hartid_to_scratch(hartid);
+	if (!scratch)
+		return 0;
+
+	imsic_set_hart_data_ptr(scratch, imsic);
+	imsic_set_hart_file(scratch, file);
 	return 0;
 }
 
 struct imsic_data *imsic_get_data(u32 hartid)
 {
-	if (SBI_HARTMASK_MAX_BITS <= hartid)
+	struct sbi_scratch *scratch;
+
+	scratch = sbi_hartid_to_scratch(hartid);
+	if (!scratch)
 		return NULL;
-	return imsic_hartid2data[hartid];
+
+	return imsic_get_hart_data_ptr(scratch);
 }
 
 int imsic_get_target_file(u32 hartid)
 {
-	if ((SBI_HARTMASK_MAX_BITS <= hartid) ||
-	    !imsic_hartid2data[hartid])
+	struct sbi_scratch *scratch;
+
+	scratch = sbi_hartid_to_scratch(hartid);
+	if (!scratch)
 		return SBI_ENOENT;
-	return imsic_hartid2file[hartid];
+
+	return imsic_get_hart_file(scratch);
 }
 
 static int imsic_external_irqfn(struct sbi_trap_regs *regs)
@@ -133,9 +165,16 @@ static void imsic_ipi_send(u32 target_hart)
 {
 	unsigned long reloff;
 	struct imsic_regs *regs;
-	struct imsic_data *data = imsic_hartid2data[target_hart];
-	int file = imsic_hartid2file[target_hart];
+	struct imsic_data *data;
+	struct sbi_scratch *scratch;
+	int file;
 
+	scratch = sbi_hartid_to_scratch(target_hart);
+	if (!scratch)
+		return;
+
+	data = imsic_get_hart_data_ptr(scratch);
+	file = imsic_get_hart_file(scratch);
 	if (!data || !data->targets_mmode)
 		return;
 
@@ -204,7 +243,7 @@ void imsic_local_irqchip_init(void)
 
 int imsic_warm_irqchip_init(void)
 {
-	struct imsic_data *imsic = imsic_hartid2data[current_hartid()];
+	struct imsic_data *imsic = imsic_get_data(current_hartid());
 
 	/* Sanity checks */
 	if (!imsic || !imsic->targets_mmode)
@@ -305,6 +344,20 @@ int imsic_cold_irqchip_init(struct imsic_data *imsic)
 	/* We only initialize M-mode IMSIC */
 	if (!imsic->targets_mmode)
 		return SBI_EINVAL;
+
+	/* Allocate scratch space pointer */
+	if (!imsic_ptr_offset) {
+		imsic_ptr_offset = sbi_scratch_alloc_type_offset(void *);
+		if (!imsic_ptr_offset)
+			return SBI_ENOMEM;
+	}
+
+	/* Allocate scratch space file */
+	if (!imsic_file_offset) {
+		imsic_file_offset = sbi_scratch_alloc_type_offset(long);
+		if (!imsic_file_offset)
+			return SBI_ENOMEM;
+	}
 
 	/* Setup external interrupt function for IMSIC */
 	sbi_irqchip_set_irqfn(imsic_external_irqfn);

@@ -72,11 +72,11 @@ static int irqchip_imsic_cold_init(void *fdt, int nodeoff,
 	if (rc || !id->targets_mmode)
 		goto fail_free_data;
 
-	rc = irqchip_imsic_update_hartid_table(fdt, nodeoff, id);
+	rc = imsic_cold_irqchip_init(id);
 	if (rc)
 		goto fail_free_data;
 
-	rc = imsic_cold_irqchip_init(id);
+	rc = irqchip_imsic_update_hartid_table(fdt, nodeoff, id);
 	if (rc)
 		goto fail_free_data;
 
