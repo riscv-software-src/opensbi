@@ -129,12 +129,8 @@ struct sbi_domain {
 /** The root domain instance */
 extern struct sbi_domain root;
 
-/** HART id to domain table */
-extern struct sbi_domain *hartid_to_domain_table[];
-
 /** Get pointer to sbi_domain from HART id */
-#define sbi_hartid_to_domain(__hartid) \
-	hartid_to_domain_table[__hartid]
+struct sbi_domain *sbi_hartid_to_domain(u32 hartid);
 
 /** Get pointer to sbi_domain for current HART */
 #define sbi_domain_thishart_ptr() \
