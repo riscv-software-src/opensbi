@@ -261,7 +261,7 @@ static int sanitize_domain(const struct sbi_platform *plat,
 				   "hart %d\n", __func__, dom->name, i);
 			return SBI_EINVAL;
 		}
-	};
+	}
 
 	/* Check memory regions */
 	if (!dom->regions) {
@@ -451,7 +451,7 @@ void sbi_domain_dump(const struct sbi_domain *dom, const char *suffix)
 	default:
 		sbi_printf("Unknown\n");
 		break;
-	};
+	}
 
 	sbi_printf("Domain%d SysReset    %s: %s\n",
 		   dom->index, suffix, (dom->system_reset_allowed) ? "yes" : "no");

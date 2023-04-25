@@ -90,7 +90,7 @@ static int system_opcode_insn(ulong insn, struct sbi_trap_regs *regs)
 		break;
 	default:
 		return truly_illegal_insn(insn, regs);
-	};
+	}
 
 	if (do_write && sbi_emulate_csr_write(csr_num, regs, new_csr_val))
 		return truly_illegal_insn(insn, regs);

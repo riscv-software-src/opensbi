@@ -404,7 +404,7 @@ static int overlay_fixup_one_phandle(void *fdt, void *fdto,
 						   name, name_len, poffset,
 						   &phandle_prop,
 						   sizeof(phandle_prop));
-};
+}
 
 /**
  * overlay_fixup_phandle - Set an overlay phandle to the base one

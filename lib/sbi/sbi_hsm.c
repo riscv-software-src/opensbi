@@ -172,7 +172,7 @@ static void sbi_hsm_hart_wait(struct sbi_scratch *scratch, u32 hartid)
 	/* Wait for state transition requested by sbi_hsm_hart_start() */
 	while (atomic_read(&hdata->state) != SBI_HSM_STATE_START_PENDING) {
 		wfi();
-	};
+	}
 
 	/* Restore MIE CSR */
 	csr_write(CSR_MIE, saved_mie);

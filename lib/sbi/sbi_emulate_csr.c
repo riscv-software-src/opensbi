@@ -149,7 +149,7 @@ int sbi_emulate_csr_read(int csr_num, struct sbi_trap_regs *regs,
 	default:
 		ret = SBI_ENOTSUPP;
 		break;
-	};
+	}
 
 	if (ret)
 		sbi_dprintf("%s: hartid%d: invalid csr_num=0x%x\n",
@@ -187,7 +187,7 @@ int sbi_emulate_csr_write(int csr_num, struct sbi_trap_regs *regs,
 	default:
 		ret = SBI_ENOTSUPP;
 		break;
-	};
+	}
 
 	if (ret)
 		sbi_dprintf("%s: hartid%d: invalid csr_num=0x%x\n",

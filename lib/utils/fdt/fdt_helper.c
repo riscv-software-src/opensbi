@@ -689,7 +689,7 @@ int fdt_parse_imsic_node(void *fdt, int nodeoff, struct imsic_data *imsic)
 			break;
 		regs->addr = reg_addr;
 		regs->size = reg_size;
-	};
+	}
 	if (!imsic->regs[0].size)
 		return SBI_EINVAL;
 

@@ -152,7 +152,7 @@ unsigned long csr_read_num(int csr_num)
 	default:
 		sbi_panic("%s: Unknown CSR %#x", __func__, csr_num);
 		break;
-	};
+	}
 
 	return ret;
 
@@ -220,7 +220,7 @@ void csr_write_num(int csr_num, unsigned long val)
 	default:
 		sbi_panic("%s: Unknown CSR %#x", __func__, csr_num);
 		break;
-	};
+	}
 
 #undef switchcase_csr_write_64
 #undef switchcase_csr_write_32

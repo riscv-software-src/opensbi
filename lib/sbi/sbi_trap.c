@@ -212,7 +212,7 @@ static int sbi_trap_nonaia_irq(struct sbi_trap_regs *regs, ulong mcause)
 		return sbi_irqchip_process(regs);
 	default:
 		return SBI_ENOENT;
-	};
+	}
 
 	return 0;
 }
@@ -320,7 +320,7 @@ struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs)
 
 		rc = sbi_trap_redirect(regs, &trap);
 		break;
-	};
+	}
 
 trap_error:
 	if (rc)

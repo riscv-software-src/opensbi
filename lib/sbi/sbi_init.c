@@ -200,7 +200,7 @@ static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 			wfi();
 			cmip = csr_read(CSR_MIP);
 		 } while (!(cmip & (MIP_MSIP | MIP_MEIP)));
-	};
+	}
 
 	/* Acquire coldboot lock */
 	spin_lock(&coldboot_lock);

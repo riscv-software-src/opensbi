@@ -233,7 +233,7 @@ void sbi_ipi_process(void)
 skip:
 		ipi_type = ipi_type >> 1;
 		ipi_event++;
-	};
+	}
 }
 
 int sbi_ipi_raw_send(u32 target_hart)

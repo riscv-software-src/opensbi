@@ -76,7 +76,7 @@ static int sbi_ecall_pmu_handler(unsigned long extid, unsigned long funcid,
 		break;
 	default:
 		ret = SBI_ENOTSUPP;
-	};
+	}
 
 	return ret;
 }

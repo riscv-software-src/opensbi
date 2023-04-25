@@ -163,7 +163,7 @@ ulong sbi_get_insn(ulong mepc, struct sbi_trap_info *trap)
 		break;
 	default:
 		break;
-	};
+	}
 
 	return insn;
 }
