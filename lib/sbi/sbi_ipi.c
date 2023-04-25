@@ -223,14 +223,11 @@ void sbi_ipi_process(void)
 	ipi_type = atomic_raw_xchg_ulong(&ipi_data->ipi_type, 0);
 	ipi_event = 0;
 	while (ipi_type) {
-		if (!(ipi_type & 1UL))
-			goto skip;
-
-		ipi_ops = ipi_ops_array[ipi_event];
-		if (ipi_ops && ipi_ops->process)
-			ipi_ops->process(scratch);
-
-skip:
+		if (ipi_type & 1UL) {
+			ipi_ops = ipi_ops_array[ipi_event];
+			if (ipi_ops && ipi_ops->process)
+				ipi_ops->process(scratch);
+		}
 		ipi_type = ipi_type >> 1;
 		ipi_event++;
 	}
