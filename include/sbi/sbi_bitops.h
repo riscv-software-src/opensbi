@@ -12,13 +12,7 @@
 
 #include <sbi/sbi_types.h>
 
-#if __SIZEOF_POINTER__ == 8
-#define BITS_PER_LONG		64
-#elif __SIZEOF_POINTER__ == 4
-#define BITS_PER_LONG		32
-#else
-#error "Unexpected __SIZEOF_POINTER__"
-#endif
+#define BITS_PER_LONG		(8 * __SIZEOF_LONG__)
 
 #define EXTRACT_FIELD(val, which) \
 	(((val) & (which)) / ((which) & ~((which)-1)))
