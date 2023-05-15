@@ -54,8 +54,16 @@ static int sbi_ecall_hsm_handler(unsigned long extid, unsigned long funcid,
 	return ret;
 }
 
+struct sbi_ecall_extension ecall_hsm;
+
+static int sbi_ecall_hsm_register_extensions(void)
+{
+	return sbi_ecall_register_extension(&ecall_hsm);
+}
+
 struct sbi_ecall_extension ecall_hsm = {
-	.extid_start = SBI_EXT_HSM,
-	.extid_end = SBI_EXT_HSM,
-	.handle = sbi_ecall_hsm_handler,
+	.extid_start		= SBI_EXT_HSM,
+	.extid_end		= SBI_EXT_HSM,
+	.register_extensions	= sbi_ecall_hsm_register_extensions,
+	.handle			= sbi_ecall_hsm_handler,
 };

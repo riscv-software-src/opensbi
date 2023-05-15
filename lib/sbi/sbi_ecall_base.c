@@ -72,8 +72,16 @@ static int sbi_ecall_base_handler(unsigned long extid, unsigned long funcid,
 	return ret;
 }
 
+struct sbi_ecall_extension ecall_base;
+
+static int sbi_ecall_base_register_extensions(void)
+{
+	return sbi_ecall_register_extension(&ecall_base);
+}
+
 struct sbi_ecall_extension ecall_base = {
-	.extid_start = SBI_EXT_BASE,
-	.extid_end = SBI_EXT_BASE,
-	.handle = sbi_ecall_base_handler,
+	.extid_start		= SBI_EXT_BASE,
+	.extid_end		= SBI_EXT_BASE,
+	.register_extensions	= sbi_ecall_base_register_extensions,
+	.handle			= sbi_ecall_base_handler,
 };

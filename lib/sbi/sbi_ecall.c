@@ -154,7 +154,10 @@ int sbi_ecall_init(void)
 
 	for (i = 0; i < sbi_ecall_exts_size; i++) {
 		ext = sbi_ecall_exts[i];
-		ret = sbi_ecall_register_extension(ext);
+		ret = SBI_ENODEV;
+
+		if (ext->register_extensions)
+			ret = ext->register_extensions();
 		if (ret)
 			return ret;
 	}

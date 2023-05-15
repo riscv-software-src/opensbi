@@ -67,9 +67,17 @@ static int sbi_ecall_srst_probe(unsigned long extid, unsigned long *out_val)
 	return 0;
 }
 
+struct sbi_ecall_extension ecall_srst;
+
+static int sbi_ecall_srst_register_extensions(void)
+{
+	return sbi_ecall_register_extension(&ecall_srst);
+}
+
 struct sbi_ecall_extension ecall_srst = {
-	.extid_start = SBI_EXT_SRST,
-	.extid_end = SBI_EXT_SRST,
-	.handle = sbi_ecall_srst_handler,
-	.probe = sbi_ecall_srst_probe,
+	.extid_start		= SBI_EXT_SRST,
+	.extid_end		= SBI_EXT_SRST,
+	.register_extensions	= sbi_ecall_srst_register_extensions,
+	.probe			= sbi_ecall_srst_probe,
+	.handle			= sbi_ecall_srst_handler,
 };

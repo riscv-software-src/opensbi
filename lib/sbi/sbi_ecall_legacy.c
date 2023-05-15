@@ -117,8 +117,16 @@ static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
 	return ret;
 }
 
+struct sbi_ecall_extension ecall_legacy;
+
+static int sbi_ecall_legacy_register_extensions(void)
+{
+	return sbi_ecall_register_extension(&ecall_legacy);
+}
+
 struct sbi_ecall_extension ecall_legacy = {
-	.extid_start = SBI_EXT_0_1_SET_TIMER,
-	.extid_end = SBI_EXT_0_1_SHUTDOWN,
-	.handle = sbi_ecall_legacy_handler,
+	.extid_start		= SBI_EXT_0_1_SET_TIMER,
+	.extid_end		= SBI_EXT_0_1_SHUTDOWN,
+	.register_extensions	= sbi_ecall_legacy_register_extensions,
+	.handle			= sbi_ecall_legacy_handler,
 };

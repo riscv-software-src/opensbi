@@ -64,9 +64,17 @@ static int sbi_ecall_dbcn_probe(unsigned long extid, unsigned long *out_val)
 	return 0;
 }
 
+struct sbi_ecall_extension ecall_dbcn;
+
+static int sbi_ecall_dbcn_register_extensions(void)
+{
+	return sbi_ecall_register_extension(&ecall_dbcn);
+}
+
 struct sbi_ecall_extension ecall_dbcn = {
-	.extid_start = SBI_EXT_DBCN,
-	.extid_end = SBI_EXT_DBCN,
-	.handle = sbi_ecall_dbcn_handler,
-	.probe = sbi_ecall_dbcn_probe,
+	.extid_start		= SBI_EXT_DBCN,
+	.extid_end		= SBI_EXT_DBCN,
+	.register_extensions	= sbi_ecall_dbcn_register_extensions,
+	.probe			= sbi_ecall_dbcn_probe,
+	.handle			= sbi_ecall_dbcn_handler,
 };
