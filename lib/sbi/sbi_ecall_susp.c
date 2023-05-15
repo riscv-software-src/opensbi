@@ -23,7 +23,7 @@ static int sbi_ecall_susp_handler(unsigned long extid, unsigned long funcid,
 	return ret;
 }
 
-static int sbi_ecall_susp_probe(unsigned long extid, unsigned long *out_val)
+static bool susp_available(void)
 {
 	u32 type;
 
@@ -32,24 +32,18 @@ static int sbi_ecall_susp_probe(unsigned long extid, unsigned long *out_val)
 	 * platform for the SBI SUSP extension to be usable.
 	 */
 	for (type = 0; type <= SBI_SUSP_SLEEP_TYPE_LAST; type++) {
-		if (sbi_system_suspend_supported(type)) {
-			*out_val = 1;
-			return 0;
-		}
+		if (sbi_system_suspend_supported(type))
+			return true;
 	}
 
-	*out_val = 0;
-	return 0;
+	return false;
 }
 
 struct sbi_ecall_extension ecall_susp;
 
 static int sbi_ecall_susp_register_extensions(void)
 {
-	unsigned long out_val;
-
-	sbi_ecall_susp_probe(SBI_EXT_SUSP, &out_val);
-	if (!out_val)
+	if (!susp_available())
 		return 0;
 
 	return sbi_ecall_register_extension(&ecall_susp);
@@ -59,6 +53,5 @@ struct sbi_ecall_extension ecall_susp = {
 	.extid_start		= SBI_EXT_SUSP,
 	.extid_end		= SBI_EXT_SUSP,
 	.register_extensions	= sbi_ecall_susp_register_extensions,
-	.probe			= sbi_ecall_susp_probe,
 	.handle			= sbi_ecall_susp_handler,
 };

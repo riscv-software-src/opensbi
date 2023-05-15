@@ -48,7 +48,7 @@ static int sbi_ecall_srst_handler(unsigned long extid, unsigned long funcid,
 	return SBI_ENOTSUPP;
 }
 
-static int sbi_ecall_srst_probe(unsigned long extid, unsigned long *out_val)
+static bool srst_available(void)
 {
 	u32 type;
 
@@ -56,27 +56,20 @@ static int sbi_ecall_srst_probe(unsigned long extid, unsigned long *out_val)
 	 * At least one standard reset types should be supported by
 	 * the platform for SBI SRST extension to be usable.
 	 */
-
 	for (type = 0; type <= SBI_SRST_RESET_TYPE_LAST; type++) {
 		if (sbi_system_reset_supported(type,
-					SBI_SRST_RESET_REASON_NONE)) {
-			*out_val = 1;
-			return 0;
-		}
+					SBI_SRST_RESET_REASON_NONE))
+			return true;
 	}
 
-	*out_val = 0;
-	return 0;
+	return false;
 }
 
 struct sbi_ecall_extension ecall_srst;
 
 static int sbi_ecall_srst_register_extensions(void)
 {
-	unsigned long out_val;
-
-	sbi_ecall_srst_probe(SBI_EXT_SRST, &out_val);
-	if (!out_val)
+	if (!srst_available())
 		return 0;
 
 	return sbi_ecall_register_extension(&ecall_srst);
@@ -86,6 +79,5 @@ struct sbi_ecall_extension ecall_srst = {
 	.extid_start		= SBI_EXT_SRST,
 	.extid_end		= SBI_EXT_SRST,
 	.register_extensions	= sbi_ecall_srst_register_extensions,
-	.probe			= sbi_ecall_srst_probe,
 	.handle			= sbi_ecall_srst_handler,
 };
