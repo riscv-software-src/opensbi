@@ -25,8 +25,7 @@ static inline unsigned long sbi_ecall_vendor_id(void)
 static int sbi_ecall_vendor_probe(unsigned long extid,
 				  unsigned long *out_val)
 {
-	if (!sbi_platform_vendor_ext_check(sbi_platform_thishart_ptr()) ||
-	    extid != sbi_ecall_vendor_id())
+	if (!sbi_platform_vendor_ext_check(sbi_platform_thishart_ptr()))
 		*out_val = 0;
 	else
 		*out_val = 1;
@@ -38,8 +37,7 @@ static int sbi_ecall_vendor_handler(unsigned long extid, unsigned long funcid,
 				    unsigned long *out_val,
 				    struct sbi_trap_info *out_trap)
 {
-	if (!sbi_platform_vendor_ext_check(sbi_platform_thishart_ptr()) ||
-	    extid != sbi_ecall_vendor_id())
+	if (!sbi_platform_vendor_ext_check(sbi_platform_thishart_ptr()))
 		return SBI_ERR_NOT_SUPPORTED;
 
 	return sbi_platform_vendor_ext_provider(sbi_platform_thishart_ptr(),
@@ -51,6 +49,11 @@ struct sbi_ecall_extension ecall_vendor;
 
 static int sbi_ecall_vendor_register_extensions(void)
 {
+	unsigned long extid = sbi_ecall_vendor_id();
+
+	ecall_vendor.extid_start = extid;
+	ecall_vendor.extid_end = extid;
+
 	return sbi_ecall_register_extension(&ecall_vendor);
 }
 
