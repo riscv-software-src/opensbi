@@ -81,13 +81,6 @@ static int sbi_ecall_pmu_handler(unsigned long extid, unsigned long funcid,
 	return ret;
 }
 
-static int sbi_ecall_pmu_probe(unsigned long extid, unsigned long *out_val)
-{
-	/* PMU extension is always enabled */
-	*out_val = 1;
-	return 0;
-}
-
 struct sbi_ecall_extension ecall_pmu;
 
 static int sbi_ecall_pmu_register_extensions(void)
@@ -99,6 +92,5 @@ struct sbi_ecall_extension ecall_pmu = {
 	.extid_start		= SBI_EXT_PMU,
 	.extid_end		= SBI_EXT_PMU,
 	.register_extensions	= sbi_ecall_pmu_register_extensions,
-	.probe			= sbi_ecall_pmu_probe,
 	.handle			= sbi_ecall_pmu_handler,
 };
