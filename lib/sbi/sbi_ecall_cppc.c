@@ -59,6 +59,9 @@ struct sbi_ecall_extension ecall_cppc;
 
 static int sbi_ecall_cppc_register_extensions(void)
 {
+	if (!sbi_cppc_get_device())
+		return 0;
+
 	return sbi_ecall_register_extension(&ecall_cppc);
 }
 

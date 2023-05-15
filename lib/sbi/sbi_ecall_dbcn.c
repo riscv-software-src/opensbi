@@ -68,6 +68,9 @@ struct sbi_ecall_extension ecall_dbcn;
 
 static int sbi_ecall_dbcn_register_extensions(void)
 {
+	if (!sbi_console_get_device())
+		return 0;
+
 	return sbi_ecall_register_extension(&ecall_dbcn);
 }
 

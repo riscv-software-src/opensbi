@@ -323,12 +323,6 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 	}
 
-	rc = sbi_ecall_init();
-	if (rc) {
-		sbi_printf("%s: ecall init failed (error %d)\n", __func__, rc);
-		sbi_hart_hang();
-	}
-
 	/*
 	 * Note: Finalize domains after HSM initialization so that we
 	 * can startup non-root domains.
@@ -350,13 +344,25 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	}
 
 	/*
-	 * Note: Platform final initialization should be last so that
-	 * it sees correct domain assignment and PMP configuration.
+	 * Note: Platform final initialization should be after finalizing
+	 * domains so that it sees correct domain assignment and PMP
+	 * configuration for FDT fixups.
 	 */
 	rc = sbi_platform_final_init(plat, true);
 	if (rc) {
 		sbi_printf("%s: platform final init failed (error %d)\n",
 			   __func__, rc);
+		sbi_hart_hang();
+	}
+
+	/*
+	 * Note: Ecall initialization should be after platform final
+	 * initialization so that all available platform devices are
+	 * already registered.
+	 */
+	rc = sbi_ecall_init();
+	if (rc) {
+		sbi_printf("%s: ecall init failed (error %d)\n", __func__, rc);
 		sbi_hart_hang();
 	}
 

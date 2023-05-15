@@ -44,6 +44,12 @@ struct sbi_ecall_extension ecall_susp;
 
 static int sbi_ecall_susp_register_extensions(void)
 {
+	unsigned long out_val;
+
+	sbi_ecall_susp_probe(SBI_EXT_SUSP, &out_val);
+	if (!out_val)
+		return 0;
+
 	return sbi_ecall_register_extension(&ecall_susp);
 }
 
