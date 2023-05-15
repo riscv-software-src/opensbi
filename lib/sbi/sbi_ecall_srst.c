@@ -50,7 +50,7 @@ static int sbi_ecall_srst_handler(unsigned long extid, unsigned long funcid,
 
 static int sbi_ecall_srst_probe(unsigned long extid, unsigned long *out_val)
 {
-	u32 type, count = 0;
+	u32 type;
 
 	/*
 	 * At least one standard reset types should be supported by
@@ -59,11 +59,13 @@ static int sbi_ecall_srst_probe(unsigned long extid, unsigned long *out_val)
 
 	for (type = 0; type <= SBI_SRST_RESET_TYPE_LAST; type++) {
 		if (sbi_system_reset_supported(type,
-					SBI_SRST_RESET_REASON_NONE))
-			count++;
+					SBI_SRST_RESET_REASON_NONE)) {
+			*out_val = 1;
+			return 0;
+		}
 	}
 
-	*out_val = (count) ? 1 : 0;
+	*out_val = 0;
 	return 0;
 }
 
