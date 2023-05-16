@@ -401,10 +401,10 @@ merge_deps = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     cat $(2) > $(1)
 copy_file =  $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " COPY      $(subst $(build_dir)/,,$(1))"; \
-	     cp -f $(2) $(1)
+	     cp -L -f $(2) $(1)
 inst_file =  $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " INSTALL   $(subst $(install_root_dir)/,,$(1))"; \
-	     cp -f $(2) $(1)
+	     cp -L -f $(2) $(1)
 inst_file_list = $(CMD_PREFIX)if [ ! -z "$(4)" ]; then \
 	     mkdir -p $(1)/$(3); \
 	     for file in $(4) ; do \
@@ -413,12 +413,12 @@ inst_file_list = $(CMD_PREFIX)if [ ! -z "$(4)" ]; then \
 	     dest_dir=`dirname $$dest_file`; \
 	     echo " INSTALL   "$(3)"/"`echo $$rel_file`; \
 	     mkdir -p $$dest_dir; \
-	     cp -f $$file $$dest_file; \
+	     cp -L -f $$file $$dest_file; \
 	     done \
 	     fi
 inst_header_dir =  $(CMD_PREFIX)mkdir -p $(1); \
 	     echo " INSTALL   $(subst $(install_root_dir)/,,$(1))"; \
-	     cp -rf $(2) $(1)
+	     cp -L -rf $(2) $(1)
 compile_cpp_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " CPP-DEP   $(subst $(build_dir)/,,$(1))"; \
 	     printf %s `dirname $(1)`/  > $(1) && \
