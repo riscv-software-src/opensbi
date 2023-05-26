@@ -1,0 +1,19 @@
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "make")
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]),
+)
+
+make(
+  name = "libsbi",
+  # targets = ["install V=1 INSTALL_INCLUDE_PATH=$$INSTALLDIR$$/include INSTALL_LIB_PATH=$$INSTALLDIR$$/lib"],
+  targets = ["all install V=1 I=$$INSTALLDIR$$"],
+  out_lib_dir = "lib64/lp64",
+  lib_source = ":all_files",
+  env = {
+  },
+  build_data = [
+    "@muntjac_toolchain//:toolchain",
+  ],
+)
