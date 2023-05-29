@@ -75,8 +75,8 @@ int aclint_mswi_cold_init(struct aclint_mswi_data *mswi)
 	/* Sanity checks */
 	if (!mswi || (mswi->addr & (ACLINT_MSWI_ALIGN - 1)) ||
 	    (mswi->size < (mswi->hart_count * sizeof(u32))) ||
-	    (mswi->first_hartid >= SBI_HARTMASK_MAX_BITS) ||
-	    (mswi->hart_count > ACLINT_MSWI_MAX_HARTS))
+	    (mswi->first_hartid + mswi->hart_count > SBI_HARTMASK_MAX_BITS) ||
+	    (!mswi->hart_count || mswi->hart_count > ACLINT_MSWI_MAX_HARTS))
 		return SBI_EINVAL;
 
 	/* Update MSWI hartid table */
