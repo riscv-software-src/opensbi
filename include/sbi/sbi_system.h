@@ -48,7 +48,14 @@ struct sbi_system_suspend_device {
 	/** Name of the system suspend device */
 	char name[32];
 
-	/* Check whether sleep type is supported by the device */
+	/**
+	 * Check whether sleep type is supported by the device
+	 *
+	 * Returns 0 when @sleep_type supported, SBI_ERR_INVALID_PARAM
+	 * when @sleep_type is reserved, or SBI_ERR_NOT_SUPPORTED when
+	 * @sleep_type is not reserved and is implemented, but the
+	 * platform doesn't support it due to missing dependencies.
+	 */
 	int (*system_suspend_check)(u32 sleep_type);
 
 	/**

@@ -111,7 +111,7 @@ void sbi_system_suspend_set_device(struct sbi_system_suspend_device *dev)
 
 static int sbi_system_suspend_test_check(u32 sleep_type)
 {
-	return sleep_type == SBI_SUSP_SLEEP_TYPE_SUSPEND;
+	return sleep_type == SBI_SUSP_SLEEP_TYPE_SUSPEND ? 0 : SBI_EINVAL;
 }
 
 static int sbi_system_suspend_test_suspend(u32 sleep_type,
@@ -142,27 +142,29 @@ void sbi_system_suspend_test_enable(void)
 bool sbi_system_suspend_supported(u32 sleep_type)
 {
 	return suspend_dev && suspend_dev->system_suspend_check &&
-	       suspend_dev->system_suspend_check(sleep_type);
+	       suspend_dev->system_suspend_check(sleep_type) == 0;
 }
 
 int sbi_system_suspend(u32 sleep_type, ulong resume_addr, ulong opaque)
 {
-	int ret = SBI_ENOTSUPP;
 	const struct sbi_domain *dom = sbi_domain_thishart_ptr();
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	void (*jump_warmboot)(void) = (void (*)(void))scratch->warmboot_addr;
 	unsigned int hartid = current_hartid();
 	unsigned long prev_mode;
 	unsigned long i;
+	int ret;
 
 	if (!dom || !dom->system_suspend_allowed)
 		return SBI_EFAIL;
 
-	if (!suspend_dev || !suspend_dev->system_suspend)
+	if (!suspend_dev || !suspend_dev->system_suspend ||
+	    !suspend_dev->system_suspend_check)
 		return SBI_EFAIL;
 
-	if (!sbi_system_suspend_supported(sleep_type))
-		return SBI_ENOTSUPP;
+	ret = suspend_dev->system_suspend_check(sleep_type);
+	if (ret != SBI_OK)
+		return ret;
 
 	prev_mode = (csr_read(CSR_MSTATUS) & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
 	if (prev_mode != PRV_S && prev_mode != PRV_U)
