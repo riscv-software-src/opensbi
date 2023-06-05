@@ -174,6 +174,23 @@ void sbi_scratch_free_offset(unsigned long offset);
 #define sbi_scratch_thishart_offset_ptr(offset)	\
 	(void *)((char *)sbi_scratch_thishart_ptr() + (offset))
 
+/** Allocate offset for a data type in sbi_scratch */
+#define sbi_scratch_alloc_type_offset(__type)				\
+	sbi_scratch_alloc_offset(sizeof(__type))
+
+/** Read a data type from sbi_scratch at given offset */
+#define sbi_scratch_read_type(__scratch, __type, __offset)		\
+({									\
+	*((__type *)sbi_scratch_offset_ptr((__scratch), (__offset)));	\
+})
+
+/** Write a data type to sbi_scratch at given offset */
+#define sbi_scratch_write_type(__scratch, __type, __offset, __ptr)	\
+do {									\
+	*((__type *)sbi_scratch_offset_ptr((__scratch), (__offset)))	\
+					= (__type)(__ptr);		\
+} while (0)
+
 /** HART id to scratch table */
 extern struct sbi_scratch *hartid_to_scratch_table[];
 
