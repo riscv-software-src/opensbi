@@ -1,6 +1,8 @@
 RISC-V Open Source Supervisor Binary Interface (OpenSBI)
 ========================================================
 
+![RISC-V OpenSBI](docs/riscv_opensbi_logo_final_color.png)
+
 Copyright and License
 ---------------------
 
