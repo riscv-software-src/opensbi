@@ -210,7 +210,7 @@ void fdt_plic_fixup(void *fdt)
 
 static int fdt_resv_memory_update_node(void *fdt, unsigned long addr,
 				       unsigned long size, int index,
-				       int parent, bool no_map)
+				       int parent)
 {
 	int na = fdt_address_cells(fdt, 0);
 	int ns = fdt_size_cells(fdt, 0);
@@ -239,16 +239,14 @@ static int fdt_resv_memory_update_node(void *fdt, unsigned long addr,
 	if (subnode < 0)
 		return subnode;
 
-	if (no_map) {
-		/*
-		 * Tell operating system not to create a virtual
-		 * mapping of the region as part of its standard
-		 * mapping of system memory.
-		 */
-		err = fdt_setprop_empty(fdt, subnode, "no-map");
-		if (err < 0)
-			return err;
-	}
+	/*
+	 * Tell operating system not to create a virtual
+	 * mapping of the region as part of its standard
+	 * mapping of system memory.
+	 */
+	err = fdt_setprop_empty(fdt, subnode, "no-map");
+	if (err < 0)
+		return err;
 
 	/* encode the <reg> property value */
 	val = reg;
@@ -286,7 +284,6 @@ int fdt_reserved_memory_fixup(void *fdt)
 {
 	struct sbi_domain_memregion *reg;
 	struct sbi_domain *dom = sbi_domain_thishart_ptr();
-	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	unsigned long filtered_base[PMP_COUNT] = { 0 };
 	unsigned char filtered_order[PMP_COUNT] = { 0 };
 	unsigned long addr, size;
@@ -382,33 +379,7 @@ int fdt_reserved_memory_fixup(void *fdt)
 	for (j = 0; j < i; j++) {
 		addr = filtered_base[j];
 		size = 1UL << filtered_order[j];
-		fdt_resv_memory_update_node(fdt, addr, size, j, parent,
-					    (sbi_hart_pmp_count(scratch))
-					    ? false : true);
-	}
-
-	return 0;
-}
-
-int fdt_reserved_memory_nomap_fixup(void *fdt)
-{
-	int parent, subnode;
-	int err;
-
-	/* Locate the reserved memory node */
-	parent = fdt_path_offset(fdt, "/reserved-memory");
-	if (parent < 0)
-		return parent;
-
-	fdt_for_each_subnode(subnode, fdt, parent) {
-		/*
-		 * Tell operating system not to create a virtual
-		 * mapping of the region as part of its standard
-		 * mapping of system memory.
-		 */
-		err = fdt_setprop_empty(fdt, subnode, "no-map");
-		if (err < 0)
-			return err;
+		fdt_resv_memory_update_node(fdt, addr, size, j, parent);
 	}
 
 	return 0;
