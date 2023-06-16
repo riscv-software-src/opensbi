@@ -471,7 +471,6 @@ _start_warm:
 	add	s9, s9, 4
 	add	a4, a4, 1
 	blt	a4, s7, 1b
-	li	a4, -1
 2:	add	s6, a4, zero
 3:	bge	s6, s7, _start_hang
 
