@@ -1,24 +1,35 @@
-load("@rules_foreign_cc//foreign_cc:defs.bzl", "make")
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "make", "make_variant")
 
 filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-    visibility = [ "//visibility:public", ],
+  name = "all_files",
+  srcs = glob(["**"]),
+  visibility = [ "//visibility:public", ],
 )
 
 exports_files(glob(["**"]))
 exports_files(["firmware"])
+exports_files(["include"])
 
-make(
-  name = "libsbi",
-  targets = ["all install V=1 I=$$INSTALLDIR$$"],
+make_variant(
+  visibility = [ "//visibility:public" ],
+  name ="libsbi",
+  targets = ["all install V=1 I=$$INSTALLDIR$$ PLATFORM=generic"],
   out_lib_dir = "lib64/lp64",
+  out_static_libs = [ "libsbi.a", "opensbi/generic/lib/libplatsbi.a", ],
+  out_include_dir = "include",
   lib_source = ":all_files",
-  build_data = [
-    "@muntjac_toolchain//:toolchain",
-  ],
   copts = [
     "-Ithird_party/opensbi/firmware",
+    "-DOPENSBI_EXTERNAL_SBI_TYPES",
   ],
-  visibility = [ "//visibility:public" ],
+  target_compatible_with = [
+      "@platforms//os:none",
+      "@platforms//cpu:riscv64",
+  ],
+  tags = [ "manual" ],
+  deps = [
+    "//third_party/opensbi/include:sbi",
+    "//third_party/opensbi/include:sbi_utils",
+  ],
+  toolchain = "//build/toolchain/muntjac-baremetal:muntjac_baremetal",
 )
