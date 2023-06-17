@@ -86,7 +86,9 @@ fw_options:
 	ret
 
 	.section .payload, "ax", %progbits
-	.align 4
+	/* For some reason this overrides the linker script.
+	*/
+	.align 16
 	.globl payload_bin
 payload_bin:
 #ifndef FW_PAYLOAD_PATH

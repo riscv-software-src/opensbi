@@ -77,6 +77,8 @@ struct sbi_scratch {
 	unsigned long options;
 };
 
+void print_scratch(const char* func, struct sbi_scratch* scratch);
+
 /**
  * Prevent modification of struct sbi_scratch from affecting
  * SBI_SCRATCH_xxx_OFFSET

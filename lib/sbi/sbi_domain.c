@@ -74,6 +74,7 @@ void sbi_domain_memregion_init(unsigned long addr,
 				unsigned long flags,
 				struct sbi_domain_memregion *reg)
 {
+	sbi_printf("%s: addr=0x%lx, size=0x%lx, flags=0x%lx\n", __func__, addr, size, flags);
 	unsigned long base = 0, order;
 
 	for (order = log2roundup(size) ; order <= __riscv_xlen; order++) {
@@ -246,6 +247,7 @@ static const struct sbi_domain_memregion *find_next_subset_region(
 static int sanitize_domain(const struct sbi_platform *plat,
 			   struct sbi_domain *dom)
 {
+	sbi_printf("%s: entry\n", __func__);
 	u32 i, j, count;
 	struct sbi_domain_memregion treg, *reg, *reg1;
 
@@ -474,6 +476,7 @@ void sbi_domain_dump_all(const char *suffix)
 int sbi_domain_register(struct sbi_domain *dom,
 			const struct sbi_hartmask *assign_mask)
 {
+	sbi_printf("%s: entry\n", __func__);
 	u32 i;
 	int rc;
 	struct sbi_domain *tdom;
@@ -545,6 +548,7 @@ int sbi_domain_register(struct sbi_domain *dom,
 
 int sbi_domain_root_add_memregion(const struct sbi_domain_memregion *reg)
 {
+	sbi_printf(__func__);
 	int rc;
 	bool reg_merged;
 	struct sbi_domain_memregion *nreg, *nreg1, *nreg2;
@@ -699,6 +703,7 @@ int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 
 int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 {
+	sbi_printf("%s: entry: hartid: %d\n", __func__, cold_hartid);
 	u32 i;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 

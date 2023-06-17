@@ -1,0 +1,12 @@
+cc_library(
+  name = "sbi_utils",
+  hdrs = glob(["sbi_utils/**/*.h"]),
+  visibility = [ "//visibility:public" ],
+)
+
+cc_library(
+  name = "sbi",
+  hdrs = glob(["**/*.h"]),
+  visibility = [ "//visibility:public" ],
+)
+

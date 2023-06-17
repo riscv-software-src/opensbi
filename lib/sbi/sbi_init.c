@@ -248,6 +248,7 @@ static unsigned long init_count_offset;
 
 static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 {
+	sbi_printf("%s: entry: hartid: %d\n", __func__, hartid);
 	int rc;
 	unsigned long *count;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
@@ -491,6 +492,8 @@ static atomic_t coldboot_lottery = ATOMIC_INITIALIZER(0);
  */
 void __noreturn sbi_init(struct sbi_scratch *scratch)
 {
+	sbi_printf("%s: scratch=0x%lx\n", __func__, (uint64_t)scratch);
+	print_scratch(__func__, scratch);
 	bool next_mode_supported	= false;
 	bool coldboot			= false;
 	u32 hartid			= current_hartid();
@@ -544,6 +547,7 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 		init_coldboot(scratch, hartid);
 	else
 		init_warmboot(scratch, hartid);
+	sbi_printf("%s: exit\n", __func__);
 }
 
 unsigned long sbi_entry_count(u32 hartid)

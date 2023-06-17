@@ -14,6 +14,8 @@
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_string.h>
 
+#include <sbi/sbi_console.h>
+
 u32 last_hartid_having_scratch = SBI_HARTMASK_MAX_BITS - 1;
 struct sbi_scratch *hartid_to_scratch_table[SBI_HARTMASK_MAX_BITS] = { 0 };
 
@@ -22,8 +24,27 @@ static unsigned long extra_offset = SBI_SCRATCH_EXTRA_SPACE_OFFSET;
 
 typedef struct sbi_scratch *(*hartid2scratch)(ulong hartid, ulong hartindex);
 
+void print_scratch(const char* func, struct sbi_scratch *scratch) {
+	sbi_printf("%s: scratch {\n", func);
+	sbi_printf("%s:   fw_start= 0x%lx\n", func, scratch->fw_start);
+	sbi_printf("%s:   fw_size = 0x%lx\n", func, scratch->fw_size);
+	sbi_printf("%s:   fw_rw_offset = 0x%lx\n", func, scratch->fw_rw_offset);
+	sbi_printf("%s:   next_arg1 = 0x%lx\n", func, scratch->next_arg1);
+	sbi_printf("%s:   next_addr = 0x%lx\n", func, scratch->next_addr);
+	sbi_printf("%s:   next_mode = 0x%lx\n", func, scratch->next_mode);
+	sbi_printf("%s:   warmboot_addr = 0x%lx\n", func, scratch->warmboot_addr);
+	sbi_printf("%s:   platform_addr = 0x%lx\n", func, scratch->platform_addr);
+	sbi_printf("%s:   hartid_to_scratch = 0x%lx\n", func, scratch->hartid_to_scratch);
+	sbi_printf("%s:   trap_exit = 0x%lx\n", func, scratch->trap_exit);
+	sbi_printf("%s:   tmp0 = 0x%lx\n", func, scratch->tmp0);
+	sbi_printf("%s:   options = 0x%lx\n", func, scratch->options);
+	sbi_printf("%s: }\n", func);
+}
+
+
 int sbi_scratch_init(struct sbi_scratch *scratch)
 {
+	sbi_printf("%s: entry: %lx\n", __func__, (uint64_t)scratch);
 	u32 i;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
@@ -36,6 +57,7 @@ int sbi_scratch_init(struct sbi_scratch *scratch)
 		if (hartid_to_scratch_table[i])
 			last_hartid_having_scratch = i;
 	}
+	sbi_printf("%s: exit\n", __func__);
 
 	return 0;
 }
