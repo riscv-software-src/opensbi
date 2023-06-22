@@ -34,11 +34,14 @@ static int sbi_ecall_dbcn_handler(unsigned long extid, unsigned long funcid,
 		 * Based on above, we simply fail if the upper 32bits of
 		 * the physical address (i.e. a2 register) is non-zero on
 		 * RV32.
+                 *
+                 * Analogously, we fail if the upper 64bit of the
+                 * physical address (i.e. a2 register) is non-zero on
+                 * RV64.
 		 */
-#if __riscv_xlen == 32
 		if (regs->a2)
 			return SBI_ERR_FAILED;
-#endif
+
 		if (!sbi_domain_check_addr_range(sbi_domain_thishart_ptr(),
 					regs->a1, regs->a0, smode,
 					SBI_DOMAIN_READ|SBI_DOMAIN_WRITE))
