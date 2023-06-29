@@ -34,10 +34,10 @@ static int sbi_ecall_dbcn_handler(unsigned long extid, unsigned long funcid,
 		 * Based on above, we simply fail if the upper 32bits of
 		 * the physical address (i.e. a2 register) is non-zero on
 		 * RV32.
-                 *
-                 * Analogously, we fail if the upper 64bit of the
-                 * physical address (i.e. a2 register) is non-zero on
-                 * RV64.
+		 *
+		 * Analogously, we fail if the upper 64bit of the
+		 * physical address (i.e. a2 register) is non-zero on
+		 * RV64.
 		 */
 		if (regs->a2)
 			return SBI_ERR_FAILED;
