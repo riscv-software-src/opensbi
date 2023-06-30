@@ -59,7 +59,14 @@ fw_next_arg1:
 	 * The next address should be returned in 'a0'.
 	 */
 fw_next_addr:
+#ifdef FW_JUMP_ADDR
+	lla a0, payload_bin
+	/* 64-bit constants can only be loaded indirectly */
+	lla a0, jump_addr_local
+	ld a0, (a0)
+#else
 	lla	a0, payload_bin
+#endif
 	ret
 
 	.section .entry, "ax", %progbits
@@ -90,6 +97,10 @@ fw_options:
 	*/
 	.align 16
 	.globl payload_bin
+#ifdef FW_JUMP_ADDR
+jump_addr_local:
+	.dword FW_JUMP_ADDR
+#endif
 payload_bin:
 #ifndef FW_PAYLOAD_PATH
 	wfi
