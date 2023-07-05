@@ -527,7 +527,7 @@ static unsigned long hart_pmp_get_allowed_addr(void)
 	return val;
 }
 
-static int hart_pmu_get_allowed_bits(void)
+static int hart_mhpm_get_allowed_bits(void)
 {
 	unsigned long val = ~(0UL);
 	struct sbi_trap_info trap = {0};
@@ -628,7 +628,7 @@ __pmp_skip:
 
 	/* Detect number of MHPM counters */
 	__check_csr(CSR_MHPMCOUNTER3, 0, 1UL, mhpm_count, __mhpm_skip);
-	hfeatures->mhpm_bits = hart_pmu_get_allowed_bits();
+	hfeatures->mhpm_bits = hart_mhpm_get_allowed_bits();
 
 	__check_csr_4(CSR_MHPMCOUNTER4, 0, 1UL, mhpm_count, __mhpm_skip);
 	__check_csr_8(CSR_MHPMCOUNTER8, 0, 1UL, mhpm_count, __mhpm_skip);
