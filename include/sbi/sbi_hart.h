@@ -26,16 +26,16 @@ enum sbi_hart_priv_versions {
 
 /** Possible ISA extensions of a hart */
 enum sbi_hart_extensions {
-	/** Hart has Sscofpmt extension */
-	SBI_HART_EXT_SSCOFPMF = 0,
-	/** HART has Zicntr extension (i.e. HW cycle, time & instret CSRs) */
-	SBI_HART_EXT_ZICNTR,
 	/** HART has AIA M-mode CSRs */
-	SBI_HART_EXT_SMAIA,
+	SBI_HART_EXT_SMAIA = 0,
 	/** HART has Smstateen CSR **/
 	SBI_HART_EXT_SMSTATEEN,
+	/** Hart has Sscofpmt extension */
+	SBI_HART_EXT_SSCOFPMF,
 	/** HART has Sstc extension */
 	SBI_HART_EXT_SSTC,
+	/** HART has Zicntr extension (i.e. HW cycle, time & instret CSRs) */
+	SBI_HART_EXT_ZICNTR,
 	/** HART has Zihpm extension */
 	SBI_HART_EXT_ZIHPM,
 

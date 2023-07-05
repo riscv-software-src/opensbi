@@ -438,20 +438,20 @@ static inline char *sbi_hart_extension_id2string(int ext)
 	char *estr = NULL;
 
 	switch (ext) {
-	case SBI_HART_EXT_SSCOFPMF:
-		estr = "sscofpmf";
-		break;
-	case SBI_HART_EXT_ZICNTR:
-		estr = "zicntr";
-		break;
 	case SBI_HART_EXT_SMAIA:
 		estr = "smaia";
+		break;
+	case SBI_HART_EXT_SMSTATEEN:
+		estr = "smstateen";
+		break;
+	case SBI_HART_EXT_SSCOFPMF:
+		estr = "sscofpmf";
 		break;
 	case SBI_HART_EXT_SSTC:
 		estr = "sstc";
 		break;
-	case SBI_HART_EXT_SMSTATEEN:
-		estr = "smstateen";
+	case SBI_HART_EXT_ZICNTR:
+		estr = "zicntr";
 		break;
 	case SBI_HART_EXT_ZIHPM:
 		estr = "zihpm";
