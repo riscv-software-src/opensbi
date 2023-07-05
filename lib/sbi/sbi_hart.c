@@ -453,6 +453,9 @@ static inline char *sbi_hart_extension_id2string(int ext)
 	case SBI_HART_EXT_SMSTATEEN:
 		estr = "smstateen";
 		break;
+	case SBI_HART_EXT_ZIHPM:
+		estr = "zihpm";
+		break;
 	default:
 		break;
 	}
@@ -705,6 +708,11 @@ __mhpm_skip:
 					  hfeatures);
 	if (rc)
 		return rc;
+
+	/* Extensions implied by other extensions and features */
+	if (hfeatures->mhpm_count)
+		__sbi_hart_update_extension(hfeatures,
+					SBI_HART_EXT_ZIHPM, true);
 
 	/* Mark hart feature detection done */
 	hfeatures->detected = true;
