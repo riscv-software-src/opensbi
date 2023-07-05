@@ -28,8 +28,8 @@ enum sbi_hart_priv_versions {
 enum sbi_hart_extensions {
 	/** Hart has Sscofpmt extension */
 	SBI_HART_EXT_SSCOFPMF = 0,
-	/** HART has HW time CSR (extension name not available) */
-	SBI_HART_EXT_TIME,
+	/** HART has Zicntr extension (i.e. HW cycle, time & instret CSRs) */
+	SBI_HART_EXT_ZICNTR,
 	/** HART has AIA M-mode CSRs */
 	SBI_HART_EXT_SMAIA,
 	/** HART has Smstateen CSR **/

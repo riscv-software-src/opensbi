@@ -441,8 +441,8 @@ static inline char *sbi_hart_extension_id2string(int ext)
 	case SBI_HART_EXT_SSCOFPMF:
 		estr = "sscofpmf";
 		break;
-	case SBI_HART_EXT_TIME:
-		estr = "time";
+	case SBI_HART_EXT_ZICNTR:
+		estr = "zicntr";
 		break;
 	case SBI_HART_EXT_SMAIA:
 		estr = "smaia";
@@ -676,7 +676,7 @@ __mhpm_skip:
 	csr_read_allowed(CSR_TIME, (unsigned long)&trap);
 	if (!trap.cause)
 		__sbi_hart_update_extension(hfeatures,
-					SBI_HART_EXT_TIME, true);
+					SBI_HART_EXT_ZICNTR, true);
 
 	/* Detect if hart has AIA local interrupt CSRs */
 	csr_read_allowed(CSR_MTOPI, (unsigned long)&trap);
