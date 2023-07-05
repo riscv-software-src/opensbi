@@ -101,8 +101,13 @@ int aclint_mswi_cold_init(struct aclint_mswi_data *mswi)
 	/* Update MSWI pointer in scratch space */
 	for (i = 0; i < mswi->hart_count; i++) {
 		scratch = sbi_hartid_to_scratch(mswi->first_hartid + i);
+		/*
+		 * We don't need to fail if scratch pointer is not available
+		 * because we might be dealing with hartid of a HART disabled
+		 * in the device tree.
+		 */
 		if (!scratch)
-			return SBI_ENOENT;
+			continue;
 		mswi_set_hart_data_ptr(scratch, mswi);
 	}
 

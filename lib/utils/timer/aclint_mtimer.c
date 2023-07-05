@@ -219,8 +219,13 @@ int aclint_mtimer_cold_init(struct aclint_mtimer_data *mt,
 	/* Update MTIMER pointer in scratch space */
 	for (i = 0; i < mt->hart_count; i++) {
 		scratch = sbi_hartid_to_scratch(mt->first_hartid + i);
+		/*
+		 * We don't need to fail if scratch pointer is not available
+		 * because we might be dealing with hartid of a HART disabled
+		 * in the device tree.
+		 */
 		if (!scratch)
-			return SBI_ENOENT;
+			continue;
 		mtimer_set_hart_data_ptr(scratch, mt);
 	}
 
