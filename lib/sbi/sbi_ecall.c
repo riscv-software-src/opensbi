@@ -116,7 +116,12 @@ int sbi_ecall_handler(struct sbi_trap_regs *regs)
 		ret = SBI_ENOTSUPP;
 	}
 
-	if (ret == SBI_ETRAP) {
+	if (ret == SBI_EJUMP) {
+		/* We don't want to modify register content since they could
+		 * have been modified by the handler.
+		 */
+		return 0;
+	} else if (ret == SBI_ETRAP) {
 		trap.epc = regs->mepc;
 		sbi_trap_redirect(regs, &trap);
 	} else {

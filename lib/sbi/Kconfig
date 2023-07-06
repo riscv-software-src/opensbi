@@ -46,4 +46,8 @@ config SBI_ECALL_VENDOR
 	bool "Platform-defined vendor extensions"
 	default y
 
+config SBI_ECALL_SSE
+       bool "SSE extension"
+       default y
+
 endmenu
