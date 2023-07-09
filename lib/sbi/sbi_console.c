@@ -151,24 +151,11 @@ static void printc(char **out, u32 *out_len, char ch)
 static int prints(char **out, u32 *out_len, const char *string, int width,
 		  int flags)
 {
-	int pc	     = 0;
-	char padchar = ' ';
-
-	if (width > 0) {
-		int len = 0;
-		const char *ptr;
-		for (ptr = string; *ptr; ++ptr)
-			++len;
-		if (len >= width)
-			width = 0;
-		else
-			width -= len;
-		if (flags & PAD_ZERO)
-			padchar = '0';
-	}
+	int pc = 0;
+	width -= sbi_strlen(string);
 	if (!(flags & PAD_RIGHT)) {
 		for (; width > 0; --width) {
-			printc(out, out_len, padchar);
+			printc(out, out_len, flags & PAD_ZERO ? '0' : ' ');
 			++pc;
 		}
 	}
@@ -177,7 +164,7 @@ static int prints(char **out, u32 *out_len, const char *string, int width,
 		++pc;
 	}
 	for (; width > 0; --width) {
-		printc(out, out_len, padchar);
+		printc(out, out_len, ' ');
 		++pc;
 	}
 
