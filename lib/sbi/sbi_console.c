@@ -327,7 +327,8 @@ static int print(char **out, u32 *out_len, const char *format, va_list args)
 					     width, flags, *format);
 				continue;
 			}
-			if ((*format == 'u') || (*format == 'x') || (*format == 'X')) {
+			if ((*format == 'u') || (*format == 'o')
+					 || (*format == 'x') || (*format == 'X')) {
 				pc += printi(out, out_len, va_arg(args, unsigned int),
 					     width, flags, *format);
 				continue;
@@ -341,7 +342,7 @@ static int print(char **out, u32 *out_len, const char *format, va_list args)
 				type = 'i';
 				if (format[1] == 'l') {
 					++format;
-					if ((format[1] == 'u')
+					if ((format[1] == 'u') || (format[1] == 'o')
 							|| (format[1] == 'd') || (format[1] == 'i')
 							|| (format[1] == 'x') || (format[1] == 'X')) {
 						++format;
@@ -351,7 +352,7 @@ static int print(char **out, u32 *out_len, const char *format, va_list args)
 						width, flags, type);
 					continue;
 				}
-				if ((format[1] == 'u')
+				if ((format[1] == 'u') || (format[1] == 'o')
 						|| (format[1] == 'd') || (format[1] == 'i')
 						|| (format[1] == 'x') || (format[1] == 'X')) {
 					++format;
