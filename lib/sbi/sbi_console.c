@@ -271,6 +271,12 @@ static int print(char **out, u32 *out_len, const char *format, va_list args)
 		out_len = &console_tbuf_len;
 	}
 
+	/* handle special case: *out_len == 1*/
+	if (out) {
+		if(!out_len || *out_len)
+			**out = '\0';
+	}
+
 	for (; *format != 0; ++format) {
 		width = flags = 0;
 		if (use_tbuf)
