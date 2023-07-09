@@ -227,23 +227,33 @@ static int printi(char **out, u32 *out_len, long long i,
 		}
 	}
 
-	if (flags & PAD_ALTERNATE) {
-		if ((b == 16) && (letbase == 'A')) {
-			*--s = 'X';
-		} else if ((b == 16) && (letbase == 'a')) {
-			*--s = 'x';
-		}
-		*--s = '0';
-	}
-
-	if (sign) {
-		if (width && (flags & PAD_ZERO)) {
+	if (flags & PAD_ZERO) {
+		if (sign) {
 			printc(out, out_len, sign);
 			++pc;
 			--width;
-		} else {
-			*--s = sign;
 		}
+		if (i && (flags & PAD_ALTERNATE)) {
+			if (b == 16 || b == 8) {
+				printc(out, out_len, '0');
+				++pc;
+				--width;
+			}
+			if (b == 16) {
+				printc(out, out_len, 'x' - 'a' + letbase);
+				++pc;
+				--width;
+			}
+		}
+	} else {
+		if (i && (flags & PAD_ALTERNATE)) {
+			if (b == 16)
+				*--s = 'x' - 'a' + letbase;
+			if (b == 16 || b == 8)
+				*--s = '0';
+		}
+		if (sign)
+			*--s = sign;
 	}
 
 	return pc + prints(out, out_len, s, width, flags);
