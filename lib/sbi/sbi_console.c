@@ -288,6 +288,8 @@ static int print(char **out, u32 *out_len, const char *format, va_list args)
 				if (!flags_done)
 					++format;
 			}
+			if (flags & PAD_RIGHT)
+				flags &= ~PAD_ZERO;
 			/* Get width */
 			for (; *format >= '0' && *format <= '9'; ++format) {
 				width *= 10;
