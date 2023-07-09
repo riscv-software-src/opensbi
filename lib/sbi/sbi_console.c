@@ -142,10 +142,9 @@ static void printc(char **out, u32 *out_len, char ch)
 	if (!out_len || *out_len > 1) {
 		*(*out)++ = ch;
 		**out = '\0';
+		if (out_len)
+			--(*out_len);
 	}
-
-	if (out_len && *out_len > 0)
-		--(*out_len);
 }
 
 static int prints(char **out, u32 *out_len, const char *string, int width,
