@@ -703,6 +703,19 @@ __mhpm_skip:
 					SBI_HART_EXT_SMSTATEEN, true);
 	}
 
+	if (hfeatures->priv_version >= SBI_HART_PRIV_VER_1_11) {
+		val = csr_read_allowed(CSR_MSECCFG, (unsigned long)&trap);
+		if (!trap.cause) {
+			/* Disable unprivileged access to the SEED CSR */
+			val &= ~SECCFG_USEED;
+
+			/* Enable S-Mode access to the SEED CSR */
+			val |= SECCFG_SSEED;
+
+			csr_write(CSR_MSECCFG, val);
+		}
+	}
+
 	/* Let platform populate extensions */
 	rc = sbi_platform_extensions_init(sbi_platform_thishart_ptr(),
 					  hfeatures);

@@ -223,6 +223,9 @@
 #define ENVCFG_CBIE_INV			_UL(0x3)
 #define ENVCFG_FIOM			_UL(0x1)
 
+#define SECCFG_SSEED			(_ULL(1) << 9)
+#define SECCFG_USEED			(_ULL(1) << 8)
+
 /* ===== User-level CSRs ===== */
 
 /* User Trap Setup (N-extension) */
@@ -444,6 +447,8 @@
 /* Machine Configuration */
 #define CSR_MENVCFG			0x30a
 #define CSR_MENVCFGH			0x31a
+#define CSR_MSECCFG			0x747
+#define CSR_MSECCFGH			0x757
 
 /* Machine Trap Handling */
 #define CSR_MSCRATCH			0x340
