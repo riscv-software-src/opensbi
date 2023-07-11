@@ -112,8 +112,8 @@ static int dw_gpio_init_bank(void *fdt, int nodeoff, u32 phandle,
 
 	chip = &dw_gpio_chip_array[dw_gpio_chip_count];
 
-	chip->dr = (void *)addr + (bank * 0xc);
-	chip->ext = (void *)addr + (bank * 4) + 0x50;
+	chip->dr = (void *)(uintptr_t)addr + (bank * 0xc);
+	chip->ext = (void *)(uintptr_t)addr + (bank * 4) + 0x50;
 	chip->chip.driver = &fdt_gpio_designware;
 	chip->chip.id = phandle;
 	chip->chip.ngpio = nr_pins;
