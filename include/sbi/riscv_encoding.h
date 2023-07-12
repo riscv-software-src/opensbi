@@ -663,6 +663,18 @@
 #define CSR_MHPMEVENT30H		0x73e
 #define CSR_MHPMEVENT31H		0x73f
 
+/* Machine Security Configuration CSR (mseccfg) */
+#define CSR_MSECCFG_LOWER		0x747
+#define CSR_MSECCFG_UPPER		0x757
+#define CSR_MSECCFG			(CSR_MSECCFG_LOWER)
+
+#define MSECCFG_MML_SHIFT		(0)
+#define MSECCFG_MML			(_UL(1) << MSECCFG_MML_SHIFT)
+#define MSECCFG_MMWP_SHIFT		(1)
+#define MSECCFG_MMWP			(_UL(1) << MSECCFG_MMWP_SHIFT)
+#define MSECCFG_RLB_SHIFT		(2)
+#define MSECCFG_RLB			(_UL(1) << MSECCFG_RLB_SHIFT)
+
 /* Counter Overflow CSR */
 #define CSR_SCOUNTOVF			0xda0
 
