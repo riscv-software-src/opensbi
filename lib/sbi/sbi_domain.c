@@ -772,11 +772,17 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 
 	root.fw_region_inited = true;
 
-	/* Root domain allow everything memory region */
+	/*
+	 * Allow SU RWX on rest of the memory region. Since pmp entries
+	 * have implicit priority on index, previous entries will
+	 * deny access to SU on M-mode region. Also, M-mode will not
+	 * have access to SU region while previous entries will allow
+	 * access to M-mode regions.
+	 */
 	sbi_domain_memregion_init(0, ~0UL,
-				  (SBI_DOMAIN_MEMREGION_READABLE |
-				   SBI_DOMAIN_MEMREGION_WRITEABLE |
-				   SBI_DOMAIN_MEMREGION_EXECUTABLE),
+				  (SBI_DOMAIN_MEMREGION_SU_READABLE |
+				   SBI_DOMAIN_MEMREGION_SU_WRITABLE |
+				   SBI_DOMAIN_MEMREGION_SU_EXECUTABLE),
 				  &root_memregs[root_memregs_count++]);
 
 	/* Root domain memory region end */
