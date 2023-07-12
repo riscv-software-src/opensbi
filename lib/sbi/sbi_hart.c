@@ -456,6 +456,9 @@ static inline char *sbi_hart_extension_id2string(int ext)
 	case SBI_HART_EXT_ZIHPM:
 		estr = "zihpm";
 		break;
+	case SBI_HART_EXT_SMEPMP:
+		estr = "smepmp";
+		break;
 	default:
 		break;
 	}

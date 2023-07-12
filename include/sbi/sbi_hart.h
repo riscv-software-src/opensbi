@@ -28,6 +28,8 @@ enum sbi_hart_priv_versions {
 enum sbi_hart_extensions {
 	/** HART has AIA M-mode CSRs */
 	SBI_HART_EXT_SMAIA = 0,
+	/** HART has Smepmp */
+	SBI_HART_EXT_SMEPMP,
 	/** HART has Smstateen CSR **/
 	SBI_HART_EXT_SMSTATEEN,
 	/** Hart has Sscofpmt extension */
