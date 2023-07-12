@@ -211,6 +211,15 @@ static void generic_final_exit(void)
 
 static int generic_extensions_init(struct sbi_hart_features *hfeatures)
 {
+	int rc;
+
+	/* Parse the ISA string from FDT and enable the listed extensions */
+	rc = fdt_parse_isa_extensions(fdt_get_address(), current_hartid(),
+				      &hfeatures->extensions);
+
+	if (rc)
+		return rc;
+
 	if (generic_plat && generic_plat->extensions_init)
 		return generic_plat->extensions_init(generic_plat_match,
 						     hfeatures);

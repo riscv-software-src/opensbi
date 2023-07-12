@@ -12,6 +12,7 @@
 #include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
+#include <sbi/sbi_hart.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/irqchip/aplic.h>
 #include <sbi_utils/irqchip/imsic.h>
@@ -309,6 +310,116 @@ int fdt_parse_timebase_frequency(void *fdt, unsigned long *freq)
 		*freq = fdt32_to_cpu(*val);
 	else
 		return SBI_ENOENT;
+
+	return 0;
+}
+
+static int fdt_get_isa_string(void *fdt, unsigned int hartid,
+			const char **isa_string)
+{
+	int err, cpu_offset, cpus_offset, len;
+	u32 c_hartid;
+	const fdt32_t *val;
+
+	if (!fdt)
+		return SBI_EINVAL;
+
+	cpus_offset = fdt_path_offset(fdt, "/cpus");
+	if (cpus_offset < 0)
+		return cpus_offset;
+
+	fdt_for_each_subnode(cpu_offset, fdt, cpus_offset) {
+		err = fdt_parse_hart_id(fdt, cpu_offset, &c_hartid);
+		if (err)
+			continue;
+
+		if (!fdt_node_is_enabled(fdt, cpu_offset))
+			continue;
+
+		if (c_hartid == hartid) {
+			val = fdt_getprop(fdt, cpu_offset, "riscv,isa", &len);
+			if (val && len > 0) {
+				*isa_string = (const char *)val;
+				return 0;
+			}
+		}
+	}
+
+	return SBI_EINVAL;
+}
+
+#define RISCV_ISA_EXT_NAME_LEN_MAX	32
+
+int fdt_parse_isa_extensions(void *fdt, unsigned int hartid,
+			unsigned long *extensions)
+{
+	size_t i, j, isa_len;
+	char mstr[RISCV_ISA_EXT_NAME_LEN_MAX];
+	const char *isa = NULL;
+
+	if (fdt_get_isa_string(fdt, hartid, &isa))
+		return SBI_EINVAL;
+
+	if (!isa)
+		return SBI_EINVAL;
+
+	i = 0;
+	isa_len = strlen(isa);
+
+	if (isa[i] == 'r' || isa[i] == 'R')
+		i++;
+	else
+		return SBI_EINVAL;
+
+	if (isa[i] == 'v' || isa[i] == 'V')
+		i++;
+	else
+		return SBI_EINVAL;
+
+	if (isa[i] == '3' || isa[i+1] == '2')
+		i += 2;
+	else if (isa[i] == '6' || isa[i+1] == '4')
+		i += 2;
+	else
+		return SBI_EINVAL;
+
+	/* Skip base ISA extensions */
+	for (; i < isa_len; i++) {
+		if (isa[i] == '_')
+			break;
+	}
+
+	while (i < isa_len) {
+		if (isa[i] != '_') {
+			i++;
+			continue;
+		}
+
+		/* Skip the '_' character */
+		i++;
+
+		/* Extract the multi-letter extension name */
+		j = 0;
+		while ((i < isa_len) && (isa[i] != '_') &&
+		       (j < (sizeof(mstr) - 1)))
+			mstr[j++] = isa[i++];
+		mstr[j] = '\0';
+
+		/* Skip empty multi-letter extension name */
+		if (!j)
+			continue;
+
+#define SET_ISA_EXT_MAP(name, bit)				\
+		do {						\
+			if (!strcmp(mstr, name)) {		\
+				__set_bit(bit, extensions);	\
+				continue;			\
+			}					\
+		} while (false)					\
+
+		SET_ISA_EXT_MAP("smepmp", SBI_HART_EXT_SMEPMP);
+#undef SET_ISA_EXT_MAP
+	}
 
 	return 0;
 }
