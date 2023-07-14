@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause) */
+/* SPDX-License-Identifier: GPL-2.0-or-later OR BSD-2-Clause */
 #ifndef FDT_H
 #define FDT_H
 /*
