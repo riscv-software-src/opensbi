@@ -149,7 +149,7 @@ static int imsic_external_irqfn(struct sbi_trap_regs *regs)
 
 		switch (mirq) {
 		case IMSIC_IPI_ID:
-			sbi_ipi_process();
+			sbi_ipi_process(regs);
 			break;
 		default:
 			sbi_printf("%s: unhandled IRQ%d\n",

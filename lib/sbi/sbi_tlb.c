@@ -229,7 +229,7 @@ static bool tlb_process_once(struct sbi_scratch *scratch)
 	return false;
 }
 
-static void tlb_process(struct sbi_scratch *scratch)
+static void tlb_process(struct sbi_scratch *scratch, struct sbi_trap_regs *regs)
 {
 	while (tlb_process_once(scratch));
 }

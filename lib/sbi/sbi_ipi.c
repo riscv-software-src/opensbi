@@ -172,7 +172,8 @@ void sbi_ipi_event_destroy(u32 event)
 	ipi_ops_array[event] = NULL;
 }
 
-static void sbi_ipi_process_smode(struct sbi_scratch *scratch)
+static void sbi_ipi_process_smode(struct sbi_scratch *scratch,
+				  struct sbi_trap_regs *regs)
 {
 	csr_set(CSR_MIP, MIP_SSIP);
 }
@@ -194,7 +195,8 @@ void sbi_ipi_clear_smode(void)
 	csr_clear(CSR_MIP, MIP_SSIP);
 }
 
-static void sbi_ipi_process_halt(struct sbi_scratch *scratch)
+static void sbi_ipi_process_halt(struct sbi_scratch *scratch,
+				 struct sbi_trap_regs *regs)
 {
 	sbi_hsm_hart_stop(scratch, true);
 }
@@ -211,7 +213,7 @@ int sbi_ipi_send_halt(ulong hmask, ulong hbase)
 	return sbi_ipi_send_many(hmask, hbase, ipi_halt_event, NULL);
 }
 
-void sbi_ipi_process(void)
+void sbi_ipi_process(struct sbi_trap_regs *regs)
 {
 	unsigned long ipi_type;
 	unsigned int ipi_event;
@@ -231,7 +233,7 @@ void sbi_ipi_process(void)
 		if (ipi_type & 1UL) {
 			ipi_ops = ipi_ops_array[ipi_event];
 			if (ipi_ops && ipi_ops->process)
-				ipi_ops->process(scratch);
+				ipi_ops->process(scratch, regs);
 		}
 		ipi_type = ipi_type >> 1;
 		ipi_event++;
@@ -314,7 +316,7 @@ void sbi_ipi_exit(struct sbi_scratch *scratch)
 	csr_clear(CSR_MIE, MIP_MSIP);
 
 	/* Process pending IPIs */
-	sbi_ipi_process();
+	sbi_ipi_process(NULL);
 
 	/* Platform exit */
 	sbi_platform_ipi_exit(sbi_platform_ptr(scratch));

@@ -11,6 +11,7 @@
 #define __SBI_IPI_H__
 
 #include <sbi/sbi_types.h>
+#include <sbi/sbi_trap.h>
 
 /* clang-format off */
 
@@ -68,7 +69,8 @@ struct sbi_ipi_event_ops {
 	 * Note: This is a mandatory callback and it is called on the
 	 * remote HART after IPI is triggered.
 	 */
-	void (* process)(struct sbi_scratch *scratch);
+	void (* process)(struct sbi_scratch *scratch,
+			 struct sbi_trap_regs *regs);
 };
 
 int sbi_ipi_send_many(ulong hmask, ulong hbase, u32 event, void *data);
@@ -83,7 +85,7 @@ void sbi_ipi_clear_smode(void);
 
 int sbi_ipi_send_halt(ulong hmask, ulong hbase);
 
-void sbi_ipi_process(void);
+void sbi_ipi_process(struct sbi_trap_regs *regs);
 
 int sbi_ipi_raw_send(u32 hartindex);
 
