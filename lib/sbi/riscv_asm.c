@@ -128,6 +128,8 @@ unsigned long csr_read_num(int csr_num)
 	switchcase_csr_read_8(CSR_MHPMCOUNTER8, ret)
 	switchcase_csr_read_16(CSR_MHPMCOUNTER16, ret)
 	switchcase_csr_read(CSR_MCOUNTINHIBIT, ret)
+	switchcase_csr_read(CSR_MCYCLECFG, ret)
+	switchcase_csr_read(CSR_MINSTRETCFG, ret)
 	switchcase_csr_read(CSR_MHPMEVENT3, ret)
 	switchcase_csr_read_4(CSR_MHPMEVENT4, ret)
 	switchcase_csr_read_8(CSR_MHPMEVENT8, ret)
@@ -139,6 +141,12 @@ unsigned long csr_read_num(int csr_num)
 	switchcase_csr_read_4(CSR_MHPMCOUNTER4H, ret)
 	switchcase_csr_read_8(CSR_MHPMCOUNTER8H, ret)
 	switchcase_csr_read_16(CSR_MHPMCOUNTER16H, ret)
+	/**
+	 * The CSR range M[CYCLE, INSTRET]CFGH are available only if smcntrpmf
+	 * extension is present. The caller must ensure that.
+	 */
+	switchcase_csr_read(CSR_MCYCLECFGH, ret)
+	switchcase_csr_read(CSR_MINSTRETCFGH, ret)
 	/**
 	 * The CSR range MHPMEVENT[3-16]H are available only if sscofpmf
 	 * extension is present. The caller must ensure that.
@@ -206,12 +214,16 @@ void csr_write_num(int csr_num, unsigned long val)
 	switchcase_csr_write_4(CSR_MHPMCOUNTER4H, val)
 	switchcase_csr_write_8(CSR_MHPMCOUNTER8H, val)
 	switchcase_csr_write_16(CSR_MHPMCOUNTER16H, val)
+	switchcase_csr_write(CSR_MCYCLECFGH, val)
+	switchcase_csr_write(CSR_MINSTRETCFGH, val)
 	switchcase_csr_write(CSR_MHPMEVENT3H, val)
 	switchcase_csr_write_4(CSR_MHPMEVENT4H, val)
 	switchcase_csr_write_8(CSR_MHPMEVENT8H, val)
 	switchcase_csr_write_16(CSR_MHPMEVENT16H, val)
 #endif
 	switchcase_csr_write(CSR_MCOUNTINHIBIT, val)
+	switchcase_csr_write(CSR_MCYCLECFG, val)
+	switchcase_csr_write(CSR_MINSTRETCFG, val)
 	switchcase_csr_write(CSR_MHPMEVENT3, val)
 	switchcase_csr_write_4(CSR_MHPMEVENT4, val)
 	switchcase_csr_write_8(CSR_MHPMEVENT8, val)

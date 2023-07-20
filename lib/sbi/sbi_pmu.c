@@ -608,6 +608,44 @@ static int pmu_update_hw_mhpmevent(struct sbi_pmu_hw_event *hw_evt, int ctr_idx,
 	return 0;
 }
 
+static int pmu_fixed_ctr_update_inhibit_bits(int fixed_ctr, unsigned long flags)
+{
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	uint64_t cfg_val = 0, cfg_csr_no;
+#if __riscv_xlen == 32
+	uint64_t cfgh_csr_no;
+#endif
+	if (!sbi_hart_has_extension(scratch, SBI_HART_EXT_SMCNTRPMF))
+		return fixed_ctr;
+
+	switch (fixed_ctr) {
+	case 0:
+		cfg_csr_no = CSR_MCYCLECFG;
+#if __riscv_xlen == 32
+		cfgh_csr_no = CSR_MCYCLECFGH;
+#endif
+		break;
+	case 2:
+		cfg_csr_no = CSR_MINSTRETCFG;
+#if __riscv_xlen == 32
+		cfgh_csr_no = CSR_MINSTRETCFGH;
+#endif
+		break;
+	default:
+		return SBI_EFAIL;
+	}
+
+	cfg_val |= MHPMEVENT_MINH;
+	pmu_update_inhibit_flags(flags, &cfg_val);
+#if __riscv_xlen == 32
+	csr_write_num(cfg_csr_no, cfg_val & 0xFFFFFFFF);
+	csr_write_num(cfgh_csr_no, cfg_val >> BITS_PER_LONG);
+#else
+	csr_write_num(cfg_csr_no, cfg_val);
+#endif
+	return fixed_ctr;
+}
+
 static int pmu_ctr_find_fixed_hw(unsigned long evt_idx_code)
 {
 	/* Non-programmables counters are enabled always. No need to do lookup */
@@ -640,7 +678,7 @@ static int pmu_ctr_find_hw(struct sbi_pmu_hart_state *phs,
 	fixed_ctr = pmu_ctr_find_fixed_hw(event_idx);
 	if (fixed_ctr >= 0 &&
 	    !sbi_hart_has_extension(scratch, SBI_HART_EXT_SSCOFPMF))
-		return fixed_ctr;
+		return pmu_fixed_ctr_update_inhibit_bits(fixed_ctr, flags);
 
 	if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_11)
 		mctr_inhbt = csr_read(CSR_MCOUNTINHIBIT);
@@ -683,7 +721,7 @@ static int pmu_ctr_find_hw(struct sbi_pmu_hart_state *phs,
 		 * Return the fixed counter as they are mandatory anyways.
 		 */
 		if (fixed_ctr >= 0)
-			return fixed_ctr;
+			return pmu_fixed_ctr_update_inhibit_bits(fixed_ctr, flags);
 		else
 			return SBI_EFAIL;
 	}

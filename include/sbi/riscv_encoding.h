@@ -602,6 +602,8 @@
 
 /* Machine Counter Setup */
 #define CSR_MCOUNTINHIBIT		0x320
+#define CSR_MCYCLECFG			0x321
+#define CSR_MINSTRETCFG			0x322
 #define CSR_MHPMEVENT3			0x323
 #define CSR_MHPMEVENT4			0x324
 #define CSR_MHPMEVENT5			0x325
@@ -633,6 +635,8 @@
 #define CSR_MHPMEVENT31			0x33f
 
 /* For RV32 */
+#define CSR_MCYCLECFGH			0x721
+#define CSR_MINSTRETCFGH		0x722
 #define CSR_MHPMEVENT3H			0x723
 #define CSR_MHPMEVENT4H			0x724
 #define CSR_MHPMEVENT5H			0x725
