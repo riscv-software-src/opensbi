@@ -174,7 +174,7 @@ int sbi_system_suspend(u32 sleep_type, ulong resume_addr, ulong opaque)
 		if (i == hartid)
 			continue;
 		if (__sbi_hsm_hart_get_state(i) != SBI_HSM_STATE_STOPPED)
-			return SBI_EFAIL;
+			return SBI_ERR_DENIED;
 	}
 
 	if (!sbi_domain_check_addr(dom, resume_addr, prev_mode,
