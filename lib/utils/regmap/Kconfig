@@ -2,6 +2,12 @@
 
 menu "Regmap Support"
 
+config FDT_REGMAP
+	bool "FDT based regmap drivers"
+	depends on FDT
+	select REGMAP
+	default n
+
 config REGMAP
 	bool "Regmap support"
 	default n

@@ -7,4 +7,7 @@
 #   Anup Patel <apatel@ventanamicro.com>
 #
 
+libsbiutils-objs-$(CONFIG_FDT_REGMAP) += regmap/fdt_regmap.o
+libsbiutils-objs-$(CONFIG_FDT_REGMAP) += regmap/fdt_regmap_drivers.o
+
 libsbiutils-objs-$(CONFIG_REGMAP) += regmap/regmap.o
