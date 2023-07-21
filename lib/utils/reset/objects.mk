@@ -20,9 +20,6 @@ libsbiutils-objs-$(CONFIG_FDT_RESET_GPIO) += reset/fdt_reset_gpio.o
 carray-fdt_reset_drivers-$(CONFIG_FDT_RESET_HTIF) += fdt_reset_htif
 libsbiutils-objs-$(CONFIG_FDT_RESET_HTIF) += reset/fdt_reset_htif.o
 
-carray-fdt_reset_drivers-$(CONFIG_FDT_RESET_SIFIVE_TEST) += fdt_reset_sifive_test
-libsbiutils-objs-$(CONFIG_FDT_RESET_SIFIVE_TEST) += reset/fdt_reset_sifive_test.o
-
 carray-fdt_reset_drivers-$(CONFIG_FDT_RESET_SUNXI_WDT) += fdt_reset_sunxi_wdt
 libsbiutils-objs-$(CONFIG_FDT_RESET_SUNXI_WDT) += reset/fdt_reset_sunxi_wdt.o
 

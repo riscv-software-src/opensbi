@@ -10,8 +10,4 @@ config SYS_HTIF
 	bool "Host transfere interface (HTIF) support"
 	default n
 
-config SYS_SIFIVE_TEST
-	bool "SiFive test support"
-	default n
-
 endmenu
