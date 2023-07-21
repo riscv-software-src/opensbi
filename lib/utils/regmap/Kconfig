@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+menu "Regmap Support"
+
+config REGMAP
+	bool "Regmap support"
+	default n
+
+endmenu
