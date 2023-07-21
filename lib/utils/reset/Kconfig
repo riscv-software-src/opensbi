@@ -33,6 +33,11 @@ config FDT_RESET_SUNXI_WDT
 	bool "Sunxi WDT FDT reset driver"
 	default n
 
+config FDT_RESET_SYSCON
+	bool "Syscon FDT reset driver"
+	depends on FDT_REGMAP
+	default n
+
 config FDT_RESET_THEAD
 	bool "T-HEAD FDT reset driver"
 	default n
