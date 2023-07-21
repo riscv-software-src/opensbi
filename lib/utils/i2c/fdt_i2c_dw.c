@@ -15,8 +15,6 @@
 #include <sbi_utils/i2c/dw_i2c.h>
 #include <sbi_utils/i2c/fdt_i2c.h>
 
-extern struct fdt_i2c_adapter fdt_i2c_adapter_dw;
-
 static int fdt_dw_i2c_init(void *fdt, int nodeoff,
 			     const struct fdt_match *match)
 {
@@ -35,7 +33,6 @@ static int fdt_dw_i2c_init(void *fdt, int nodeoff,
 	}
 
 	adapter->addr = addr;
-	adapter->adapter.driver = &fdt_i2c_adapter_dw;
 
 	rc = dw_i2c_init(&adapter->adapter, nodeoff);
 	if (rc) {

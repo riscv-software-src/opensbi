@@ -46,8 +46,6 @@ struct sifive_i2c_adapter {
 	struct i2c_adapter adapter;
 };
 
-extern struct fdt_i2c_adapter fdt_i2c_adapter_sifive;
-
 static inline void sifive_i2c_setreg(struct sifive_i2c_adapter *adap,
 				     uint8_t reg, uint8_t value)
 {
@@ -250,7 +248,6 @@ static int sifive_i2c_init(void *fdt, int nodeoff,
 	}
 
 	adapter->addr = addr;
-	adapter->adapter.driver = &fdt_i2c_adapter_sifive;
 	adapter->adapter.id = nodeoff;
 	adapter->adapter.write = sifive_i2c_adapter_write;
 	adapter->adapter.read = sifive_i2c_adapter_read;
