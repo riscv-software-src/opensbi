@@ -236,8 +236,7 @@ static int pmu_add_hw_event_map(u32 eidx_start, u32 eidx_end, u32 cmap,
 	bool is_overlap;
 	struct sbi_pmu_hw_event *event = &hw_event_map[num_hw_events];
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
-	int hw_ctr_avail = sbi_hart_mhpm_count(scratch);
-	uint32_t ctr_avail_mask = ((uint32_t)(~0) >> (32 - (hw_ctr_avail + 3)));
+	uint32_t ctr_avail_mask = sbi_hart_mhpm_mask(scratch) | 0x7;
 
 	/* The first two counters are reserved by priv spec */
 	if (eidx_start > SBI_PMU_HW_INSTRUCTIONS && (cmap & SBI_PMU_FIXED_CTR_MASK))
@@ -912,6 +911,7 @@ void sbi_pmu_exit(struct sbi_scratch *scratch)
 
 int sbi_pmu_init(struct sbi_scratch *scratch, bool cold_boot)
 {
+	int hpm_count = sbi_fls(sbi_hart_mhpm_mask(scratch));
 	struct sbi_pmu_hart_state *phs;
 	const struct sbi_platform *plat;
 
@@ -932,9 +932,12 @@ int sbi_pmu_init(struct sbi_scratch *scratch, bool cold_boot)
 		sbi_platform_pmu_init(plat);
 
 		/* mcycle & minstret is available always */
-		num_hw_ctrs = sbi_hart_mhpm_count(scratch) + 3;
-		if (num_hw_ctrs > SBI_PMU_HW_CTR_MAX)
-			return SBI_EINVAL;
+		if (!hpm_count)
+			/* Only CY, TM & IR are implemented in the hw */
+			num_hw_ctrs = 3;
+		else
+			num_hw_ctrs = hpm_count + 1;
+
 		total_ctrs = num_hw_ctrs + SBI_PMU_FW_CTR_MAX;
 	}
 

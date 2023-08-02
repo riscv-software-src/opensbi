@@ -68,6 +68,7 @@ struct sbi_hart_features {
 	unsigned int pmp_addr_bits;
 	unsigned long pmp_gran;
 	unsigned int mhpm_count;
+	unsigned int mhpm_mask;
 	unsigned int mhpm_bits;
 };
 
@@ -83,6 +84,7 @@ static inline ulong sbi_hart_expected_trap_addr(void)
 }
 
 unsigned int sbi_hart_mhpm_count(struct sbi_scratch *scratch);
+unsigned int sbi_hart_mhpm_mask(struct sbi_scratch *scratch);
 void sbi_hart_delegation_dump(struct sbi_scratch *scratch,
 			      const char *prefix, const char *suffix);
 unsigned int sbi_hart_pmp_count(struct sbi_scratch *scratch);
