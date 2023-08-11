@@ -112,6 +112,22 @@ static inline unsigned long sbi_fls(unsigned long word)
 	return num;
 }
 
+/**
+ * sbi_popcount - find the number of set bit in a long word
+ * @word: the word to search
+ */
+static inline unsigned long sbi_popcount(unsigned long word)
+{
+	unsigned long count = 0;
+
+	while (word) {
+		word &= word - 1;
+		count++;
+	}
+
+	return count;
+}
+
 #define for_each_set_bit(bit, addr, size) \
 	for ((bit) = find_first_bit((addr), (size));		\
 	     (bit) < (size);					\

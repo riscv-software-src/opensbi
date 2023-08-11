@@ -253,14 +253,6 @@ unsigned int sbi_hart_mhpm_mask(struct sbi_scratch *scratch)
 	return hfeatures->mhpm_mask;
 }
 
-unsigned int sbi_hart_mhpm_count(struct sbi_scratch *scratch)
-{
-	struct sbi_hart_features *hfeatures =
-			sbi_scratch_offset_ptr(scratch, hart_features_offset);
-
-	return hfeatures->mhpm_count;
-}
-
 unsigned int sbi_hart_pmp_count(struct sbi_scratch *scratch)
 {
 	struct sbi_hart_features *hfeatures =
@@ -726,31 +718,29 @@ static int hart_detect_features(struct sbi_scratch *scratch)
 	/* Clear hart features */
 	hfeatures->extensions = 0;
 	hfeatures->pmp_count = 0;
-	hfeatures->mhpm_count = 0;
 	hfeatures->mhpm_mask = 0;
 
-#define __check_hpm_csr(__csr, __count, __mask) 			  \
+#define __check_hpm_csr(__csr, __mask) 					  \
 	oldval = csr_read_allowed(__csr, (ulong)&trap);			  \
 	if (!trap.cause) {						  \
 		csr_write_allowed(__csr, (ulong)&trap, 1UL);		  \
 		if (!trap.cause && csr_swap(__csr, oldval) == 1UL) {	  \
-			(hfeatures->__count)++;				  \
 			(hfeatures->__mask) |= 1 << (__csr - CSR_MCYCLE); \
 		}							  \
 	}
 
-#define __check_hpm_csr_2(__csr, __count, __mask)	 		  \
-	__check_hpm_csr(__csr + 0, __count, __mask)	 		  \
-	__check_hpm_csr(__csr + 1, __count, __mask)
-#define __check_hpm_csr_4(__csr, __count, __mask)	 		  \
-	__check_hpm_csr_2(__csr + 0, __count, __mask) 			  \
-	__check_hpm_csr_2(__csr + 2, __count, __mask)
-#define __check_hpm_csr_8(__csr, __count, __mask)	 		  \
-	__check_hpm_csr_4(__csr + 0, __count, __mask) 			  \
-	__check_hpm_csr_4(__csr + 4, __count, __mask)
-#define __check_hpm_csr_16(__csr, __count, __mask)	 		  \
-	__check_hpm_csr_8(__csr + 0, __count, __mask) 			  \
-	__check_hpm_csr_8(__csr + 8, __count, __mask)
+#define __check_hpm_csr_2(__csr, __mask)	 		  \
+	__check_hpm_csr(__csr + 0, __mask)	 		  \
+	__check_hpm_csr(__csr + 1, __mask)
+#define __check_hpm_csr_4(__csr, __mask)	 		  \
+	__check_hpm_csr_2(__csr + 0, __mask) 			  \
+	__check_hpm_csr_2(__csr + 2, __mask)
+#define __check_hpm_csr_8(__csr, __mask)	 		  \
+	__check_hpm_csr_4(__csr + 0, __mask) 			  \
+	__check_hpm_csr_4(__csr + 4, __mask)
+#define __check_hpm_csr_16(__csr, __mask)	 		  \
+	__check_hpm_csr_8(__csr + 0, __mask) 			  \
+	__check_hpm_csr_8(__csr + 8, __mask)
 
 #define __check_csr(__csr, __rdonly, __wrval, __field, __skip)	\
 	oldval = csr_read_allowed(__csr, (ulong)&trap);			\
@@ -803,11 +793,11 @@ static int hart_detect_features(struct sbi_scratch *scratch)
 	}
 __pmp_skip:
 	/* Detect number of MHPM counters */
-	__check_hpm_csr(CSR_MHPMCOUNTER3, mhpm_count, mhpm_mask);
+	__check_hpm_csr(CSR_MHPMCOUNTER3, mhpm_mask);
 	hfeatures->mhpm_bits = hart_mhpm_get_allowed_bits();
-	__check_hpm_csr_4(CSR_MHPMCOUNTER4, mhpm_count, mhpm_mask);
-	__check_hpm_csr_8(CSR_MHPMCOUNTER8, mhpm_count, mhpm_mask);
-	__check_hpm_csr_16(CSR_MHPMCOUNTER16, mhpm_count, mhpm_mask);
+	__check_hpm_csr_4(CSR_MHPMCOUNTER4, mhpm_mask);
+	__check_hpm_csr_8(CSR_MHPMCOUNTER8, mhpm_mask);
+	__check_hpm_csr_16(CSR_MHPMCOUNTER16, mhpm_mask);
 
 	/**
 	 * No need to check for MHPMCOUNTERH for RV32 as they are expected to be
@@ -890,7 +880,7 @@ __pmp_skip:
 		return rc;
 
 	/* Extensions implied by other extensions and features */
-	if (hfeatures->mhpm_count)
+	if (hfeatures->mhpm_mask)
 		__sbi_hart_update_extension(hfeatures,
 					SBI_HART_EXT_ZIHPM, true);
 
