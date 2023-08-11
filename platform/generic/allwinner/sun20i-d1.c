@@ -272,7 +272,8 @@ static int sun20i_d1_extensions_init(const struct fdt_match *match,
 	sbi_pmu_set_device(&thead_c9xx_pmu_device);
 
 	/* auto-detection doesn't work on t-head c9xx cores */
-	hfeatures->mhpm_count = 29;
+	/* D1 has 29 mhpmevent csrs, but only 3-9,13-17 have valid value */
+	hfeatures->mhpm_mask = 0x0003e3f8;
 	hfeatures->mhpm_bits = 64;
 
 	return 0;
