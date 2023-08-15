@@ -353,8 +353,11 @@ static int pmu_ctr_start_hw(uint32_t cidx, uint64_t ival, bool ival_update)
 	if (cidx >= num_hw_ctrs || cidx == 1)
 		return SBI_EINVAL;
 
-	if (sbi_hart_priv_version(scratch) < SBI_HART_PRIV_VER_1_11)
-		goto skip_inhibit_update;
+	if (sbi_hart_priv_version(scratch) < SBI_HART_PRIV_VER_1_11) {
+		if (ival_update)
+			pmu_ctr_write_hw(cidx, ival);
+		return 0;
+	}
 
 	/*
 	 * Some of the hardware may not support mcountinhibit but perf stat
@@ -368,13 +371,12 @@ static int pmu_ctr_start_hw(uint32_t cidx, uint64_t ival, bool ival_update)
 
 	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SSCOFPMF))
 		pmu_ctr_enable_irq_hw(cidx);
-	if (pmu_dev && pmu_dev->hw_counter_enable_irq)
-		pmu_dev->hw_counter_enable_irq(cidx);
-	csr_write(CSR_MCOUNTINHIBIT, mctr_inhbt);
-
-skip_inhibit_update:
 	if (ival_update)
 		pmu_ctr_write_hw(cidx, ival);
+	if (pmu_dev && pmu_dev->hw_counter_enable_irq)
+		pmu_dev->hw_counter_enable_irq(cidx);
+
+	csr_write(CSR_MCOUNTINHIBIT, mctr_inhbt);
 
 	return 0;
 }
