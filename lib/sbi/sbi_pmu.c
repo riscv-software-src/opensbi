@@ -482,6 +482,9 @@ static int pmu_ctr_stop_hw(uint32_t cidx)
 	if (!__test_bit(cidx, &mctr_inhbt)) {
 		__set_bit(cidx, &mctr_inhbt);
 		csr_write(CSR_MCOUNTINHIBIT, mctr_inhbt);
+		if (pmu_dev && pmu_dev->hw_counter_disable_irq) {
+			pmu_dev->hw_counter_disable_irq(cidx);
+		}
 		return 0;
 	} else
 		return SBI_EALREADY_STOPPED;
