@@ -14,7 +14,7 @@
 
 /* clang-format off */
 
-#define SBI_IPI_EVENT_MAX			__riscv_xlen
+#define SBI_IPI_EVENT_MAX			(8 * __SIZEOF_LONG__)
 
 /* clang-format on */
 
