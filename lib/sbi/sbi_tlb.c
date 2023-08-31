@@ -214,13 +214,13 @@ static void tlb_pmu_incr_fw_ctr(struct sbi_tlb_info *data)
 
 static void tlb_entry_process(struct sbi_tlb_info *tinfo)
 {
-	u32 rhartid;
+	u32 rhartid, rindex;
 	struct sbi_scratch *rscratch = NULL;
 	atomic_t *rtlb_sync = NULL;
 
 	tinfo->local_fn(tinfo);
 
-	sbi_hartmask_for_each_hart(rhartid, &tinfo->smask) {
+	sbi_hartmask_for_each_hart(rhartid, rindex, &tinfo->smask) {
 		rscratch = sbi_hartid_to_scratch(rhartid);
 		if (!rscratch)
 			continue;

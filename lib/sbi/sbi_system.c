@@ -152,7 +152,7 @@ int sbi_system_suspend(u32 sleep_type, ulong resume_addr, ulong opaque)
 	void (*jump_warmboot)(void) = (void (*)(void))scratch->warmboot_addr;
 	unsigned int hartid = current_hartid();
 	unsigned long prev_mode;
-	unsigned long i;
+	unsigned long i, j;
 	int ret;
 
 	if (!dom || !dom->system_suspend_allowed)
@@ -170,7 +170,7 @@ int sbi_system_suspend(u32 sleep_type, ulong resume_addr, ulong opaque)
 	if (prev_mode != PRV_S && prev_mode != PRV_U)
 		return SBI_EFAIL;
 
-	sbi_hartmask_for_each_hart(i, &dom->assigned_harts) {
+	sbi_hartmask_for_each_hart(i, j, &dom->assigned_harts) {
 		if (i == hartid)
 			continue;
 		if (__sbi_hsm_hart_get_state(i) != SBI_HSM_STATE_STOPPED)

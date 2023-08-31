@@ -342,7 +342,7 @@ static int __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 			if (!fdt_node_is_enabled(fdt, cpu_offset))
 				continue;
 
-			sbi_hartmask_set_hart(val32, mask);
+			sbi_hartmask_set_hartid(val32, mask);
 		}
 	}
 
@@ -472,7 +472,7 @@ static int __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 		}
 
 		if (doffset == domain_offset)
-			sbi_hartmask_set_hart(val32, &assign_mask);
+			sbi_hartmask_set_hartid(val32, &assign_mask);
 	}
 
 	/* Register the domain */

@@ -205,7 +205,7 @@ static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	spin_lock(&coldboot_lock);
 
 	/* Mark current HART as waiting */
-	sbi_hartmask_set_hart(hartid, &coldboot_wait_hmask);
+	sbi_hartmask_set_hartid(hartid, &coldboot_wait_hmask);
 
 	/* Release coldboot lock */
 	spin_unlock(&coldboot_lock);
@@ -222,7 +222,7 @@ static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	spin_lock(&coldboot_lock);
 
 	/* Unmark current HART as waiting */
-	sbi_hartmask_clear_hart(hartid, &coldboot_wait_hmask);
+	sbi_hartmask_clear_hartid(hartid, &coldboot_wait_hmask);
 
 	/* Release coldboot lock */
 	spin_unlock(&coldboot_lock);
@@ -251,7 +251,7 @@ static void wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 	/* Send an IPI to all HARTs waiting for coldboot */
 	for (u32 i = 0; i <= sbi_scratch_last_hartid(); i++) {
 		if ((i != hartid) &&
-		    sbi_hartmask_test_hart(i, &coldboot_wait_hmask))
+		    sbi_hartmask_test_hartid(i, &coldboot_wait_hmask))
 			sbi_ipi_raw_send(i);
 	}
 
@@ -532,7 +532,7 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 		if (h == hartid)
 			hartid_valid = true;
 	}
-	if (SBI_HARTMASK_MAX_BITS <= hartid || !hartid_valid)
+	if (!hartid_valid)
 		sbi_hart_hang();
 
 	switch (scratch->next_mode) {
