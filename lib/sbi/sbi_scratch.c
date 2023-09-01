@@ -14,7 +14,6 @@
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_string.h>
 
-u32 last_hartid_having_scratch = SBI_HARTMASK_MAX_BITS - 1;
 u32 last_hartindex_having_scratch = 0;
 u32 hartindex_to_hartid_table[SBI_HARTMASK_MAX_BITS + 1] = { -1U };
 struct sbi_scratch *hartindex_to_scratch_table[SBI_HARTMASK_MAX_BITS + 1] = { 0 };
@@ -45,7 +44,6 @@ int sbi_scratch_init(struct sbi_scratch *scratch)
 		hartindex_to_hartid_table[i] = h;
 		hartindex_to_scratch_table[i] =
 			((hartid2scratch)scratch->hartid_to_scratch)(h, i);
-		last_hartid_having_scratch = h;
 	}
 
 	last_hartindex_having_scratch = plat->hart_count - 1;

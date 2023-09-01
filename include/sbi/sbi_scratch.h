@@ -244,12 +244,6 @@ u32 sbi_hartid_to_hartindex(u32 hartid);
 #define sbi_hartid_to_scratch(__hartid) \
 	sbi_hartindex_to_scratch(sbi_hartid_to_hartindex(__hartid))
 
-/** Last HART id having a sbi_scratch pointer */
-extern u32 last_hartid_having_scratch;
-
-/** Get last HART id having a sbi_scratch pointer */
-#define sbi_scratch_last_hartid()	last_hartid_having_scratch
-
 /** Check whether particular HART id is valid or not */
 #define sbi_hartid_valid(__hartid)	\
 	sbi_hartindex_valid(sbi_hartid_to_hartindex(__hartid))

@@ -242,6 +242,8 @@ static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 
 static void wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 {
+	u32 i, hartindex = sbi_hartid_to_hartindex(hartid);
+
 	/* Mark coldboot done */
 	__smp_store_release(&coldboot_done, 1);
 
@@ -249,10 +251,10 @@ static void wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 	spin_lock(&coldboot_lock);
 
 	/* Send an IPI to all HARTs waiting for coldboot */
-	for (u32 i = 0; i <= sbi_scratch_last_hartid(); i++) {
-		if ((i != hartid) &&
-		    sbi_hartmask_test_hartid(i, &coldboot_wait_hmask))
-			sbi_ipi_raw_send(sbi_hartid_to_hartindex(i));
+	sbi_hartmask_for_each_hartindex(i, &coldboot_wait_hmask) {
+		if (i == hartindex)
+			continue;
+		sbi_ipi_raw_send(i);
 	}
 
 	/* Release coldboot lock */

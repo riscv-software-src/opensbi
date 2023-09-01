@@ -115,23 +115,21 @@ int sbi_hsm_hart_interruptible_mask(const struct sbi_domain *dom,
 {
 	int hstate;
 	ulong i, hmask, dmask;
-	ulong hend = sbi_scratch_last_hartid() + 1;
 
 	*out_hmask = 0;
-	if (hend <= hbase)
+	if (!sbi_hartid_valid(hbase))
 		return SBI_EINVAL;
-	if (BITS_PER_LONG < (hend - hbase))
-		hend = hbase + BITS_PER_LONG;
 
 	dmask = sbi_domain_get_assigned_hartmask(dom, hbase);
-	for (i = hbase; i < hend; i++) {
-		hmask = 1UL << (i - hbase);
-		if (dmask & hmask) {
-			hstate = __sbi_hsm_hart_get_state(i);
-			if (hstate == SBI_HSM_STATE_STARTED ||
-			    hstate == SBI_HSM_STATE_SUSPENDED)
-				*out_hmask |= hmask;
-		}
+	for (i = 0; i < BITS_PER_LONG; i++) {
+		hmask = 1UL << i;
+		if (!(dmask & hmask))
+			continue;
+
+		hstate = __sbi_hsm_hart_get_state(hbase + i);
+		if (hstate == SBI_HSM_STATE_STARTED ||
+		    hstate == SBI_HSM_STATE_SUSPENDED)
+			*out_hmask |= hmask;
 	}
 
 	return 0;
@@ -249,15 +247,15 @@ int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 			return SBI_ENOMEM;
 
 		/* Initialize hart state data for every hart */
-		for (i = 0; i <= sbi_scratch_last_hartid(); i++) {
-			rscratch = sbi_hartid_to_scratch(i);
+		for (i = 0; i <= sbi_scratch_last_hartindex(); i++) {
+			rscratch = sbi_hartindex_to_scratch(i);
 			if (!rscratch)
 				continue;
 
 			hdata = sbi_scratch_offset_ptr(rscratch,
 						       hart_data_offset);
 			ATOMIC_INIT(&hdata->state,
-				    (i == hartid) ?
+				    (sbi_hartindex_to_hartid(i) == hartid) ?
 				    SBI_HSM_STATE_START_PENDING :
 				    SBI_HSM_STATE_STOPPED);
 			ATOMIC_INIT(&hdata->start_ticket, 0);
