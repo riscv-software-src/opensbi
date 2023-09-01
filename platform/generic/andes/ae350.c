@@ -33,7 +33,7 @@ static int ae350_hart_start(u32 hartid, ulong saddr)
 {
 	/* Don't send wakeup command at boot-time */
 	if (!sbi_init_count(hartid) || (is_andes25() && hartid == 0))
-		return sbi_ipi_raw_send(hartid);
+		return sbi_ipi_raw_send(sbi_hartid_to_hartindex(hartid));
 
 	/* Write wakeup command to the sleep hart */
 	smu_set_command(&smu, WAKEUP_CMD, hartid);

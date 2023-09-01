@@ -252,7 +252,7 @@ static void wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
 	for (u32 i = 0; i <= sbi_scratch_last_hartid(); i++) {
 		if ((i != hartid) &&
 		    sbi_hartmask_test_hartid(i, &coldboot_wait_hmask))
-			sbi_ipi_raw_send(i);
+			sbi_ipi_raw_send(sbi_hartid_to_hartindex(i));
 	}
 
 	/* Release coldboot lock */
@@ -499,7 +499,7 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 	if (hstate == SBI_HSM_STATE_SUSPENDED) {
 		init_warm_resume(scratch, hartid);
 	} else {
-		sbi_ipi_raw_clear(hartid);
+		sbi_ipi_raw_clear(sbi_hartid_to_hartindex(hartid));
 		init_warm_startup(scratch, hartid);
 	}
 }

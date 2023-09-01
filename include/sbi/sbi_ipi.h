@@ -23,11 +23,11 @@ struct sbi_ipi_device {
 	/** Name of the IPI device */
 	char name[32];
 
-	/** Send IPI to a target HART */
-	void (*ipi_send)(u32 target_hart);
+	/** Send IPI to a target HART index */
+	void (*ipi_send)(u32 hart_index);
 
-	/** Clear IPI for a target HART */
-	void (*ipi_clear)(u32 target_hart);
+	/** Clear IPI for a target HART index */
+	void (*ipi_clear)(u32 hart_index);
 };
 
 enum sbi_ipi_update_type {
@@ -54,7 +54,7 @@ struct sbi_ipi_event_ops {
 	 */
 	int (* update)(struct sbi_scratch *scratch,
 			struct sbi_scratch *remote_scratch,
-			u32 remote_hartid, void *data);
+			u32 remote_hartindex, void *data);
 
 	/**
 	 * Sync callback to wait for remote HART
@@ -85,9 +85,9 @@ int sbi_ipi_send_halt(ulong hmask, ulong hbase);
 
 void sbi_ipi_process(void);
 
-int sbi_ipi_raw_send(u32 target_hart);
+int sbi_ipi_raw_send(u32 hartindex);
 
-void sbi_ipi_raw_clear(u32 target_hart);
+void sbi_ipi_raw_clear(u32 hartindex);
 
 const struct sbi_ipi_device *sbi_ipi_get_device(void);
 

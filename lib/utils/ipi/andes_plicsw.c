@@ -68,8 +68,10 @@ static inline void plic_sw_pending(u32 target_hart)
 	writel(val, (void *)plicsw.addr + PLICSW_PENDING_BASE + word_index * 4);
 }
 
-static void plicsw_ipi_send(u32 target_hart)
+static void plicsw_ipi_send(u32 hart_index)
 {
+	u32 target_hart = sbi_hartindex_to_hartid(hart_index);
+
 	if (plicsw.hart_count <= target_hart)
 		ebreak();
 
@@ -77,8 +79,10 @@ static void plicsw_ipi_send(u32 target_hart)
 	plic_sw_pending(target_hart);
 }
 
-static void plicsw_ipi_clear(u32 target_hart)
+static void plicsw_ipi_clear(u32 hart_index)
 {
+	u32 target_hart = sbi_hartindex_to_hartid(hart_index);
+
 	if (plicsw.hart_count <= target_hart)
 		ebreak();
 

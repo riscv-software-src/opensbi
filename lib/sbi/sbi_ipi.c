@@ -36,7 +36,7 @@ static unsigned long ipi_data_off;
 static const struct sbi_ipi_device *ipi_dev = NULL;
 static const struct sbi_ipi_event_ops *ipi_ops_array[SBI_IPI_EVENT_MAX];
 
-static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartid,
+static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartindex,
 			u32 event, void *data)
 {
 	int ret;
@@ -49,7 +49,7 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartid,
 		return SBI_EINVAL;
 	ipi_ops = ipi_ops_array[event];
 
-	remote_scratch = sbi_hartid_to_scratch(remote_hartid);
+	remote_scratch = sbi_hartindex_to_scratch(remote_hartindex);
 	if (!remote_scratch)
 		return SBI_EINVAL;
 
@@ -57,7 +57,7 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartid,
 
 	if (ipi_ops->update) {
 		ret = ipi_ops->update(scratch, remote_scratch,
-				      remote_hartid, data);
+				      remote_hartindex, data);
 		if (ret != SBI_IPI_UPDATE_SUCCESS)
 			return ret;
 	}
@@ -70,7 +70,7 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartid,
 	smp_wmb();
 
 	if (ipi_dev && ipi_dev->ipi_send)
-		ipi_dev->ipi_send(remote_hartid);
+		ipi_dev->ipi_send(remote_hartindex);
 
 	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_IPI_SENT);
 
@@ -101,7 +101,7 @@ int sbi_ipi_send_many(ulong hmask, ulong hbase, u32 event, void *data)
 {
 	int rc;
 	bool retry_needed;
-	ulong i, j, m;
+	ulong i, m;
 	struct sbi_hartmask target_mask = {0};
 	struct sbi_domain *dom = sbi_domain_thishart_ptr();
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
@@ -131,12 +131,12 @@ int sbi_ipi_send_many(ulong hmask, ulong hbase, u32 event, void *data)
 	/* Send IPIs */
 	do {
 		retry_needed = false;
-		sbi_hartmask_for_each_hart(i, j, &target_mask) {
+		sbi_hartmask_for_each_hartindex(i, &target_mask) {
 			rc = sbi_ipi_send(scratch, i, event, data);
 			if (rc == SBI_IPI_UPDATE_RETRY)
 				retry_needed = true;
 			else
-				sbi_hartmask_clear_hartid(i, &target_mask);
+				sbi_hartmask_clear_hartindex(i, &target_mask);
 		}
 	} while (retry_needed);
 
@@ -219,11 +219,11 @@ void sbi_ipi_process(void)
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	struct sbi_ipi_data *ipi_data =
 			sbi_scratch_offset_ptr(scratch, ipi_data_off);
-	u32 hartid = current_hartid();
+	u32 hartindex = sbi_hartid_to_hartindex(current_hartid());
 
 	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_IPI_RECVD);
 	if (ipi_dev && ipi_dev->ipi_clear)
-		ipi_dev->ipi_clear(hartid);
+		ipi_dev->ipi_clear(hartindex);
 
 	ipi_type = atomic_raw_xchg_ulong(&ipi_data->ipi_type, 0);
 	ipi_event = 0;
@@ -238,19 +238,19 @@ void sbi_ipi_process(void)
 	}
 }
 
-int sbi_ipi_raw_send(u32 target_hart)
+int sbi_ipi_raw_send(u32 hartindex)
 {
 	if (!ipi_dev || !ipi_dev->ipi_send)
 		return SBI_EINVAL;
 
-	ipi_dev->ipi_send(target_hart);
+	ipi_dev->ipi_send(hartindex);
 	return 0;
 }
 
-void sbi_ipi_raw_clear(u32 target_hart)
+void sbi_ipi_raw_clear(u32 hartindex)
 {
 	if (ipi_dev && ipi_dev->ipi_clear)
-		ipi_dev->ipi_clear(target_hart);
+		ipi_dev->ipi_clear(hartindex);
 }
 
 const struct sbi_ipi_device *sbi_ipi_get_device(void)

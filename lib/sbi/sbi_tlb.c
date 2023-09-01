@@ -334,7 +334,7 @@ static int tlb_update_cb(void *in, void *data)
 
 static int tlb_update(struct sbi_scratch *scratch,
 			  struct sbi_scratch *remote_scratch,
-			  u32 remote_hartid, void *data)
+			  u32 remote_hartindex, void *data)
 {
 	int ret;
 	atomic_t *tlb_sync;
@@ -356,7 +356,7 @@ static int tlb_update(struct sbi_scratch *scratch,
 	 * If the request is to queue a tlb flush entry for itself
 	 * then just do a local flush and return;
 	 */
-	if (remote_hartid == curr_hartid) {
+	if (sbi_hartindex_to_hartid(remote_hartindex) == curr_hartid) {
 		tinfo->local_fn(tinfo);
 		return SBI_IPI_UPDATE_BREAK;
 	}
@@ -375,8 +375,8 @@ static int tlb_update(struct sbi_scratch *scratch,
 		 * this properly.
 		 */
 		tlb_process_once(scratch);
-		sbi_dprintf("hart%d: hart%d tlb fifo full\n",
-			    curr_hartid, remote_hartid);
+		sbi_dprintf("hart%d: hart%d tlb fifo full\n", curr_hartid,
+			    sbi_hartindex_to_hartid(remote_hartindex));
 		return SBI_IPI_UPDATE_RETRY;
 	}
 
