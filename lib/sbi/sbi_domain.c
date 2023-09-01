@@ -277,7 +277,7 @@ static int sanitize_domain(const struct sbi_platform *plat,
 		return SBI_EINVAL;
 	}
 	sbi_hartmask_for_each_hart(i, dom->possible_harts) {
-		if (sbi_platform_hart_invalid(plat, i)) {
+		if (!sbi_hartid_valid(i)) {
 			sbi_printf("%s: %s possible HART mask has invalid "
 				   "hart %d\n", __func__, dom->name, i);
 			return SBI_EINVAL;
@@ -723,7 +723,6 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 	int rc;
 	struct sbi_hartmask *root_hmask;
 	struct sbi_domain_memregion *root_memregs;
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	if (scratch->fw_rw_offset == 0 ||
 	    (scratch->fw_rw_offset & (scratch->fw_rw_offset - 1)) != 0) {
@@ -798,7 +797,7 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 
 	/* Root domain possible and assigned HARTs */
 	for (i = 0; i < SBI_HARTMASK_MAX_BITS; i++) {
-		if (sbi_platform_hart_invalid(plat, i))
+		if (!sbi_hartid_valid(i))
 			continue;
 		sbi_hartmask_set_hart(i, root_hmask);
 	}

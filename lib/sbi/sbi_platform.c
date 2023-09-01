@@ -71,20 +71,3 @@ done:
 	else
 		sbi_strncpy(features_str, "none", nfstr);
 }
-
-u32 sbi_platform_hart_index(const struct sbi_platform *plat, u32 hartid)
-{
-	u32 i;
-
-	if (!plat)
-		return -1U;
-	if (plat->hart_index2id) {
-		for (i = 0; i < plat->hart_count; i++) {
-			if (plat->hart_index2id[i] == hartid)
-				return i;
-		}
-		return -1U;
-	}
-
-	return hartid;
-}

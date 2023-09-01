@@ -263,16 +263,6 @@ _Static_assert(
 	((__p)->features & SBI_PLATFORM_HAS_MFAULTS_DELEGATION)
 
 /**
- * Get HART index for the given HART
- *
- * @param plat pointer to struct sbi_platform
- * @param hartid HART ID
- *
- * @return 0 <= value < hart_count for valid HART otherwise -1U
- */
-u32 sbi_platform_hart_index(const struct sbi_platform *plat, u32 hartid);
-
-/**
  * Get the platform features in string format
  *
  * @param plat pointer to struct sbi_platform
@@ -369,24 +359,6 @@ static inline u32 sbi_platform_hart_stack_size(const struct sbi_platform *plat)
 	if (plat)
 		return plat->hart_stack_size;
 	return 0;
-}
-
-/**
- * Check whether given HART is invalid
- *
- * @param plat pointer to struct sbi_platform
- * @param hartid HART ID
- *
- * @return true if HART is invalid and false otherwise
- */
-static inline bool sbi_platform_hart_invalid(const struct sbi_platform *plat,
-					     u32 hartid)
-{
-	if (!plat)
-		return true;
-	if (plat->hart_count <= sbi_platform_hart_index(plat, hartid))
-		return true;
-	return false;
 }
 
 /**
