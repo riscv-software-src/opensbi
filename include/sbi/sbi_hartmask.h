@@ -170,19 +170,6 @@ static inline void sbi_hartmask_xor(struct sbi_hartmask *dstp,
 }
 
 /**
- * Iterate over each HART in hartmask
- * __h hart id
- * __i hart index
- * __m hartmask
-*/
-#define sbi_hartmask_for_each_hart(__h, __i, __m) \
-	for((__i) = find_first_bit((__m)->bits, SBI_HARTMASK_MAX_BITS), \
-		(__h) = sbi_hartindex_to_hartid(__i); \
-		(__i) < SBI_HARTMASK_MAX_BITS; \
-		(__i) = find_next_bit((__m)->bits, SBI_HARTMASK_MAX_BITS, (__i) + 1), \
-		(__h) = sbi_hartindex_to_hartid(__i))
-
-/**
  * Iterate over each HART index in hartmask
  * __i hart index
  * __m hartmask

@@ -170,7 +170,8 @@ int sbi_system_suspend(u32 sleep_type, ulong resume_addr, ulong opaque)
 	if (prev_mode != PRV_S && prev_mode != PRV_U)
 		return SBI_EFAIL;
 
-	sbi_hartmask_for_each_hart(i, j, &dom->assigned_harts) {
+	sbi_hartmask_for_each_hartindex(j, &dom->assigned_harts) {
+		i = sbi_hartindex_to_hartid(j);
 		if (i == hartid)
 			continue;
 		if (__sbi_hsm_hart_get_state(i) != SBI_HSM_STATE_STOPPED)
