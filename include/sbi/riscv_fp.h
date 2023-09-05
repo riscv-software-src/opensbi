@@ -84,7 +84,7 @@
 #define GET_FFLAGS() csr_read(CSR_FFLAGS)
 #define SET_FFLAGS(value) csr_write(CSR_FFLAGS, (value))
 
-#define SET_FS_DIRTY() ((void)0)
+#define SET_FS_DIRTY(regs) (regs->mstatus |= MSTATUS_FS)
 
 #define GET_F32_RS1(insn, regs) (GET_F32_REG(insn, 15, regs))
 #define GET_F32_RS2(insn, regs) (GET_F32_REG(insn, 20, regs))
@@ -93,9 +93,9 @@
 #define GET_F64_RS2(insn, regs) (GET_F64_REG(insn, 20, regs))
 #define GET_F64_RS3(insn, regs) (GET_F64_REG(insn, 27, regs))
 #define SET_F32_RD(insn, regs, val) \
-	(SET_F32_REG(insn, 7, regs, val), SET_FS_DIRTY())
+	(SET_F32_REG(insn, 7, regs, val), SET_FS_DIRTY(regs))
 #define SET_F64_RD(insn, regs, val) \
-	(SET_F64_REG(insn, 7, regs, val), SET_FS_DIRTY())
+	(SET_F64_REG(insn, 7, regs, val), SET_FS_DIRTY(regs))
 
 #define GET_F32_RS2C(insn, regs) (GET_F32_REG(insn, 2, regs))
 #define GET_F32_RS2S(insn, regs) (GET_F32_REG(RVC_RS2S(insn), 0, regs))
