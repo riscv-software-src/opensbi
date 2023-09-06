@@ -14,6 +14,7 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_fifo.h>
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_heap.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_tlb.h>
@@ -421,8 +422,7 @@ int sbi_tlb_init(struct sbi_scratch *scratch, bool cold_boot)
 			sbi_scratch_free_offset(tlb_sync_off);
 			return SBI_ENOMEM;
 		}
-		tlb_fifo_mem_off = sbi_scratch_alloc_offset(
-				sbi_platform_tlb_fifo_num_entries(plat) * SBI_TLB_INFO_SIZE);
+		tlb_fifo_mem_off = sbi_scratch_alloc_offset(sizeof(tlb_mem));
 		if (!tlb_fifo_mem_off) {
 			sbi_scratch_free_offset(tlb_fifo_off);
 			sbi_scratch_free_offset(tlb_sync_off);
@@ -448,7 +448,14 @@ int sbi_tlb_init(struct sbi_scratch *scratch, bool cold_boot)
 
 	tlb_sync = sbi_scratch_offset_ptr(scratch, tlb_sync_off);
 	tlb_q = sbi_scratch_offset_ptr(scratch, tlb_fifo_off);
-	tlb_mem = sbi_scratch_offset_ptr(scratch, tlb_fifo_mem_off);
+	tlb_mem = sbi_scratch_read_type(scratch, void *, tlb_fifo_mem_off);
+	if (!tlb_mem) {
+		tlb_mem = sbi_malloc(
+				sbi_platform_tlb_fifo_num_entries(plat) * SBI_TLB_INFO_SIZE);
+		if (!tlb_mem)
+			return SBI_ENOMEM;
+		sbi_scratch_write_type(scratch, void *, tlb_fifo_mem_off, tlb_mem);
+	}
 
 	ATOMIC_INIT(tlb_sync, 0);
 
