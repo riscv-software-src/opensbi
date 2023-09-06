@@ -41,6 +41,7 @@
 #define SBI_PLATFORM_HART_INDEX2ID_OFFSET (0x60 + (__SIZEOF_POINTER__ * 2))
 
 #define SBI_PLATFORM_TLB_RANGE_FLUSH_LIMIT_DEFAULT		(1UL << 12)
+#define SBI_PLATFORM_TLB_FIFO_NUM_ENTRIES				8
 
 #ifndef __ASSEMBLER__
 
@@ -124,6 +125,9 @@ struct sbi_platform_operations {
 
 	/** Get tlb flush limit value **/
 	u64 (*get_tlbr_flush_limit)(void);
+
+	/** Get tlb fifo num entries*/
+	u32 (*get_tlb_num_entries)(void);
 
 	/** Initialize platform timer for current HART */
 	int (*timer_init)(bool cold_boot);
@@ -323,6 +327,20 @@ static inline u64 sbi_platform_tlbr_flush_limit(const struct sbi_platform *plat)
 	if (plat && sbi_platform_ops(plat)->get_tlbr_flush_limit)
 		return sbi_platform_ops(plat)->get_tlbr_flush_limit();
 	return SBI_PLATFORM_TLB_RANGE_FLUSH_LIMIT_DEFAULT;
+}
+
+/**
+ * Get platform specific tlb fifo num entries.
+ *
+ * @param plat pointer to struct sbi_platform
+ *
+ * @return number of tlb fifo entries
+*/
+static inline u32 sbi_platform_tlb_fifo_num_entries(const struct sbi_platform *plat)
+{
+	if (plat && sbi_platform_ops(plat)->get_tlb_num_entries)
+		return sbi_platform_ops(plat)->get_tlb_num_entries();
+	return SBI_PLATFORM_TLB_FIFO_NUM_ENTRIES;
 }
 
 /**

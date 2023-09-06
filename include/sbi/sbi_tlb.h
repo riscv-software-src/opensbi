@@ -20,8 +20,6 @@
 
 /* clang-format on */
 
-#define SBI_TLB_FIFO_NUM_ENTRIES		8
-
 struct sbi_scratch;
 
 struct sbi_tlb_info {

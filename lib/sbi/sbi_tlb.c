@@ -422,7 +422,7 @@ int sbi_tlb_init(struct sbi_scratch *scratch, bool cold_boot)
 			return SBI_ENOMEM;
 		}
 		tlb_fifo_mem_off = sbi_scratch_alloc_offset(
-				SBI_TLB_FIFO_NUM_ENTRIES * SBI_TLB_INFO_SIZE);
+				sbi_platform_tlb_fifo_num_entries(plat) * SBI_TLB_INFO_SIZE);
 		if (!tlb_fifo_mem_off) {
 			sbi_scratch_free_offset(tlb_fifo_off);
 			sbi_scratch_free_offset(tlb_sync_off);
@@ -453,7 +453,7 @@ int sbi_tlb_init(struct sbi_scratch *scratch, bool cold_boot)
 	ATOMIC_INIT(tlb_sync, 0);
 
 	sbi_fifo_init(tlb_q, tlb_mem,
-		      SBI_TLB_FIFO_NUM_ENTRIES, SBI_TLB_INFO_SIZE);
+		      sbi_platform_tlb_fifo_num_entries(plat), SBI_TLB_INFO_SIZE);
 
 	return 0;
 }
