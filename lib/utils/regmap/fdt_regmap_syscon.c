@@ -8,6 +8,7 @@
  */
 
 #include <libfdt.h>
+#include <sbi/riscv_asm.h>
 #include <sbi/riscv_io.h>
 #include <sbi/sbi_byteorder.h>
 #include <sbi/sbi_error.h>
@@ -239,6 +240,12 @@ static int regmap_syscon_init(void *fdt, int nodeoff, u32 phandle,
 		rc = SBI_EINVAL;
 		goto fail_free_syscon;
 	}
+
+	rc = sbi_domain_root_add_memrange(addr, size, PAGE_SIZE,
+				(SBI_DOMAIN_MEMREGION_MMIO |
+				 SBI_DOMAIN_MEMREGION_SHARED_SURW_MRW));
+	if (rc)
+		goto fail_free_syscon;
 
 	rc = regmap_add(&srm->rmap);
 	if (rc)
