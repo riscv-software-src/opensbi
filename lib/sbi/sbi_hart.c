@@ -297,7 +297,7 @@ static unsigned int sbi_hart_get_smepmp_flags(struct sbi_scratch *scratch,
 	if (SBI_DOMAIN_MEMREGION_IS_SHARED(reg->flags)) {
 		/* Read only for both M and SU modes */
 		if (SBI_DOMAIN_MEMREGION_IS_SUR_MR(reg->flags))
-			pmp_flags = (PMP_R | PMP_W | PMP_X);
+			pmp_flags = (PMP_L | PMP_R | PMP_W | PMP_X);
 
 		/* Execute for SU but Read/Execute for M mode */
 		else if (SBI_DOMAIN_MEMREGION_IS_SUX_MRX(reg->flags))
