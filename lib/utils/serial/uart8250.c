@@ -7,8 +7,10 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
+#include <sbi/riscv_asm.h>
 #include <sbi/riscv_io.h>
 #include <sbi/sbi_console.h>
+#include <sbi/sbi_domain.h>
 #include <sbi_utils/serial/uart8250.h>
 
 /* clang-format off */
@@ -133,5 +135,8 @@ int uart8250_init(unsigned long base, u32 in_freq, u32 baudrate, u32 reg_shift,
 
 	sbi_console_set_device(&uart8250_console);
 
-	return 0;
+	return sbi_domain_root_add_memrange(base + reg_offset, PAGE_SIZE,
+					    PAGE_SIZE,
+					    (SBI_DOMAIN_MEMREGION_MMIO |
+					    SBI_DOMAIN_MEMREGION_SHARED_SURW_MRW));
 }
