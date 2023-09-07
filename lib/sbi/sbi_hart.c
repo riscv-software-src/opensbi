@@ -360,12 +360,10 @@ static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch,
 	unsigned long pmp_addr;
 
 	/*
-	 * Set the RLB and clear MML so that, we can write to
-	 * entries without enforcement even if some entries
-	 * are locked.
+	 * Set the RLB so that, we can write to PMP entries without
+	 * enforcement even if some entries are locked.
 	 */
 	csr_set(CSR_MSECCFG, MSECCFG_RLB);
-	csr_clear(CSR_MSECCFG, MSECCFG_MML);
 
 	/* Disable the reserved entry */
 	pmp_disable(SBI_SMEPMP_RESV_ENTRY);
