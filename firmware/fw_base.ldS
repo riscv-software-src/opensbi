@@ -49,7 +49,6 @@
 	.rela.dyn : {
 		PROVIDE(__rel_dyn_start = .);
 		*(.rela*)
-		. = ALIGN(8);
 		PROVIDE(__rel_dyn_end = .);
 	}
 
