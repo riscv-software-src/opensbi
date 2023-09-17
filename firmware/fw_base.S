@@ -88,30 +88,8 @@ _try_lottery:
 	add	t5, t5, t2
 	add	t3, t3, t2
 	REG_S	t5, 0(t3)		/* store runtime address to the GOT entry */
-	j	5f
 
 3:
-	lla	t4, __dyn_sym_start
-
-4:
-	srli	t6, t5, SYM_INDEX	/* t6 <--- sym table index */
-	andi	t5, t5, 0xFF		/* t5 <--- relocation type */
-	li	t3, RELOC_TYPE
-	bne	t5, t3, 5f
-
-	/* address R_RISCV_64 or R_RISCV_32 cases*/
-	REG_L	t3, 0(t0)
-	li	t5, SYM_SIZE
-	mul	t6, t6, t5
-	add	s5, t4, t6
-	REG_L	t6, (REGBYTES * 2)(t0)	/* t0 <-- addend */
-	REG_L	t5, REGBYTES(s5)
-	add	t5, t5, t6
-	add	t5, t5, t2		/* t5 <-- location to fix up in RAM */
-	add	t3, t3, t2		/* t3 <-- location to fix up in RAM */
-	REG_S	t5, 0(t3)		/* store runtime address to the variable */
-
-5:
 	addi	t0, t0, (REGBYTES * 3)
 	blt	t0, t1, 2b
 	j	_relocate_done

@@ -40,12 +40,6 @@
 
 	. = ALIGN(0x1000); /* Ensure next section is page aligned */
 
-	.dynsym : {
-		PROVIDE(__dyn_sym_start = .);
-		*(.dynsym)
-		PROVIDE(__dyn_sym_end = .);
-	}
-
 	.rela.dyn : {
 		PROVIDE(__rel_dyn_start = .);
 		*(.rela*)
