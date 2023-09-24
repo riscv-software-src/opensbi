@@ -36,7 +36,7 @@ options. These configuration parameters can be defined using either the top
 level `make` command line or the target platform *objects.mk* configuration
 file. The parameters currently defined are as follows:
 
-* **FW_PAYLOAD_OFFSET** - Offset from *FW_TEXT_BASE* where the payload binary
+* **FW_PAYLOAD_OFFSET** - Offset from *FW_TEXT_START* where the payload binary
   will be linked in the final *FW_PAYLOAD* firmware binary image. This
   configuration parameter is mandatory if *FW_PAYLOAD_ALIGN* is not defined.
   Compilation errors will result from an incorrect definition of
