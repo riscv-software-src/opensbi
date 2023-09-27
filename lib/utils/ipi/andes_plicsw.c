@@ -131,7 +131,9 @@ int plicsw_cold_ipi_init(struct plicsw_data *plicsw)
 	/* Add PLICSW region to the root domain */
 	rc = sbi_domain_root_add_memrange(plicsw->addr, plicsw->size,
 					  PLICSW_REGION_ALIGN,
-					  SBI_DOMAIN_MEMREGION_MMIO);
+					  SBI_DOMAIN_MEMREGION_MMIO |
+					  SBI_DOMAIN_MEMREGION_M_READABLE |
+					  SBI_DOMAIN_MEMREGION_M_WRITABLE);
 	if (rc)
 		return rc;
 
