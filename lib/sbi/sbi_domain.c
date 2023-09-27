@@ -76,7 +76,7 @@ ulong sbi_domain_get_assigned_hartmask(const struct sbi_domain *dom,
 	ulong ret = 0;
 	for (int i = 0; i < 8 * sizeof(ret); i++) {
 		if (sbi_domain_is_assigned_hart(dom, hbase + i))
-			ret |= 1 << i;
+			ret |= 1UL << i;
 	}
 
 	return ret;
