@@ -417,8 +417,6 @@ static int fdt_parse_isa_all_harts(void *fdt)
 
 		hart_exts = sbi_scratch_offset_ptr(scratch,
 						   fdt_isa_bitmap_offset);
-		if (!hart_exts)
-			return SBI_ENOENT;
 
 		err = fdt_parse_isa_one_hart((const char *)val, hart_exts);
 		if (err)
@@ -452,8 +450,6 @@ int fdt_parse_isa_extensions(void *fdt, unsigned int hartid,
 		return SBI_ENOENT;
 
 	hart_exts = sbi_scratch_offset_ptr(scratch, fdt_isa_bitmap_offset);
-	if (!hart_exts)
-		return SBI_ENOENT;
 
 	for (i = 0; i < BITS_TO_LONGS(SBI_HART_EXT_MAX); i++)
 		extensions[i] |= hart_exts[i];
