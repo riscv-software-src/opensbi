@@ -369,16 +369,14 @@ static int fdt_parse_isa_one_hart(const char *isa, unsigned long *extensions)
 		if (!j)
 			continue;
 
-#define SET_ISA_EXT_MAP(name, bit)				\
-		do {						\
+#define set_multi_letter_ext(name, bit)				\
 			if (!strcmp(mstr, name)) {		\
 				__set_bit(bit, extensions);	\
 				continue;			\
-			}					\
-		} while (false)					\
+			}
 
-		SET_ISA_EXT_MAP("smepmp", SBI_HART_EXT_SMEPMP);
-#undef SET_ISA_EXT_MAP
+		set_multi_letter_ext("smepmp", SBI_HART_EXT_SMEPMP);
+#undef set_multi_letter_ext
 	}
 
 	return 0;
