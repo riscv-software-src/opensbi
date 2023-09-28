@@ -981,6 +981,9 @@ int sbi_pmu_init(struct sbi_scratch *scratch, bool cold_boot)
 		else
 			num_hw_ctrs = hpm_count + 1;
 
+		if (num_hw_ctrs > SBI_PMU_HW_CTR_MAX)
+			return SBI_EINVAL;
+
 		total_ctrs = num_hw_ctrs + SBI_PMU_FW_CTR_MAX;
 	}
 
