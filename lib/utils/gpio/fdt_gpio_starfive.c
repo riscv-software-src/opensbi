@@ -37,7 +37,6 @@ static int starfive_gpio_direction_output(struct gpio_pin *gp, int value)
 	reg_addr = chip->addr + gp->offset;
 	reg_addr &= ~(STARFIVE_GPIO_REG_SHIFT_MASK);
 
-	val = readl((void *)(reg_addr));
 	shift_bits = (gp->offset & STARFIVE_GPIO_REG_SHIFT_MASK)
 		<< STARFIVE_GPIO_SHIFT_BITS;
 	bit_mask = STARFIVE_GPIO_MASK << shift_bits;
