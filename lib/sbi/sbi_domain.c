@@ -256,8 +256,7 @@ static const struct sbi_domain_memregion *find_next_subset_region(
 	return ret;
 }
 
-static int sanitize_domain(const struct sbi_platform *plat,
-			   struct sbi_domain *dom)
+static int sanitize_domain(struct sbi_domain *dom)
 {
 	u32 i, j, count;
 	struct sbi_domain_memregion treg, *reg, *reg1;
@@ -494,7 +493,6 @@ int sbi_domain_register(struct sbi_domain *dom,
 	int rc;
 	struct sbi_domain *tdom;
 	u32 cold_hartid = current_hartid();
-	const struct sbi_platform *plat = sbi_platform_thishart_ptr();
 
 	/* Sanity checks */
 	if (!dom || !assign_mask || domain_finalized)
@@ -517,7 +515,7 @@ int sbi_domain_register(struct sbi_domain *dom,
 	}
 
 	/* Sanitize discovered domain */
-	rc = sanitize_domain(plat, dom);
+	rc = sanitize_domain(dom);
 	if (rc) {
 		sbi_printf("%s: sanity checks failed for"
 			   " %s (error %d)\n", __func__,
@@ -564,7 +562,6 @@ int sbi_domain_root_add_memregion(const struct sbi_domain_memregion *reg)
 	int rc;
 	bool reg_merged;
 	struct sbi_domain_memregion *nreg, *nreg1, *nreg2;
-	const struct sbi_platform *plat = sbi_platform_thishart_ptr();
 
 	/* Sanity checks */
 	if (!reg || domain_finalized || !root.regions ||
@@ -590,7 +587,7 @@ int sbi_domain_root_add_memregion(const struct sbi_domain_memregion *reg)
 	/* Sort and optimize root regions */
 	do {
 		/* Sanitize the root domain so that memregions are sorted */
-		rc = sanitize_domain(plat, &root);
+		rc = sanitize_domain(&root);
 		if (rc) {
 			sbi_printf("%s: sanity checks failed for"
 				   " %s (error %d)\n", __func__,
