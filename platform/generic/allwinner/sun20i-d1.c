@@ -6,6 +6,7 @@
 
 #include <platform_override.h>
 #include <thead/c9xx_encoding.h>
+#include <thead/c9xx_pmu.h>
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_io.h>
 #include <sbi/sbi_bitops.h>
@@ -223,58 +224,10 @@ static int sun20i_d1_fdt_fixup(void *fdt, const struct fdt_match *match)
 	return fdt_add_cpu_idle_states(fdt, sun20i_d1_cpu_idle_states);
 }
 
-static void thead_c9xx_pmu_ctr_enable_irq(uint32_t ctr_idx)
-{
-	if (ctr_idx >= SBI_PMU_HW_CTR_MAX)
-		return;
-
-	/**
-	 * Clear out the OF bit so that next interrupt can be enabled.
-	 * This should be done before starting interrupt to avoid unexcepted
-	 * overflow interrupt.
-	 */
-	csr_clear(THEAD_C9XX_CSR_MCOUNTEROF, BIT(ctr_idx));
-
-	/**
-	 * This register is described in C9xx document as the control register
-	 * for enabling writes to the superuser state counter. However, if the
-	 * corresponding bit is not set to 1, scounterof will always read as 0
-	 * when the counter register overflows.
-	 */
-	csr_set(THEAD_C9XX_CSR_MCOUNTERWEN, BIT(ctr_idx));
-
-	/**
-	 * SSCOFPMF uses the OF bit for enabling/disabling the interrupt,
-	 * while the C9XX has designated enable bits.
-	 * So enable per-counter interrupt on C9xx here.
-	 */
-	csr_set(THEAD_C9XX_CSR_MCOUNTERINTEN, BIT(ctr_idx));
-}
-
-static void thead_c9xx_pmu_ctr_disable_irq(uint32_t ctr_idx)
-{
-	/**
-	 * There is no need to clear the bit of mcounterwen, it will expire
-	 * after setting the csr mcountinhibit.
-	 */
-	csr_clear(THEAD_C9XX_CSR_MCOUNTERINTEN, BIT(ctr_idx));
-}
-
-static int thead_c9xx_pmu_irq_bit(void)
-{
-	return THEAD_C9XX_MIP_MOIP;
-}
-
-const struct sbi_pmu_device thead_c9xx_pmu_device = {
-	.hw_counter_enable_irq = thead_c9xx_pmu_ctr_enable_irq,
-	.hw_counter_disable_irq = thead_c9xx_pmu_ctr_disable_irq,
-	.hw_counter_irq_bit = thead_c9xx_pmu_irq_bit,
-};
-
 static int sun20i_d1_extensions_init(const struct fdt_match *match,
 				     struct sbi_hart_features *hfeatures)
 {
-	sbi_pmu_set_device(&thead_c9xx_pmu_device);
+	thead_c9xx_register_pmu_device();
 
 	/* auto-detection doesn't work on t-head c9xx cores */
 	/* D1 has 29 mhpmevent csrs, but only 3-9,13-17 have valid value */

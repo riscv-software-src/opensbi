@@ -26,6 +26,7 @@ config PLATFORM_GENERIC_MINOR_VER
 config PLATFORM_ALLWINNER_D1
 	bool "Allwinner D1 support"
 	depends on FDT_IRQCHIP_PLIC
+	select THEAD_C9XX_PMU
 	default n
 
 config PLATFORM_ANDES_AE350
@@ -57,5 +58,6 @@ config PLATFORM_THEAD
 	default n
 
 source "$(OPENSBI_SRC_DIR)/platform/generic/andes/Kconfig"
+source "$(OPENSBI_SRC_DIR)/platform/generic/thead/Kconfig"
 
 endif

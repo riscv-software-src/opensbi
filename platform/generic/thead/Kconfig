@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+config THEAD_C9XX_PMU
+	bool "T-HEAD c9xx M-mode PMU support"
+	default n
