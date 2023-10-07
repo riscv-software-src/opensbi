@@ -1,5 +1,5 @@
-#ifndef __RISCV_THEAD_C9XX_H____
-#define __RISCV_THEAD_C9XX_H____
+#ifndef __RISCV_THEAD_C9XX_ENCODING_H____
+#define __RISCV_THEAD_C9XX_ENCODING_H____
 
 /* T-HEAD C9xx M mode CSR.  */
 #define THEAD_C9XX_CSR_MXSTATUS		0x7c0

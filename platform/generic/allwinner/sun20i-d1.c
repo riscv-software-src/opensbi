@@ -5,7 +5,7 @@
  */
 
 #include <platform_override.h>
-#include <thead_c9xx.h>
+#include <thead/c9xx_encoding.h>
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_io.h>
 #include <sbi/sbi_bitops.h>
