@@ -3,3 +3,7 @@
 config THEAD_C9XX_PMU
 	bool "T-HEAD c9xx M-mode PMU support"
 	default n
+
+config THEAD_C9XX_ERRATA
+	bool "T-HEAD c9xx errata support"
+	default n
