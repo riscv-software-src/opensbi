@@ -56,6 +56,7 @@ config PLATFORM_STARFIVE_JH7110
 config PLATFORM_THEAD
 	bool "THEAD C9xx support"
 	select THEAD_C9XX_ERRATA
+	select THEAD_C9XX_PMU
 	default n
 
 source "$(OPENSBI_SRC_DIR)/platform/generic/andes/Kconfig"
