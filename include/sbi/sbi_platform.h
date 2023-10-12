@@ -41,7 +41,6 @@
 #define SBI_PLATFORM_HART_INDEX2ID_OFFSET (0x60 + (__SIZEOF_POINTER__ * 2))
 
 #define SBI_PLATFORM_TLB_RANGE_FLUSH_LIMIT_DEFAULT		(1UL << 12)
-#define SBI_PLATFORM_TLB_FIFO_NUM_ENTRIES				8
 
 #ifndef __ASSEMBLER__
 
@@ -330,7 +329,7 @@ static inline u32 sbi_platform_tlb_fifo_num_entries(const struct sbi_platform *p
 {
 	if (plat && sbi_platform_ops(plat)->get_tlb_num_entries)
 		return sbi_platform_ops(plat)->get_tlb_num_entries();
-	return SBI_PLATFORM_TLB_FIFO_NUM_ENTRIES;
+	return sbi_scratch_last_hartindex() + 1;
 }
 
 /**
