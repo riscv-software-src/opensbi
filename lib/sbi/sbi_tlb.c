@@ -111,12 +111,7 @@ void sbi_tlb_local_hfence_vvma_asid(struct sbi_tlb_info *tinfo)
 	hgatp = csr_swap(CSR_HGATP,
 			 (vmid << HGATP_VMID_SHIFT) & HGATP_VMID_MASK);
 
-	if (start == 0 && size == 0) {
-		__sbi_hfence_vvma_all();
-		goto done;
-	}
-
-	if (size == SBI_TLB_FLUSH_ALL) {
+	if ((start == 0 && size == 0) || (size == SBI_TLB_FLUSH_ALL)) {
 		__sbi_hfence_vvma_asid(asid);
 		goto done;
 	}
@@ -138,12 +133,7 @@ void sbi_tlb_local_hfence_gvma_vmid(struct sbi_tlb_info *tinfo)
 
 	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_HFENCE_GVMA_VMID_RCVD);
 
-	if (start == 0 && size == 0) {
-		__sbi_hfence_gvma_all();
-		return;
-	}
-
-	if (size == SBI_TLB_FLUSH_ALL) {
+	if ((start == 0 && size == 0) || (size == SBI_TLB_FLUSH_ALL)) {
 		__sbi_hfence_gvma_vmid(vmid);
 		return;
 	}
@@ -162,13 +152,8 @@ void sbi_tlb_local_sfence_vma_asid(struct sbi_tlb_info *tinfo)
 
 	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_SFENCE_VMA_ASID_RCVD);
 
-	if (start == 0 && size == 0) {
-		tlb_flush_all();
-		return;
-	}
-
 	/* Flush entire MM context for a given ASID */
-	if (size == SBI_TLB_FLUSH_ALL) {
+	if ((start == 0 && size == 0) || (size == SBI_TLB_FLUSH_ALL)) {
 		__asm__ __volatile__("sfence.vma x0, %0"
 				     :
 				     : "r"(asid)
