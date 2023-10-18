@@ -160,11 +160,6 @@ static long semihosting_write(long fd, const void *memp, size_t len)
 
 /* clang-format on */
 
-static void semihosting_putc(char ch)
-{
-	semihosting_trap(SYSWRITEC, &ch);
-}
-
 static unsigned long semihosting_puts(const char *str, unsigned long len)
 {
 	char ch;
@@ -181,6 +176,11 @@ static unsigned long semihosting_puts(const char *str, unsigned long len)
 		ret = semihosting_write(semihosting_outfd, str, len);
 
 	return (ret < 0) ? 0 : ret;
+}
+
+static void semihosting_putc(char ch)
+{
+	semihosting_puts(&ch, 1);
 }
 
 static int semihosting_getc(void)
