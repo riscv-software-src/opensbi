@@ -49,6 +49,12 @@ config PLATFORM_SIFIVE_FU740
 	depends on FDT_RESET && FDT_I2C
 	default n
 
+config PLATFORM_SOPHGO_SG2042
+	bool "Sophgo sg2042 support"
+	select THEAD_C9XX_ERRATA
+	select THEAD_C9XX_PMU
+	default n
+
 config PLATFORM_STARFIVE_JH7110
 	bool "StarFive JH7110 support"
 	default n
