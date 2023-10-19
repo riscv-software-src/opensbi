@@ -399,8 +399,8 @@ _fdt_reloc_done:
 	/* mark boot hart done */
 	li	t0, BOOT_STATUS_BOOT_HART_DONE
 	lla	t1, _boot_status
-	REG_S	t0, 0(t1)
 	fence	rw, rw
+	REG_S	t0, 0(t1)
 	j	_start_warm
 
 	/* waiting for boot hart to be done (_boot_status == 2) */
@@ -409,9 +409,9 @@ _wait_for_boot_hart:
 	lla	t1, _boot_status
 	REG_L	t1, 0(t1)
 	/* Reduce the bus traffic so that boot hart may proceed faster */
-	nop
-	nop
-	nop
+	div	t2, t2, zero
+	div	t2, t2, zero
+	div	t2, t2, zero
 	bne	t0, t1, _wait_for_boot_hart
 
 _start_warm:
