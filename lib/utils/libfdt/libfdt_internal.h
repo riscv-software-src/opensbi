@@ -48,7 +48,7 @@ static inline struct fdt_reserve_entry *fdt_mem_rsv_w_(void *fdt, int n)
 
 /*
  * Internal helpers to access tructural elements of the device tree
- * blob (rather than for exaple reading integers from within property
+ * blob (rather than for example reading integers from within property
  * values).  We assume that we are either given a naturally aligned
  * address for the platform or if we are not, we are on a platform
  * where unaligned memory reads will be handled in a graceful manner.

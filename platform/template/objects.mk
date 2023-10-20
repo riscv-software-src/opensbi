@@ -23,7 +23,7 @@ platform-ldflags-y =
 
 #
 # Platform RISC-V XLEN, ABI, ISA and Code Model configuration.
-# These are optional parameters but platforms can optionaly provide it.
+# These are optional parameters but platforms can optionally provide it.
 # Some of these are guessed based on GCC compiler capabilities
 #
 # PLATFORM_RISCV_XLEN = 64
