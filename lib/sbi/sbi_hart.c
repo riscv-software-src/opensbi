@@ -160,6 +160,12 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		}
 
 		csr_write(CSR_MENVCFG, menvcfg_val);
+
+		/* Enable S-mode access to seed CSR */
+		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_ZKR)) {
+			csr_set(CSR_MSECCFG, MSECCFG_SSEED);
+			csr_clear(CSR_MSECCFG, MSECCFG_USEED);
+		}
 	}
 
 	/* Disable all interrupts */
