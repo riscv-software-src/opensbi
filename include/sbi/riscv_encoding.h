@@ -678,6 +678,10 @@
 #define MSECCFG_MMWP			(_UL(1) << MSECCFG_MMWP_SHIFT)
 #define MSECCFG_RLB_SHIFT		(2)
 #define MSECCFG_RLB			(_UL(1) << MSECCFG_RLB_SHIFT)
+#define MSECCFG_USEED_SHIFT		(8)
+#define MSECCFG_USEED			(_UL(1) << MSECCFG_USEED_SHIFT)
+#define MSECCFG_SSEED_SHIFT		(9)
+#define MSECCFG_SSEED			(_UL(1) << MSECCFG_SSEED_SHIFT)
 
 /* Counter Overflow CSR */
 #define CSR_SCOUNTOVF			0xda0
