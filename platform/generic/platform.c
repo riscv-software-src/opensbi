@@ -215,7 +215,7 @@ static int generic_extensions_init(struct sbi_hart_features *hfeatures)
 
 	/* Parse the ISA string from FDT and enable the listed extensions */
 	rc = fdt_parse_isa_extensions(fdt_get_address(), current_hartid(),
-				      &hfeatures->extensions);
+				      hfeatures->extensions);
 
 	if (rc)
 		return rc;

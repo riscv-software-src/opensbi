@@ -11,6 +11,7 @@
 #define __SBI_HART_H__
 
 #include <sbi/sbi_types.h>
+#include <sbi/sbi_bitops.h>
 
 /** Possible privileged specification versions of a hart */
 enum sbi_hart_priv_versions {
@@ -67,7 +68,7 @@ enum sbi_hart_extensions {
 struct sbi_hart_features {
 	bool detected;
 	int priv_version;
-	unsigned long extensions;
+	unsigned long extensions[BITS_TO_LONGS(SBI_HART_EXT_MAX)];
 	unsigned int pmp_count;
 	unsigned int pmp_addr_bits;
 	unsigned long pmp_gran;

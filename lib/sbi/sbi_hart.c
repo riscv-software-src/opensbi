@@ -620,9 +620,9 @@ static inline void __sbi_hart_update_extension(
 					bool enable)
 {
 	if (enable)
-		hfeatures->extensions |= BIT(ext);
+		__set_bit(ext, hfeatures->extensions);
 	else
-		hfeatures->extensions &= ~BIT(ext);
+		__clear_bit(ext, hfeatures->extensions);
 }
 
 /**
@@ -655,7 +655,7 @@ bool sbi_hart_has_extension(struct sbi_scratch *scratch,
 	struct sbi_hart_features *hfeatures =
 			sbi_scratch_offset_ptr(scratch, hart_features_offset);
 
-	if (hfeatures->extensions & BIT(ext))
+	if (__test_bit(ext, hfeatures->extensions))
 		return true;
 	else
 		return false;
@@ -721,24 +721,16 @@ void sbi_hart_get_extensions_str(struct sbi_scratch *scratch,
 		return;
 	sbi_memset(extensions_str, 0, nestr);
 
-	if (!hfeatures->extensions)
-		goto done;
-
-	do {
-		if (hfeatures->extensions & BIT(ext)) {
-			temp = sbi_hart_extension_id2string(ext);
-			if (temp) {
-				sbi_snprintf(extensions_str + offset,
-					     nestr - offset,
-					     "%s,", temp);
-				offset = offset + sbi_strlen(temp) + 1;
-			}
+	for_each_set_bit(ext, hfeatures->extensions, SBI_HART_EXT_MAX) {
+		temp = sbi_hart_extension_id2string(ext);
+		if (temp) {
+			sbi_snprintf(extensions_str + offset,
+				     nestr - offset,
+				     "%s,", temp);
+			offset = offset + sbi_strlen(temp) + 1;
 		}
+	}
 
-		ext++;
-	} while (ext < SBI_HART_EXT_MAX);
-
-done:
 	if (offset)
 		extensions_str[offset - 1] = '\0';
 	else
@@ -808,7 +800,7 @@ static int hart_detect_features(struct sbi_scratch *scratch)
 		return 0;
 
 	/* Clear hart features */
-	hfeatures->extensions = 0;
+	sbi_memset(hfeatures->extensions, 0, sizeof(hfeatures->extensions));
 	hfeatures->pmp_count = 0;
 	hfeatures->mhpm_mask = 0;
 
