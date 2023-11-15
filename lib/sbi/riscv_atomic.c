@@ -124,7 +124,7 @@ unsigned long atomic_raw_xchg_ulong(volatile unsigned long *ptr,
 				     : "=r"(__res), "+A"(addr[BIT_WORD(nr)]) \
 				     : "r"(mod(__mask))                      \
 				     : "memory");                            \
-		__res;                                                       \
+		__res & __mask ? 1 : 0;                                      \
 	})
 
 #define __atomic_op_bit(op, mod, nr, addr) \
@@ -134,22 +134,22 @@ unsigned long atomic_raw_xchg_ulong(volatile unsigned long *ptr,
 #define __NOP(x) (x)
 #define __NOT(x) (~(x))
 
-inline int atomic_raw_set_bit(int nr, volatile unsigned long *addr)
+int atomic_raw_set_bit(int nr, volatile unsigned long *addr)
 {
 	return __atomic_op_bit(or, __NOP, nr, addr);
 }
 
-inline int atomic_raw_clear_bit(int nr, volatile unsigned long *addr)
+int atomic_raw_clear_bit(int nr, volatile unsigned long *addr)
 {
 	return __atomic_op_bit(and, __NOT, nr, addr);
 }
 
-inline int atomic_set_bit(int nr, atomic_t *atom)
+int atomic_set_bit(int nr, atomic_t *atom)
 {
 	return atomic_raw_set_bit(nr, (unsigned long *)&atom->counter);
 }
 
-inline int atomic_clear_bit(int nr, atomic_t *atom)
+int atomic_clear_bit(int nr, atomic_t *atom)
 {
 	return atomic_raw_clear_bit(nr, (unsigned long *)&atom->counter);
 }

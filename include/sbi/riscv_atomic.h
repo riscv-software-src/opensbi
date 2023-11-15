@@ -39,14 +39,14 @@ unsigned int atomic_raw_xchg_uint(volatile unsigned int *ptr,
 unsigned long atomic_raw_xchg_ulong(volatile unsigned long *ptr,
 				    unsigned long newval);
 /**
- * Set a bit in an atomic variable and return the new value.
+ * Set a bit in an atomic variable and return the value of bit before modify.
  * @nr : Bit to set.
  * @atom: atomic variable to modify
  */
 int atomic_set_bit(int nr, atomic_t *atom);
 
 /**
- * Clear a bit in an atomic variable and return the new value.
+ * Clear a bit in an atomic variable and return the value of bit before modify.
  * @nr : Bit to set.
  * @atom: atomic variable to modify
  */
@@ -54,14 +54,14 @@ int atomic_set_bit(int nr, atomic_t *atom);
 int atomic_clear_bit(int nr, atomic_t *atom);
 
 /**
- * Set a bit in any address and return the new value .
+ * Set a bit in any address and return the value of bit before modify.
  * @nr : Bit to set.
  * @addr: Address to modify
  */
 int atomic_raw_set_bit(int nr, volatile unsigned long *addr);
 
 /**
- * Clear a bit in any address and return the new value .
+ * Clear a bit in any address and return the value of bit before modify.
  * @nr : Bit to set.
  * @addr: Address to modify
  */
