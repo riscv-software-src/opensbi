@@ -256,10 +256,20 @@ static const struct sbi_domain_memregion *find_next_subset_region(
 	return ret;
 }
 
+static void swap_region(struct sbi_domain_memregion* reg1,
+			struct sbi_domain_memregion* reg2)
+{
+	struct sbi_domain_memregion treg;
+
+	sbi_memcpy(&treg, reg1, sizeof(treg));
+	sbi_memcpy(reg1, reg2, sizeof(treg));
+	sbi_memcpy(reg2, &treg, sizeof(treg));
+}
+
 static int sanitize_domain(struct sbi_domain *dom)
 {
 	u32 i, j, count;
-	struct sbi_domain_memregion treg, *reg, *reg1;
+	struct sbi_domain_memregion *reg, *reg1;
 
 	/* Check possible HARTs */
 	if (!dom->possible_harts) {
@@ -323,9 +333,7 @@ static int sanitize_domain(struct sbi_domain *dom)
 			if (!is_region_before(reg1, reg))
 				continue;
 
-			sbi_memcpy(&treg, reg1, sizeof(treg));
-			sbi_memcpy(reg1, reg, sizeof(treg));
-			sbi_memcpy(reg, &treg, sizeof(treg));
+			swap_region(reg, reg1);
 		}
 	}
 
