@@ -147,10 +147,16 @@ static const struct timer_mtimer_quirks thead_clint_quirks = {
 	.clint_without_mtime	= true,
 };
 
+static const struct timer_mtimer_quirks thead_aclint_quirks = {
+	.has_64bit_mmio		= false,
+};
+
 static const struct fdt_match timer_mtimer_match[] = {
 	{ .compatible = "riscv,clint0", .data = &sifive_clint_quirks },
 	{ .compatible = "sifive,clint0", .data = &sifive_clint_quirks },
 	{ .compatible = "thead,c900-clint", .data = &thead_clint_quirks },
+	{ .compatible = "thead,c900-aclint-mtimer",
+	  .data = &thead_aclint_quirks },
 	{ .compatible = "riscv,aclint-mtimer" },
 	{ },
 };
