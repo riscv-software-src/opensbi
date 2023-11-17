@@ -37,28 +37,22 @@ int sbi_getc(void)
 	return -1;
 }
 
-void sbi_putc(char ch)
-{
-	if (console_dev && console_dev->console_putc) {
-		if (ch == '\n')
-			console_dev->console_putc('\r');
-		console_dev->console_putc(ch);
-	}
-}
-
 static unsigned long nputs(const char *str, unsigned long len)
 {
-	unsigned long i, ret;
+	unsigned long i;
 
-	if (console_dev && console_dev->console_puts) {
-		ret = console_dev->console_puts(str, len);
-	} else {
-		for (i = 0; i < len; i++)
-			sbi_putc(str[i]);
-		ret = len;
+	if (console_dev) {
+		if (console_dev->console_puts)
+			return console_dev->console_puts(str, len);
+		else if (console_dev->console_putc) {
+			for (i = 0; i < len; i++) {
+				if (str[i] == '\n')
+					console_dev->console_putc('\r');
+				console_dev->console_putc(str[i]);
+			}
+		}
 	}
-
-	return ret;
+	return len;
 }
 
 static void nputs_all(const char *str, unsigned long len)
@@ -67,6 +61,11 @@ static void nputs_all(const char *str, unsigned long len)
 
 	while (p < len)
 		p += nputs(&str[p], len - p);
+}
+
+void sbi_putc(char ch)
+{
+	nputs_all(&ch, 1);
 }
 
 void sbi_puts(const char *str)
