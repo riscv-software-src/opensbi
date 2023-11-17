@@ -178,11 +178,6 @@ static unsigned long semihosting_puts(const char *str, unsigned long len)
 	return (ret < 0) ? 0 : ret;
 }
 
-static void semihosting_putc(char ch)
-{
-	semihosting_puts(&ch, 1);
-}
-
 static int semihosting_getc(void)
 {
 	char ch = 0;
@@ -199,7 +194,6 @@ static int semihosting_getc(void)
 
 static struct sbi_console_device semihosting_console = {
 	.name = "semihosting",
-	.console_putc = semihosting_putc,
 	.console_puts = semihosting_puts,
 	.console_getc = semihosting_getc
 };
