@@ -216,6 +216,32 @@ int fdt_get_node_addr_size(void *fdt, int node, int index,
 	return 0;
 }
 
+int fdt_get_node_addr_size_by_name(void *fdt, int node, const char *name,
+				   uint64_t *addr, uint64_t *size)
+{
+	int i, j, count;
+	const char *val;
+	const char *regname;
+
+	if (!fdt || node < 0 || !name)
+		return SBI_EINVAL;
+
+	val = fdt_getprop(fdt, node, "reg-names", &count);
+	if (!val)
+		return SBI_ENODEV;
+
+	for (i = 0, j = 0; i < count; i++, j++) {
+		regname = val + i;
+
+		if (strcmp(name, regname) == 0)
+			return fdt_get_node_addr_size(fdt, node, j, addr, size);
+
+		i += strlen(regname);
+	}
+
+	return SBI_ENODEV;
+}
+
 bool fdt_node_is_enabled(void *fdt, int nodeoff)
 {
 	int len;
@@ -874,21 +900,40 @@ int fdt_parse_plic(void *fdt, struct plic_data *plic, const char *compat)
 	return fdt_parse_plic_node(fdt, nodeoffset, plic);
 }
 
-int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
-			  unsigned long *out_addr1, unsigned long *out_size1,
-			  unsigned long *out_addr2, unsigned long *out_size2,
-			  u32 *out_first_hartid, u32 *out_hart_count)
+static int fdt_get_aclint_addr_size_by_name(void *fdt, int nodeoffset,
+					    unsigned long *out_addr1,
+					    unsigned long *out_size1,
+					    unsigned long *out_addr2,
+					    unsigned long *out_size2)
 {
-	const fdt32_t *val;
+	int rc;
 	uint64_t reg_addr, reg_size;
-	int i, rc, count, cpu_offset, cpu_intc_offset;
-	u32 phandle, hwirq, hartid, first_hartid, last_hartid, hart_count;
-	u32 match_hwirq = (for_timer) ? IRQ_M_TIMER : IRQ_M_SOFT;
 
-	if (nodeoffset < 0 || !fdt ||
-	    !out_addr1 || !out_size1 ||
-	    !out_first_hartid || !out_hart_count)
-		return SBI_EINVAL;
+	rc = fdt_get_node_addr_size_by_name(fdt, nodeoffset, "mtime",
+					    &reg_addr, &reg_size);
+	if (rc < 0 || !reg_size)
+		reg_addr = reg_size = 0;
+	*out_addr1 = reg_addr;
+	*out_size1 = reg_size;
+
+	rc = fdt_get_node_addr_size_by_name(fdt, nodeoffset, "mtimecmp",
+					    &reg_addr, &reg_size);
+	if (rc < 0 || !reg_size)
+		return SBI_ENODEV;
+	*out_addr2 = reg_addr;
+	*out_size2 = reg_size;
+
+	return 0;
+}
+
+static int fdt_get_aclint_addr_size(void *fdt, int nodeoffset,
+				    unsigned long *out_addr1,
+				    unsigned long *out_size1,
+				    unsigned long *out_addr2,
+				    unsigned long *out_size2)
+{
+	int rc;
+	uint64_t reg_addr, reg_size;
 
 	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
 				    &reg_addr, &reg_size);
@@ -905,6 +950,36 @@ int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
 		*out_addr2 = reg_addr;
 	if (out_size2)
 		*out_size2 = reg_size;
+
+	return 0;
+}
+
+int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
+			  unsigned long *out_addr1, unsigned long *out_size1,
+			  unsigned long *out_addr2, unsigned long *out_size2,
+			  u32 *out_first_hartid, u32 *out_hart_count)
+{
+	const fdt32_t *val;
+	int i, rc, count, cpu_offset, cpu_intc_offset;
+	u32 phandle, hwirq, hartid, first_hartid, last_hartid, hart_count;
+	u32 match_hwirq = (for_timer) ? IRQ_M_TIMER : IRQ_M_SOFT;
+
+	if (nodeoffset < 0 || !fdt ||
+	    !out_addr1 || !out_size1 ||
+	    !out_first_hartid || !out_hart_count)
+		return SBI_EINVAL;
+
+	if (for_timer && out_addr2 && out_size2 &&
+	    fdt_getprop(fdt, nodeoffset, "reg-names", NULL))
+		rc = fdt_get_aclint_addr_size_by_name(fdt, nodeoffset,
+						      out_addr1, out_size1,
+						      out_addr2, out_size2);
+	else
+		rc = fdt_get_aclint_addr_size(fdt, nodeoffset,
+					      out_addr1, out_size1,
+					      out_addr2, out_size2);
+	if (rc)
+		return rc;
 
 	*out_first_hartid = 0;
 	*out_hart_count = 0;
