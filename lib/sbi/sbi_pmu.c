@@ -445,7 +445,7 @@ int sbi_pmu_ctr_start(unsigned long cbase, unsigned long cmask,
 	if (flags & SBI_PMU_START_FLAG_SET_INIT_VALUE)
 		bUpdate = true;
 
-	for_each_set_bit(i, &cmask, total_ctrs) {
+	for_each_set_bit(i, &cmask, BITS_PER_LONG) {
 		cidx = i + cbase;
 		event_idx_type = pmu_ctr_validate(phs, cidx, &event_code);
 		if (event_idx_type < 0)
@@ -540,7 +540,7 @@ int sbi_pmu_ctr_stop(unsigned long cbase, unsigned long cmask,
 	if ((cbase + sbi_fls(cmask)) >= total_ctrs)
 		return SBI_EINVAL;
 
-	for_each_set_bit(i, &cmask, total_ctrs) {
+	for_each_set_bit(i, &cmask, BITS_PER_LONG) {
 		cidx = i + cbase;
 		event_idx_type = pmu_ctr_validate(phs, cidx, &event_code);
 		if (event_idx_type < 0)
