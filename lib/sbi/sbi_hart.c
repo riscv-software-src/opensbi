@@ -508,7 +508,8 @@ int sbi_hart_map_saddr(unsigned long addr, unsigned long size)
 	if (is_pmp_entry_mapped(SBI_SMEPMP_RESV_ENTRY))
 		return SBI_ENOSPC;
 
-	for (order = log2roundup(size) ; order <= __riscv_xlen; order++) {
+	for (order = log2roundup(MAX(sbi_hart_pmp_granularity(scratch), size));
+	     order <= __riscv_xlen; order++) {
 		if (order < __riscv_xlen) {
 			base = addr & ~((1UL << order) - 1UL);
 			if ((base <= addr) &&
