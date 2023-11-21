@@ -220,8 +220,7 @@ void sbi_ipi_process(void)
 	u32 hartindex = sbi_hartid_to_hartindex(current_hartid());
 
 	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_IPI_RECVD);
-	if (ipi_dev && ipi_dev->ipi_clear)
-		ipi_dev->ipi_clear(hartindex);
+	sbi_ipi_raw_clear(hartindex);
 
 	ipi_type = atomic_raw_xchg_ulong(&ipi_data->ipi_type, 0);
 	ipi_event = 0;
@@ -247,6 +246,8 @@ int sbi_ipi_raw_send(u32 hartindex)
 	 * or MMIO writes done by the ipi_send() device
 	 * callback. This also allows the ipi_send() device
 	 * callback to use relaxed MMIO writes.
+	 *
+	 * This pairs with the wmb() in sbi_ipi_raw_clear().
 	 */
 	wmb();
 
@@ -258,6 +259,17 @@ void sbi_ipi_raw_clear(u32 hartindex)
 {
 	if (ipi_dev && ipi_dev->ipi_clear)
 		ipi_dev->ipi_clear(hartindex);
+
+	/*
+	 * Ensure that memory or MMIO writes after this
+	 * function returns are not observed before the
+	 * memory or MMIO writes done by the ipi_clear()
+	 * device callback. This also allows ipi_clear()
+	 * device callback to use relaxed MMIO writes.
+	 *
+	 * This pairs with the wmb() in sbi_ipi_raw_send().
+	 */
+	wmb();
 }
 
 const struct sbi_ipi_device *sbi_ipi_get_device(void)

@@ -61,7 +61,7 @@ static void mswi_ipi_clear(u32 hart_index)
 
 	/* Clear ACLINT IPI */
 	msip = (void *)mswi->addr;
-	writel(0, &msip[sbi_hartindex_to_hartid(hart_index) -
+	writel_relaxed(0, &msip[sbi_hartindex_to_hartid(hart_index) -
 			mswi->first_hartid]);
 }
 
