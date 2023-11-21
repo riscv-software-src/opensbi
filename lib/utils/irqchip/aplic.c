@@ -193,7 +193,7 @@ int aplic_cold_irqchip_init(struct aplic_data *aplic)
 	writel(0, (void *)(aplic->addr + APLIC_DOMAINCFG));
 
 	/* Disable all interrupts */
-	for (i = 0; i <= aplic->num_source; i++)
+	for (i = 0; i <= aplic->num_source; i += 32)
 		writel(-1U, (void *)(aplic->addr + APLIC_CLRIE_BASE +
 				     (i / 32) * sizeof(u32)));
 
