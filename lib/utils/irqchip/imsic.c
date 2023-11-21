@@ -186,8 +186,8 @@ static void imsic_ipi_send(u32 hart_index)
 	}
 
 	if (regs->size && (reloff < regs->size))
-		writel(IMSIC_IPI_ID,
-		       (void *)(regs->addr + reloff + IMSIC_MMIO_PAGE_LE));
+		writel_relaxed(IMSIC_IPI_ID,
+			(void *)(regs->addr + reloff + IMSIC_MMIO_PAGE_LE));
 }
 
 static struct sbi_ipi_device imsic_ipi_device = {

@@ -41,7 +41,7 @@ static void mswi_ipi_send(u32 hart_index)
 
 	/* Set ACLINT IPI */
 	msip = (void *)mswi->addr;
-	writel(1, &msip[sbi_hartindex_to_hartid(hart_index) -
+	writel_relaxed(1, &msip[sbi_hartindex_to_hartid(hart_index) -
 			mswi->first_hartid]);
 }
 

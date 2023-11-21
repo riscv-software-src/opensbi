@@ -67,14 +67,12 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartindex,
 	 * trigger the interrupt
 	 */
 	atomic_raw_set_bit(event, &ipi_data->ipi_type);
-	smp_wmb();
 
-	if (ipi_dev && ipi_dev->ipi_send)
-		ipi_dev->ipi_send(remote_hartindex);
+	ret = sbi_ipi_raw_send(remote_hartindex);
 
 	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_IPI_SENT);
 
-	return 0;
+	return ret;
 }
 
 static int sbi_ipi_sync(struct sbi_scratch *scratch, u32 event)
@@ -242,6 +240,15 @@ int sbi_ipi_raw_send(u32 hartindex)
 {
 	if (!ipi_dev || !ipi_dev->ipi_send)
 		return SBI_EINVAL;
+
+	/*
+	 * Ensure that memory or MMIO writes done before
+	 * this function are not observed after the memory
+	 * or MMIO writes done by the ipi_send() device
+	 * callback. This also allows the ipi_send() device
+	 * callback to use relaxed MMIO writes.
+	 */
+	wmb();
 
 	ipi_dev->ipi_send(hartindex);
 	return 0;
