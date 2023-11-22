@@ -267,12 +267,12 @@ unsigned int sbi_hart_pmp_count(struct sbi_scratch *scratch)
 	return hfeatures->pmp_count;
 }
 
-unsigned long sbi_hart_pmp_granularity(struct sbi_scratch *scratch)
+unsigned int sbi_hart_pmp_log2gran(struct sbi_scratch *scratch)
 {
 	struct sbi_hart_features *hfeatures =
 			sbi_scratch_offset_ptr(scratch, hart_features_offset);
 
-	return hfeatures->pmp_gran;
+	return hfeatures->pmp_log2gran;
 }
 
 unsigned int sbi_hart_pmp_addrbits(struct sbi_scratch *scratch)
@@ -359,12 +359,12 @@ static void sbi_hart_smepmp_set(struct sbi_scratch *scratch,
 				struct sbi_domain_memregion *reg,
 				unsigned int pmp_idx,
 				unsigned int pmp_flags,
-				unsigned int pmp_gran_log2,
+				unsigned int pmp_log2gran,
 				unsigned long pmp_addr_max)
 {
 	unsigned long pmp_addr = reg->base >> PMP_SHIFT;
 
-	if (pmp_gran_log2 <= reg->order && pmp_addr < pmp_addr_max) {
+	if (pmp_log2gran <= reg->order && pmp_addr < pmp_addr_max) {
 		pmp_set(pmp_idx, pmp_flags, reg->base, reg->order);
 	} else {
 		sbi_printf("Can not configure pmp for domain %s because"
@@ -376,7 +376,7 @@ static void sbi_hart_smepmp_set(struct sbi_scratch *scratch,
 
 static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch,
 				     unsigned int pmp_count,
-				     unsigned int pmp_gran_log2,
+				     unsigned int pmp_log2gran,
 				     unsigned long pmp_addr_max)
 {
 	struct sbi_domain_memregion *reg;
@@ -412,7 +412,7 @@ static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch,
 			return 0;
 
 		sbi_hart_smepmp_set(scratch, dom, reg, pmp_idx++, pmp_flags,
-				    pmp_gran_log2, pmp_addr_max);
+				    pmp_log2gran, pmp_addr_max);
 	}
 
 	/* Set the MML to enforce new encoding */
@@ -438,7 +438,7 @@ static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch,
 			return 0;
 
 		sbi_hart_smepmp_set(scratch, dom, reg, pmp_idx++, pmp_flags,
-				    pmp_gran_log2, pmp_addr_max);
+				    pmp_log2gran, pmp_addr_max);
 	}
 
 	/*
@@ -451,7 +451,7 @@ static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch,
 
 static int sbi_hart_oldpmp_configure(struct sbi_scratch *scratch,
 				     unsigned int pmp_count,
-				     unsigned int pmp_gran_log2,
+				     unsigned int pmp_log2gran,
 				     unsigned long pmp_addr_max)
 {
 	struct sbi_domain_memregion *reg;
@@ -481,7 +481,7 @@ static int sbi_hart_oldpmp_configure(struct sbi_scratch *scratch,
 			pmp_flags |= PMP_X;
 
 		pmp_addr = reg->base >> PMP_SHIFT;
-		if (pmp_gran_log2 <= reg->order && pmp_addr < pmp_addr_max) {
+		if (pmp_log2gran <= reg->order && pmp_addr < pmp_addr_max) {
 			pmp_set(pmp_idx++, pmp_flags, reg->base, reg->order);
 		} else {
 			sbi_printf("Can not configure pmp for domain %s because"
@@ -508,7 +508,7 @@ int sbi_hart_map_saddr(unsigned long addr, unsigned long size)
 	if (is_pmp_entry_mapped(SBI_SMEPMP_RESV_ENTRY))
 		return SBI_ENOSPC;
 
-	for (order = log2roundup(MAX(sbi_hart_pmp_granularity(scratch), size));
+	for (order = MAX(sbi_hart_pmp_log2gran(scratch), log2roundup(size));
 	     order <= __riscv_xlen; order++) {
 		if (order < __riscv_xlen) {
 			base = addr & ~((1UL << order) - 1UL);
@@ -540,23 +540,23 @@ int sbi_hart_unmap_saddr(void)
 int sbi_hart_pmp_configure(struct sbi_scratch *scratch)
 {
 	int rc;
-	unsigned int pmp_bits, pmp_gran_log2;
+	unsigned int pmp_bits, pmp_log2gran;
 	unsigned int pmp_count = sbi_hart_pmp_count(scratch);
 	unsigned long pmp_addr_max;
 
 	if (!pmp_count)
 		return 0;
 
-	pmp_gran_log2 = log2roundup(sbi_hart_pmp_granularity(scratch));
+	pmp_log2gran = sbi_hart_pmp_log2gran(scratch);
 	pmp_bits = sbi_hart_pmp_addrbits(scratch) - 1;
 	pmp_addr_max = (1UL << pmp_bits) | ((1UL << pmp_bits) - 1);
 
 	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SMEPMP))
 		rc = sbi_hart_smepmp_configure(scratch, pmp_count,
-						pmp_gran_log2, pmp_addr_max);
+						pmp_log2gran, pmp_addr_max);
 	else
 		rc = sbi_hart_oldpmp_configure(scratch, pmp_count,
-						pmp_gran_log2, pmp_addr_max);
+						pmp_log2gran, pmp_addr_max);
 
 	/*
 	 * As per section 3.7.2 of privileged specification v1.12,
@@ -874,7 +874,7 @@ static int hart_detect_features(struct sbi_scratch *scratch)
 	 */
 	val = hart_pmp_get_allowed_addr();
 	if (val) {
-		hfeatures->pmp_gran =  1 << (sbi_ffs(val) + 2);
+		hfeatures->pmp_log2gran = sbi_ffs(val) + 2;
 		hfeatures->pmp_addr_bits = sbi_fls(val) + 1;
 		/* Detect number of PMP regions. At least PMPADDR0 should be implemented*/
 		__check_csr_64(CSR_PMPADDR0, 0, val, pmp_count, __pmp_skip);
