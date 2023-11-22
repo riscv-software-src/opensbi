@@ -39,7 +39,7 @@ static const struct sbi_ipi_event_ops *ipi_ops_array[SBI_IPI_EVENT_MAX];
 static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartindex,
 			u32 event, void *data)
 {
-	int ret;
+	int ret = 0;
 	struct sbi_scratch *remote_scratch = NULL;
 	struct sbi_ipi_data *ipi_data;
 	const struct sbi_ipi_event_ops *ipi_ops;
@@ -64,11 +64,15 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartindex,
 
 	/*
 	 * Set IPI type on remote hart's scratch area and
-	 * trigger the interrupt
+	 * trigger the interrupt.
+	 *
+	 * Multiple harts may be trying to send IPI to the
+	 * remote hart so call sbi_ipi_raw_send() only when
+	 * the ipi_type was previously zero.
 	 */
-	atomic_raw_set_bit(event, &ipi_data->ipi_type);
-
-	ret = sbi_ipi_raw_send(remote_hartindex);
+	if (!__atomic_fetch_or(&ipi_data->ipi_type,
+				BIT(event), __ATOMIC_RELAXED))
+		ret = sbi_ipi_raw_send(remote_hartindex);
 
 	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_IPI_SENT);
 
