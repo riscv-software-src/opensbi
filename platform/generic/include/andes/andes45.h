@@ -12,6 +12,17 @@
 #define CSR_MDCM_CFG		0xfc1
 #define CSR_MMSC_CFG		0xfc2
 
+/* Machine Trap Related Registers */
+#define CSR_MSLIDELEG		0x7d5
+
+/* Counter Related Registers */
+#define CSR_MCOUNTERWEN		0x7ce
+#define CSR_MCOUNTERINTEN	0x7cf
+#define CSR_MCOUNTERMASK_M	0x7d1
+#define CSR_MCOUNTERMASK_S	0x7d2
+#define CSR_MCOUNTERMASK_U	0x7d3
+#define CSR_MCOUNTEROVF		0x7d4
+
 #define MICM_CFG_ISZ_OFFSET		6
 #define MICM_CFG_ISZ_MASK		(0x7  << MICM_CFG_ISZ_OFFSET)
 
@@ -25,5 +36,20 @@
 
 #define MCACHE_CTL_CCTL_SUEN_OFFSET	8
 #define MCACHE_CTL_CCTL_SUEN_MASK	(0x1 << MCACHE_CTL_CCTL_SUEN_OFFSET)
+
+/* Performance monitor */
+#define MMSC_CFG_PMNDS_MASK		(1 << 15)
+#define MIP_PMOVI			(1 << 18)
+
+#ifndef __ASSEMBLER__
+
+#define has_andes_pmu()					\
+({							\
+	(((csr_read(CSR_MMSC_CFG) &			\
+	   MMSC_CFG_PMNDS_MASK)				\
+	  && misa_extension('S')) ? true : false);	\
+})
+
+#endif /* __ASSEMBLER__ */
 
 #endif /* _RISCV_ANDES45_H */
