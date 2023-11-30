@@ -14,21 +14,17 @@
 #include <sbi/sbi_pmu.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi_utils/fdt/fdt_helper.h>
+#include <sbi_utils/fdt/fdt_pmu.h>
 
 #define FDT_PMU_HW_EVENT_MAX (SBI_PMU_HW_EVENT_MAX * 2)
 
-struct fdt_pmu_hw_event_select {
-	uint32_t eidx;
-	uint64_t select;
-};
-
-static struct fdt_pmu_hw_event_select fdt_pmu_evt_select[FDT_PMU_HW_EVENT_MAX] = {0};
-static uint32_t hw_event_count;
+struct fdt_pmu_hw_event_select_map fdt_pmu_evt_select[FDT_PMU_HW_EVENT_MAX] = {0};
+uint32_t hw_event_count;
 
 uint64_t fdt_pmu_get_select_value(uint32_t event_idx)
 {
 	int i;
-	struct fdt_pmu_hw_event_select *event;
+	struct fdt_pmu_hw_event_select_map *event;
 
 	for (i = 0; i < SBI_PMU_HW_EVENT_MAX; i++) {
 		event = &fdt_pmu_evt_select[i];
@@ -65,7 +61,7 @@ int fdt_pmu_setup(void *fdt)
 	int i, pmu_offset, len, result;
 	const u32 *event_val;
 	const u32 *event_ctr_map;
-	struct fdt_pmu_hw_event_select *event;
+	struct fdt_pmu_hw_event_select_map *event;
 	uint64_t raw_selector, select_mask;
 	u32 event_idx_start, event_idx_end, ctr_map;
 
