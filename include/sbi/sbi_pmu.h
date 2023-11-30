@@ -89,6 +89,12 @@ struct sbi_pmu_device {
 	 * Custom function returning the machine-specific irq-bit.
 	 */
 	int (*hw_counter_irq_bit)(void);
+
+	/**
+	 * Custom function to inhibit counting of events while in
+	 * specified mode.
+	 */
+	void (*hw_counter_filter_mode)(unsigned long flags, int counter_index);
 };
 
 /** Get the PMU platform device */

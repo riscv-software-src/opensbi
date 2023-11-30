@@ -599,7 +599,10 @@ static int pmu_update_hw_mhpmevent(struct sbi_pmu_hw_event *hw_evt, int ctr_idx,
 		pmu_dev->hw_counter_disable_irq(ctr_idx);
 
 	/* Update the inhibit flags based on inhibit flags received from supervisor */
-	pmu_update_inhibit_flags(flags, &mhpmevent_val);
+	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SSCOFPMF))
+		pmu_update_inhibit_flags(flags, &mhpmevent_val);
+	if (pmu_dev && pmu_dev->hw_counter_filter_mode)
+		pmu_dev->hw_counter_filter_mode(flags, ctr_idx);
 
 #if __riscv_xlen == 32
 	csr_write_num(CSR_MHPMEVENT3 + ctr_idx - 3, mhpmevent_val & 0xFFFFFFFF);
@@ -620,7 +623,8 @@ static int pmu_fixed_ctr_update_inhibit_bits(int fixed_ctr, unsigned long flags)
 #if __riscv_xlen == 32
 	uint64_t cfgh_csr_no;
 #endif
-	if (!sbi_hart_has_extension(scratch, SBI_HART_EXT_SMCNTRPMF))
+	if (!sbi_hart_has_extension(scratch, SBI_HART_EXT_SMCNTRPMF) &&
+		!(pmu_dev && pmu_dev->hw_counter_filter_mode))
 		return fixed_ctr;
 
 	switch (fixed_ctr) {
@@ -641,13 +645,17 @@ static int pmu_fixed_ctr_update_inhibit_bits(int fixed_ctr, unsigned long flags)
 	}
 
 	cfg_val |= MHPMEVENT_MINH;
-	pmu_update_inhibit_flags(flags, &cfg_val);
+	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SMCNTRPMF)) {
+		pmu_update_inhibit_flags(flags, &cfg_val);
 #if __riscv_xlen == 32
-	csr_write_num(cfg_csr_no, cfg_val & 0xFFFFFFFF);
-	csr_write_num(cfgh_csr_no, cfg_val >> BITS_PER_LONG);
+		csr_write_num(cfg_csr_no, cfg_val & 0xFFFFFFFF);
+		csr_write_num(cfgh_csr_no, cfg_val >> BITS_PER_LONG);
 #else
-	csr_write_num(cfg_csr_no, cfg_val);
+		csr_write_num(cfg_csr_no, cfg_val);
 #endif
+	}
+	if (pmu_dev && pmu_dev->hw_counter_filter_mode)
+		pmu_dev->hw_counter_filter_mode(flags, fixed_ctr);
 	return fixed_ctr;
 }
 
