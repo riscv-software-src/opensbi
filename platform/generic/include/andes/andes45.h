@@ -43,6 +43,12 @@
 
 #ifndef __ASSEMBLER__
 
+#define is_andes(series)				\
+({							\
+	char value = csr_read(CSR_MARCHID) & 0xff;	\
+	(series) == (value >> 4) * 10 + (value & 0x0f);	\
+})
+
 #define has_andes_pmu()					\
 ({							\
 	(((csr_read(CSR_MMSC_CFG) &			\

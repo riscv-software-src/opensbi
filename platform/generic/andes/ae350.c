@@ -24,16 +24,14 @@ static struct smu_data smu = { 0 };
 extern void __ae350_enable_coherency_warmboot(void);
 extern void __ae350_disable_coherency(void);
 
-static __always_inline bool is_andes25(void)
-{
-	ulong marchid = csr_read(CSR_MARCHID);
-	return !!(EXTRACT_FIELD(marchid, CSR_MARCHID_MICROID) == 0xa25);
-}
-
 static int ae350_hart_start(u32 hartid, ulong saddr)
 {
-	/* Don't send wakeup command at boot-time */
-	if (!sbi_init_count(hartid) || (is_andes25() && hartid == 0))
+	/*
+	 * Don't send wakeup command when:
+	 * 1) boot-time
+	 * 2) the target hart is non-sleepable 25-series hart0
+	 */
+	if (!sbi_init_count(hartid) || (is_andes(25) && hartid == 0))
 		return sbi_ipi_raw_send(sbi_hartid_to_hartindex(hartid));
 
 	/* Write wakeup command to the sleep hart */
@@ -52,7 +50,7 @@ static int ae350_hart_stop(void)
 	 * L2-cache, instead of turning it off, it should fall
 	 * through and jump to warmboot_addr.
 	 */
-	if (is_andes25() && hartid == 0)
+	if (is_andes(25) && hartid == 0)
 		return SBI_ENOTSUPP;
 
 	if (!smu_support_sleep_mode(&smu, DEEPSLEEP_MODE, hartid))
