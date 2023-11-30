@@ -5,6 +5,7 @@
  */
 
 #include <andes/andes45_pma.h>
+#include <andes/andes_pmu.h>
 #include <andes/andes_sbi.h>
 #include <platform_override.h>
 #include <sbi/sbi_domain.h>
@@ -29,7 +30,7 @@ static int renesas_rzfive_final_init(bool cold_boot, const struct fdt_match *mat
 					 array_size(renesas_rzfive_pma_regions));
 }
 
-int renesas_rzfive_early_init(bool cold_boot, const struct fdt_match *match)
+static int renesas_rzfive_early_init(bool cold_boot, const struct fdt_match *match)
 {
 	/*
 	 * Renesas RZ/Five RISC-V SoC has Instruction local memory and
@@ -57,4 +58,6 @@ const struct platform_override renesas_rzfive = {
 	.early_init = renesas_rzfive_early_init,
 	.final_init = renesas_rzfive_final_init,
 	.vendor_ext_provider = andes_sbi_vendor_ext_provider,
+	.extensions_init = andes_pmu_extensions_init,
+	.pmu_init = andes_pmu_init,
 };

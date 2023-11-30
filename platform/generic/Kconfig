@@ -39,6 +39,7 @@ config PLATFORM_RENESAS_RZFIVE
 	bool "Renesas RZ/Five support"
 	select ANDES45_PMA
 	select ANDES_SBI
+	select ANDES_PMU
 	default n
 
 config PLATFORM_SIFIVE_FU540
