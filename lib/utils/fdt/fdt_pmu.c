@@ -74,7 +74,7 @@ int fdt_pmu_setup(void *fdt)
 
 	pmu_offset = fdt_node_offset_by_compatible(fdt, -1, "riscv,pmu");
 	if (pmu_offset < 0)
-		return SBI_EFAIL;
+		return SBI_ENOENT;
 
 	event_ctr_map = fdt_getprop(fdt, pmu_offset,
 				    "riscv,event-to-mhpmcounters", &len);

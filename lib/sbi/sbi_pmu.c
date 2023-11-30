@@ -957,6 +957,7 @@ int sbi_pmu_init(struct sbi_scratch *scratch, bool cold_boot)
 	int hpm_count = sbi_fls(sbi_hart_mhpm_mask(scratch));
 	struct sbi_pmu_hart_state *phs;
 	const struct sbi_platform *plat;
+	int rc;
 
 	if (cold_boot) {
 		hw_event_map = sbi_calloc(sizeof(*hw_event_map),
@@ -972,7 +973,10 @@ int sbi_pmu_init(struct sbi_scratch *scratch, bool cold_boot)
 
 		plat = sbi_platform_ptr(scratch);
 		/* Initialize hw pmu events */
-		sbi_platform_pmu_init(plat);
+		rc = sbi_platform_pmu_init(plat);
+		if (rc)
+			sbi_dprintf("%s: platform pmu init failed "
+				    "(error %d)\n", __func__, rc);
 
 		/* mcycle & minstret is available always */
 		if (!hpm_count)

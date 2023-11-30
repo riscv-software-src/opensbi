@@ -265,7 +265,13 @@ static u32 generic_tlb_num_entries(void)
 
 static int generic_pmu_init(void)
 {
-	return fdt_pmu_setup(fdt_get_address());
+	int rc;
+
+	rc = fdt_pmu_setup(fdt_get_address());
+	if (rc && rc != SBI_ENOENT)
+		return rc;
+
+	return 0;
 }
 
 static uint64_t generic_pmu_xlate_to_mhpmevent(uint32_t event_idx,
