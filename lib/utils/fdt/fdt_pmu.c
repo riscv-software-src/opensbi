@@ -26,7 +26,7 @@ uint64_t fdt_pmu_get_select_value(uint32_t event_idx)
 	int i;
 	struct fdt_pmu_hw_event_select_map *event;
 
-	for (i = 0; i < SBI_PMU_HW_EVENT_MAX; i++) {
+	for (i = 0; i < hw_event_count; i++) {
 		event = &fdt_pmu_evt_select[i];
 		if (event->eidx == event_idx)
 			return event->select;
