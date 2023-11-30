@@ -15,4 +15,11 @@ config FDT_PMU
 	bool "FDT performance monitoring unit (PMU) support"
 	default n
 
+config FDT_FIXUPS_PRESERVE_PMU_NODE
+	bool "Preserve PMU node in device-tree"
+	depends on FDT_PMU
+	default n
+	help
+	  Preserve PMU node properties for debugging purposes.
+
 endif

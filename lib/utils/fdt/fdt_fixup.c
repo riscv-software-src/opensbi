@@ -394,5 +394,8 @@ void fdt_fixups(void *fdt)
 	fdt_plic_fixup(fdt);
 
 	fdt_reserved_memory_fixup(fdt);
+
+#ifndef CONFIG_FDT_FIXUPS_PRESERVE_PMU_NODE
 	fdt_pmu_fixup(fdt);
+#endif
 }
