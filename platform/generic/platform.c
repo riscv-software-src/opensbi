@@ -267,6 +267,12 @@ static int generic_pmu_init(void)
 {
 	int rc;
 
+	if (generic_plat && generic_plat->pmu_init) {
+		rc = generic_plat->pmu_init(generic_plat_match);
+		if (rc)
+			return rc;
+	}
+
 	rc = fdt_pmu_setup(fdt_get_address());
 	if (rc && rc != SBI_ENOENT)
 		return rc;
