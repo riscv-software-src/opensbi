@@ -45,6 +45,8 @@ enum sbi_hart_extensions {
 	SBI_HART_EXT_ZKR,
 	/** Hart has Smcntrpmf extension */
 	SBI_HART_EXT_SMCNTRPMF,
+	/** Hart has Xandespmu extension */
+	SBI_HART_EXT_XANDESPMU,
 
 	/** Maximum index of Hart extension */
 	SBI_HART_EXT_MAX,

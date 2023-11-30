@@ -694,6 +694,9 @@ static inline char *sbi_hart_extension_id2string(int ext)
 	case SBI_HART_EXT_SMCNTRPMF:
 		estr = "smcntrpmf";
 		break;
+	case SBI_HART_EXT_XANDESPMU:
+		estr = "xandespmu";
+		break;
 	default:
 		break;
 	}
