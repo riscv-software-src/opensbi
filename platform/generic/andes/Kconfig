@@ -7,3 +7,11 @@ config ANDES45_PMA
 config ANDES_SBI
 	bool "Andes SBI support"
 	default n
+
+config ANDES_PMU
+	bool "Andes PMU extension (XAndesPMU) support"
+	default n
+	help
+	  Andes PMU extension supports the event counter overflow
+	  interrupt and mode filtering, similar to the standard
+	  Sscofpmf and Smcntrpmf.
