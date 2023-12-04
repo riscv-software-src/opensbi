@@ -129,7 +129,7 @@ fw_options:
 	REG_L	a0, (a0)
 	ret
 
-	.section .entry, "ax", %progbits
+	.section .data, "aw", %progbits
 	.align 3
 _dynamic_next_arg1:
 	RISCV_PTR 0x0
