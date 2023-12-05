@@ -90,7 +90,7 @@ fw_options:
 #error "Must define FW_JUMP_ADDR"
 #endif
 
-	.section .entry, "ax", %progbits
+	.section .rodata
 	.align 3
 _jump_addr:
 	RISCV_PTR FW_JUMP_ADDR
