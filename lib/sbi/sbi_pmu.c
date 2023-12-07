@@ -442,6 +442,9 @@ int sbi_pmu_ctr_start(unsigned long cbase, unsigned long cmask,
 	if ((cbase + sbi_fls(cmask)) >= total_ctrs)
 		return ret;
 
+	if (flags & SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT)
+		return SBI_ENO_SHMEM;
+
 	if (flags & SBI_PMU_START_FLAG_SET_INIT_VALUE)
 		bUpdate = true;
 
@@ -539,6 +542,9 @@ int sbi_pmu_ctr_stop(unsigned long cbase, unsigned long cmask,
 
 	if ((cbase + sbi_fls(cmask)) >= total_ctrs)
 		return SBI_EINVAL;
+
+	if (flag & SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT)
+		return SBI_ENO_SHMEM;
 
 	for_each_set_bit(i, &cmask, BITS_PER_LONG) {
 		cidx = i + cbase;

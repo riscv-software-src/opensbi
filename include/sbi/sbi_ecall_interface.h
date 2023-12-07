@@ -103,6 +103,7 @@
 #define SBI_EXT_PMU_COUNTER_STOP	0x4
 #define SBI_EXT_PMU_COUNTER_FW_READ	0x5
 #define SBI_EXT_PMU_COUNTER_FW_READ_HI	0x6
+#define SBI_EXT_PMU_SNAPSHOT_SET_SHMEM	0x7
 
 /** General pmu event codes specified in SBI PMU extension */
 enum sbi_pmu_hw_generic_events_t {
@@ -241,9 +242,11 @@ enum sbi_pmu_ctr_type {
 
 /* Flags defined for counter start function */
 #define SBI_PMU_START_FLAG_SET_INIT_VALUE (1 << 0)
+#define SBI_PMU_START_FLAG_INIT_FROM_SNAPSHOT (1 << 1)
 
 /* Flags defined for counter stop function */
 #define SBI_PMU_STOP_FLAG_RESET (1 << 0)
+#define SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT (1 << 1)
 
 /* SBI function IDs for DBCN extension */
 #define SBI_EXT_DBCN_CONSOLE_WRITE		0x0
@@ -309,8 +312,9 @@ enum sbi_cppc_reg_id {
 #define SBI_ERR_ALREADY_AVAILABLE		-6
 #define SBI_ERR_ALREADY_STARTED			-7
 #define SBI_ERR_ALREADY_STOPPED			-8
+#define SBI_ERR_NO_SHMEM			-9
 
-#define SBI_LAST_ERR				SBI_ERR_ALREADY_STOPPED
+#define SBI_LAST_ERR				SBI_ERR_NO_SHMEM
 
 /* clang-format on */
 
