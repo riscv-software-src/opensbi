@@ -899,13 +899,17 @@ int sbi_pmu_ctr_get_info(uint32_t cidx, unsigned long *ctr_info)
 	int width;
 	union sbi_pmu_ctr_info cinfo = {0};
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	unsigned long counter_mask = (unsigned long)sbi_hart_mhpm_mask(scratch) |
+				     SBI_PMU_CY_IR_MASK;
 
-	/* Sanity check. Counter1 is not mapped at all */
-	if (cidx >= total_ctrs || cidx == 1)
+	/* Sanity check */
+	if (cidx >= total_ctrs)
 		return SBI_EINVAL;
 
 	/* We have 31 HW counters with 31 being the last index(MHPMCOUNTER31) */
 	if (cidx < num_hw_ctrs) {
+		if (!(__test_bit(cidx, &counter_mask)))
+			return SBI_EINVAL;
 		cinfo.type = SBI_PMU_CTR_TYPE_HW;
 		cinfo.csr = CSR_CYCLE + cidx;
 		/* mcycle & minstret are always 64 bit */
