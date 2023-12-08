@@ -243,7 +243,7 @@ void sbi_ipi_process(void)
 	while (ipi_type) {
 		if (ipi_type & 1UL) {
 			ipi_ops = ipi_ops_array[ipi_event];
-			if (ipi_ops && ipi_ops->process)
+			if (ipi_ops)
 				ipi_ops->process(scratch);
 		}
 		ipi_type = ipi_type >> 1;
