@@ -108,40 +108,18 @@ unsigned long atomic_raw_xchg_ulong(volatile unsigned long *ptr,
 	return axchg(ptr, newval);
 }
 
-#if (__SIZEOF_POINTER__ == 8)
-#define __AMO(op) "amo" #op ".d"
-#elif (__SIZEOF_POINTER__ == 4)
-#define __AMO(op) "amo" #op ".w"
-#else
-#error "Unexpected __SIZEOF_POINTER__"
-#endif
-
-#define __atomic_op_bit_ord(op, mod, nr, addr, ord)                          \
-	({                                                                   \
-		unsigned long __res, __mask;                                 \
-		__mask = BIT_MASK(nr);                                       \
-		__asm__ __volatile__(__AMO(op) #ord " %0, %2, %1"            \
-				     : "=r"(__res), "+A"(addr[BIT_WORD(nr)]) \
-				     : "r"(mod(__mask))                      \
-				     : "memory");                            \
-		__res & __mask ? 1 : 0;                                      \
-	})
-
-#define __atomic_op_bit(op, mod, nr, addr) \
-	__atomic_op_bit_ord(op, mod, nr, addr, .aqrl)
-
-/* Bitmask modifiers */
-#define __NOP(x) (x)
-#define __NOT(x) (~(x))
-
 int atomic_raw_set_bit(int nr, volatile unsigned long *addr)
 {
-	return __atomic_op_bit(or, __NOP, nr, addr);
+	unsigned long res, mask = BIT_MASK(nr);
+	res = __atomic_fetch_or(&addr[BIT_WORD(nr)], mask, __ATOMIC_RELAXED);
+	return res & mask ? 1 : 0;
 }
 
 int atomic_raw_clear_bit(int nr, volatile unsigned long *addr)
 {
-	return __atomic_op_bit(and, __NOT, nr, addr);
+	unsigned long res, mask = BIT_MASK(nr);
+	res = __atomic_fetch_and(&addr[BIT_WORD(nr)], ~mask, __ATOMIC_RELAXED);
+	return res & mask ? 1 : 0;
 }
 
 int atomic_set_bit(int nr, atomic_t *atom)
