@@ -60,6 +60,14 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartindex,
 				      remote_hartindex, data);
 		if (ret != SBI_IPI_UPDATE_SUCCESS)
 			return ret;
+	} else if (scratch == remote_scratch) {
+		/*
+		 * IPI events with an update() callback are expected to return
+		 * SBI_IPI_UPDATE_BREAK for self-IPIs. For other events, check
+		 * for self-IPI and execute the callback directly here.
+		 */
+		ipi_ops->process(scratch);
+		return 0;
 	}
 
 	/*
