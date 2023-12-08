@@ -328,16 +328,6 @@ static int tlb_update(struct sbi_scratch *scratch,
 	u32 curr_hartid = current_hartid();
 
 	/*
-	 * If address range to flush is too big then simply
-	 * upgrade it to flush all because we can only flush
-	 * 4KB at a time.
-	 */
-	if (tinfo->size > tlb_range_flush_limit) {
-		tinfo->start = 0;
-		tinfo->size = SBI_TLB_FLUSH_ALL;
-	}
-
-	/*
 	 * If the request is to queue a tlb flush entry for itself
 	 * then just do a local flush and return;
 	 */
@@ -384,6 +374,16 @@ int sbi_tlb_request(ulong hmask, ulong hbase, struct sbi_tlb_info *tinfo)
 {
 	if (!tinfo->local_fn)
 		return SBI_EINVAL;
+
+	/*
+	 * If address range to flush is too big then simply
+	 * upgrade it to flush all because we can only flush
+	 * 4KB at a time.
+	 */
+	if (tinfo->size > tlb_range_flush_limit) {
+		tinfo->start = 0;
+		tinfo->size = SBI_TLB_FLUSH_ALL;
+	}
 
 	tlb_pmu_incr_fw_ctr(tinfo);
 
