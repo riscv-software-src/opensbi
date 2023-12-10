@@ -195,6 +195,9 @@ static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
 {
 	unsigned long saved_mie, cmip;
 
+	if (__smp_load_acquire(&coldboot_done))
+		return;
+
 	/* Save MIE CSR */
 	saved_mie = csr_read(CSR_MIE);
 
