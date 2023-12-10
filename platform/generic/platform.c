@@ -10,7 +10,9 @@
 #include <libfdt.h>
 #include <platform_override.h>
 #include <sbi/riscv_asm.h>
+#include <sbi/sbi_bitops.h>
 #include <sbi/sbi_hartmask.h>
+#include <sbi/sbi_heap.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_string.h>
 #include <sbi/sbi_system.h>
@@ -52,6 +54,18 @@ static void fw_platform_lookup_special(void *fdt, int root_offset)
 		generic_plat_match = match;
 		break;
 	}
+}
+
+static u32 fw_platform_calculate_heap_size(u32 hart_count)
+{
+	u32 heap_size;
+
+	heap_size = SBI_PLATFORM_DEFAULT_HEAP_SIZE(hart_count);
+
+	/* For TLB fifo */
+	heap_size += 0x40 * (hart_count) * (hart_count);
+
+	return BIT_ALIGN(heap_size, HEAP_BASE_ALIGN);
 }
 
 extern struct sbi_platform platform;
@@ -115,7 +129,7 @@ unsigned long fw_platform_init(unsigned long arg0, unsigned long arg1,
 	}
 
 	platform.hart_count = hart_count;
-	platform.heap_size = SBI_PLATFORM_DEFAULT_HEAP_SIZE(hart_count);
+	platform.heap_size = fw_platform_calculate_heap_size(hart_count);
 	platform_has_mlevel_imsic = fdt_check_imsic_mlevel(fdt);
 
 	/* Return original FDT pointer */

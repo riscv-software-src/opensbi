@@ -26,6 +26,7 @@
 #define BIT_MASK(nr)		(1UL << ((nr) % BITS_PER_LONG))
 #define BIT_WORD(bit)		((bit) / BITS_PER_LONG)
 #define BIT_WORD_OFFSET(bit)	((bit) & (BITS_PER_LONG - 1))
+#define BIT_ALIGN(bit, align)	(((bit) + ((align) - 1)) & ~((align) - 1))
 
 #define GENMASK(h, l) \
 	(((~0UL) - (1UL << (l)) + 1) & (~0UL >> (BITS_PER_LONG - 1 - (h))))

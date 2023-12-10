@@ -14,8 +14,6 @@
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_string.h>
 
-/* Alignment of heap base address and size */
-#define HEAP_BASE_ALIGN			1024
 /* Minimum size and alignment of heap allocations */
 #define HEAP_ALLOC_ALIGN		64
 #define HEAP_HOUSEKEEPING_FACTOR	16

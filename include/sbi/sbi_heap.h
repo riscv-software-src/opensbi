@@ -12,6 +12,9 @@
 
 #include <sbi/sbi_types.h>
 
+/* Alignment of heap base address and size */
+#define HEAP_BASE_ALIGN			1024
+
 struct sbi_scratch;
 
 /** Allocate from heap area */
