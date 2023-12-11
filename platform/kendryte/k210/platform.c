@@ -32,6 +32,7 @@ unsigned long fw_platform_init(unsigned long arg0, unsigned long arg1,
 
 static struct plic_data plic = {
 	.addr = K210_PLIC_BASE_ADDR,
+	.size = K210_PLIC_BASE_SIZE,
 	.num_src = K210_PLIC_NUM_SOURCES,
 };
 

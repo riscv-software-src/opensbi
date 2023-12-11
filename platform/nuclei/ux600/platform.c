@@ -39,6 +39,8 @@
 					 CLINT_MTIMER_OFFSET)
 
 #define UX600_PLIC_ADDR			0x8000000
+#define UX600_PLIC_SIZE			(0x200000 + \
+					 (UX600_HART_COUNT * 0x1000))
 #define UX600_PLIC_NUM_SOURCES		0x35
 #define UX600_PLIC_NUM_PRIORITIES	7
 
@@ -63,6 +65,7 @@ static u32 ux600_clk_freq = 8000000;
 
 static struct plic_data plic = {
 	.addr = UX600_PLIC_ADDR,
+	.size = UX600_PLIC_SIZE,
 	.num_src = UX600_PLIC_NUM_SOURCES,
 };
 

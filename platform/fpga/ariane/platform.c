@@ -25,6 +25,8 @@
 #define ARIANE_UART_REG_WIDTH			4
 #define ARIANE_UART_REG_OFFSET			0
 #define ARIANE_PLIC_ADDR			0xc000000
+#define ARIANE_PLIC_SIZE			(0x200000 + \
+						 (ARIANE_HART_COUNT * 0x1000))
 #define ARIANE_PLIC_NUM_SOURCES			3
 #define ARIANE_HART_COUNT			1
 #define ARIANE_CLINT_ADDR			0x2000000
@@ -36,6 +38,7 @@
 
 static struct plic_data plic = {
 	.addr = ARIANE_PLIC_ADDR,
+	.size = ARIANE_PLIC_SIZE,
 	.num_src = ARIANE_PLIC_NUM_SOURCES,
 };
 

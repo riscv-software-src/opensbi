@@ -880,6 +880,7 @@ int fdt_parse_plic_node(void *fdt, int nodeoffset, struct plic_data *plic)
 	if (rc < 0 || !reg_addr || !reg_size)
 		return SBI_ENODEV;
 	plic->addr = reg_addr;
+	plic->size = reg_size;
 
 	val = fdt_getprop(fdt, nodeoffset, "riscv,ndev", &len);
 	if (len > 0)
