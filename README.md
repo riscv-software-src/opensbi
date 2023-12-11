@@ -8,6 +8,8 @@ display test3
 
 display test4
 
+display test5
+
 RISC-V Open Source Supervisor Binary Interface (OpenSBI)
 ========================================================
 
