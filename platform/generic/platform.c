@@ -16,6 +16,7 @@
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_string.h>
 #include <sbi/sbi_system.h>
+#include <sbi/sbi_tlb.h>
 #include <sbi_utils/fdt/fdt_domain.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
 #include <sbi_utils/fdt/fdt_helper.h>
@@ -63,7 +64,7 @@ static u32 fw_platform_calculate_heap_size(u32 hart_count)
 	heap_size = SBI_PLATFORM_DEFAULT_HEAP_SIZE(hart_count);
 
 	/* For TLB fifo */
-	heap_size += 0x40 * (hart_count) * (hart_count);
+	heap_size += SBI_TLB_INFO_SIZE * (hart_count) * (hart_count);
 
 	return BIT_ALIGN(heap_size, HEAP_BASE_ALIGN);
 }
