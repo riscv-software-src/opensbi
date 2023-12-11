@@ -17,9 +17,8 @@
 #include <sbi/sbi_hart.h>
 
 static int sbi_ecall_dbcn_handler(unsigned long extid, unsigned long funcid,
-				  const struct sbi_trap_regs *regs,
-				  unsigned long *out_val,
-				  struct sbi_trap_info *out_trap)
+				  struct sbi_trap_regs *regs,
+				  struct sbi_ecall_return *out)
 {
 	ulong smode = (csr_read(CSR_MSTATUS) & MSTATUS_MPP) >>
 			MSTATUS_MPP_SHIFT;
@@ -49,9 +48,9 @@ static int sbi_ecall_dbcn_handler(unsigned long extid, unsigned long funcid,
 			return SBI_ERR_INVALID_PARAM;
 		sbi_hart_map_saddr(regs->a1, regs->a0);
 		if (funcid == SBI_EXT_DBCN_CONSOLE_WRITE)
-			*out_val = sbi_nputs((const char *)regs->a1, regs->a0);
+			out->value = sbi_nputs((const char *)regs->a1, regs->a0);
 		else
-			*out_val = sbi_ngets((char *)regs->a1, regs->a0);
+			out->value = sbi_ngets((char *)regs->a1, regs->a0);
 		sbi_hart_unmap_saddr();
 		return 0;
 	case SBI_EXT_DBCN_CONSOLE_WRITE_BYTE:

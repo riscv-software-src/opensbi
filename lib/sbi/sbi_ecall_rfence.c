@@ -16,9 +16,8 @@
 #include <sbi/sbi_tlb.h>
 
 static int sbi_ecall_rfence_handler(unsigned long extid, unsigned long funcid,
-				    const struct sbi_trap_regs *regs,
-				    unsigned long *out_val,
-				    struct sbi_trap_info *out_trap)
+				    struct sbi_trap_regs *regs,
+				    struct sbi_ecall_return *out)
 {
 	int ret = 0;
 	unsigned long vmid;

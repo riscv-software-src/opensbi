@@ -10,6 +10,7 @@
 #ifndef __PLATFORM_OVERRIDE_H__
 #define __PLATFORM_OVERRIDE_H__
 
+#include <sbi/sbi_ecall.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_types.h>
 #include <sbi/sbi_trap.h>
@@ -30,9 +31,8 @@ struct platform_override {
 	int (*pmu_init)(const struct fdt_match *match);
 	void (*fw_init)(void *fdt, const struct fdt_match *match);
 	int (*vendor_ext_provider)(long funcid,
-				   const struct sbi_trap_regs *regs,
-				   unsigned long *out_value,
-				   struct sbi_trap_info *out_trap,
+				   struct sbi_trap_regs *regs,
+				   struct sbi_ecall_return *out,
 				   const struct fdt_match *match);
 };
 

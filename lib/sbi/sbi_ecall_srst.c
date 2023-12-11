@@ -15,9 +15,8 @@
 #include <sbi/sbi_system.h>
 
 static int sbi_ecall_srst_handler(unsigned long extid, unsigned long funcid,
-				  const struct sbi_trap_regs *regs,
-				  unsigned long *out_val,
-				  struct sbi_trap_info *out_trap)
+				  struct sbi_trap_regs *regs,
+				  struct sbi_ecall_return *out)
 {
 	if (funcid == SBI_EXT_SRST_RESET) {
 		if ((((u32)-1U) <= ((u64)regs->a0)) ||

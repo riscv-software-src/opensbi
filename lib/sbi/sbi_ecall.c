@@ -101,14 +101,12 @@ int sbi_ecall_handler(struct sbi_trap_regs *regs)
 	struct sbi_ecall_extension *ext;
 	unsigned long extension_id = regs->a7;
 	unsigned long func_id = regs->a6;
-	struct sbi_trap_info trap = {0};
-	unsigned long out_val = 0;
+	struct sbi_ecall_return out = {0};
 	bool is_0_1_spec = 0;
 
 	ext = sbi_ecall_find_extension(extension_id);
 	if (ext && ext->handle) {
-		ret = ext->handle(extension_id, func_id,
-				  regs, &out_val, &trap);
+		ret = ext->handle(extension_id, func_id, regs, &out);
 		if (extension_id >= SBI_EXT_0_1_SET_TIMER &&
 		    extension_id <= SBI_EXT_0_1_SHUTDOWN)
 			is_0_1_spec = 1;
@@ -116,10 +114,7 @@ int sbi_ecall_handler(struct sbi_trap_regs *regs)
 		ret = SBI_ENOTSUPP;
 	}
 
-	if (ret == SBI_ETRAP) {
-		trap.epc = regs->mepc;
-		sbi_trap_redirect(regs, &trap);
-	} else {
+	if (!out.skip_regs_update) {
 		if (ret < SBI_LAST_ERR ||
 		    (extension_id != SBI_EXT_0_1_CONSOLE_GETCHAR &&
 		     SBI_SUCCESS < ret)) {
@@ -140,7 +135,7 @@ int sbi_ecall_handler(struct sbi_trap_regs *regs)
 		regs->mepc += 4;
 		regs->a0 = ret;
 		if (!is_0_1_spec)
-			regs->a1 = out_val;
+			regs->a1 = out.value;
 	}
 
 	return 0;

@@ -50,7 +50,7 @@
 #include <sbi/sbi_version.h>
 
 struct sbi_domain_memregion;
-struct sbi_trap_info;
+struct sbi_ecall_return;
 struct sbi_trap_regs;
 struct sbi_hart_features;
 
@@ -137,9 +137,8 @@ struct sbi_platform_operations {
 	bool (*vendor_ext_check)(void);
 	/** platform specific SBI extension implementation provider */
 	int (*vendor_ext_provider)(long funcid,
-				   const struct sbi_trap_regs *regs,
-				   unsigned long *out_value,
-				   struct sbi_trap_info *out_trap);
+				   struct sbi_trap_regs *regs,
+				   struct sbi_ecall_return *out);
 };
 
 /** Platform default per-HART stack size for exception/interrupt handling */
@@ -666,16 +665,12 @@ static inline bool sbi_platform_vendor_ext_check(
 static inline int sbi_platform_vendor_ext_provider(
 					const struct sbi_platform *plat,
 					long funcid,
-					const struct sbi_trap_regs *regs,
-					unsigned long *out_value,
-					struct sbi_trap_info *out_trap)
+					struct sbi_trap_regs *regs,
+					struct sbi_ecall_return *out)
 {
-	if (plat && sbi_platform_ops(plat)->vendor_ext_provider) {
+	if (plat && sbi_platform_ops(plat)->vendor_ext_provider)
 		return sbi_platform_ops(plat)->vendor_ext_provider(funcid,
-								regs,
-								out_value,
-								out_trap);
-	}
+								regs, out);
 
 	return SBI_ENOTSUPP;
 }

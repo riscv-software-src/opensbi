@@ -18,9 +18,8 @@
 #include <sbi/riscv_asm.h>
 
 static int sbi_ecall_pmu_handler(unsigned long extid, unsigned long funcid,
-				 const struct sbi_trap_regs *regs,
-				 unsigned long *out_val,
-				 struct sbi_trap_info *out_trap)
+				 struct sbi_trap_regs *regs,
+				 struct sbi_ecall_return *out)
 {
 	int ret = 0;
 	uint64_t temp;
@@ -29,12 +28,12 @@ static int sbi_ecall_pmu_handler(unsigned long extid, unsigned long funcid,
 	case SBI_EXT_PMU_NUM_COUNTERS:
 		ret = sbi_pmu_num_ctr();
 		if (ret >= 0) {
-			*out_val = ret;
+			out->value = ret;
 			ret = 0;
 		}
 		break;
 	case SBI_EXT_PMU_COUNTER_GET_INFO:
-		ret = sbi_pmu_ctr_get_info(regs->a0, out_val);
+		ret = sbi_pmu_ctr_get_info(regs->a0, &out->value);
 		break;
 	case SBI_EXT_PMU_COUNTER_CFG_MATCH:
 #if __riscv_xlen == 32
@@ -45,21 +44,21 @@ static int sbi_ecall_pmu_handler(unsigned long extid, unsigned long funcid,
 		ret = sbi_pmu_ctr_cfg_match(regs->a0, regs->a1, regs->a2,
 					    regs->a3, temp);
 		if (ret >= 0) {
-			*out_val = ret;
+			out->value = ret;
 			ret = 0;
 		}
 
 		break;
 	case SBI_EXT_PMU_COUNTER_FW_READ:
 		ret = sbi_pmu_ctr_fw_read(regs->a0, &temp);
-		*out_val = temp;
+		out->value = temp;
 		break;
 	case SBI_EXT_PMU_COUNTER_FW_READ_HI:
 #if __riscv_xlen == 32
 		ret = sbi_pmu_ctr_fw_read(regs->a0, &temp);
-		*out_val = temp >> 32;
+		out->value = temp >> 32;
 #else
-		*out_val = 0;
+		out->value = 0;
 #endif
 		break;
 	case SBI_EXT_PMU_COUNTER_START:

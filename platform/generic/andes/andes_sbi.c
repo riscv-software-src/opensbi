@@ -33,14 +33,13 @@ static bool andes45_apply_iocp_sw_workaround(void)
 }
 
 int andes_sbi_vendor_ext_provider(long funcid,
-				  const struct sbi_trap_regs *regs,
-				  unsigned long *out_value,
-				  struct sbi_trap_info *out_trap,
+				  struct sbi_trap_regs *regs,
+				  struct sbi_ecall_return *out,
 				  const struct fdt_match *match)
 {
 	switch (funcid) {
 	case SBI_EXT_ANDES_IOCP_SW_WORKAROUND:
-		*out_value = andes45_apply_iocp_sw_workaround();
+		out->value = andes45_apply_iocp_sw_workaround();
 		break;
 
 	default:

@@ -20,6 +20,13 @@
 struct sbi_trap_regs;
 struct sbi_trap_info;
 
+struct sbi_ecall_return {
+	/* Return flag to skip register update */
+	bool skip_regs_update;
+	/* Return value */
+	unsigned long value;
+};
+
 struct sbi_ecall_extension {
 	/* head is used by the extension list */
 	struct sbi_dlist head;
@@ -62,9 +69,8 @@ struct sbi_ecall_extension {
 	 * never invoked with an invalid or unavailable extension ID.
 	 */
 	int (* handle)(unsigned long extid, unsigned long funcid,
-		       const struct sbi_trap_regs *regs,
-		       unsigned long *out_val,
-		       struct sbi_trap_info *out_trap);
+		       struct sbi_trap_regs *regs,
+		       struct sbi_ecall_return *out);
 };
 
 u16 sbi_ecall_version_major(void);
