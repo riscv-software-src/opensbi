@@ -815,8 +815,7 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 
 	/* Root domain possible and assigned HARTs */
 	for (i = 0; i < plat->hart_count; i++)
-		sbi_hartmask_set_hartid(sbi_hartindex_to_hartid(i),
-					root_hmask);
+		sbi_hartmask_set_hartindex(i, root_hmask);
 
 	/* Finally register the root domain */
 	rc = sbi_domain_register(&root, root_hmask);
