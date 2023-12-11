@@ -32,9 +32,8 @@
 #define SBI_EILL		-1004
 #define SBI_ENOSPC		-1005
 #define SBI_ENOMEM		-1006
-#define SBI_ETRAP		-1007
-#define SBI_EUNKNOWN		-1008
-#define SBI_ENOENT		-1009
+#define SBI_EUNKNOWN		-1007
+#define SBI_ENOENT		-1008
 
 /* clang-format on */
 

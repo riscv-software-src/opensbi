@@ -24,22 +24,22 @@
 #include <sbi/sbi_unpriv.h>
 #include <sbi/sbi_hart.h>
 
-static int sbi_load_hart_mask_unpriv(ulong *pmask, ulong *hmask,
-				     struct sbi_trap_info *uptrap)
+static bool sbi_load_hart_mask_unpriv(ulong *pmask, ulong *hmask,
+				      struct sbi_trap_info *uptrap)
 {
 	ulong mask = 0;
 
 	if (pmask) {
 		mask = sbi_load_ulong(pmask, uptrap);
 		if (uptrap->cause)
-			return SBI_ETRAP;
+			return false;
 	} else {
 		sbi_hsm_hart_interruptible_mask(sbi_domain_thishart_ptr(),
 						0, &mask);
 	}
 	*hmask = mask;
 
-	return 0;
+	return true;
 }
 
 static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
@@ -70,56 +70,48 @@ static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
 		sbi_ipi_clear_smode();
 		break;
 	case SBI_EXT_0_1_SEND_IPI:
-		ret = sbi_load_hart_mask_unpriv((ulong *)regs->a0,
-						&hmask, &trap);
-		if (ret != SBI_ETRAP) {
+		if (sbi_load_hart_mask_unpriv((ulong *)regs->a0,
+						&hmask, &trap)) {
 			ret = sbi_ipi_send_smode(hmask, 0);
 		} else {
-			ret = 0;
 			trap.epc = regs->mepc;
 			sbi_trap_redirect(regs, &trap);
 			out->skip_regs_update = true;
 		}
 		break;
 	case SBI_EXT_0_1_REMOTE_FENCE_I:
-		ret = sbi_load_hart_mask_unpriv((ulong *)regs->a0,
-						&hmask, &trap);
-		if (ret != SBI_ETRAP) {
+		if (sbi_load_hart_mask_unpriv((ulong *)regs->a0,
+						&hmask, &trap)) {
 			SBI_TLB_INFO_INIT(&tlb_info, 0, 0, 0, 0,
 					  SBI_TLB_FENCE_I, source_hart);
 			ret = sbi_tlb_request(hmask, 0, &tlb_info);
 		} else {
-			ret = 0;
 			trap.epc = regs->mepc;
 			sbi_trap_redirect(regs, &trap);
 			out->skip_regs_update = true;
 		}
 		break;
 	case SBI_EXT_0_1_REMOTE_SFENCE_VMA:
-		ret = sbi_load_hart_mask_unpriv((ulong *)regs->a0,
-						&hmask, &trap);
-		if (ret != SBI_ETRAP) {
+		if (sbi_load_hart_mask_unpriv((ulong *)regs->a0,
+						&hmask, &trap)) {
 			SBI_TLB_INFO_INIT(&tlb_info, regs->a1, regs->a2, 0, 0,
 					  SBI_TLB_SFENCE_VMA, source_hart);
 			ret = sbi_tlb_request(hmask, 0, &tlb_info);
 		} else {
-			ret = 0;
 			trap.epc = regs->mepc;
 			sbi_trap_redirect(regs, &trap);
 			out->skip_regs_update = true;
 		}
 		break;
 	case SBI_EXT_0_1_REMOTE_SFENCE_VMA_ASID:
-		ret = sbi_load_hart_mask_unpriv((ulong *)regs->a0,
-						&hmask, &trap);
-		if (ret != SBI_ETRAP) {
+		if (sbi_load_hart_mask_unpriv((ulong *)regs->a0,
+						&hmask, &trap)) {
 			SBI_TLB_INFO_INIT(&tlb_info, regs->a1,
 					  regs->a2, regs->a3, 0,
 					  SBI_TLB_SFENCE_VMA_ASID,
 					  source_hart);
 			ret = sbi_tlb_request(hmask, 0, &tlb_info);
 		} else {
-			ret = 0;
 			trap.epc = regs->mepc;
 			sbi_trap_redirect(regs, &trap);
 			out->skip_regs_update = true;
