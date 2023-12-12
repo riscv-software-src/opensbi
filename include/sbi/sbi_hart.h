@@ -52,6 +52,13 @@ enum sbi_hart_extensions {
 	SBI_HART_EXT_MAX,
 };
 
+struct sbi_hart_ext_data {
+	const unsigned int id;
+	const char *name;
+};
+
+extern const struct sbi_hart_ext_data sbi_hart_ext[];
+
 /*
  * Smepmp enforces access boundaries between M-mode and
  * S/U-mode. When it is enabled, the PMPs are programmed

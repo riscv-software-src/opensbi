@@ -660,47 +660,23 @@ bool sbi_hart_has_extension(struct sbi_scratch *scratch,
 		return false;
 }
 
-static inline char *sbi_hart_extension_id2string(int ext)
-{
-	char *estr = NULL;
-
-	switch (ext) {
-	case SBI_HART_EXT_SMAIA:
-		estr = "smaia";
-		break;
-	case SBI_HART_EXT_SMSTATEEN:
-		estr = "smstateen";
-		break;
-	case SBI_HART_EXT_SSCOFPMF:
-		estr = "sscofpmf";
-		break;
-	case SBI_HART_EXT_SSTC:
-		estr = "sstc";
-		break;
-	case SBI_HART_EXT_ZICNTR:
-		estr = "zicntr";
-		break;
-	case SBI_HART_EXT_ZIHPM:
-		estr = "zihpm";
-		break;
-	case SBI_HART_EXT_ZKR:
-		estr = "zkr";
-		break;
-	case SBI_HART_EXT_SMEPMP:
-		estr = "smepmp";
-		break;
-	case SBI_HART_EXT_SMCNTRPMF:
-		estr = "smcntrpmf";
-		break;
-	case SBI_HART_EXT_XANDESPMU:
-		estr = "xandespmu";
-		break;
-	default:
-		break;
-	}
-
-	return estr;
+#define __SBI_HART_EXT_DATA(_name, _id) {	\
+	.name = #_name,				\
+	.id = _id,				\
 }
+
+const struct sbi_hart_ext_data sbi_hart_ext[] = {
+	__SBI_HART_EXT_DATA(smaia, SBI_HART_EXT_SMAIA),
+	__SBI_HART_EXT_DATA(smepmp, SBI_HART_EXT_SMEPMP),
+	__SBI_HART_EXT_DATA(smstateen, SBI_HART_EXT_SMSTATEEN),
+	__SBI_HART_EXT_DATA(sscofpmf, SBI_HART_EXT_SSCOFPMF),
+	__SBI_HART_EXT_DATA(sstc, SBI_HART_EXT_SSTC),
+	__SBI_HART_EXT_DATA(zicntr, SBI_HART_EXT_ZICNTR),
+	__SBI_HART_EXT_DATA(zihpm, SBI_HART_EXT_ZIHPM),
+	__SBI_HART_EXT_DATA(zkr, SBI_HART_EXT_ZKR),
+	__SBI_HART_EXT_DATA(smcntrpmf, SBI_HART_EXT_SMCNTRPMF),
+	__SBI_HART_EXT_DATA(xandespmu, SBI_HART_EXT_XANDESPMU),
+};
 
 /**
  * Get the hart extensions in string format
@@ -717,20 +693,16 @@ void sbi_hart_get_extensions_str(struct sbi_scratch *scratch,
 	struct sbi_hart_features *hfeatures =
 			sbi_scratch_offset_ptr(scratch, hart_features_offset);
 	int offset = 0, ext = 0;
-	char *temp;
 
 	if (!extensions_str || nestr <= 0)
 		return;
 	sbi_memset(extensions_str, 0, nestr);
 
 	for_each_set_bit(ext, hfeatures->extensions, SBI_HART_EXT_MAX) {
-		temp = sbi_hart_extension_id2string(ext);
-		if (temp) {
-			sbi_snprintf(extensions_str + offset,
-				     nestr - offset,
-				     "%s,", temp);
-			offset = offset + sbi_strlen(temp) + 1;
-		}
+		sbi_snprintf(extensions_str + offset,
+				 nestr - offset,
+				 "%s,", sbi_hart_ext[ext].name);
+		offset = offset + sbi_strlen(sbi_hart_ext[ext].name) + 1;
 	}
 
 	if (offset)

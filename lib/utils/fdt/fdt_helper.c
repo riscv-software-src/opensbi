@@ -401,8 +401,10 @@ static int fdt_parse_isa_one_hart(const char *isa, unsigned long *extensions)
 				continue;			\
 			}
 
-		set_multi_letter_ext("smepmp", SBI_HART_EXT_SMEPMP);
-		set_multi_letter_ext("zkr", SBI_HART_EXT_ZKR);
+		for (j = 0; j < SBI_HART_EXT_MAX; j++) {
+			set_multi_letter_ext(sbi_hart_ext[j].name,
+					     sbi_hart_ext[j].id);
+		}
 #undef set_multi_letter_ext
 	}
 
