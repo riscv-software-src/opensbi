@@ -914,6 +914,16 @@ __pmp_skip:
 	/* Mark hart feature detection done */
 	hfeatures->detected = true;
 
+	/*
+	 * On platforms with Smepmp, the previous booting stage must
+	 * enter OpenSBI with mseccfg.MML == 0. This allows OpenSBI
+	 * to configure it's own M-mode only regions without depending
+	 * on the previous booting stage.
+	 */
+	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SMEPMP) &&
+	    (csr_read(CSR_MSECCFG) & MSECCFG_MML))
+		return SBI_EILL;
+
 	return 0;
 }
 
