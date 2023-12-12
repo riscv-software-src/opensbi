@@ -33,11 +33,11 @@ static unsigned long hart_features_offset;
 
 static void mstatus_init(struct sbi_scratch *scratch)
 {
-	unsigned long menvcfg_val, mstatus_val = 0;
 	int cidx;
+	unsigned long mstatus_val = 0;
 	unsigned int mhpm_mask = sbi_hart_mhpm_mask(scratch);
 	uint64_t mhpmevent_init_val = 0;
-	uint64_t mstateen_val;
+	uint64_t menvcfg_val, mstateen_val;
 
 	/* Enable FPU */
 	if (misa_extension('D') || misa_extension('F'))
@@ -108,6 +108,9 @@ static void mstatus_init(struct sbi_scratch *scratch)
 
 	if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_12) {
 		menvcfg_val = csr_read(CSR_MENVCFG);
+#if __riscv_xlen == 32
+		menvcfg_val |= ((uint64_t)csr_read(CSR_MENVCFGH)) << 32;
+#endif
 
 		/*
 		 * Set menvcfg.CBZE == 1
@@ -148,18 +151,13 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		 * Enable access to stimecmp if sstc extension is present in the
 		 * hardware.
 		 */
-		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SSTC)) {
-#if __riscv_xlen == 32
-			unsigned long menvcfgh_val;
-			menvcfgh_val = csr_read(CSR_MENVCFGH);
-			menvcfgh_val |= ENVCFGH_STCE;
-			csr_write(CSR_MENVCFGH, menvcfgh_val);
-#else
+		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SSTC))
 			menvcfg_val |= ENVCFG_STCE;
-#endif
-		}
 
 		csr_write(CSR_MENVCFG, menvcfg_val);
+#if __riscv_xlen == 32
+		csr_write(CSR_MENVCFGH, menvcfg_val >> 32);
+#endif
 
 		/* Enable S-mode access to seed CSR */
 		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_ZKR)) {
