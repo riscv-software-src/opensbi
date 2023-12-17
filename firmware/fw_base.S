@@ -188,7 +188,7 @@ _relocate_done:
 
 	/* At this point we are running from link address */
 
-	/* Reset all registers for boot HART */
+	/* Reset all registers except ra, a0, a1 and a2 for boot HART */
 	li	ra, 0
 	call	_reset_regs
 
@@ -415,7 +415,7 @@ _wait_for_boot_hart:
 	bne	t0, t1, _wait_for_boot_hart
 
 _start_warm:
-	/* Reset all registers for non-boot HARTs */
+	/* Reset all registers except ra, a0, a1 and a2 for non-boot HARTs */
 	li	ra, 0
 	call	_reset_regs
 
