@@ -101,7 +101,7 @@ static int sbi_ipi_sync(struct sbi_scratch *scratch, u32 event)
  */
 int sbi_ipi_send_many(ulong hmask, ulong hbase, u32 event, void *data)
 {
-	int rc;
+	int rc = 0;
 	bool retry_needed;
 	ulong i, m;
 	struct sbi_hartmask target_mask = {0};
@@ -135,17 +135,21 @@ int sbi_ipi_send_many(ulong hmask, ulong hbase, u32 event, void *data)
 		retry_needed = false;
 		sbi_hartmask_for_each_hartindex(i, &target_mask) {
 			rc = sbi_ipi_send(scratch, i, event, data);
+			if (rc < 0)
+				goto done;
 			if (rc == SBI_IPI_UPDATE_RETRY)
 				retry_needed = true;
 			else
 				sbi_hartmask_clear_hartindex(i, &target_mask);
+			rc = 0;
 		}
 	} while (retry_needed);
 
+done:
 	/* Sync IPIs */
 	sbi_ipi_sync(scratch, event);
 
-	return 0;
+	return rc;
 }
 
 int sbi_ipi_event_create(const struct sbi_ipi_event_ops *ops)
