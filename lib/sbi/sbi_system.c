@@ -72,7 +72,8 @@ void __noreturn sbi_system_reset(u32 reset_type, u32 reset_reason)
 
 	/* Send HALT IPI to every hart other than the current hart */
 	while (!sbi_hsm_hart_interruptible_mask(dom, hbase, &hmask)) {
-		if (hbase <= cur_hartid)
+		if ((hbase <= cur_hartid)
+			  && (cur_hartid < hbase + BITS_PER_LONG))
 			hmask &= ~(1UL << (cur_hartid - hbase));
 		if (hmask)
 			sbi_ipi_send_halt(hmask, hbase);
