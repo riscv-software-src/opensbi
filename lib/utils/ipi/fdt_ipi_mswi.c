@@ -24,7 +24,7 @@ static int ipi_mswi_cold_init(void *fdt, int nodeoff,
 	if (!ms)
 		return SBI_ENOMEM;
 
-	rc = fdt_parse_aclint_node(fdt, nodeoff, false,
+	rc = fdt_parse_aclint_node(fdt, nodeoff, false, false,
 				   &ms->addr, &ms->size, NULL, NULL,
 				   &ms->first_hartid, &ms->hart_count);
 	if (rc) {

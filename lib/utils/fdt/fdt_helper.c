@@ -957,7 +957,8 @@ static int fdt_get_aclint_addr_size(void *fdt, int nodeoffset,
 	return 0;
 }
 
-int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
+int fdt_parse_aclint_node(void *fdt, int nodeoffset,
+			  bool for_timer, bool allow_regname,
 			  unsigned long *out_addr1, unsigned long *out_size1,
 			  unsigned long *out_addr2, unsigned long *out_size2,
 			  u32 *out_first_hartid, u32 *out_hart_count)
@@ -972,7 +973,7 @@ int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
 	    !out_first_hartid || !out_hart_count)
 		return SBI_EINVAL;
 
-	if (for_timer && out_addr2 && out_size2 &&
+	if (for_timer && allow_regname && out_addr2 && out_size2 &&
 	    fdt_getprop(fdt, nodeoffset, "reg-names", NULL))
 		rc = fdt_get_aclint_addr_size_by_name(fdt, nodeoffset,
 						      out_addr1, out_size1,

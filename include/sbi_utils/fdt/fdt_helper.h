@@ -99,7 +99,8 @@ int fdt_parse_plic_node(void *fdt, int nodeoffset, struct plic_data *plic);
 
 int fdt_parse_plic(void *fdt, struct plic_data *plic, const char *compat);
 
-int fdt_parse_aclint_node(void *fdt, int nodeoffset, bool for_timer,
+int fdt_parse_aclint_node(void *fdt, int nodeoffset,
+			  bool for_timer, bool allow_regname,
 			  unsigned long *out_addr1, unsigned long *out_size1,
 			  unsigned long *out_addr2, unsigned long *out_size2,
 			  u32 *out_first_hartid, u32 *out_hart_count);

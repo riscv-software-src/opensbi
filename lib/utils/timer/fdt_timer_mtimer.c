@@ -38,13 +38,14 @@ static int timer_mtimer_cold_init(void *fdt, int nodeoff,
 	struct timer_mtimer_node *mtn, *n;
 	struct aclint_mtimer_data *mt;
 	const struct timer_mtimer_quirks *quirks = match->data;
+	bool is_clint = quirks && quirks->is_clint;
 
 	mtn = sbi_zalloc(sizeof(*mtn));
 	if (!mtn)
 		return SBI_ENOMEM;
 	mt = &mtn->data;
 
-	rc = fdt_parse_aclint_node(fdt, nodeoff, true,
+	rc = fdt_parse_aclint_node(fdt, nodeoff, true, !is_clint,
 				   &addr[0], &size[0], &addr[1], &size[1],
 				   &mt->first_hartid, &mt->hart_count);
 	if (rc) {
@@ -60,7 +61,7 @@ static int timer_mtimer_cold_init(void *fdt, int nodeoff,
 		return rc;
 	}
 
-	if (quirks && quirks->is_clint) { /* SiFive CLINT */
+	if (is_clint) { /* SiFive CLINT */
 		/* Set CLINT addresses */
 		mt->mtimecmp_addr = addr[0] + ACLINT_DEFAULT_MTIMECMP_OFFSET;
 		mt->mtimecmp_size = ACLINT_DEFAULT_MTIMECMP_SIZE;
