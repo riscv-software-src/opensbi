@@ -748,6 +748,7 @@ static int hart_detect_features(struct sbi_scratch *scratch)
 	struct sbi_hart_features *hfeatures =
 		sbi_scratch_offset_ptr(scratch, hart_features_offset);
 	unsigned long val, oldval;
+	bool has_zicntr = false;
 	int rc;
 
 	/* If hart features already detected then do nothing */
@@ -900,11 +901,18 @@ __pmp_skip:
 
 #undef __check_ext_csr
 
+	/* Save trap based detection of Zicntr */
+	has_zicntr = sbi_hart_has_extension(scratch, SBI_HART_EXT_ZICNTR);
+
 	/* Let platform populate extensions */
 	rc = sbi_platform_extensions_init(sbi_platform_thishart_ptr(),
 					  hfeatures);
 	if (rc)
 		return rc;
+
+	/* Zicntr should only be detected using traps */
+	__sbi_hart_update_extension(hfeatures, SBI_HART_EXT_ZICNTR,
+				    has_zicntr);
 
 	/* Extensions implied by other extensions and features */
 	if (hfeatures->mhpm_mask)
