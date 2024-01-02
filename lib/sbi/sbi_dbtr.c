@@ -129,7 +129,7 @@ static inline struct sbi_dbtr_trigger *sbi_alloc_trigger(void)
 
 	for (i = 0; i < hart_state->total_trigs; i++) {
 		f_trig = INDEX_TO_TRIGGER(i);
-		if (f_trig->state & RV_DBTR_BIT(TS, MAPPED))
+		if (f_trig->state & RV_DBTR_BIT_MASK(TS, MAPPED))
 			continue;
 		hart_state->available_trigs--;
 		break;
