@@ -657,6 +657,7 @@ const struct sbi_hart_ext_data sbi_hart_ext[] = {
 	__SBI_HART_EXT_DATA(zicboz, SBI_HART_EXT_ZICBOZ),
 	__SBI_HART_EXT_DATA(zicbom, SBI_HART_EXT_ZICBOM),
 	__SBI_HART_EXT_DATA(svpbmt, SBI_HART_EXT_SVPBMT),
+	__SBI_HART_EXT_DATA(sdtrig, SBI_HART_EXT_SDTRIG),
 };
 
 /**
@@ -898,6 +899,9 @@ __pmp_skip:
 	/* Detect if hart supports smcntrpmf */
 	__check_ext_csr(SBI_HART_PRIV_VER_1_12,
 			CSR_MCYCLECFG, SBI_HART_EXT_SMCNTRPMF);
+	/* Detect if hart support sdtrig (debug triggers) */
+	__check_ext_csr(SBI_HART_PRIV_VER_UNKNOWN,
+			CSR_TSELECT, SBI_HART_EXT_SDTRIG);
 
 #undef __check_ext_csr
 

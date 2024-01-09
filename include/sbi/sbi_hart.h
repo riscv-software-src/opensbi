@@ -53,6 +53,8 @@ enum sbi_hart_extensions {
 	SBI_HART_EXT_ZICBOM,
 	/** Hart has Svpbmt extension */
 	SBI_HART_EXT_SVPBMT,
+	/** Hart has debug trigger extension */
+	SBI_HART_EXT_SDTRIG,
 
 	/** Maximum index of Hart extension */
 	SBI_HART_EXT_MAX,
