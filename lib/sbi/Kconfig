@@ -46,4 +46,8 @@ config SBI_ECALL_VENDOR
 	bool "Platform-defined vendor extensions"
 	default y
 
+config SBI_ECALL_DBTR
+	bool "Debug Trigger Extension"
+	default y
+
 endmenu
