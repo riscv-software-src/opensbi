@@ -74,8 +74,6 @@ _try_lottery:
 	REG_L	t0, 0(t0)
 	/* t1 shall has the address of _fw_start */
 	sub	t2, t1, t0
-	lla	t3, _runtime_offset
-	REG_S	t2, (t3)
 	lla	t0, __rel_dyn_start
 	lla	t1, __rel_dyn_end
 	beq	t0, t1, _relocate_done
@@ -500,10 +498,6 @@ _skip_trap_exit_rv32_hyp:
 
 	.data
 	.align 3
-#ifdef FW_PIC
-_runtime_offset:
-	RISCV_PTR	0
-#endif
 _relocate_lottery:
 	RISCV_PTR	0
 _boot_status:
