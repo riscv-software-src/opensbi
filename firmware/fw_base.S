@@ -358,7 +358,7 @@ _scratch_init:
 	/* t0 = source FDT start address */
 	add	t0, a1, zero
 	/* t2 = source FDT size in big-endian */
-#if __riscv_xlen == 64
+#if __riscv_xlen > 32
 	lwu	t2, 4(t0)
 #else
 	lw	t2, 4(t0)
@@ -424,7 +424,7 @@ _start_warm:
 
 	/* Find HART count and HART stack size */
 	lla	a4, platform
-#if __riscv_xlen == 64
+#if __riscv_xlen > 32
 	lwu	s7, SBI_PLATFORM_HART_COUNT_OFFSET(a4)
 	lwu	s8, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(a4)
 #else
@@ -440,7 +440,7 @@ _start_warm:
 	beqz	s9, 3f
 	li	a4, 0
 1:
-#if __riscv_xlen == 64
+#if __riscv_xlen > 32
 	lwu	a5, (s9)
 #else
 	lw	a5, (s9)
@@ -527,7 +527,7 @@ _hartid_to_scratch:
 	 * t2 -> Temporary
 	 */
 	lla	t2, platform
-#if __riscv_xlen == 64
+#if __riscv_xlen > 32
 	lwu	t0, SBI_PLATFORM_HART_STACK_SIZE_OFFSET(t2)
 	lwu	t2, SBI_PLATFORM_HART_COUNT_OFFSET(t2)
 #else
