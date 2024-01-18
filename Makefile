@@ -170,6 +170,9 @@ OPENSBI_LD_PIE := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) $(USE_LD_FLAG) -fP
 # Check whether the compiler supports -m(no-)save-restore
 CC_SUPPORT_SAVE_RESTORE := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) -nostdlib -mno-save-restore -x c /dev/null -o /dev/null 2>&1 | grep -e "-save-restore" >/dev/null && echo n || echo y)
 
+# Check whether the compiler supports -m(no-)strict-align
+CC_SUPPORT_STRICT_ALIGN := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) -nostdlib -mstrict-align -x c /dev/null -o /dev/null 2>&1 | grep -e "-mstrict-align\|-mno-unaligned-access" >/dev/null && echo n || echo y)
+
 # Check whether the assembler and the compiler support the Zicsr and Zifencei extensions
 CC_SUPPORT_ZICSR_ZIFENCEI := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) -nostdlib -march=rv$(OPENSBI_CC_XLEN)imafd_zicsr_zifencei -x c /dev/null -o /dev/null 2>&1 | grep "zicsr\|zifencei" > /dev/null && echo n || echo y)
 
@@ -337,10 +340,13 @@ CFLAGS		+=	-O0
 else
 CFLAGS		+=	-O2
 endif
-CFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls -mstrict-align
-# enable -m(no-)save-restore option by CC_SUPPORT_SAVE_RESTORE
+CFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
+# Optionally supported flags
 ifeq ($(CC_SUPPORT_SAVE_RESTORE),y)
 CFLAGS		+=	-mno-save-restore
+endif
+ifeq ($(CC_SUPPORT_STRICT_ALIGN),y)
+CFLAGS		+=	-mstrict-align
 endif
 CFLAGS		+=	-mabi=$(PLATFORM_RISCV_ABI) -march=$(PLATFORM_RISCV_ISA)
 CFLAGS		+=	-mcmodel=$(PLATFORM_RISCV_CODE_MODEL)
@@ -355,10 +361,13 @@ CPPFLAGS	+=	$(platform-cppflags-y)
 CPPFLAGS	+=	$(firmware-cppflags-y)
 
 ASFLAGS		=	-g -Wall -nostdlib
-ASFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls -mstrict-align
-# enable -m(no-)save-restore option by CC_SUPPORT_SAVE_RESTORE
+ASFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
+# Optionally supported flags
 ifeq ($(CC_SUPPORT_SAVE_RESTORE),y)
 ASFLAGS		+=	-mno-save-restore
+endif
+ifeq ($(CC_SUPPORT_STRICT_ALIGN),y)
+ASFLAGS		+=	-mstrict-align
 endif
 ASFLAGS		+=	-mabi=$(PLATFORM_RISCV_ABI) -march=$(PLATFORM_RISCV_ISA)
 ASFLAGS		+=	-mcmodel=$(PLATFORM_RISCV_CODE_MODEL)
