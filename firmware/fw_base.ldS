@@ -38,6 +38,11 @@
 		. = ALIGN(8);
 	}
 
+	.dynsym :
+	{
+		*(.dynsym)
+	}
+
 	. = ALIGN(0x1000); /* Ensure next section is page aligned */
 
 	.rela.dyn : {
