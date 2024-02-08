@@ -316,7 +316,7 @@ static int generic_domains_init(void)
 
 	if (offset >= 0) {
 		offset = fdt_node_offset_by_compatible(fdt, offset,
-						       "opensbi,domain,config");
+						       "opensbi,config");
 		if (offset >= 0 &&
 		    fdt_get_property(fdt, offset, "system-suspend-test", NULL))
 			sbi_system_suspend_test_enable();
