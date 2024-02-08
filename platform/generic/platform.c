@@ -73,6 +73,61 @@ extern struct sbi_platform platform;
 static bool platform_has_mlevel_imsic = false;
 static u32 generic_hart_index2id[SBI_HARTMASK_MAX_BITS] = { 0 };
 
+static DECLARE_BITMAP(generic_coldboot_harts, SBI_HARTMASK_MAX_BITS);
+
+/*
+ * The fw_platform_coldboot_harts_init() function is called by fw_platform_init() 
+ * function to initialize the cold boot harts allowed by the generic platform
+ * according to the DT property "cold-boot-harts" in "/chosen/opensbi-config" 
+ * DT node. If there is no "cold-boot-harts" in DT, all harts will be allowed.
+ */
+static void fw_platform_coldboot_harts_init(void *fdt)
+{
+	int chosen_offset, config_offset, cpu_offset, len, err;
+	u32 val32;
+	const u32 *val;
+
+	bitmap_zero(generic_coldboot_harts, SBI_HARTMASK_MAX_BITS);
+
+	chosen_offset = fdt_path_offset(fdt, "/chosen");
+	if (chosen_offset < 0)
+		goto default_config;
+
+	config_offset = fdt_node_offset_by_compatible(fdt, chosen_offset, "opensbi,config");
+	if (config_offset < 0)
+		goto default_config;
+
+	val = fdt_getprop(fdt, config_offset, "cold-boot-harts", &len);
+	len = len / sizeof(u32);
+	if (val && len) {
+		for (int i = 0; i < len; i++) {
+			cpu_offset = fdt_node_offset_by_phandle(fdt,
+							fdt32_to_cpu(val[i]));
+			if (cpu_offset < 0)
+				goto default_config;
+
+			err = fdt_parse_hart_id(fdt, cpu_offset, &val32);
+			if (err)
+				goto default_config;
+
+			if (!fdt_node_is_enabled(fdt, cpu_offset))
+				continue;
+
+			for (int i = 0; i < platform.hart_count; i++) {
+				if (val32 == generic_hart_index2id[i])
+					bitmap_set(generic_coldboot_harts, i, 1);
+			}
+
+		}
+	}
+
+	return;
+
+default_config:
+	bitmap_fill(generic_coldboot_harts, SBI_HARTMASK_MAX_BITS);
+	return;
+}
+
 /*
  * The fw_platform_init() function is called very early on the boot HART
  * OpenSBI reference firmwares so that platform specific code get chance
@@ -133,6 +188,8 @@ unsigned long fw_platform_init(unsigned long arg0, unsigned long arg1,
 	platform.heap_size = fw_platform_calculate_heap_size(hart_count);
 	platform_has_mlevel_imsic = fdt_check_imsic_mlevel(fdt);
 
+	fw_platform_coldboot_harts_init(fdt);
+
 	/* Return original FDT pointer */
 	return arg1;
 
@@ -146,7 +203,13 @@ static bool generic_cold_boot_allowed(u32 hartid)
 	if (generic_plat && generic_plat->cold_boot_allowed)
 		return generic_plat->cold_boot_allowed(
 						hartid, generic_plat_match);
-	return true;
+
+	for (int i = 0; i < platform.hart_count; i++) {
+		if (hartid == generic_hart_index2id[i])
+			return bitmap_test(generic_coldboot_harts, i);
+	}
+
+	return false;
 }
 
 static int generic_nascent_init(void)

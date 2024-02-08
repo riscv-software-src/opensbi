@@ -385,6 +385,21 @@ int fdt_reserved_memory_fixup(void *fdt)
 	return 0;
 }
 
+void fdt_config_fixup(void *fdt)
+{
+	int chosen_offset, config_offset;
+
+	chosen_offset = fdt_path_offset(fdt, "/chosen");
+	if (chosen_offset < 0)
+		return;
+
+	config_offset = fdt_node_offset_by_compatible(fdt, chosen_offset, "opensbi,config");
+	if (chosen_offset < 0)
+		return;
+
+	fdt_nop_node(fdt, config_offset);
+}
+
 void fdt_fixups(void *fdt)
 {
 	fdt_aplic_fixup(fdt);
@@ -398,4 +413,6 @@ void fdt_fixups(void *fdt)
 #ifndef CONFIG_FDT_FIXUPS_PRESERVE_PMU_NODE
 	fdt_pmu_fixup(fdt);
 #endif
+
+	fdt_config_fixup(fdt);
 }

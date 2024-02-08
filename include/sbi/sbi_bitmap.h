@@ -62,6 +62,11 @@ static inline void bitmap_zero(unsigned long *dst, int nbits)
 	}
 }
 
+static inline int bitmap_test(unsigned long *bmap, int bit)
+{
+	return __test_bit(bit, bmap);
+}
+
 static inline void bitmap_zero_except(unsigned long *dst,
 				      int exception, int nbits)
 {
