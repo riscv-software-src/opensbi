@@ -126,9 +126,6 @@ The DT properties of a domain configuration DT node are as follows:
 * **compatible** (Mandatory) - The compatible string of the domain
   configuration. This DT property should have value *"opensbi,domain,config"*
 
-* **system-suspend-test** (Optional) - When present, enable a system
-  suspend test implementation which simply waits five seconds and issues a WFI.
-
 ### Domain Memory Region Node
 
 The domain memory region DT node describes details of a memory region and
@@ -237,7 +234,6 @@ be done:
     chosen {
         opensbi-domains {
             compatible = "opensbi,domain,config";
-            system-suspend-test;
 
             tmem: tmem {
                 compatible = "opensbi,domain,memregion";
