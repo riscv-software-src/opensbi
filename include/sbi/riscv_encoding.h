@@ -209,6 +209,7 @@
 
 #define ENVCFG_STCE			(_ULL(1) << 63)
 #define ENVCFG_PBMTE			(_ULL(1) << 62)
+#define ENVCFG_CDE			(_ULL(1) << 60)
 #define ENVCFG_CBZE			(_UL(1) << 7)
 #define ENVCFG_CBCFE			(_UL(1) << 6)
 #define ENVCFG_CBIE_SHIFT		4
@@ -314,6 +315,9 @@
 /* Supervisor Configuration */
 #define CSR_SENVCFG			0x10a
 
+/* Supervisor Conter Inhibit */
+#define CSR_SCOUNTINHIBIT		0x120
+
 /* Supervisor Trap Handling */
 #define CSR_SSCRATCH			0x140
 #define CSR_SEPC			0x141
@@ -328,9 +332,14 @@
 /* Supervisor Protection and Translation */
 #define CSR_SATP			0x180
 
-/* Supervisor-Level Window to Indirectly Accessed Registers (AIA) */
+/* Supervisor Indirect Register Alias */
 #define CSR_SISELECT			0x150
 #define CSR_SIREG			0x151
+#define CSR_SIREG2          		0x152
+#define CSR_SIREG3          		0x153
+#define CSR_SIREG4          		0x155
+#define CSR_SIREG5          		0x156
+#define CSR_SIREG6          		0x157
 
 /* Supervisor-Level Interrupts (AIA) */
 #define CSR_STOPEI			0x15c
@@ -391,9 +400,14 @@
 #define CSR_HVIPRIO1			0x646
 #define CSR_HVIPRIO2			0x647
 
-/* VS-Level Window to Indirectly Accessed Registers (H-extension with AIA) */
+/* Virtual Supervisor Indirect Alias */
 #define CSR_VSISELECT			0x250
 #define CSR_VSIREG			0x251
+#define CSR_VSIREG2         		0x252
+#define CSR_VSIREG3         		0x253
+#define CSR_VSIREG4         		0x255
+#define CSR_VSIREG5         		0x256
+#define CSR_VSIREG6         		0x257
 
 /* VS-Level Interrupts (H-extension with AIA) */
 #define CSR_VSTOPEI			0x25c
@@ -694,9 +708,14 @@
 #define CSR_DSCRATCH0			0x7b2
 #define CSR_DSCRATCH1			0x7b3
 
-/* Machine-Level Window to Indirectly Accessed Registers (AIA) */
+/* Machine Indirect Register Alias */
 #define CSR_MISELECT			0x350
 #define CSR_MIREG			0x351
+#define CSR_MIREG2          		0x352
+#define CSR_MIREG3          		0x353
+#define CSR_MIREG4          		0x355
+#define CSR_MIREG5          		0x356
+#define CSR_MIREG6          		0x357
 
 /* Machine-Level Interrupts (AIA) */
 #define CSR_MTOPEI			0x35c

@@ -95,11 +95,16 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		mstateen_val |= SMSTATEEN0_HSENVCFG;
 
 		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SMAIA))
-			mstateen_val |= (SMSTATEEN0_AIA | SMSTATEEN0_SVSLCT |
-					SMSTATEEN0_IMSIC);
+			mstateen_val |= (SMSTATEEN0_AIA | SMSTATEEN0_IMSIC);
 		else
-			mstateen_val &= ~(SMSTATEEN0_AIA | SMSTATEEN0_SVSLCT |
-					SMSTATEEN0_IMSIC);
+			mstateen_val &= ~(SMSTATEEN0_AIA | SMSTATEEN0_IMSIC);
+
+		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SMAIA) ||
+		    sbi_hart_has_extension(scratch, SBI_HART_EXT_SMCSRIND))
+			mstateen_val |= (SMSTATEEN0_SVSLCT);
+		else
+			mstateen_val &= ~(SMSTATEEN0_SVSLCT);
+
 		csr_write(CSR_MSTATEEN0, mstateen_val);
 #if __riscv_xlen == 32
 		csr_write(CSR_MSTATEEN0H, mstateen_val >> 32);
@@ -129,6 +134,7 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		__set_menvcfg_ext(SBI_HART_EXT_SVPBMT, ENVCFG_PBMTE)
 #endif
 		__set_menvcfg_ext(SBI_HART_EXT_SSTC, ENVCFG_STCE)
+		__set_menvcfg_ext(SBI_HART_EXT_SMCDELEG, ENVCFG_CDE);
 
 #undef __set_menvcfg_ext
 
@@ -658,6 +664,8 @@ const struct sbi_hart_ext_data sbi_hart_ext[] = {
 	__SBI_HART_EXT_DATA(zicbom, SBI_HART_EXT_ZICBOM),
 	__SBI_HART_EXT_DATA(svpbmt, SBI_HART_EXT_SVPBMT),
 	__SBI_HART_EXT_DATA(sdtrig, SBI_HART_EXT_SDTRIG),
+	__SBI_HART_EXT_DATA(smcsrind, SBI_HART_EXT_SMCSRIND),
+	__SBI_HART_EXT_DATA(smcdeleg, SBI_HART_EXT_SMCDELEG),
 };
 
 /**
