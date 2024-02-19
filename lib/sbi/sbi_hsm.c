@@ -360,6 +360,10 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 
 	if (!rc)
 		return 0;
+
+	/* If it fails to start, change hart state back to stop */
+	__sbi_hsm_hart_change_state(hdata, SBI_HSM_STATE_START_PENDING,
+				    SBI_HSM_STATE_STOPPED);
 err:
 	hsm_start_ticket_release(hdata);
 	return rc;
