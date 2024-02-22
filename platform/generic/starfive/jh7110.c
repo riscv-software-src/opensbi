@@ -239,6 +239,8 @@ static int starfive_jh7110_inst_init(void *fdt)
 		if (rc)
 			goto err;
 		jh7110_inst.pmu_reg_base = addr;
+	} else {
+		return -SBI_ENODEV;
 	}
 
 	noff = fdt_node_offset_by_compatible(fdt, -1, "starfive,jh7110-syscrg");
@@ -247,6 +249,8 @@ static int starfive_jh7110_inst_init(void *fdt)
 		if (rc)
 			goto err;
 		jh7110_inst.clk_reg_base = addr;
+	} else {
+		return -SBI_ENODEV;
 	}
 
 	if (pmic_inst.adapter) {
