@@ -6,7 +6,6 @@
  */
 
 #include <andes/andes45.h>
-#include <andes/andes_hpm.h>
 #include <andes/andes_pmu.h>
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_error.h>
@@ -86,20 +85,9 @@ int andes_pmu_extensions_init(const struct fdt_match *match,
 int andes_pmu_init(const struct fdt_match *match)
 {
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
-	void *fdt = fdt_get_address();
-	int pmu_offset;
 
 	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_XANDESPMU))
 		sbi_pmu_set_device(&andes_pmu);
-
-	/*
-	 * Populate default mappings if device-tree doesn't
-	 * provide a valid pmu node.
-	 */
-	pmu_offset = fdt_node_offset_by_compatible(fdt, -1, "riscv,pmu");
-	if (pmu_offset < 0)
-		return (pmu_offset == -FDT_ERR_NOTFOUND) ? andes_pmu_setup()
-							 : SBI_EFAIL;
 
 	return 0;
 }
