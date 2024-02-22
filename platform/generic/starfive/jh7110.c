@@ -186,6 +186,8 @@ static struct sbi_system_reset_device pm_reset = {
 	.system_reset = pm_system_reset
 };
 
+static int starfive_jh7110_inst_init(void *fdt);
+
 static int pm_reset_init(void *fdt, int nodeoff,
 			 const struct fdt_match *match)
 {
@@ -210,6 +212,10 @@ static int pm_reset_init(void *fdt, int nodeoff,
 		return rc;
 
 	pmic_inst.adapter = adapter;
+
+	rc = starfive_jh7110_inst_init(fdt);
+	if (rc)
+		return rc;
 
 	sbi_system_reset_add_device(&pm_reset);
 
@@ -278,7 +284,6 @@ static int starfive_jh7110_final_init(bool cold_boot,
 
 	if (cold_boot) {
 		fdt_reset_driver_init(fdt, &fdt_reset_pmic);
-		return starfive_jh7110_inst_init(fdt);
 	}
 
 	return 0;
