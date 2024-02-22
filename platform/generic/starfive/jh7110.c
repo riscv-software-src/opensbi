@@ -252,7 +252,7 @@ static int starfive_jh7110_inst_init(void *fdt)
 		jh7110_inst.pmu_reg_base = addr;
 	}
 
-	noff = fdt_node_offset_by_compatible(fdt, -1, "starfive,jh7110-clkgen");
+	noff = fdt_node_offset_by_compatible(fdt, -1, "starfive,jh7110-syscrg");
 	if (-1 < noff) {
 		rc = fdt_get_node_addr_size(fdt, noff, 0, &addr, NULL);
 		if (rc)
