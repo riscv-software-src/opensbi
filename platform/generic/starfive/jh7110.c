@@ -29,7 +29,7 @@ struct pmic {
 struct jh7110 {
 	u64 pmu_reg_base;
 	u64 clk_reg_base;
-	u32 i2c_index;
+	u32 i2c_clk_offset;
 };
 
 static struct pmic pmic_inst;
@@ -67,7 +67,6 @@ static u32 selected_hartid = -1;
 #define AXP15060_POWER_OFF_BIT		BIT(7)
 #define AXP15060_RESET_BIT		BIT(6)
 
-#define I2C_APB_CLK_OFFSET		0x228
 #define I2C_APB_CLK_ENABLE_BIT		BIT(31)
 
 static int pm_system_reset_check(u32 type, u32 reason)
@@ -163,10 +162,7 @@ static void pmic_i2c_clk_enable(void)
 	unsigned long clock_base;
 	unsigned int val;
 
-	clock_base = jh7110_inst.clk_reg_base +
-		I2C_APB_CLK_OFFSET +
-		(jh7110_inst.i2c_index << 2);
-
+	clock_base = jh7110_inst.clk_reg_base + jh7110_inst.i2c_clk_offset;
 	val = readl((void *)clock_base);
 
 	if (!val)
@@ -241,7 +237,8 @@ static struct fdt_reset fdt_reset_pmic = {
 static int starfive_jh7110_inst_init(void *fdt)
 {
 	int noff, rc = 0;
-	const char *name;
+	const fdt32_t *val;
+	int len;
 	u64 addr;
 
 	noff = fdt_node_offset_by_compatible(fdt, -1, "starfive,jh7110-pmu");
@@ -261,9 +258,16 @@ static int starfive_jh7110_inst_init(void *fdt)
 	}
 
 	if (pmic_inst.adapter) {
-		name = fdt_get_name(fdt, pmic_inst.adapter->id, NULL);
-		if (!sbi_strncmp(name, "i2c", 3))
-			jh7110_inst.i2c_index = name[3] - '0';
+		/*
+		 * The clocks property looks like this:
+		 *    clocks = <&syscrg JH7110_SYSCLK_I2C5_APB>;
+		 *
+		 * So, check that the length is 8 bytes, and get
+		 * the offset from the second value.
+		 */
+		val = fdt_getprop(fdt, pmic_inst.adapter->id, "clocks", &len);
+		if (val && len == 8)
+			jh7110_inst.i2c_clk_offset = fdt32_to_cpu(val[1]) << 2;
 		else
 			rc = SBI_EINVAL;
 	}
