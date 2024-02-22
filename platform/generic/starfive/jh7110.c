@@ -23,7 +23,6 @@
 struct pmic {
 	struct i2c_adapter *adapter;
 	u32 dev_addr;
-	const char *compatible;
 };
 
 struct jh7110 {
@@ -129,32 +128,26 @@ static void pmic_ops(struct pmic *pmic, int type)
 	u8 val;
 
 	ret = shutdown_device_power_domain();
-
 	if (ret)
 		return;
 
-	if (!sbi_strcmp("stf,axp15060-regulator", pmic->compatible)) {
-		ret = i2c_adapter_reg_read(pmic->adapter, pmic->dev_addr,
-					   AXP15060_POWER_REG, &val);
-
-		if (ret) {
-			sbi_printf("%s: cannot read pmic power register\n",
-				   __func__);
-			return;
-		}
-
-		val |= AXP15060_POWER_OFF_BIT;
-		if (type == SBI_SRST_RESET_TYPE_SHUTDOWN)
-			val |= AXP15060_POWER_OFF_BIT;
-		else
-			val |= AXP15060_RESET_BIT;
-
-		ret = i2c_adapter_reg_write(pmic->adapter, pmic->dev_addr,
-					    AXP15060_POWER_REG, val);
-		if (ret)
-			sbi_printf("%s: cannot write pmic power register\n",
-				   __func__);
+	ret = i2c_adapter_reg_read(pmic->adapter, pmic->dev_addr,
+				   AXP15060_POWER_REG, &val);
+	if (ret) {
+		sbi_printf("%s: cannot read pmic power register\n", __func__);
+		return;
 	}
+
+	val |= AXP15060_POWER_OFF_BIT;
+	if (type == SBI_SRST_RESET_TYPE_SHUTDOWN)
+		val |= AXP15060_POWER_OFF_BIT;
+	else
+		val |= AXP15060_RESET_BIT;
+
+	ret = i2c_adapter_reg_write(pmic->adapter, pmic->dev_addr,
+					AXP15060_POWER_REG, val);
+	if (ret)
+		sbi_printf("%s: cannot write pmic power register\n", __func__);
 }
 
 static void pmic_i2c_clk_enable(void)
@@ -206,7 +199,6 @@ static int pm_reset_init(void *fdt, int nodeoff,
 		return rc;
 
 	pmic_inst.dev_addr = addr;
-	pmic_inst.compatible = match->compatible;
 
 	i2c_bus = fdt_parent_offset(fdt, nodeoff);
 	if (i2c_bus < 0)
