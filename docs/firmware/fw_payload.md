@@ -62,6 +62,11 @@ file. The parameters currently defined are as follows:
   firmware will pass the FDT address passed by the previous booting stage
   to the next booting stage.
 
+* **FW_PAYLOAD_FDT_OFFSET** - Address offset from the *FW_TEXT_START* where
+  the FDT will be passed to the next booting stage. This offset is used as
+  relocatable address of the FDT passed to the next booting stage. If
+  *FW_PAYLOAD_FDT_ADDR* is also defined, the firmware will prefer *FW_PAYLOAD_FDT_ADDR*.
+
 *FW_PAYLOAD* Example
 --------------------
 
