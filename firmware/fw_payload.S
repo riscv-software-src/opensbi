@@ -46,6 +46,10 @@ fw_save_info:
 fw_next_arg1:
 #ifdef FW_PAYLOAD_FDT_ADDR
 	li	a0, FW_PAYLOAD_FDT_ADDR
+#elif defined(FW_PAYLOAD_FDT_OFFSET)
+	lla	a0, _fw_start
+	li	a1, FW_PAYLOAD_FDT_OFFSET
+	add	a0, a0, a1
 #else
 	add	a0, a1, zero
 #endif
