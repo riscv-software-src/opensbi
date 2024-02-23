@@ -63,6 +63,17 @@ FW_JUMP=<y|n>
 # This needs to be 4MB aligned for 32-bit support
 # This needs to be 2MB aligned for 64-bit support
 # ifeq ($(PLATFORM_RISCV_XLEN), 32)
+# FW_JUMP_OFFSET=0x400000
+# else
+# FW_JUMP_OFFSET=0x200000
+# endif
+# FW_JUMP_FDT_OFFSET=0x2200000
+#
+# You can use fixed address for jump firmware as an alternative option,
+# but this may fail when setting wrong FW_TEXT_START. Use with caution.
+# SBI will prefer "<X>_ADDR" if both "<X>_ADDR" and "<X>_OFFSET" are
+# defined
+# ifeq ($(PLATFORM_RISCV_XLEN), 32)
 # FW_JUMP_ADDR=0x80400000
 # else
 # FW_JUMP_ADDR=0x80200000
@@ -84,4 +95,10 @@ FW_PAYLOAD_OFFSET=0x200000
 endif
 # FW_PAYLOAD_ALIGN=0x1000
 # FW_PAYLOAD_PATH="path to next boot stage binary image file"
+# FW_PAYLOAD_FDT_OFFSET=0x2200000
+#
+# You can use fixed address for payload firmware as an alternative option,
+# but this may fail when setting wrong FW_TEXT_START. Use with caution.
+# SBI will prefer "FW_PAYLOAD_FDT_ADDR" if both "FW_PAYLOAD_FDT_OFFSET"
+# and "FW_PAYLOAD_FDT_ADDR" are defined.
 # FW_PAYLOAD_FDT_ADDR=0x82200000
