@@ -38,8 +38,14 @@ endif
 firmware-bins-$(FW_DYNAMIC) += fw_dynamic.bin
 
 firmware-bins-$(FW_JUMP) += fw_jump.bin
+ifdef FW_JUMP_OFFSET
+firmware-genflags-$(FW_JUMP) += -DFW_JUMP_OFFSET=$(FW_JUMP_OFFSET)
+endif
 ifdef FW_JUMP_ADDR
 firmware-genflags-$(FW_JUMP) += -DFW_JUMP_ADDR=$(FW_JUMP_ADDR)
+endif
+ifdef FW_JUMP_FDT_OFFSET
+firmware-genflags-$(FW_JUMP) += -DFW_JUMP_FDT_OFFSET=$(FW_JUMP_FDT_OFFSET)
 endif
 ifdef FW_JUMP_FDT_ADDR
 firmware-genflags-$(FW_JUMP) += -DFW_JUMP_FDT_ADDR=$(FW_JUMP_FDT_ADDR)
