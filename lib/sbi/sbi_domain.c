@@ -749,7 +749,7 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 		return SBI_EINVAL;
 	}
 
-	if ((scratch->fw_start & (scratch->fw_rw_offset - 1)) != 0) {
+	if ((scratch->fw_start & ((scratch->fw_rw_offset >> 2) - 1)) != 0) {
 		sbi_printf("%s: fw_start and fw_rw_offset not aligned\n",
 			   __func__);
 		return SBI_EINVAL;
