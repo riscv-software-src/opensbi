@@ -123,6 +123,13 @@ int sbi_misaligned_load_handler(ulong addr, ulong tval2, ulong tinst,
 		len = 4;
 #endif
 #endif
+	} else if ((insn & INSN_MASK_C_LHU) == INSN_MATCH_C_LHU) {
+		len = 2;
+		insn = RVC_RS2S(insn) << SH_RD;
+	} else if ((insn & INSN_MASK_C_LH) == INSN_MATCH_C_LH) {
+		len = 2;
+		shift = 8 * (sizeof(ulong) - len);
+		insn = RVC_RS2S(insn) << SH_RD;
 	} else {
 		uptrap.epc = regs->mepc;
 		uptrap.cause = CAUSE_MISALIGNED_LOAD;
@@ -237,6 +244,9 @@ int sbi_misaligned_store_handler(ulong addr, ulong tval2, ulong tinst,
 		val.data_ulong = GET_F32_RS2C(insn, regs);
 #endif
 #endif
+	} else if ((insn & INSN_MASK_C_SH) == INSN_MATCH_C_SH) {
+		len		= 2;
+		val.data_ulong = GET_RS2S(insn, regs);
 	} else {
 		uptrap.epc = regs->mepc;
 		uptrap.cause = CAUSE_MISALIGNED_STORE;

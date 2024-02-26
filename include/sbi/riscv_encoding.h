@@ -856,6 +856,13 @@
 #define INSN_MATCH_C_FSWSP		0xe002
 #define INSN_MASK_C_FSWSP		0xe003
 
+#define INSN_MATCH_C_LHU		0x8400
+#define INSN_MASK_C_LHU		0xfc43
+#define INSN_MATCH_C_LH		0x8440
+#define INSN_MASK_C_LH			0xfc43
+#define INSN_MATCH_C_SH		0x8c00
+#define INSN_MASK_C_SH			0xfc43
+
 #define INSN_MASK_WFI			0xffffff00
 #define INSN_MATCH_WFI			0x10500000
 
