@@ -50,4 +50,8 @@ config SBI_ECALL_DBTR
 	bool "Debug Trigger Extension"
 	default y
 
+config SBIUNIT
+	bool "Enable SBIUNIT tests"
+	default n
+
 endmenu

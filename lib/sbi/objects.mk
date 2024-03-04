@@ -11,6 +11,8 @@ libsbi-objs-y += riscv_asm.o
 libsbi-objs-y += riscv_atomic.o
 libsbi-objs-y += riscv_hardfp.o
 libsbi-objs-y += riscv_locks.o
+libsbi-objs-$(CONFIG_SBIUNIT) += sbi_unit_test.o
+libsbi-objs-$(CONFIG_SBIUNIT) += sbi_unit_tests.o
 
 libsbi-objs-y += sbi_ecall.o
 libsbi-objs-y += sbi_ecall_exts.o
