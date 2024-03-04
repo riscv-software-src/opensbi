@@ -63,17 +63,11 @@ _try_lottery:
 	amoadd.w a6, a7, (a6)
 	bnez	a6, _wait_relocate_copy_done
 
-	/* Save load address */
-	lla	t0, _load_start
-	lla	t1, _fw_start
-	REG_S	t1, 0(t0)
-
 #ifdef FW_PIC
 	/* relocate the global table content */
-	lla	t0, _link_start
-	REG_L	t0, 0(t0)
-	/* t1 shall has the address of _fw_start */
-	sub	t2, t1, t0
+	li	t0, FW_TEXT_START	/* link start */
+	lla	t1, _fw_start		/* load start */
+	sub	t2, t1, t0		/* load offset */
 	lla	t0, __rel_dyn_start
 	lla	t1, __rel_dyn_end
 	beq	t0, t1, _relocate_done
@@ -96,18 +90,14 @@ _wait_relocate_copy_done:
 #else
 	/* Relocate if load address != link address */
 _relocate:
-	lla	t0, _link_start
-	REG_L	t0, 0(t0)
-	lla	t1, _link_end
-	REG_L	t1, 0(t1)
-	lla	t2, _load_start
-	REG_L	t2, 0(t2)
+	li	t0, FW_TEXT_START	/* link start */
+	lla	t2, _fw_start		/* load start */
+	lla	t3, _fw_reloc_end	/* load end */
+	sub	t6, t2, t0		/* load offset */
+	sub	t1, t3, t6		/* link end */
 	beq	t0, t2, _relocate_done
-	sub	t3, t1, t0
-	add	t3, t3, t2
 	lla	t4, _relocate_done
-	sub	t4, t4, t2
-	add	t4, t4, t0
+	sub	t4, t4, t6
 	blt	t2, t0, _relocate_copy_to_upper
 _relocate_copy_to_lower:
 	ble	t1, t2, _relocate_copy_to_lower_loop
@@ -147,8 +137,7 @@ _relocate_copy_to_upper_loop:
 	jr	t4
 _wait_relocate_copy_done:
 	lla	t0, _fw_start
-	lla	t1, _link_start
-	REG_L	t1, 0(t1)
+	li	t1, FW_TEXT_START
 	beq	t0, t1, _wait_for_boot_hart
 	lla	t2, _boot_status
 	lla	t3, _wait_for_boot_hart
@@ -173,12 +162,7 @@ _relocate_done:
 	 */
 	lla	t0, _boot_status
 #ifndef FW_PIC
-	lla	t1, _link_start
-	REG_L	t1, 0(t1)
-	lla	t2, _load_start
-	REG_L	t2, 0(t2)
-	sub	t0, t0, t1
-	add	t0, t0, t2
+	add	t0, t0, t6
 #endif
 	li	t1, BOOT_STATUS_RELOCATE_DONE
 	REG_S	t1, 0(t0)
@@ -502,12 +486,6 @@ _relocate_lottery:
 	RISCV_PTR	0
 _boot_status:
 	RISCV_PTR	0
-_load_start:
-	RISCV_PTR	_fw_start
-_link_start:
-	RISCV_PTR	FW_TEXT_START
-_link_end:
-	RISCV_PTR	_fw_reloc_end
 
 	.section .entry, "ax", %progbits
 	.align 3
