@@ -167,7 +167,7 @@ _relocate_done:
 
 	/* At this point we are running from link address */
 
-	/* Reset all registers except ra, a0, a1 and a2 for boot HART */
+	/* Reset all registers except ra, a0, a1, a2, a3 and a4 for boot HART */
 	li	ra, 0
 	call	_reset_regs
 
@@ -394,7 +394,7 @@ _wait_for_boot_hart:
 	bne	t0, t1, _wait_for_boot_hart
 
 _start_warm:
-	/* Reset all registers except ra, a0, a1 and a2 for non-boot HARTs */
+	/* Reset all registers except ra, a0, a1, a2, a3 and a4 for non-boot HART */
 	li	ra, 0
 	call	_reset_regs
 
@@ -745,7 +745,7 @@ _reset_regs:
 
 	/* flush the instruction cache */
 	fence.i
-	/* Reset all registers except ra, a0, a1 and a2 */
+	/* Reset all registers except ra, a0, a1, a2, a3 and a4 */
 	li sp, 0
 	li gp, 0
 	li tp, 0
@@ -754,8 +754,6 @@ _reset_regs:
 	li t2, 0
 	li s0, 0
 	li s1, 0
-	li a3, 0
-	li a4, 0
 	li a5, 0
 	li a6, 0
 	li a7, 0
