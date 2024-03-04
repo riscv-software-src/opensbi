@@ -456,22 +456,14 @@ _start_warm:
 	srli	a5, a5, ('H' - 'A')
 	andi	a5, a5, 0x1
 	beq	a5, zero, _skip_trap_handler_rv32_hyp
+	/* Override trap exit for H-extension */
+	csrr	a5, CSR_MSCRATCH
+	lla	a4, _trap_exit_rv32_hyp
+	REG_S	a4, SBI_SCRATCH_TRAP_EXIT_OFFSET(a5)
 	lla	a4, _trap_handler_rv32_hyp
 _skip_trap_handler_rv32_hyp:
 #endif
 	csrw	CSR_MTVEC, a4
-
-#if __riscv_xlen == 32
-	/* Override trap exit for H-extension */
-	csrr	a5, CSR_MISA
-	srli	a5, a5, ('H' - 'A')
-	andi	a5, a5, 0x1
-	beq	a5, zero, _skip_trap_exit_rv32_hyp
-	lla	a4, _trap_exit_rv32_hyp
-	csrr	a5, CSR_MSCRATCH
-	REG_S	a4, SBI_SCRATCH_TRAP_EXIT_OFFSET(a5)
-_skip_trap_exit_rv32_hyp:
-#endif
 
 	/* Initialize SBI runtime */
 	csrr	a0, CSR_MSCRATCH
