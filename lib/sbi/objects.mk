@@ -16,6 +16,7 @@ libsbi-objs-$(CONFIG_SBIUNIT) += sbi_unit_tests.o
 
 libsbi-objs-$(CONFIG_SBIUNIT) += sbi_bitmap_test.o
 carray-sbi_unit_tests-$(CONFIG_SBIUNIT) += bitmap_test_suite
+carray-sbi_unit_tests-$(CONFIG_SBIUNIT) += console_test_suite
 
 libsbi-objs-y += sbi_ecall.o
 libsbi-objs-y += sbi_ecall_exts.o

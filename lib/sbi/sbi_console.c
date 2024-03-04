@@ -488,3 +488,7 @@ int sbi_console_init(struct sbi_scratch *scratch)
 
 	return rc;
 }
+
+#ifdef CONFIG_SBIUNIT
+#include "sbi_console_test.c"
+#endif
