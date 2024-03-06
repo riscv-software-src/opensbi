@@ -11,13 +11,14 @@
 #define __SBI_TRAP_LDST_H__
 
 #include <sbi/sbi_types.h>
+#include <sbi/sbi_trap.h>
 
 struct sbi_trap_regs;
 
-int sbi_misaligned_load_handler(ulong addr, ulong tval2, ulong tinst,
-				struct sbi_trap_regs *regs);
+int sbi_misaligned_load_handler(struct sbi_trap_regs *regs,
+				const struct sbi_trap_info *orig_trap);
 
-int sbi_misaligned_store_handler(ulong addr, ulong tval2, ulong tinst,
-				 struct sbi_trap_regs *regs);
+int sbi_misaligned_store_handler(struct sbi_trap_regs *regs,
+				 const struct sbi_trap_info *orig_trap);
 
 #endif

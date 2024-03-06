@@ -34,8 +34,8 @@ static ulong sbi_misaligned_tinst_fixup(ulong orig_tinst, ulong new_tinst,
 		return orig_tinst | (addr_offset << SH_RS1);
 }
 
-int sbi_misaligned_load_handler(ulong addr, ulong tval2, ulong tinst,
-				struct sbi_trap_regs *regs)
+int sbi_misaligned_load_handler(struct sbi_trap_regs *regs,
+				const struct sbi_trap_info *orig_trap)
 {
 	ulong insn, insn_len;
 	union reg_data val;
@@ -44,13 +44,13 @@ int sbi_misaligned_load_handler(ulong addr, ulong tval2, ulong tinst,
 
 	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_MISALIGNED_LOAD);
 
-	if (tinst & 0x1) {
+	if (orig_trap->tinst & 0x1) {
 		/*
 		 * Bit[0] == 1 implies trapped instruction value is
 		 * transformed instruction or custom instruction.
 		 */
-		insn = tinst | INSN_16BIT_MASK;
-		insn_len = (tinst & 0x2) ? INSN_LEN(insn) : 2;
+		insn	 = orig_trap->tinst | INSN_16BIT_MASK;
+		insn_len = (orig_trap->tinst & 0x2) ? INSN_LEN(insn) : 2;
 	} else {
 		/*
 		 * Bit[0] == 0 implies trapped instruction value is
@@ -131,23 +131,17 @@ int sbi_misaligned_load_handler(ulong addr, ulong tval2, ulong tinst,
 		shift = 8 * (sizeof(ulong) - len);
 		insn = RVC_RS2S(insn) << SH_RD;
 	} else {
-		uptrap.epc = regs->mepc;
-		uptrap.cause = CAUSE_MISALIGNED_LOAD;
-		uptrap.tval = addr;
-		uptrap.tval2 = tval2;
-		uptrap.tinst = tinst;
-		uptrap.gva   = sbi_regs_gva(regs);
-		return sbi_trap_redirect(regs, &uptrap);
+		return sbi_trap_redirect(regs, orig_trap);
 	}
 
 	val.data_u64 = 0;
 	for (i = 0; i < len; i++) {
-		val.data_bytes[i] = sbi_load_u8((void *)(addr + i),
-						&uptrap);
+		val.data_bytes[i] =
+			sbi_load_u8((void *)(orig_trap->tval + i), &uptrap);
 		if (uptrap.cause) {
-			uptrap.epc = regs->mepc;
+			uptrap.epc   = regs->mepc;
 			uptrap.tinst = sbi_misaligned_tinst_fixup(
-				tinst, uptrap.tinst, i);
+				orig_trap->tinst, uptrap.tinst, i);
 			return sbi_trap_redirect(regs, &uptrap);
 		}
 	}
@@ -166,8 +160,8 @@ int sbi_misaligned_load_handler(ulong addr, ulong tval2, ulong tinst,
 	return 0;
 }
 
-int sbi_misaligned_store_handler(ulong addr, ulong tval2, ulong tinst,
-				 struct sbi_trap_regs *regs)
+int sbi_misaligned_store_handler(struct sbi_trap_regs *regs,
+				 const struct sbi_trap_info *orig_trap)
 {
 	ulong insn, insn_len;
 	union reg_data val;
@@ -176,13 +170,13 @@ int sbi_misaligned_store_handler(ulong addr, ulong tval2, ulong tinst,
 
 	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_MISALIGNED_STORE);
 
-	if (tinst & 0x1) {
+	if (orig_trap->tinst & 0x1) {
 		/*
 		 * Bit[0] == 1 implies trapped instruction value is
 		 * transformed instruction or custom instruction.
 		 */
-		insn = tinst | INSN_16BIT_MASK;
-		insn_len = (tinst & 0x2) ? INSN_LEN(insn) : 2;
+		insn	 = orig_trap->tinst | INSN_16BIT_MASK;
+		insn_len = (orig_trap->tinst & 0x2) ? INSN_LEN(insn) : 2;
 	} else {
 		/*
 		 * Bit[0] == 0 implies trapped instruction value is
@@ -248,22 +242,16 @@ int sbi_misaligned_store_handler(ulong addr, ulong tval2, ulong tinst,
 		len		= 2;
 		val.data_ulong = GET_RS2S(insn, regs);
 	} else {
-		uptrap.epc = regs->mepc;
-		uptrap.cause = CAUSE_MISALIGNED_STORE;
-		uptrap.tval = addr;
-		uptrap.tval2 = tval2;
-		uptrap.tinst = tinst;
-		uptrap.gva   = sbi_regs_gva(regs);
-		return sbi_trap_redirect(regs, &uptrap);
+		return sbi_trap_redirect(regs, orig_trap);
 	}
 
 	for (i = 0; i < len; i++) {
-		sbi_store_u8((void *)(addr + i), val.data_bytes[i],
+		sbi_store_u8((void *)(orig_trap->tval + i), val.data_bytes[i],
 			     &uptrap);
 		if (uptrap.cause) {
-			uptrap.epc = regs->mepc;
+			uptrap.epc   = regs->mepc;
 			uptrap.tinst = sbi_misaligned_tinst_fixup(
-				tinst, uptrap.tinst, i);
+				orig_trap->tinst, uptrap.tinst, i);
 			return sbi_trap_redirect(regs, &uptrap);
 		}
 	}

@@ -285,6 +285,13 @@ struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs)
 		}
 		return regs;
 	}
+	/* Original trap_info */
+	trap.epc   = regs->mepc;
+	trap.cause = mcause;
+	trap.tval  = mtval;
+	trap.tval2 = mtval2;
+	trap.tinst = mtinst;
+	trap.gva   = sbi_regs_gva(regs);
 
 	switch (mcause) {
 	case CAUSE_ILLEGAL_INSTRUCTION:
@@ -292,11 +299,11 @@ struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs)
 		msg = "illegal instruction handler failed";
 		break;
 	case CAUSE_MISALIGNED_LOAD:
-		rc = sbi_misaligned_load_handler(mtval, mtval2, mtinst, regs);
+		rc  = sbi_misaligned_load_handler(regs, &trap);
 		msg = "misaligned load handler failed";
 		break;
 	case CAUSE_MISALIGNED_STORE:
-		rc  = sbi_misaligned_store_handler(mtval, mtval2, mtinst, regs);
+		rc  = sbi_misaligned_store_handler(regs, &trap);
 		msg = "misaligned store handler failed";
 		break;
 	case CAUSE_SUPERVISOR_ECALL:
@@ -311,14 +318,8 @@ struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs)
 		/* fallthrough */
 	default:
 		/* If the trap came from S or U mode, redirect it there */
-		trap.epc = regs->mepc;
-		trap.cause = mcause;
-		trap.tval = mtval;
-		trap.tval2 = mtval2;
-		trap.tinst = mtinst;
-		trap.gva   = sbi_regs_gva(regs);
-
-		rc = sbi_trap_redirect(regs, &trap);
+		msg = "trap redirect failed";
+		rc  = sbi_trap_redirect(regs, &trap);
 		break;
 	}
 
