@@ -51,7 +51,7 @@ struct sbi_domain *sbi_hartindex_to_domain(u32 hartindex)
 	return sbi_scratch_read_type(scratch, void *, domain_hart_ptr_offset);
 }
 
-static void update_hartindex_to_domain(u32 hartindex, struct sbi_domain *dom)
+void sbi_update_hartindex_to_domain(u32 hartindex, struct sbi_domain *dom)
 {
 	struct sbi_scratch *scratch;
 
@@ -567,7 +567,7 @@ int sbi_domain_register(struct sbi_domain *dom,
 		if (tdom)
 			sbi_hartmask_clear_hartindex(i,
 					&tdom->assigned_harts);
-		update_hartindex_to_domain(i, dom);
+		sbi_update_hartindex_to_domain(i, dom);
 		sbi_hartmask_set_hartindex(i, &dom->assigned_harts);
 
 		/*

@@ -41,6 +41,7 @@ has following details:
 * **name** - Name of this domain
 * **assigned_harts** - HARTs assigned to this domain
 * **possible_harts** - HARTs possible in this domain
+* **hartindex_to_context_table** - Contexts corresponding to possible HARTs
 * **regions** - Array of memory regions terminated by a memory region
   with order zero
 * **boot_hartid** - HART id of the HART booting this domain. The domain
@@ -80,6 +81,7 @@ following manner:
   platform support
 * **possible_harts** - All valid HARTs of a RISC-V platform are possible
   HARTs of the ROOT domain
+* **hartindex_to_context_table** - Contexts corresponding to ROOT domain's possible HARTs
 * **regions** - Two memory regions available to the ROOT domain:
   **A)** A memory region to protect OpenSBI firmware from S-mode and U-mode
   **B)** A memory region of **order=__riscv_xlen** allowing S-mode and

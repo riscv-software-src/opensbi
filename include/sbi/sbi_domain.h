@@ -12,6 +12,7 @@
 
 #include <sbi/sbi_types.h>
 #include <sbi/sbi_hartmask.h>
+#include <sbi/sbi_domain_context.h>
 
 struct sbi_scratch;
 
@@ -176,6 +177,8 @@ struct sbi_domain {
 	char name[64];
 	/** Possible HARTs in this domain */
 	const struct sbi_hartmask *possible_harts;
+	/** Contexts for possible HARTs indexed by hartindex */
+	struct sbi_context *hartindex_to_context_table[SBI_HARTMASK_MAX_BITS];
 	/** Array of memory regions terminated by a region with order zero */
 	struct sbi_domain_memregion *regions;
 	/** HART id of the HART booting this domain */
@@ -199,6 +202,9 @@ extern struct sbi_domain root;
 
 /** Get pointer to sbi_domain from HART index */
 struct sbi_domain *sbi_hartindex_to_domain(u32 hartindex);
+
+/** Update HART local pointer to point to specified domain */
+void sbi_update_hartindex_to_domain(u32 hartindex, struct sbi_domain *dom);
 
 /** Get pointer to sbi_domain for current HART */
 #define sbi_domain_thishart_ptr() \
