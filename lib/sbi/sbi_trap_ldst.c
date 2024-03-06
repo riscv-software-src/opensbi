@@ -11,7 +11,7 @@
 #include <sbi/riscv_encoding.h>
 #include <sbi/riscv_fp.h>
 #include <sbi/sbi_error.h>
-#include <sbi/sbi_misaligned_ldst.h>
+#include <sbi/sbi_trap_ldst.h>
 #include <sbi/sbi_pmu.h>
 #include <sbi/sbi_trap.h>
 #include <sbi/sbi_unpriv.h>

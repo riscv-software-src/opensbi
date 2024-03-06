@@ -7,8 +7,8 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
-#ifndef __SBI_MISALIGNED_LDST_H__
-#define __SBI_MISALIGNED_LDST_H__
+#ifndef __SBI_TRAP_LDST_H__
+#define __SBI_TRAP_LDST_H__
 
 #include <sbi/sbi_types.h>
 
