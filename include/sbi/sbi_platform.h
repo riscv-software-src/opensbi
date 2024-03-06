@@ -48,6 +48,7 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_version.h>
+#include <sbi/sbi_trap_ldst.h>
 
 struct sbi_domain_memregion;
 struct sbi_ecall_return;
@@ -680,6 +681,50 @@ static inline int sbi_platform_vendor_ext_provider(
 		return sbi_platform_ops(plat)->vendor_ext_provider(funcid,
 								regs, out);
 
+	return SBI_ENOTSUPP;
+}
+
+/**
+ * Ask platform to emulate the trapped load
+ *
+ * @param plat pointer to struct sbi_platform
+ * @param rlen length of the load: 1/2/4/8...
+ * @param addr virtual address of the load. Platform needs to page-walk and
+ *        find the physical address if necessary
+ * @param out_val value loaded
+ *
+ * @return 0 on success and negative error code on failure
+ */
+static inline int sbi_platform_emulate_load(const struct sbi_platform *plat,
+					    int rlen, unsigned long addr,
+					    union sbi_ldst_data *out_val)
+{
+	if (plat && sbi_platform_ops(plat)->emulate_load) {
+		return sbi_platform_ops(plat)->emulate_load(rlen, addr,
+							    out_val);
+	}
+	return SBI_ENOTSUPP;
+}
+
+/**
+ * Ask platform to emulate the trapped store
+ *
+ * @param plat pointer to struct sbi_platform
+ * @param wlen length of the store: 1/2/4/8...
+ * @param addr virtual address of the store. Platform needs to page-walk and
+ *        find the physical address if necessary
+ * @param in_val value to store
+ *
+ * @return 0 on success and negative error code on failure
+ */
+static inline int sbi_platform_emulate_store(const struct sbi_platform *plat,
+					     int wlen, unsigned long addr,
+					     union sbi_ldst_data in_val)
+{
+	if (plat && sbi_platform_ops(plat)->emulate_store) {
+		return sbi_platform_ops(plat)->emulate_store(wlen, addr,
+							     in_val);
+	}
 	return SBI_ENOTSUPP;
 }
 

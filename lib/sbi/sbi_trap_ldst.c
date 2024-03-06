@@ -15,6 +15,7 @@
 #include <sbi/sbi_pmu.h>
 #include <sbi/sbi_trap.h>
 #include <sbi/sbi_unpriv.h>
+#include <sbi/sbi_platform.h>
 
 /**
  * Load emulator callback:
@@ -319,14 +320,46 @@ int sbi_misaligned_store_handler(struct sbi_trap_regs *regs,
 				      sbi_misaligned_st_emulator);
 }
 
+static int sbi_ld_access_emulator(int rlen, union sbi_ldst_data *out_val,
+				  struct sbi_trap_regs *regs,
+				  const struct sbi_trap_info *orig_trap)
+{
+	/* If fault came from M mode, just fail */
+	if (((regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT) == PRV_M)
+		return SBI_EINVAL;
+
+	/* If platform emulator failed, we redirect instead of fail */
+	if (sbi_platform_emulate_load(sbi_platform_thishart_ptr(), rlen,
+				      orig_trap->tval, out_val))
+		return sbi_trap_redirect(regs, orig_trap);
+
+	return rlen;
+}
+
 int sbi_load_access_handler(struct sbi_trap_regs *regs,
 			    const struct sbi_trap_info *orig_trap)
 {
-	return sbi_trap_redirect(regs, orig_trap);
+	return sbi_trap_emulate_load(regs, orig_trap, sbi_ld_access_emulator);
+}
+
+static int sbi_st_access_emulator(int wlen, union sbi_ldst_data in_val,
+				  struct sbi_trap_regs *regs,
+				  const struct sbi_trap_info *orig_trap)
+{
+	/* If fault came from M mode, just fail */
+	if (((regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT) == PRV_M)
+		return SBI_EINVAL;
+
+	/* If platform emulator failed, we redirect instead of fail */
+	if (sbi_platform_emulate_store(sbi_platform_thishart_ptr(), wlen,
+				       orig_trap->tval, in_val))
+		return sbi_trap_redirect(regs, orig_trap);
+
+	return wlen;
 }
 
 int sbi_store_access_handler(struct sbi_trap_regs *regs,
 			     const struct sbi_trap_info *orig_trap)
 {
-	return sbi_trap_redirect(regs, orig_trap);
+	return sbi_trap_emulate_store(regs, orig_trap, sbi_st_access_emulator);
 }
