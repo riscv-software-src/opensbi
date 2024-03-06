@@ -84,7 +84,7 @@ static void __noreturn sbi_trap_error(const char *msg, int rc,
  * @return 0 on success and negative error code on failure
  */
 int sbi_trap_redirect(struct sbi_trap_regs *regs,
-		      struct sbi_trap_info *trap)
+		      const struct sbi_trap_info *trap)
 {
 	ulong hstatus, vsstatus, prev_mode;
 #if __riscv_xlen == 32
