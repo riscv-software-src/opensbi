@@ -53,6 +53,7 @@ struct sbi_domain_memregion;
 struct sbi_ecall_return;
 struct sbi_trap_regs;
 struct sbi_hart_features;
+union sbi_ldst_data;
 
 /** Possible feature flags of a platform */
 enum sbi_platform_features {
@@ -139,6 +140,13 @@ struct sbi_platform_operations {
 	int (*vendor_ext_provider)(long funcid,
 				   struct sbi_trap_regs *regs,
 				   struct sbi_ecall_return *out);
+
+	/** platform specific handler to fixup load fault */
+	int (*emulate_load)(int rlen, unsigned long addr,
+			    union sbi_ldst_data *out_val);
+	/** platform specific handler to fixup store fault */
+	int (*emulate_store)(int wlen, unsigned long addr,
+			     union sbi_ldst_data in_val);
 };
 
 /** Platform default per-HART stack size for exception/interrupt handling */
