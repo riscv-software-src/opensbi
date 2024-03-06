@@ -13,12 +13,23 @@
 #include <sbi/sbi_types.h>
 #include <sbi/sbi_trap.h>
 
-struct sbi_trap_regs;
+union sbi_ldst_data {
+	u64 data_u64;
+	u32 data_u32;
+	u8 data_bytes[8];
+	ulong data_ulong;
+};
 
 int sbi_misaligned_load_handler(struct sbi_trap_regs *regs,
 				const struct sbi_trap_info *orig_trap);
 
 int sbi_misaligned_store_handler(struct sbi_trap_regs *regs,
 				 const struct sbi_trap_info *orig_trap);
+
+int sbi_load_access_handler(struct sbi_trap_regs *regs,
+			    const struct sbi_trap_info *orig_trap);
+
+int sbi_store_access_handler(struct sbi_trap_regs *regs,
+			     const struct sbi_trap_info *orig_trap);
 
 #endif

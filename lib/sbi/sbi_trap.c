@@ -299,10 +299,12 @@ struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs)
 		msg = "illegal instruction handler failed";
 		break;
 	case CAUSE_MISALIGNED_LOAD:
+		sbi_pmu_ctr_incr_fw(SBI_PMU_FW_MISALIGNED_LOAD);
 		rc  = sbi_misaligned_load_handler(regs, &trap);
 		msg = "misaligned load handler failed";
 		break;
 	case CAUSE_MISALIGNED_STORE:
+		sbi_pmu_ctr_incr_fw(SBI_PMU_FW_MISALIGNED_STORE);
 		rc  = sbi_misaligned_store_handler(regs, &trap);
 		msg = "misaligned store handler failed";
 		break;
@@ -312,10 +314,15 @@ struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs)
 		msg = "ecall handler failed";
 		break;
 	case CAUSE_LOAD_ACCESS:
+		sbi_pmu_ctr_incr_fw(SBI_PMU_FW_ACCESS_LOAD);
+		rc  = sbi_load_access_handler(regs, &trap);
+		msg = "load fault handler failed";
+		break;
 	case CAUSE_STORE_ACCESS:
-		sbi_pmu_ctr_incr_fw(mcause == CAUSE_LOAD_ACCESS ?
-			SBI_PMU_FW_ACCESS_LOAD : SBI_PMU_FW_ACCESS_STORE);
-		/* fallthrough */
+		sbi_pmu_ctr_incr_fw(SBI_PMU_FW_ACCESS_STORE);
+		rc  = sbi_store_access_handler(regs, &trap);
+		msg = "store fault handler failed";
+		break;
 	default:
 		/* If the trap came from S or U mode, redirect it there */
 		msg = "trap redirect failed";
