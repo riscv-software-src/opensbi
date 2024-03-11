@@ -25,7 +25,6 @@ static int truly_illegal_insn(ulong insn, struct sbi_trap_regs *regs)
 {
 	struct sbi_trap_info trap;
 
-	trap.epc = regs->mepc;
 	trap.cause = CAUSE_ILLEGAL_INSTRUCTION;
 	trap.tval = insn;
 	trap.tval2 = 0;
@@ -156,7 +155,6 @@ int sbi_illegal_insn_handler(ulong insn, struct sbi_trap_regs *regs)
 	if (unlikely((insn & 3) != 3)) {
 		insn = sbi_get_insn(regs->mepc, &uptrap);
 		if (uptrap.cause) {
-			uptrap.epc = regs->mepc;
 			return sbi_trap_redirect(regs, &uptrap);
 		}
 		if ((insn & 3) != 3)

@@ -74,7 +74,6 @@ static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
 						&hmask, &trap)) {
 			ret = sbi_ipi_send_smode(hmask, 0);
 		} else {
-			trap.epc = regs->mepc;
 			sbi_trap_redirect(regs, &trap);
 			out->skip_regs_update = true;
 		}
@@ -86,7 +85,6 @@ static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
 					  SBI_TLB_FENCE_I, source_hart);
 			ret = sbi_tlb_request(hmask, 0, &tlb_info);
 		} else {
-			trap.epc = regs->mepc;
 			sbi_trap_redirect(regs, &trap);
 			out->skip_regs_update = true;
 		}
@@ -98,7 +96,6 @@ static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
 					  SBI_TLB_SFENCE_VMA, source_hart);
 			ret = sbi_tlb_request(hmask, 0, &tlb_info);
 		} else {
-			trap.epc = regs->mepc;
 			sbi_trap_redirect(regs, &trap);
 			out->skip_regs_update = true;
 		}
@@ -112,7 +109,6 @@ static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
 					  source_hart);
 			ret = sbi_tlb_request(hmask, 0, &tlb_info);
 		} else {
-			trap.epc = regs->mepc;
 			sbi_trap_redirect(regs, &trap);
 			out->skip_regs_update = true;
 		}

@@ -70,7 +70,6 @@ static int sbi_trap_emulate_load(struct sbi_trap_regs *regs,
 		 */
 		insn = sbi_get_insn(regs->mepc, &uptrap);
 		if (uptrap.cause) {
-			uptrap.epc = regs->mepc;
 			return sbi_trap_redirect(regs, &uptrap);
 		}
 		insn_len = INSN_LEN(insn);
@@ -193,7 +192,6 @@ static int sbi_trap_emulate_store(struct sbi_trap_regs *regs,
 		 */
 		insn = sbi_get_insn(regs->mepc, &uptrap);
 		if (uptrap.cause) {
-			uptrap.epc = regs->mepc;
 			return sbi_trap_redirect(regs, &uptrap);
 		}
 		insn_len = INSN_LEN(insn);
@@ -277,7 +275,6 @@ static int sbi_misaligned_ld_emulator(int rlen, union sbi_ldst_data *out_val,
 		out_val->data_bytes[i] =
 			sbi_load_u8((void *)(orig_trap->tval + i), &uptrap);
 		if (uptrap.cause) {
-			uptrap.epc   = regs->mepc;
 			uptrap.tinst = sbi_misaligned_tinst_fixup(
 				orig_trap->tinst, uptrap.tinst, i);
 			return sbi_trap_redirect(regs, &uptrap);
@@ -304,7 +301,6 @@ static int sbi_misaligned_st_emulator(int wlen, union sbi_ldst_data in_val,
 		sbi_store_u8((void *)(orig_trap->tval + i),
 			     in_val.data_bytes[i], &uptrap);
 		if (uptrap.cause) {
-			uptrap.epc   = regs->mepc;
 			uptrap.tinst = sbi_misaligned_tinst_fixup(
 				orig_trap->tinst, uptrap.tinst, i);
 			return sbi_trap_redirect(regs, &uptrap);
