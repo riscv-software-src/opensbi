@@ -136,8 +136,10 @@ static const illegal_insn_func illegal_insn_table[32] = {
 	truly_illegal_insn  /* 31 */
 };
 
-int sbi_illegal_insn_handler(ulong insn, struct sbi_trap_regs *regs)
+int sbi_illegal_insn_handler(struct sbi_trap_context *tcntx)
 {
+	struct sbi_trap_regs *regs = &tcntx->regs;
+	ulong insn = tcntx->trap.tval;
 	struct sbi_trap_info uptrap;
 
 	/*
@@ -154,9 +156,8 @@ int sbi_illegal_insn_handler(ulong insn, struct sbi_trap_regs *regs)
 	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_ILLEGAL_INSN);
 	if (unlikely((insn & 3) != 3)) {
 		insn = sbi_get_insn(regs->mepc, &uptrap);
-		if (uptrap.cause) {
+		if (uptrap.cause)
 			return sbi_trap_redirect(regs, &uptrap);
-		}
 		if ((insn & 3) != 3)
 			return truly_illegal_insn(insn, regs);
 	}

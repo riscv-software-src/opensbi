@@ -12,8 +12,8 @@
 
 #include <sbi/sbi_types.h>
 
-struct sbi_trap_regs;
+struct sbi_trap_context;
 
-int sbi_illegal_insn_handler(ulong insn, struct sbi_trap_regs *regs);
+int sbi_illegal_insn_handler(struct sbi_trap_context *tcntx);
 
 #endif

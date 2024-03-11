@@ -285,7 +285,7 @@ struct sbi_trap_context *sbi_trap_handler(struct sbi_trap_context *tcntx)
 
 	switch (mcause) {
 	case CAUSE_ILLEGAL_INSTRUCTION:
-		rc  = sbi_illegal_insn_handler(tcntx->trap.tval, regs);
+		rc  = sbi_illegal_insn_handler(tcntx);
 		msg = "illegal instruction handler failed";
 		break;
 	case CAUSE_MISALIGNED_LOAD:
