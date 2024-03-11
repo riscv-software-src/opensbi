@@ -198,10 +198,9 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 	return 0;
 }
 
-static int sbi_trap_nonaia_irq(struct sbi_trap_regs *regs, ulong mcause)
+static int sbi_trap_nonaia_irq(unsigned long irq)
 {
-	mcause &= ~(1UL << (__riscv_xlen - 1));
-	switch (mcause) {
+	switch (irq) {
 	case IRQ_M_TIMER:
 		sbi_timer_process();
 		break;
@@ -217,7 +216,7 @@ static int sbi_trap_nonaia_irq(struct sbi_trap_regs *regs, ulong mcause)
 	return 0;
 }
 
-static int sbi_trap_aia_irq(struct sbi_trap_regs *regs, ulong mcause)
+static int sbi_trap_aia_irq(void)
 {
 	int rc;
 	unsigned long mtopi;
@@ -273,12 +272,12 @@ struct sbi_trap_context *sbi_trap_handler(struct sbi_trap_context *tcntx)
 	tcntx->prev_context = sbi_trap_get_context(scratch);
 	sbi_trap_set_context(scratch, tcntx);
 
-	if (mcause & (1UL << (__riscv_xlen - 1))) {
+	if (mcause & MCAUSE_IRQ_MASK) {
 		if (sbi_hart_has_extension(sbi_scratch_thishart_ptr(),
 					   SBI_HART_EXT_SMAIA))
-			rc = sbi_trap_aia_irq(regs, mcause);
+			rc = sbi_trap_aia_irq();
 		else
-			rc = sbi_trap_nonaia_irq(regs, mcause);
+			rc = sbi_trap_nonaia_irq(mcause & ~MCAUSE_IRQ_MASK);
 		msg = "unhandled local interrupt";
 		goto trap_done;
 	}

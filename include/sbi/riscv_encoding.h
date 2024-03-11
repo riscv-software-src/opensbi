@@ -80,6 +80,8 @@
 #define HSTATUS_GVA			_UL(0x00000040)
 #define HSTATUS_VSBE			_UL(0x00000020)
 
+#define MCAUSE_IRQ_MASK			(_UL(1) << (__riscv_xlen - 1))
+
 #define IRQ_S_SOFT			1
 #define IRQ_VS_SOFT			2
 #define IRQ_M_SOFT			3
