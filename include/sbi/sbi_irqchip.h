@@ -13,7 +13,6 @@
 #include <sbi/sbi_types.h>
 
 struct sbi_scratch;
-struct sbi_trap_regs;
 
 /**
  * Set external interrupt handling function
@@ -23,7 +22,7 @@ struct sbi_trap_regs;
  *
  * @param fn function pointer for handling external irqs
  */
-void sbi_irqchip_set_irqfn(int (*fn)(struct sbi_trap_regs *regs));
+void sbi_irqchip_set_irqfn(int (*fn)(void));
 
 /**
  * Process external interrupts
@@ -33,7 +32,7 @@ void sbi_irqchip_set_irqfn(int (*fn)(struct sbi_trap_regs *regs));
  *
  * @param regs pointer for trap registers
  */
-int sbi_irqchip_process(struct sbi_trap_regs *regs);
+int sbi_irqchip_process(void);
 
 /** Initialize interrupt controllers */
 int sbi_irqchip_init(struct sbi_scratch *scratch, bool cold_boot);

@@ -209,7 +209,7 @@ static int sbi_trap_nonaia_irq(struct sbi_trap_regs *regs, ulong mcause)
 		sbi_ipi_process();
 		break;
 	case IRQ_M_EXT:
-		return sbi_irqchip_process(regs);
+		return sbi_irqchip_process();
 	default:
 		return SBI_ENOENT;
 	}
@@ -232,7 +232,7 @@ static int sbi_trap_aia_irq(struct sbi_trap_regs *regs, ulong mcause)
 			sbi_ipi_process();
 			break;
 		case IRQ_M_EXT:
-			rc = sbi_irqchip_process(regs);
+			rc = sbi_irqchip_process();
 			if (rc)
 				return rc;
 			break;

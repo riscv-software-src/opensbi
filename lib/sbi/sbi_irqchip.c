@@ -10,22 +10,22 @@
 #include <sbi/sbi_irqchip.h>
 #include <sbi/sbi_platform.h>
 
-static int default_irqfn(struct sbi_trap_regs *regs)
+static int default_irqfn(void)
 {
 	return SBI_ENODEV;
 }
 
-static int (*ext_irqfn)(struct sbi_trap_regs *regs) = default_irqfn;
+static int (*ext_irqfn)(void) = default_irqfn;
 
-void sbi_irqchip_set_irqfn(int (*fn)(struct sbi_trap_regs *regs))
+void sbi_irqchip_set_irqfn(int (*fn)(void))
 {
 	if (fn)
 		ext_irqfn = fn;
 }
 
-int sbi_irqchip_process(struct sbi_trap_regs *regs)
+int sbi_irqchip_process(void)
 {
-	return ext_irqfn(regs);
+	return ext_irqfn();
 }
 
 int sbi_irqchip_init(struct sbi_scratch *scratch, bool cold_boot)

@@ -140,7 +140,7 @@ int imsic_get_target_file(u32 hartid)
 	return imsic_get_hart_file(scratch);
 }
 
-static int imsic_external_irqfn(struct sbi_trap_regs *regs)
+static int imsic_external_irqfn(void)
 {
 	ulong mirq;
 
