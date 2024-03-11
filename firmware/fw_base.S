@@ -446,14 +446,12 @@ _start_warm:
 
 	/* Setup trap handler */
 	lla	a4, _trap_handler
-#if __riscv_xlen == 32
 	csrr	a5, CSR_MISA
 	srli	a5, a5, ('H' - 'A')
 	andi	a5, a5, 0x1
-	beq	a5, zero, _skip_trap_handler_rv32_hyp
-	lla	a4, _trap_handler_rv32_hyp
-_skip_trap_handler_rv32_hyp:
-#endif
+	beq	a5, zero, _skip_trap_handler_hyp
+	lla	a4, _trap_handler_hyp
+_skip_trap_handler_hyp:
 	csrw	CSR_MTVEC, a4
 
 	/* Initialize SBI runtime */
@@ -564,10 +562,10 @@ memcmp:
 	xor	t0, tp, t0
 
 	/* Save original SP on exception stack */
-	REG_S	sp, (SBI_TRAP_REGS_OFFSET(sp) - SBI_TRAP_REGS_SIZE)(t0)
+	REG_S	sp, (SBI_TRAP_REGS_OFFSET(sp) - SBI_TRAP_CONTEXT_SIZE)(t0)
 
-	/* Set SP to exception stack and make room for trap registers */
-	add	sp, t0, -(SBI_TRAP_REGS_SIZE)
+	/* Set SP to exception stack and make room for trap context */
+	add	sp, t0, -(SBI_TRAP_CONTEXT_SIZE)
 
 	/* Restore T0 from scratch space */
 	REG_L	t0, SBI_SCRATCH_TMP0_OFFSET(tp)
@@ -625,6 +623,32 @@ memcmp:
 	REG_S	t4, SBI_TRAP_REGS_OFFSET(t4)(sp)
 	REG_S	t5, SBI_TRAP_REGS_OFFSET(t5)(sp)
 	REG_S	t6, SBI_TRAP_REGS_OFFSET(t6)(sp)
+.endm
+
+.macro	TRAP_SAVE_INFO have_mstatush have_h_extension
+	csrr	t0, CSR_MCAUSE
+	REG_S	t0, (SBI_TRAP_REGS_SIZE + SBI_TRAP_INFO_OFFSET(cause))(sp)
+	csrr	t0, CSR_MTVAL
+	REG_S	t0, (SBI_TRAP_REGS_SIZE + SBI_TRAP_INFO_OFFSET(tval))(sp)
+.if \have_h_extension
+	csrr	t0, CSR_MTVAL2
+	REG_S	t0, (SBI_TRAP_REGS_SIZE + SBI_TRAP_INFO_OFFSET(tval2))(sp)
+	csrr	t0, CSR_MTINST
+	REG_S	t0, (SBI_TRAP_REGS_SIZE + SBI_TRAP_INFO_OFFSET(tinst))(sp)
+	.if \have_mstatush
+	csrr	t0, CSR_MSTATUSH
+	srli	t0, t0, MSTATUSH_GVA_SHIFT
+	.else
+	csrr	t0, CSR_MSTATUS
+	srli	t0, t0, MSTATUS_GVA_SHIFT
+	.endif
+	and	t0, t0, 0x1
+.else
+	REG_S	zero, (SBI_TRAP_REGS_SIZE + SBI_TRAP_INFO_OFFSET(tval2))(sp)
+	REG_S	zero, (SBI_TRAP_REGS_SIZE + SBI_TRAP_INFO_OFFSET(tinst))(sp)
+	li	t0, 0
+.endif
+	REG_S	t0, (SBI_TRAP_REGS_SIZE + SBI_TRAP_INFO_OFFSET(gva))(sp)
 .endm
 
 .macro	TRAP_CALL_C_ROUTINE
@@ -696,6 +720,8 @@ _trap_handler:
 
 	TRAP_SAVE_GENERAL_REGS_EXCEPT_SP_T0
 
+	TRAP_SAVE_INFO 0 0
+
 	TRAP_CALL_C_ROUTINE
 
 	TRAP_RESTORE_GENERAL_REGS_EXCEPT_A0_T0
@@ -706,27 +732,39 @@ _trap_handler:
 
 	mret
 
-#if __riscv_xlen == 32
 	.section .entry, "ax", %progbits
 	.align 3
-	.globl _trap_handler_rv32_hyp
-_trap_handler_rv32_hyp:
+	.globl _trap_handler_hyp
+_trap_handler_hyp:
 	TRAP_SAVE_AND_SETUP_SP_T0
 
+#if __riscv_xlen == 32
 	TRAP_SAVE_MEPC_MSTATUS 1
+#else
+	TRAP_SAVE_MEPC_MSTATUS 0
+#endif
 
 	TRAP_SAVE_GENERAL_REGS_EXCEPT_SP_T0
+
+#if __riscv_xlen == 32
+	TRAP_SAVE_INFO 1 1
+#else
+	TRAP_SAVE_INFO 0 1
+#endif
 
 	TRAP_CALL_C_ROUTINE
 
 	TRAP_RESTORE_GENERAL_REGS_EXCEPT_A0_T0
 
+#if __riscv_xlen == 32
 	TRAP_RESTORE_MEPC_MSTATUS 1
+#else
+	TRAP_RESTORE_MEPC_MSTATUS 0
+#endif
 
 	TRAP_RESTORE_A0_T0
 
 	mret
-#endif
 
 	.section .entry, "ax", %progbits
 	.align 3

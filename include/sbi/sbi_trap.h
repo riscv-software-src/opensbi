@@ -112,9 +112,15 @@
 /** Size (in bytes) of sbi_trap_info */
 #define SBI_TRAP_INFO_SIZE SBI_TRAP_INFO_OFFSET(last)
 
+/** Size (in bytes) of sbi_trap_context */
+#define SBI_TRAP_CONTEXT_SIZE (SBI_TRAP_REGS_SIZE + \
+			       SBI_TRAP_INFO_SIZE + \
+			       __SIZEOF_POINTER__)
+
 #ifndef __ASSEMBLER__
 
 #include <sbi/sbi_types.h>
+#include <sbi/sbi_scratch.h>
 
 /** Representation of register state at time of trap/interrupt */
 struct sbi_trap_regs {
@@ -204,6 +210,16 @@ struct sbi_trap_info {
 	unsigned long gva;
 };
 
+/** Representation of trap context saved on stack */
+struct sbi_trap_context {
+	/** Register state */
+	struct sbi_trap_regs regs;
+	/** Trap details */
+	struct sbi_trap_info trap;
+	/** Pointer to previous trap context */
+	struct sbi_trap_context *prev_context;
+};
+
 static inline unsigned long sbi_regs_gva(const struct sbi_trap_regs *regs)
 {
 	/*
@@ -223,7 +239,18 @@ static inline unsigned long sbi_regs_gva(const struct sbi_trap_regs *regs)
 int sbi_trap_redirect(struct sbi_trap_regs *regs,
 		      const struct sbi_trap_info *trap);
 
-struct sbi_trap_regs *sbi_trap_handler(struct sbi_trap_regs *regs);
+static inline struct sbi_trap_context *sbi_trap_get_context(struct sbi_scratch *scratch)
+{
+	return (scratch) ? (void *)scratch->trap_context : NULL;
+}
+
+static inline void sbi_trap_set_context(struct sbi_scratch *scratch,
+					struct sbi_trap_context *tcntx)
+{
+	scratch->trap_context = (unsigned long)tcntx;
+}
+
+struct sbi_trap_context *sbi_trap_handler(struct sbi_trap_context *tcntx);
 
 #endif
 
