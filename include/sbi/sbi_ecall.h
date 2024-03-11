@@ -18,7 +18,7 @@
 #define SBI_OPENSBI_IMPID		1
 
 struct sbi_trap_regs;
-struct sbi_trap_info;
+struct sbi_trap_context;
 
 struct sbi_ecall_return {
 	/* Return flag to skip register update */
@@ -87,7 +87,7 @@ int sbi_ecall_register_extension(struct sbi_ecall_extension *ext);
 
 void sbi_ecall_unregister_extension(struct sbi_ecall_extension *ext);
 
-int sbi_ecall_handler(struct sbi_trap_regs *regs);
+int sbi_ecall_handler(struct sbi_trap_context *tcntx);
 
 int sbi_ecall_init(void);
 

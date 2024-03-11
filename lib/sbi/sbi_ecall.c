@@ -95,9 +95,10 @@ void sbi_ecall_unregister_extension(struct sbi_ecall_extension *ext)
 		sbi_list_del_init(&ext->head);
 }
 
-int sbi_ecall_handler(struct sbi_trap_regs *regs)
+int sbi_ecall_handler(struct sbi_trap_context *tcntx)
 {
 	int ret = 0;
+	struct sbi_trap_regs *regs = &tcntx->regs;
 	struct sbi_ecall_extension *ext;
 	unsigned long extension_id = regs->a7;
 	unsigned long func_id = regs->a6;

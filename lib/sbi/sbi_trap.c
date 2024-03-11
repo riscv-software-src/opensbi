@@ -299,7 +299,7 @@ struct sbi_trap_context *sbi_trap_handler(struct sbi_trap_context *tcntx)
 		break;
 	case CAUSE_SUPERVISOR_ECALL:
 	case CAUSE_MACHINE_ECALL:
-		rc  = sbi_ecall_handler(regs);
+		rc  = sbi_ecall_handler(tcntx);
 		msg = "ecall handler failed";
 		break;
 	case CAUSE_LOAD_ACCESS:
