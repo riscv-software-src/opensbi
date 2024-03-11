@@ -334,22 +334,3 @@ trap_error:
 		sbi_trap_error(msg, rc, mcause, mtval, mtval2, mtinst, regs);
 	return regs;
 }
-
-typedef void (*trap_exit_t)(const struct sbi_trap_regs *regs);
-
-/**
- * Exit trap/interrupt handling
- *
- * This function is called by non-firmware code to abruptly exit
- * trap/interrupt handling and resume execution at context pointed
- * by given register state.
- *
- * @param regs pointer to register state
- */
-void __noreturn sbi_trap_exit(const struct sbi_trap_regs *regs)
-{
-	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
-
-	((trap_exit_t)scratch->trap_exit)(regs);
-	__builtin_unreachable();
-}

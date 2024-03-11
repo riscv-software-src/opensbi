@@ -298,9 +298,6 @@ _scratch_init:
 	/* Store hartid-to-scratch function address in scratch space */
 	lla	a4, _hartid_to_scratch
 	REG_S	a4, SBI_SCRATCH_HARTID_TO_SCRATCH_OFFSET(tp)
-	/* Store trap-exit function address in scratch space */
-	lla	a4, _trap_exit
-	REG_S	a4, SBI_SCRATCH_TRAP_EXIT_OFFSET(tp)
 	/* Clear tmp0 in scratch space */
 	REG_S	zero, SBI_SCRATCH_TMP0_OFFSET(tp)
 	/* Store firmware options in scratch space */
@@ -453,10 +450,6 @@ _start_warm:
 	srli	a5, a5, ('H' - 'A')
 	andi	a5, a5, 0x1
 	beq	a5, zero, _skip_trap_handler_rv32_hyp
-	/* Override trap exit for H-extension */
-	csrr	a5, CSR_MSCRATCH
-	lla	a4, _trap_exit_rv32_hyp
-	REG_S	a4, SBI_SCRATCH_TRAP_EXIT_OFFSET(a5)
 	lla	a4, _trap_handler_rv32_hyp
 _skip_trap_handler_rv32_hyp:
 #endif
@@ -695,7 +688,6 @@ memcmp:
 	.section .entry, "ax", %progbits
 	.align 3
 	.globl _trap_handler
-	.globl _trap_exit
 _trap_handler:
 	TRAP_SAVE_AND_SETUP_SP_T0
 
@@ -705,7 +697,6 @@ _trap_handler:
 
 	TRAP_CALL_C_ROUTINE
 
-_trap_exit:
 	TRAP_RESTORE_GENERAL_REGS_EXCEPT_A0_T0
 
 	TRAP_RESTORE_MEPC_MSTATUS 0
@@ -718,7 +709,6 @@ _trap_exit:
 	.section .entry, "ax", %progbits
 	.align 3
 	.globl _trap_handler_rv32_hyp
-	.globl _trap_exit_rv32_hyp
 _trap_handler_rv32_hyp:
 	TRAP_SAVE_AND_SETUP_SP_T0
 
@@ -728,7 +718,6 @@ _trap_handler_rv32_hyp:
 
 	TRAP_CALL_C_ROUTINE
 
-_trap_exit_rv32_hyp:
 	TRAP_RESTORE_GENERAL_REGS_EXCEPT_A0_T0
 
 	TRAP_RESTORE_MEPC_MSTATUS 1
