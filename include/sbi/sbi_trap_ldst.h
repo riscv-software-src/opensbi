@@ -20,16 +20,12 @@ union sbi_ldst_data {
 	ulong data_ulong;
 };
 
-int sbi_misaligned_load_handler(struct sbi_trap_regs *regs,
-				const struct sbi_trap_info *orig_trap);
+int sbi_misaligned_load_handler(struct sbi_trap_context *tcntx);
 
-int sbi_misaligned_store_handler(struct sbi_trap_regs *regs,
-				 const struct sbi_trap_info *orig_trap);
+int sbi_misaligned_store_handler(struct sbi_trap_context *tcntx);
 
-int sbi_load_access_handler(struct sbi_trap_regs *regs,
-			    const struct sbi_trap_info *orig_trap);
+int sbi_load_access_handler(struct sbi_trap_context *tcntx);
 
-int sbi_store_access_handler(struct sbi_trap_regs *regs,
-			     const struct sbi_trap_info *orig_trap);
+int sbi_store_access_handler(struct sbi_trap_context *tcntx);
 
 #endif

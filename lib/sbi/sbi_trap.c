@@ -290,12 +290,12 @@ struct sbi_trap_context *sbi_trap_handler(struct sbi_trap_context *tcntx)
 		break;
 	case CAUSE_MISALIGNED_LOAD:
 		sbi_pmu_ctr_incr_fw(SBI_PMU_FW_MISALIGNED_LOAD);
-		rc  = sbi_misaligned_load_handler(regs, trap);
+		rc  = sbi_misaligned_load_handler(tcntx);
 		msg = "misaligned load handler failed";
 		break;
 	case CAUSE_MISALIGNED_STORE:
 		sbi_pmu_ctr_incr_fw(SBI_PMU_FW_MISALIGNED_STORE);
-		rc  = sbi_misaligned_store_handler(regs, trap);
+		rc  = sbi_misaligned_store_handler(tcntx);
 		msg = "misaligned store handler failed";
 		break;
 	case CAUSE_SUPERVISOR_ECALL:
@@ -305,12 +305,12 @@ struct sbi_trap_context *sbi_trap_handler(struct sbi_trap_context *tcntx)
 		break;
 	case CAUSE_LOAD_ACCESS:
 		sbi_pmu_ctr_incr_fw(SBI_PMU_FW_ACCESS_LOAD);
-		rc  = sbi_load_access_handler(regs, trap);
+		rc  = sbi_load_access_handler(tcntx);
 		msg = "load fault handler failed";
 		break;
 	case CAUSE_STORE_ACCESS:
 		sbi_pmu_ctr_incr_fw(SBI_PMU_FW_ACCESS_STORE);
-		rc  = sbi_store_access_handler(regs, trap);
+		rc  = sbi_store_access_handler(tcntx);
 		msg = "store fault handler failed";
 		break;
 	default:

@@ -12,7 +12,6 @@
 #include <sbi/riscv_fp.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_trap_ldst.h>
-#include <sbi/sbi_pmu.h>
 #include <sbi/sbi_trap.h>
 #include <sbi/sbi_unpriv.h>
 #include <sbi/sbi_platform.h>
@@ -23,8 +22,7 @@
  * @return rlen=success, 0=success w/o regs modification, or negative error
  */
 typedef int (*sbi_trap_ld_emulator)(int rlen, union sbi_ldst_data *out_val,
-				    struct sbi_trap_regs *regs,
-				    const struct sbi_trap_info *orig_trap);
+				    struct sbi_trap_context *tcntx);
 
 /**
  * Store emulator callback:
@@ -32,8 +30,7 @@ typedef int (*sbi_trap_ld_emulator)(int rlen, union sbi_ldst_data *out_val,
  * @return wlen=success, 0=success w/o regs modification, or negative error
  */
 typedef int (*sbi_trap_st_emulator)(int wlen, union sbi_ldst_data in_val,
-				    struct sbi_trap_regs *regs,
-				    const struct sbi_trap_info *orig_trap);
+				    struct sbi_trap_context *tcntx);
 
 static ulong sbi_misaligned_tinst_fixup(ulong orig_tinst, ulong new_tinst,
 					ulong addr_offset)
@@ -47,10 +44,11 @@ static ulong sbi_misaligned_tinst_fixup(ulong orig_tinst, ulong new_tinst,
 		return orig_tinst | (addr_offset << SH_RS1);
 }
 
-static int sbi_trap_emulate_load(struct sbi_trap_regs *regs,
-				 const struct sbi_trap_info *orig_trap,
+static int sbi_trap_emulate_load(struct sbi_trap_context *tcntx,
 				 sbi_trap_ld_emulator emu)
 {
+	const struct sbi_trap_info *orig_trap = &tcntx->trap;
+	struct sbi_trap_regs *regs = &tcntx->regs;
 	ulong insn, insn_len;
 	union sbi_ldst_data val = { 0 };
 	struct sbi_trap_info uptrap;
@@ -150,8 +148,7 @@ static int sbi_trap_emulate_load(struct sbi_trap_regs *regs,
 		return sbi_trap_redirect(regs, orig_trap);
 	}
 
-	rc = emu(len, &val, regs, orig_trap);
-
+	rc = emu(len, &val, tcntx);
 	if (rc <= 0)
 		return rc;
 
@@ -169,10 +166,11 @@ static int sbi_trap_emulate_load(struct sbi_trap_regs *regs,
 	return 0;
 }
 
-static int sbi_trap_emulate_store(struct sbi_trap_regs *regs,
-				  const struct sbi_trap_info *orig_trap,
+static int sbi_trap_emulate_store(struct sbi_trap_context *tcntx,
 				  sbi_trap_st_emulator emu)
 {
+	const struct sbi_trap_info *orig_trap = &tcntx->trap;
+	struct sbi_trap_regs *regs = &tcntx->regs;
 	ulong insn, insn_len;
 	union sbi_ldst_data val;
 	struct sbi_trap_info uptrap;
@@ -254,8 +252,7 @@ static int sbi_trap_emulate_store(struct sbi_trap_regs *regs,
 		return sbi_trap_redirect(regs, orig_trap);
 	}
 
-	rc = emu(len, val, regs, orig_trap);
-
+	rc = emu(len, val, tcntx);
 	if (rc <= 0)
 		return rc;
 
@@ -265,9 +262,10 @@ static int sbi_trap_emulate_store(struct sbi_trap_regs *regs,
 }
 
 static int sbi_misaligned_ld_emulator(int rlen, union sbi_ldst_data *out_val,
-				      struct sbi_trap_regs *regs,
-				      const struct sbi_trap_info *orig_trap)
+				      struct sbi_trap_context *tcntx)
 {
+	const struct sbi_trap_info *orig_trap = &tcntx->trap;
+	struct sbi_trap_regs *regs = &tcntx->regs;
 	struct sbi_trap_info uptrap;
 	int i;
 
@@ -283,17 +281,16 @@ static int sbi_misaligned_ld_emulator(int rlen, union sbi_ldst_data *out_val,
 	return rlen;
 }
 
-int sbi_misaligned_load_handler(struct sbi_trap_regs *regs,
-				const struct sbi_trap_info *orig_trap)
+int sbi_misaligned_load_handler(struct sbi_trap_context *tcntx)
 {
-	return sbi_trap_emulate_load(regs, orig_trap,
-				     sbi_misaligned_ld_emulator);
+	return sbi_trap_emulate_load(tcntx, sbi_misaligned_ld_emulator);
 }
 
 static int sbi_misaligned_st_emulator(int wlen, union sbi_ldst_data in_val,
-				      struct sbi_trap_regs *regs,
-				      const struct sbi_trap_info *orig_trap)
+				      struct sbi_trap_context *tcntx)
 {
+	const struct sbi_trap_info *orig_trap = &tcntx->trap;
+	struct sbi_trap_regs *regs = &tcntx->regs;
 	struct sbi_trap_info uptrap;
 	int i;
 
@@ -309,17 +306,17 @@ static int sbi_misaligned_st_emulator(int wlen, union sbi_ldst_data in_val,
 	return wlen;
 }
 
-int sbi_misaligned_store_handler(struct sbi_trap_regs *regs,
-				 const struct sbi_trap_info *orig_trap)
+int sbi_misaligned_store_handler(struct sbi_trap_context *tcntx)
 {
-	return sbi_trap_emulate_store(regs, orig_trap,
-				      sbi_misaligned_st_emulator);
+	return sbi_trap_emulate_store(tcntx, sbi_misaligned_st_emulator);
 }
 
 static int sbi_ld_access_emulator(int rlen, union sbi_ldst_data *out_val,
-				  struct sbi_trap_regs *regs,
-				  const struct sbi_trap_info *orig_trap)
+				  struct sbi_trap_context *tcntx)
 {
+	const struct sbi_trap_info *orig_trap = &tcntx->trap;
+	struct sbi_trap_regs *regs = &tcntx->regs;
+
 	/* If fault came from M mode, just fail */
 	if (((regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT) == PRV_M)
 		return SBI_EINVAL;
@@ -332,16 +329,17 @@ static int sbi_ld_access_emulator(int rlen, union sbi_ldst_data *out_val,
 	return rlen;
 }
 
-int sbi_load_access_handler(struct sbi_trap_regs *regs,
-			    const struct sbi_trap_info *orig_trap)
+int sbi_load_access_handler(struct sbi_trap_context *tcntx)
 {
-	return sbi_trap_emulate_load(regs, orig_trap, sbi_ld_access_emulator);
+	return sbi_trap_emulate_load(tcntx, sbi_ld_access_emulator);
 }
 
 static int sbi_st_access_emulator(int wlen, union sbi_ldst_data in_val,
-				  struct sbi_trap_regs *regs,
-				  const struct sbi_trap_info *orig_trap)
+				  struct sbi_trap_context *tcntx)
 {
+	const struct sbi_trap_info *orig_trap = &tcntx->trap;
+	struct sbi_trap_regs *regs = &tcntx->regs;
+
 	/* If fault came from M mode, just fail */
 	if (((regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT) == PRV_M)
 		return SBI_EINVAL;
@@ -354,8 +352,7 @@ static int sbi_st_access_emulator(int wlen, union sbi_ldst_data in_val,
 	return wlen;
 }
 
-int sbi_store_access_handler(struct sbi_trap_regs *regs,
-			     const struct sbi_trap_info *orig_trap)
+int sbi_store_access_handler(struct sbi_trap_context *tcntx)
 {
-	return sbi_trap_emulate_store(regs, orig_trap, sbi_st_access_emulator);
+	return sbi_trap_emulate_store(tcntx, sbi_st_access_emulator);
 }
