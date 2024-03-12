@@ -15,8 +15,7 @@
 #include <sbi/sbi_trap.h>
 
 #define BOOT_STATUS_LOTTERY_DONE	1
-#define BOOT_STATUS_RELOCATE_DONE	2
-#define BOOT_STATUS_BOOT_HART_DONE	3
+#define BOOT_STATUS_BOOT_HART_DONE	2
 
 .macro	MOV_3R __d0, __s0, __d1, __s1, __d2, __s2
 	add	\__d0, \__s0, zero
@@ -32,17 +31,6 @@
 	add	\__d4, \__s4, zero
 .endm
 
-/*
- * If __start_reg <= __check_reg and __check_reg < __end_reg then
- *   jump to __pass
- */
-.macro BRANGE __start_reg, __end_reg, __check_reg, __jump_lable
-	blt	\__check_reg, \__start_reg, 999f
-	bge	\__check_reg, \__end_reg, 999f
-	j	\__jump_lable
-999:
-.endm
-
 	.section .entry, "ax", %progbits
 	.align 3
 	.globl _start
@@ -56,15 +44,14 @@ _start:
 	li	a7, -1
 	beq	a6, a7, _try_lottery
 	/* Jump to relocation wait loop if we are not boot hart */
-	bne	a0, a6, _wait_relocate_copy_done
+	bne	a0, a6, _wait_for_boot_hart
 _try_lottery:
 	/* Jump to relocation wait loop if we don't get relocation lottery */
 	lla	a6, _boot_status
 	li	a7, BOOT_STATUS_LOTTERY_DONE
 	amoswap.w a6, a7, (a6)
-	bnez	a6, _wait_relocate_copy_done
+	bnez	a6, _wait_for_boot_hart
 
-#ifdef FW_PIC
 	/* relocate the global table content */
 	li	t0, FW_TEXT_START	/* link start */
 	lla	t1, _fw_start		/* load start */
@@ -85,86 +72,7 @@ _try_lottery:
 3:
 	addi	t0, t0, (REGBYTES * 3)
 	blt	t0, t1, 2b
-	j	_relocate_done
-_wait_relocate_copy_done:
-	j	_wait_for_boot_hart
-#else
-	/* Relocate if load address != link address */
-_relocate:
-	li	t0, FW_TEXT_START	/* link start */
-	lla	t2, _fw_start		/* load start */
-	lla	t3, _fw_reloc_end	/* load end */
-	sub	t6, t2, t0		/* load offset */
-	sub	t1, t3, t6		/* link end */
-	beq	t0, t2, _relocate_done
-	lla	t4, _relocate_done
-	sub	t4, t4, t6
-	blt	t2, t0, _relocate_copy_to_upper
-_relocate_copy_to_lower:
-	ble	t1, t2, _relocate_copy_to_lower_loop
-	lla	t3, _boot_status
-	BRANGE	t2, t1, t3, _start_hang
-	lla	t3, _relocate
-	lla	t5, _relocate_done
-	BRANGE	t2, t1, t3, _start_hang
-	BRANGE	t2, t1, t5, _start_hang
-	BRANGE  t3, t5, t2, _start_hang
-_relocate_copy_to_lower_loop:
-	REG_L	t3, 0(t2)
-	REG_S	t3, 0(t0)
-	add	t0, t0, __SIZEOF_POINTER__
-	add	t2, t2, __SIZEOF_POINTER__
-	blt	t0, t1, _relocate_copy_to_lower_loop
-	jr	t4
-_relocate_copy_to_upper:
-	ble	t3, t0, _relocate_copy_to_upper_loop
-	lla	t2, _boot_status
-	BRANGE	t0, t3, t2, _start_hang
-	lla	t2, _relocate
-	lla	t5, _relocate_done
-	BRANGE	t0, t3, t2, _start_hang
-	BRANGE	t0, t3, t5, _start_hang
-	BRANGE	t2, t5, t0, _start_hang
-_relocate_copy_to_upper_loop:
-	add	t3, t3, -__SIZEOF_POINTER__
-	add	t1, t1, -__SIZEOF_POINTER__
-	REG_L	t2, 0(t3)
-	REG_S	t2, 0(t1)
-	blt	t0, t1, _relocate_copy_to_upper_loop
-	jr	t4
-_wait_relocate_copy_done:
-	lla	t0, _fw_start
-	li	t1, FW_TEXT_START
-	beq	t0, t1, _wait_for_boot_hart
-	lla	t2, _boot_status
-	lla	t3, _wait_for_boot_hart
-	sub	t3, t3, t0
-	add	t3, t3, t1
-1:
-	/* waitting for relocate copy done (_boot_status == 1) */
-	li	t4, BOOT_STATUS_RELOCATE_DONE
-	REG_L	t5, 0(t2)
-	/* Reduce the bus traffic so that boot hart may proceed faster */
-	nop
-	nop
-	nop
-	bgt     t4, t5, 1b
-	jr	t3
-#endif
 _relocate_done:
-
-	/*
-	 * Mark relocate copy done
-	 * Use _boot_status copy relative to the load address
-	 */
-	lla	t0, _boot_status
-#ifndef FW_PIC
-	add	t0, t0, t6
-#endif
-	li	t1, BOOT_STATUS_RELOCATE_DONE
-	REG_S	t1, 0(t0)
-	fence	rw, rw
-
 	/* At this point we are running from link address */
 
 	/* Reset all registers except ra, a0, a1, a2, a3 and a4 for boot HART */

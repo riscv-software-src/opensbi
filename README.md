@@ -276,8 +276,7 @@ document.
 
 NOTE: Using Clang with a `riscv*-linux-gnu` GNU binutils linker has been seen
 to produce broken binaries with missing relocations; it is therefore currently
-recommended that this combination be avoided or *FW_PIC=n* be used to disable
-building OpenSBI as a position-independent binary.
+recommended that this combination be avoided.
 
 Building with timestamp and compiler info
 -----------------------------------------

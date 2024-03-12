@@ -13,17 +13,6 @@ firmware-cflags-y +=
 firmware-asflags-y +=
 firmware-ldflags-y +=
 
-ifndef FW_PIC
-FW_PIC := $(OPENSBI_LD_PIE)
-endif
-
-ifeq ($(FW_PIC),y)
-firmware-genflags-y +=	-DFW_PIC
-firmware-asflags-y  +=	-fpic
-firmware-cflags-y   +=	-fPIE -pie
-firmware-ldflags-y  +=	-Wl,--no-dynamic-linker -Wl,-pie
-endif
-
 ifdef FW_TEXT_START
 firmware-genflags-y += -DFW_TEXT_START=$(FW_TEXT_START)
 endif
