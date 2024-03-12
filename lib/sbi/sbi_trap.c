@@ -23,54 +23,69 @@
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_trap.h>
 
-static void __noreturn sbi_trap_error(const char *msg, int rc,
-				      const struct sbi_trap_info *trap,
-				      const struct sbi_trap_regs *regs)
+static void sbi_trap_error_one(const struct sbi_trap_context *tcntx,
+			       const char *prefix, u32 hartid, u32 depth)
 {
-	u32 hartid = current_hartid();
+	const struct sbi_trap_info *trap = &tcntx->trap;
+	const struct sbi_trap_regs *regs = &tcntx->regs;
 
-	sbi_printf("%s: hart%d: %s (error %d)\n", __func__, hartid, msg, rc);
-	sbi_printf("%s: hart%d: mcause=0x%" PRILX " mtval=0x%" PRILX "\n",
-		   __func__, hartid, trap->cause, trap->tval);
+	sbi_printf("\n");
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "mcause", trap->cause, "mtval", trap->tval);
 	if (misa_extension('H')) {
-		sbi_printf("%s: hart%d: mtval2=0x%" PRILX
-			   " mtinst=0x%" PRILX "\n",
-			   __func__, hartid, trap->tval2, trap->tinst);
+		sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+			   hartid, depth, "mtval2", trap->tval2, "mtinst", trap->tinst);
 	}
-	sbi_printf("%s: hart%d: mepc=0x%" PRILX " mstatus=0x%" PRILX "\n",
-		   __func__, hartid, regs->mepc, regs->mstatus);
-	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
-		   hartid, "ra", regs->ra, "sp", regs->sp);
-	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
-		   hartid, "gp", regs->gp, "tp", regs->tp);
-	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
-		   hartid, "s0", regs->s0, "s1", regs->s1);
-	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
-		   hartid, "a0", regs->a0, "a1", regs->a1);
-	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
-		   hartid, "a2", regs->a2, "a3", regs->a3);
-	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
-		   hartid, "a4", regs->a4, "a5", regs->a5);
-	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
-		   hartid, "a6", regs->a6, "a7", regs->a7);
-	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
-		   hartid, "s2", regs->s2, "s3", regs->s3);
-	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
-		   hartid, "s4", regs->s4, "s5", regs->s5);
-	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
-		   hartid, "s6", regs->s6, "s7", regs->s7);
-	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
-		   hartid, "s8", regs->s8, "s9", regs->s9);
-	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
-		   hartid, "s10", regs->s10, "s11", regs->s11);
-	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
-		   hartid, "t0", regs->t0, "t1", regs->t1);
-	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
-		   hartid, "t2", regs->t2, "t3", regs->t3);
-	sbi_printf("%s: hart%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", __func__,
-		   hartid, "t4", regs->t4, "t5", regs->t5);
-	sbi_printf("%s: hart%d: %s=0x%" PRILX "\n", __func__, hartid, "t6",
-		   regs->t6);
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "mepc", regs->mepc, "mstatus", regs->mstatus);
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "ra", regs->ra, "sp", regs->sp);
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "gp", regs->gp, "tp", regs->tp);
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "s0", regs->s0, "s1", regs->s1);
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "a0", regs->a0, "a1", regs->a1);
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "a2", regs->a2, "a3", regs->a3);
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "a4", regs->a4, "a5", regs->a5);
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "a6", regs->a6, "a7", regs->a7);
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "s2", regs->s2, "s3", regs->s3);
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "s4", regs->s4, "s5", regs->s5);
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "s6", regs->s6, "s7", regs->s7);
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "s8", regs->s8, "s9", regs->s9);
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "s10", regs->s10, "s11", regs->s11);
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "t0", regs->t0, "t1", regs->t1);
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "t2", regs->t2, "t3", regs->t3);
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX " %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "t4", regs->t4, "t5", regs->t5);
+	sbi_printf("%s: hart%d: trap%d: %s=0x%" PRILX "\n", prefix,
+		   hartid, depth, "t6", regs->t6);
+}
+
+static void __noreturn sbi_trap_error(const char *msg, int rc,
+				      const struct sbi_trap_context *tcntx)
+{
+	u32 depth = 0, hartid = current_hartid();
+	const struct sbi_trap_context *tc;
+
+	for (tc = tcntx; tc; tc = tc->prev_context)
+		depth++;
+
+	sbi_printf("\n");
+	sbi_printf("%s: hart%d: trap%d: %s (error %d)\n", __func__,
+		   hartid, depth - 1, msg, rc);
+	for (tc = tcntx; tc; tc = tc->prev_context)
+		sbi_trap_error_one(tc, __func__, hartid, --depth);
 
 	sbi_hart_hang();
 }
@@ -321,7 +336,7 @@ struct sbi_trap_context *sbi_trap_handler(struct sbi_trap_context *tcntx)
 
 trap_done:
 	if (rc)
-		sbi_trap_error(msg, rc, trap, regs);
+		sbi_trap_error(msg, rc, tcntx);
 	sbi_trap_set_context(scratch, tcntx->prev_context);
 	return tcntx;
 }
