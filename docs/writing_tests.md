@@ -6,7 +6,7 @@ SBIUnit
 SBIUnit is a set of macros and functions which simplify the test development and
 automate the test execution and evaluation. All of the SBIUnit definitions are
 in the `include/sbi/sbi_unit_test.h` header file, and implementations are
-available in `lib/sbi/sbi_unit_test.c`.
+available in `lib/sbi/tests/sbi_unit_test.c`.
 
 Simple SBIUnit test
 -------------------
@@ -30,7 +30,7 @@ size_t sbi_strlen(const char *str)
 
 which calculates the string length.
 
-Create the file `lib/sbi/sbi_string_test.c` with the following content:
+Create the file `lib/sbi/tests/sbi_string_test.c` with the following content:
 
 ```c
 #include <sbi/sbi_unit_test.h>
@@ -50,10 +50,10 @@ static struct sbiunit_test_case string_test_cases[] = {
 SBIUNIT_TEST_SUITE(string_test_suite, string_test_cases);
 ```
 
-Then, add the corresponding Makefile entries to `lib/sbi/objects.mk`:
+Then, add the corresponding Makefile entries to `lib/sbi/tests/objects.mk`:
 ```lang-makefile
 ...
-libsbi-objs-$(CONFIG_SBIUNIT) += sbi_string_test.o
+libsbitests-objs-$(CONFIG_SBIUNIT) += sbi_string_test.o
 carray-sbi_unit_tests-$(CONFIG_SBIUNIT) += string_test_suite
 ```
 
@@ -86,7 +86,7 @@ Now let's try to change this test in the way that it will fail:
 # Running SBIUNIT tests #
 ...
 ## Running test suite: string_test_suite
-[SBIUnit] [.../opensbi/lib/sbi/sbi_string_test.c:6]: strlen_test: Condition "(sbi_strlen("Hello")) == (100)" expected to be true!
+[SBIUnit] [.../opensbi/lib/sbi/tests/sbi_string_test.c:6]: strlen_test: Condition "(sbi_strlen("Hello")) == (100)" expected to be true!
 [FAILED] strlen_test
 0 PASSED / 1 FAILED / 1 TOTAL
 ```
@@ -95,17 +95,16 @@ Covering the static functions / using the static definitions
 
 SBIUnit also allows you to test static functions. In order to do so, simply
 include your test source in the file you would like to test. Complementing the
-example above, just add this to the
-`lib/sbi/sbi_string.c` file:
+example above, just add this to the `lib/sbi/sbi_string.c` file:
 
 ```c
 #ifdef CONFIG_SBIUNIT
-#include "sbi_string_test.c"
+#include "tests/sbi_string_test.c"
 #endif
 ```
 
 In this case you should only add a new carray entry pointing to the test suite
-to `lib/sbi/objects.mk`:
+to `lib/sbi/tests/objects.mk`:
 ```lang-makefile
 ...
 carray-sbi_unit_tests-$(CONFIG_SBIUNIT) += string_test_suite
@@ -114,12 +113,12 @@ carray-sbi_unit_tests-$(CONFIG_SBIUNIT) += string_test_suite
 You don't have to compile the `sbi_string_test.o` separately, because the
 test code will be included into the `sbi_string` object file.
 
-See example in `lib/sbi/sbi_console_test.c`, where statically declared
+See example in `lib/sbi/tests/sbi_console_test.c`, where statically declared
 `console_dev` variable is used to mock the `sbi_console_device` structure.
 
 "Mocking" the structures
 ------------------------
-See the example of structure "mocking" in the `lib/sbi/sbi_console_test.c`,
+See the example of structure "mocking" in `lib/sbi/tests/sbi_console_test.c`,
 where the sbi_console_device structure was mocked to be used in various
 console-related functions in order to test them.
 
