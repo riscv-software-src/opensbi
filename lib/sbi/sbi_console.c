@@ -472,7 +472,7 @@ const struct sbi_console_device *sbi_console_get_device(void)
 
 void sbi_console_set_device(const struct sbi_console_device *dev)
 {
-	if (!dev || console_dev)
+	if (!dev)
 		return;
 
 	console_dev = dev;
@@ -488,7 +488,3 @@ int sbi_console_init(struct sbi_scratch *scratch)
 
 	return rc;
 }
-
-#ifdef CONFIG_SBIUNIT
-#include "sbi_console_test.c"
-#endif

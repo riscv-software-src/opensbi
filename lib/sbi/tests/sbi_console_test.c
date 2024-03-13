@@ -3,6 +3,8 @@
  *
  * Author: Ivan Orlov <ivan.orlov0322@gmail.com>
  */
+#include <sbi/riscv_locks.h>
+#include <sbi/sbi_console.h>
 #include <sbi/sbi_unit_test.h>
 
 #define TEST_CONSOLE_BUF_LEN 1024
@@ -32,13 +34,13 @@ static const struct sbi_console_device test_console_dev = {
 /* Mock the console device */
 static inline void test_console_begin(const struct sbi_console_device *device)
 {
-	old_dev = console_dev;
-	console_dev = device;
+	old_dev = sbi_console_get_device();
+	sbi_console_set_device(device);
 }
 
 static inline void test_console_end(void)
 {
-	console_dev = old_dev;
+	sbi_console_set_device(old_dev);
 }
 
 static void putc_test(struct sbiunit_test_case *test)
