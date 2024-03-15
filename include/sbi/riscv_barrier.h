@@ -40,7 +40,11 @@
 #define smp_wmb()		RISCV_FENCE(w,w)
 
 /* CPU relax for busy loop */
-#define cpu_relax()		asm volatile ("" : : : "memory")
+#define cpu_relax()						\
+do {								\
+	unsigned long __t;					\
+	__asm__ __volatile__ ("div %0, %0, zero" : "=r" (__t));	\
+} while (0)
 
 /* clang-format on */
 
