@@ -7,7 +7,12 @@
 #ifndef __SBI_BYTEORDER_H__
 #define __SBI_BYTEORDER_H__
 
-#include <sbi/sbi_types.h>
+#ifdef __ASSEMBLER__
+# define _conv_cast(type, val) (val)
+#else
+# include <sbi/sbi_types.h>
+# define _conv_cast(type, val) ((type)(val))
+#endif
 
 #define BSWAP16(x)	((((x) & 0x00ff) << 8) | \
 			 (((x) & 0xff00) >> 8))
@@ -25,37 +30,37 @@
 			 (((x) & 0xff00000000000000ULL) >> 56))
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__  /* CPU(little-endian) */
-#define cpu_to_be16(x)		((uint16_t)BSWAP16(x))
-#define cpu_to_be32(x)		((uint32_t)BSWAP32(x))
-#define cpu_to_be64(x)		((uint64_t)BSWAP64(x))
+#define cpu_to_be16(x)		_conv_cast(uint16_t, BSWAP16(x))
+#define cpu_to_be32(x)		_conv_cast(uint32_t, BSWAP32(x))
+#define cpu_to_be64(x)		_conv_cast(uint64_t, BSWAP64(x))
 
-#define be16_to_cpu(x)		((uint16_t)BSWAP16(x))
-#define be32_to_cpu(x)		((uint32_t)BSWAP32(x))
-#define be64_to_cpu(x)		((uint64_t)BSWAP64(x))
+#define be16_to_cpu(x)		_conv_cast(uint16_t, BSWAP16(x))
+#define be32_to_cpu(x)		_conv_cast(uint32_t, BSWAP32(x))
+#define be64_to_cpu(x)		_conv_cast(uint64_t, BSWAP64(x))
 
-#define cpu_to_le16(x)		((uint16_t)(x))
-#define cpu_to_le32(x)		((uint32_t)(x))
-#define cpu_to_le64(x)		((uint64_t)(x))
+#define cpu_to_le16(x)		_conv_cast(uint16_t, (x))
+#define cpu_to_le32(x)		_conv_cast(uint32_t, (x))
+#define cpu_to_le64(x)		_conv_cast(uint64_t, (x))
 
-#define le16_to_cpu(x)		((uint16_t)(x))
-#define le32_to_cpu(x)		((uint32_t)(x))
-#define le64_to_cpu(x)		((uint64_t)(x))
+#define le16_to_cpu(x)		_conv_cast(uint16_t, (x))
+#define le32_to_cpu(x)		_conv_cast(uint32_t, (x))
+#define le64_to_cpu(x)		_conv_cast(uint64_t, (x))
 #else /* CPU(big-endian) */
-#define cpu_to_be16(x)		((uint16_t)(x))
-#define cpu_to_be32(x)		((uint32_t)(x))
-#define cpu_to_be64(x)		((uint64_t)(x))
+#define cpu_to_be16(x)		_conv_cast(uint16_t, (x))
+#define cpu_to_be32(x)		_conv_cast(uint32_t, (x))
+#define cpu_to_be64(x)		_conv_cast(uint64_t, (x))
 
-#define be16_to_cpu(x)		((uint16_t)(x))
-#define be32_to_cpu(x)		((uint32_t)(x))
-#define be64_to_cpu(x)		((uint64_t)(x))
+#define be16_to_cpu(x)		_conv_cast(uint16_t, (x))
+#define be32_to_cpu(x)		_conv_cast(uint32_t, (x))
+#define be64_to_cpu(x)		_conv_cast(uint64_t, (x))
 
-#define cpu_to_le16(x)		((uint16_t)BSWAP16(x))
-#define cpu_to_le32(x)		((uint32_t)BSWAP32(x))
-#define cpu_to_le64(x)		((uint64_t)BSWAP64(x))
+#define cpu_to_le16(x)		_conv_cast(uint16_t, BSWAP16(x))
+#define cpu_to_le32(x)		_conv_cast(uint32_t, BSWAP32(x))
+#define cpu_to_le64(x)		_conv_cast(uint64_t, BSWAP64(x))
 
-#define le16_to_cpu(x)		((uint16_t)BSWAP16(x))
-#define le32_to_cpu(x)		((uint32_t)BSWAP32(x))
-#define le64_to_cpu(x)		((uint64_t)BSWAP64(x))
+#define le16_to_cpu(x)		_conv_cast(uint16_t, BSWAP16(x))
+#define le32_to_cpu(x)		_conv_cast(uint32_t, BSWAP32(x))
+#define le64_to_cpu(x)		_conv_cast(uint64_t, BSWAP64(x))
 #endif
 
 #if __riscv_xlen == 64
