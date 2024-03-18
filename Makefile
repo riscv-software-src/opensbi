@@ -227,7 +227,7 @@ savedefconfig: $(platform_src_dir)/Kconfig $(src_dir)/Kconfig
 	$(CMD_PREFIX)mkdir -p $(KCONFIG_DIR)
 	$(CMD_PREFIX)$(src_dir)/scripts/Kconfiglib/savedefconfig.py --kconfig $(src_dir)/Kconfig --out $(KCONFIG_DIR)/defconfig
 
-$(KCONFIG_CONFIG): $(platform_src_dir)/configs/$(PLATFORM_DEFCONFIG) $(platform_src_dir)/Kconfig $(src_dir)/Kconfig
+$(KCONFIG_CONFIG): $(platform_src_dir)/configs/$(PLATFORM_DEFCONFIG)
 	$(CMD_PREFIX)mkdir -p $(KCONFIG_DIR)
 	$(CMD_PREFIX)$(src_dir)/scripts/Kconfiglib/defconfig.py --kconfig $(src_dir)/Kconfig $(platform_src_dir)/configs/$(PLATFORM_DEFCONFIG)
 
