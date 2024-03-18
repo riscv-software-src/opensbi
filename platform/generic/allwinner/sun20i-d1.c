@@ -142,7 +142,7 @@ static void sun20i_d1_riscv_cfg_restore(void)
 
 static void sun20i_d1_riscv_cfg_init(void)
 {
-	u64 entry = sbi_hartid_to_scratch(0)->warmboot_addr;
+	u64 entry = sbi_scratch_thishart_ptr()->warmboot_addr;
 
 	/* Enable MMIO access. */
 	writel_relaxed(CCU_BGR_ENABLE, SUN20I_D1_CCU_BASE + RISCV_CFG_BGR_REG);
