@@ -244,6 +244,14 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
+	/*
+	 * All non-coldboot HARTs do HSM initialization (i.e. enter HSM state
+	 * machine) at the start of the warmboot path so it is wasteful to
+	 * have these HARTs busy spin in wait_for_coldboot() until coldboot
+	 * path is completed.
+	 */
+	wake_coldboot_harts(scratch, hartid);
+
 	rc = sbi_platform_early_init(plat, true);
 	if (rc)
 		sbi_hart_hang();
@@ -355,8 +363,6 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 	}
 
-	wake_coldboot_harts(scratch, hartid);
-
 	count = sbi_scratch_offset_ptr(scratch, init_count_offset);
 	(*count)++;
 
@@ -376,6 +382,7 @@ static void __noreturn init_warm_startup(struct sbi_scratch *scratch,
 	count = sbi_scratch_offset_ptr(scratch, entry_count_offset);
 	(*count)++;
 
+	/* Note: This has to be first thing in warmboot init sequence */
 	rc = sbi_hsm_init(scratch, hartid, false);
 	if (rc)
 		sbi_hart_hang();
