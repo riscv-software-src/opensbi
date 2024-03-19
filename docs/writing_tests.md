@@ -53,8 +53,8 @@ SBIUNIT_TEST_SUITE(string_test_suite, string_test_cases);
 Then, add the corresponding Makefile entries to `lib/sbi/tests/objects.mk`:
 ```lang-makefile
 ...
-libsbitests-objs-$(CONFIG_SBIUNIT) += sbi_string_test.o
 carray-sbi_unit_tests-$(CONFIG_SBIUNIT) += string_test_suite
+libsbi-objs-$(CONFIG_SBIUNIT) += tests/sbi_string_test.o
 ```
 
 If you compiled OpenSBI with CONFIG_SBIUNIT enabled before, you may need to
@@ -112,9 +112,6 @@ carray-sbi_unit_tests-$(CONFIG_SBIUNIT) += string_test_suite
 
 You don't have to compile the `sbi_string_test.o` separately, because the
 test code will be included into the `sbi_string` object file.
-
-See example in `lib/sbi/tests/sbi_console_test.c`, where statically declared
-`console_dev` variable is used to mock the `sbi_console_device` structure.
 
 "Mocking" the structures
 ------------------------
