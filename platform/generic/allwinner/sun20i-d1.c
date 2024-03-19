@@ -33,15 +33,6 @@
 #define RISCV_CFG_BGR_REG		0xd0c
 #define PPU_BGR_REG			0x1ac
 
-/*
- * CSRs
- */
-
-#define CSR_MXSTATUS			0x7c0
-#define CSR_MHCR			0x7c1
-#define CSR_MCOR			0x7c2
-#define CSR_MHINT			0x7c5
-
 static unsigned long csr_mxstatus;
 static unsigned long csr_mhcr;
 static unsigned long csr_mhint;
@@ -49,24 +40,24 @@ static unsigned long csr_mhint;
 static void sun20i_d1_csr_save(void)
 {
 	/* Save custom CSRs. */
-	csr_mxstatus	= csr_read(CSR_MXSTATUS);
-	csr_mhcr	= csr_read(CSR_MHCR);
-	csr_mhint	= csr_read(CSR_MHINT);
+	csr_mxstatus	= csr_read(THEAD_C9XX_CSR_MXSTATUS);
+	csr_mhcr	= csr_read(THEAD_C9XX_CSR_MHCR);
+	csr_mhint	= csr_read(THEAD_C9XX_CSR_MHINT);
 
 	/* Flush and disable caches. */
-	csr_write(CSR_MCOR, 0x22);
-	csr_write(CSR_MHCR, 0x0);
+	csr_write(THEAD_C9XX_CSR_MCOR, 0x22);
+	csr_write(THEAD_C9XX_CSR_MHCR, 0x0);
 }
 
 static void sun20i_d1_csr_restore(void)
 {
 	/* Invalidate caches and the branch predictor. */
-	csr_write(CSR_MCOR, 0x70013);
+	csr_write(THEAD_C9XX_CSR_MCOR, 0x70013);
 
 	/* Restore custom CSRs, including the cache state. */
-	csr_write(CSR_MXSTATUS,	csr_mxstatus);
-	csr_write(CSR_MHCR,	csr_mhcr);
-	csr_write(CSR_MHINT,	csr_mhint);
+	csr_write(THEAD_C9XX_CSR_MXSTATUS, csr_mxstatus);
+	csr_write(THEAD_C9XX_CSR_MHCR, csr_mhcr);
+	csr_write(THEAD_C9XX_CSR_MHINT, csr_mhint);
 }
 
 /*
