@@ -24,6 +24,7 @@
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_pmu.h>
 #include <sbi/sbi_dbtr.h>
+#include <sbi/sbi_sse.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_string.h>
 #include <sbi/sbi_timer.h>
@@ -319,6 +320,12 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
+	rc = sbi_sse_init(scratch, true);
+	if (rc) {
+		sbi_printf("%s: sse init failed (error %d)\n", __func__, rc);
+		sbi_hart_hang();
+	}
+
 	rc = sbi_pmu_init(scratch, true);
 	if (rc) {
 		sbi_printf("%s: pmu init failed (error %d)\n",
@@ -442,6 +449,10 @@ static void __noreturn init_warm_startup(struct sbi_scratch *scratch,
 		sbi_hart_hang();
 
 	rc = sbi_hart_init(scratch, false);
+	if (rc)
+		sbi_hart_hang();
+
+	rc = sbi_sse_init(scratch, false);
 	if (rc)
 		sbi_hart_hang();
 
@@ -652,6 +663,8 @@ void __noreturn sbi_exit(struct sbi_scratch *scratch)
 		sbi_hart_hang();
 
 	sbi_platform_early_exit(plat);
+
+	sbi_sse_exit(scratch);
 
 	sbi_pmu_exit(scratch);
 
