@@ -54,4 +54,8 @@ config SBIUNIT
 	bool "Enable SBIUNIT tests"
 	default n
 
+config SBI_ECALL_SSE
+	bool "SSE extension"
+	default y
+
 endmenu
