@@ -164,6 +164,9 @@ else
 USE_LD_FLAG	=	-fuse-ld=bfd
 endif
 
+# Setup privileged architecture
+OPENSBI_PRIV_SPEC = 1.12
+
 # Check whether the linker supports creating PIEs
 OPENSBI_LD_PIE := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) $(USE_LD_FLAG) -fPIE -nostdlib -Wl,-pie -x c /dev/null -o /dev/null >/dev/null 2>&1 && echo y || echo n)
 
@@ -178,6 +181,15 @@ CC_SUPPORT_STRICT_ALIGN := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) -nostdlib
 
 # Check whether the assembler and the compiler support the Zicsr and Zifencei extensions
 CC_SUPPORT_ZICSR_ZIFENCEI := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) -nostdlib -march=rv$(OPENSBI_CC_XLEN)imafd_zicsr_zifencei -x c /dev/null -o /dev/null 2>&1 | grep "zicsr\|zifencei" > /dev/null && echo n || echo y)
+
+# Check whether the assembler and the compiler support the privileged architecture option (used by OpenSBI)
+CC_SUPPORT_PRIV_SPEC_LATEST := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) -nostdlib -Wa,-mpriv-spec=$(OPENSBI_PRIV_SPEC) -x c -c /dev/null -o /dev/null >/dev/null 2>&1 && echo y || echo n)
+
+# Check whether the assembler support the H extension with .option arch,+h
+AS_SUPPORT_H_EXT_BY_OPTION_ARCH := $(shell echo ".option arch,+h" | $(AS) $(CLANG_TARGET) $(RELAX_FLAG) -nostdlib -x assembler-with-cpp -c - -o /dev/null 2>&1 | grep -i "warning:.*option" > /dev/null && echo n || echo y)
+
+# Check whether the ".insn" directive on the assembler (with raw value) is supported
+AS_SUPPORT_INSN_RAW_DIRECTIVE := $(shell echo ".insn 0x1000000f" | $(AS) $(CLANG_TARGET) $(RELAX_FLAG) -nostdlib -x assembler-with-cpp -c - -o /dev/null >/dev/null 2>&1 && echo y || echo n)
 
 # Build Info:
 # OPENSBI_BUILD_TIME_STAMP -- the compilation time stamp
@@ -330,6 +342,14 @@ ifeq ($(BUILD_INFO),y)
 GENFLAGS	+=	-DOPENSBI_BUILD_TIME_STAMP="\"$(OPENSBI_BUILD_TIME_STAMP)\""
 GENFLAGS	+=	-DOPENSBI_BUILD_COMPILER_VERSION="\"$(OPENSBI_BUILD_COMPILER_VERSION)\""
 endif
+ifeq ($(AS_SUPPORT_INSN_RAW_DIRECTIVE),y)
+GENFLAGS    +=  -DRAW_INSN=".insn"
+else
+GENFLAGS    +=  -DRAW_INSN=".word"
+endif
+ifeq ($(AS_SUPPORT_H_EXT_BY_OPTION_ARCH),y)
+GENFLAGS    +=  -DOPENSBI_H_EXT_BY_OPTION_ARCH_SUPPORTED
+endif
 ifdef PLATFORM
 GENFLAGS	+=	-include $(KCONFIG_AUTOHEADER)
 endif
@@ -353,6 +373,9 @@ CFLAGS		+=	-mstrict-align
 endif
 CFLAGS		+=	-mabi=$(PLATFORM_RISCV_ABI) -march=$(PLATFORM_RISCV_ISA)
 CFLAGS		+=	-mcmodel=$(PLATFORM_RISCV_CODE_MODEL)
+ifeq ($(CC_SUPPORT_PRIV_SPEC_LATEST),y)
+CFLAGS		+=	-Wa,-mpriv-spec=$(OPENSBI_PRIV_SPEC)
+endif
 CFLAGS		+=	$(RELAX_FLAG)
 CFLAGS		+=	$(GENFLAGS)
 CFLAGS		+=	$(platform-cflags-y)
@@ -374,6 +397,9 @@ ASFLAGS		+=	-mstrict-align
 endif
 ASFLAGS		+=	-mabi=$(PLATFORM_RISCV_ABI) -march=$(PLATFORM_RISCV_ISA)
 ASFLAGS		+=	-mcmodel=$(PLATFORM_RISCV_CODE_MODEL)
+ifeq ($(CC_SUPPORT_PRIV_SPEC_LATEST),y)
+ASFLAGS		+=	-Wa,-mpriv-spec=$(OPENSBI_PRIV_SPEC)
+endif
 ASFLAGS		+=	$(RELAX_FLAG)
 ifneq ($(CC_IS_CLANG),y)
 ifneq ($(RELAX_FLAG),)
