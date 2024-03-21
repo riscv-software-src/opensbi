@@ -223,6 +223,9 @@ static int sbi_trap_nonaia_irq(unsigned long irq)
 	case IRQ_M_SOFT:
 		sbi_ipi_process();
 		break;
+	case IRQ_PMU_OVF:
+		sbi_pmu_ovf_irq();
+		break;
 	case IRQ_M_EXT:
 		return sbi_irqchip_process();
 	default:
@@ -245,6 +248,9 @@ static int sbi_trap_aia_irq(void)
 			break;
 		case IRQ_M_SOFT:
 			sbi_ipi_process();
+			break;
+		case IRQ_PMU_OVF:
+			sbi_pmu_ovf_irq();
 			break;
 		case IRQ_M_EXT:
 			rc = sbi_irqchip_process();

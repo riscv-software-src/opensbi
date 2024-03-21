@@ -17,6 +17,7 @@
 #include <sbi/sbi_pmu.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_string.h>
+#include <sbi/sbi_sse.h>
 
 /** Information about hardware counters */
 struct sbi_pmu_hw_event {
@@ -62,6 +63,8 @@ struct sbi_pmu_hart_state {
 	uint32_t active_events[SBI_PMU_HW_CTR_MAX + SBI_PMU_FW_CTR_MAX];
 	/* Bitmap of firmware counters started */
 	unsigned long fw_counters_started;
+	/* if true, SSE is enabled */
+	bool sse_enabled;
 	/*
 	 * Counter values for SBI firmware events and event codes
 	 * for platform firmware events. Both are mutually exclusive
@@ -298,6 +301,16 @@ int sbi_pmu_add_raw_event_counter_map(uint64_t select, uint64_t select_mask, u32
 {
 	return pmu_add_hw_event_map(SBI_PMU_EVENT_RAW_IDX,
 				    SBI_PMU_EVENT_RAW_IDX, cmap, select, select_mask);
+}
+
+void sbi_pmu_ovf_irq()
+{
+	/*
+	 * We need to disable LCOFIP before returning to S-mode or we will loop
+	 * on LCOFIP being triggered
+	 */
+	csr_clear(CSR_MIE, MIP_LCOFIP);
+	sbi_sse_inject_event(SBI_SSE_EVENT_LOCAL_PMU);
 }
 
 static int pmu_ctr_enable_irq_hw(int ctr_idx)
@@ -574,6 +587,10 @@ int sbi_pmu_ctr_stop(unsigned long cbase, unsigned long cmask,
 			pmu_reset_hw_mhpmevent(cidx);
 		}
 	}
+
+	/* Clear MIP_LCOFIP to avoid spurious interrupts */
+	if (phs->sse_enabled)
+		csr_clear(CSR_MIP, MIP_LCOFIP);
 
 	return ret;
 }
@@ -962,6 +979,7 @@ static void pmu_reset_event_map(struct sbi_pmu_hart_state *phs)
 	for (j = 0; j < SBI_PMU_FW_CTR_MAX; j++)
 		phs->fw_counters_data[j] = 0;
 	phs->fw_counters_started = 0;
+	phs->sse_enabled = 0;
 }
 
 const struct sbi_pmu_device *sbi_pmu_get_device(void)
@@ -992,6 +1010,37 @@ void sbi_pmu_exit(struct sbi_scratch *scratch)
 
 	pmu_reset_event_map(phs);
 }
+
+static void pmu_sse_enable(uint32_t event_id)
+{
+	struct sbi_pmu_hart_state *phs = pmu_thishart_state_ptr();
+
+	phs->sse_enabled = true;
+	csr_clear(CSR_MIDELEG, sbi_pmu_irq_bit());
+	csr_clear(CSR_MIP, MIP_LCOFIP);
+	csr_set(CSR_MIE, MIP_LCOFIP);
+}
+
+static void pmu_sse_disable(uint32_t event_id)
+{
+	struct sbi_pmu_hart_state *phs = pmu_thishart_state_ptr();
+
+	csr_clear(CSR_MIE, MIP_LCOFIP);
+	csr_clear(CSR_MIP, MIP_LCOFIP);
+	csr_set(CSR_MIDELEG, sbi_pmu_irq_bit());
+	phs->sse_enabled = false;
+}
+
+static void pmu_sse_complete(uint32_t event_id)
+{
+	csr_set(CSR_MIE, MIP_LCOFIP);
+}
+
+static const struct sbi_sse_cb_ops pmu_sse_cb_ops = {
+	.enable_cb = pmu_sse_enable,
+	.disable_cb = pmu_sse_disable,
+	.complete_cb = pmu_sse_complete,
+};
 
 int sbi_pmu_init(struct sbi_scratch *scratch, bool cold_boot)
 {
@@ -1031,6 +1080,8 @@ int sbi_pmu_init(struct sbi_scratch *scratch, bool cold_boot)
 
 		total_ctrs = num_hw_ctrs + SBI_PMU_FW_CTR_MAX;
 	}
+
+	sbi_sse_set_cb_ops(SBI_SSE_EVENT_LOCAL_PMU, &pmu_sse_cb_ops);
 
 	phs = pmu_get_hart_state_ptr(scratch);
 	if (!phs) {

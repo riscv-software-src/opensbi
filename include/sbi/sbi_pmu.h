@@ -11,6 +11,7 @@
 #define __SBI_PMU_H__
 
 #include <sbi/sbi_types.h>
+#include <sbi/sbi_trap.h>
 
 struct sbi_scratch;
 
@@ -149,5 +150,7 @@ int sbi_pmu_ctr_cfg_match(unsigned long cidx_base, unsigned long cidx_mask,
 			  uint64_t event_data);
 
 int sbi_pmu_ctr_incr_fw(enum sbi_pmu_fw_event_code_id fw_id);
+
+void sbi_pmu_ovf_irq();
 
 #endif
