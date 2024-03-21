@@ -456,8 +456,15 @@ _skip_trap_handler_hyp:
 
 	/* Initialize SBI runtime */
 	csrr	a0, CSR_MSCRATCH
+	beqz  s10, endp
+
+	REG_S s10, SBI_TRAP_REGS_OFFSET(s10)(sp)
+	REG_L s10, SBI_TRAP_REGS_OFFSET(s10)(a0)
+	li s10, 0
 	call	sbi_init
 
+endp:
+	call to_be_stopped
 	/* We don't expect to reach here hence just hang */
 	j	_start_hang
 
@@ -617,7 +624,7 @@ memcmp:
 	REG_S	s7, SBI_TRAP_REGS_OFFSET(s7)(sp)
 	REG_S	s8, SBI_TRAP_REGS_OFFSET(s8)(sp)
 	REG_S	s9, SBI_TRAP_REGS_OFFSET(s9)(sp)
-	REG_S	s10, SBI_TRAP_REGS_OFFSET(s10)(sp)
+	//REG_S	s10, SBI_TRAP_REGS_OFFSET(s10)(sp)
 	REG_S	s11, SBI_TRAP_REGS_OFFSET(s11)(sp)
 	REG_S	t3, SBI_TRAP_REGS_OFFSET(t3)(sp)
 	REG_S	t4, SBI_TRAP_REGS_OFFSET(t4)(sp)
@@ -682,7 +689,7 @@ memcmp:
 	REG_L	s7, SBI_TRAP_REGS_OFFSET(s7)(a0)
 	REG_L	s8, SBI_TRAP_REGS_OFFSET(s8)(a0)
 	REG_L	s9, SBI_TRAP_REGS_OFFSET(s9)(a0)
-	REG_L	s10, SBI_TRAP_REGS_OFFSET(s10)(a0)
+	//REG_L	s10, SBI_TRAP_REGS_OFFSET(s10)(a0)
 	REG_L	s11, SBI_TRAP_REGS_OFFSET(s11)(a0)
 	REG_L	t3, SBI_TRAP_REGS_OFFSET(t3)(a0)
 	REG_L	t4, SBI_TRAP_REGS_OFFSET(t4)(a0)
@@ -793,7 +800,7 @@ _reset_regs:
 	li s7, 0
 	li s8, 0
 	li s9, 0
-	li s10, 0
+	//li s10, 0
 	li s11, 0
 	li t3, 0
 	li t4, 0
