@@ -61,6 +61,7 @@ if [ -z "${ARRAY_NAME}" ]; then
 	usage
 fi
 
+printf "// Generated with $(basename $0) from $(basename ${CONFIG_FILE})\n"
 printf "#include <%s>\n\n" "${TYPE_HEADER}"
 
 for VAR in ${VAR_LIST}; do
