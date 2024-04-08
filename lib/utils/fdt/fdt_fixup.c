@@ -394,7 +394,7 @@ void fdt_config_fixup(void *fdt)
 		return;
 
 	config_offset = fdt_node_offset_by_compatible(fdt, chosen_offset, "opensbi,config");
-	if (chosen_offset < 0)
+	if (config_offset < 0)
 		return;
 
 	fdt_nop_node(fdt, config_offset);
