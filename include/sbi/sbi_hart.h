@@ -74,6 +74,7 @@ struct sbi_hart_ext_data {
 };
 
 extern const struct sbi_hart_ext_data sbi_hart_ext[];
+extern const int sbi_hart_ext_size;
 
 /*
  * Smepmp enforces access boundaries between M-mode and

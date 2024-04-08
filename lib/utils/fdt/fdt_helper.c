@@ -401,7 +401,7 @@ static int fdt_parse_isa_one_hart(const char *isa, unsigned long *extensions)
 				continue;			\
 			}
 
-		for (j = 0; j < SBI_HART_EXT_MAX; j++) {
+		for (j = 0; j < sbi_hart_ext_size; j++) {
 			set_multi_letter_ext(sbi_hart_ext[j].name,
 					     sbi_hart_ext[j].id);
 		}

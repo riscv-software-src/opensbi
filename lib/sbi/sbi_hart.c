@@ -668,6 +668,8 @@ const struct sbi_hart_ext_data sbi_hart_ext[] = {
 	__SBI_HART_EXT_DATA(smcdeleg, SBI_HART_EXT_SMCDELEG),
 };
 
+const int sbi_hart_ext_size = sizeof(sbi_hart_ext) / sizeof(sbi_hart_ext[0]);
+
 /**
  * Get the hart extensions in string format
  *
