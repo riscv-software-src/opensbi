@@ -22,7 +22,6 @@ platform-runcmd = xl_spike \
 platform-objs-y += platform.o
 
 # Blobs to build
-FW_TEXT_START=0xA0000000
 FW_DYNAMIC=y
 FW_JUMP=y
 

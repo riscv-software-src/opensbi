@@ -16,7 +16,6 @@ platform-objs-y += platform.o
 PLATFORM_RISCV_XLEN = 64
 
 # Blobs to build
-FW_TEXT_START=0x80000000
 FW_JUMP=n
 
 ifeq ($(PLATFORM_RISCV_XLEN), 32)

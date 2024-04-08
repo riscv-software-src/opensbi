@@ -41,9 +41,6 @@ platform-objs-y += platform.o
 #
 # platform-objs-y += <dt file name>.o
 
-# Firmware load address configuration. This is mandatory.
-FW_TEXT_START=0x80000000
-
 # Optional parameter for path to external FDT
 # FW_FDT_PATH="path to platform flattened device tree file"
 
@@ -69,8 +66,7 @@ FW_JUMP=<y|n>
 # endif
 # FW_JUMP_FDT_OFFSET=0x2200000
 #
-# You can use fixed address for jump firmware as an alternative option,
-# but this may fail when setting wrong FW_TEXT_START. Use with caution.
+# You can use fixed address for jump firmware as an alternative option.
 # SBI will prefer "<X>_ADDR" if both "<X>_ADDR" and "<X>_OFFSET" are
 # defined
 # ifeq ($(PLATFORM_RISCV_XLEN), 32)
@@ -97,8 +93,7 @@ endif
 # FW_PAYLOAD_PATH="path to next boot stage binary image file"
 # FW_PAYLOAD_FDT_OFFSET=0x2200000
 #
-# You can use fixed address for payload firmware as an alternative option,
-# but this may fail when setting wrong FW_TEXT_START. Use with caution.
+# You can use fixed address for payload firmware as an alternative option.
 # SBI will prefer "FW_PAYLOAD_FDT_ADDR" if both "FW_PAYLOAD_FDT_OFFSET"
 # and "FW_PAYLOAD_FDT_ADDR" are defined.
 # FW_PAYLOAD_FDT_ADDR=0x82200000

@@ -35,7 +35,7 @@ follows:
   At least one of *FW_JUMP_ADDR* and *FW_JUMP_OFFSET* (see below) should be
   defined. Compilation errors will result from not defining one of them.
 
-* **FW_JUMP_OFFSET** - Address offset from the *FW_TEXT_START* where the
+* **FW_JUMP_OFFSET** - Address offset from the opensbi load address where the
   entry point of the next booting stage is located. This offset is used as
   relocatable address of the next booting stage entry point. If *FW_JUMP_ADDR*
   is also defined, the firmware will prefer *FW_JUMP_ADDR*.
@@ -62,7 +62,7 @@ follows:
   echo fdt overlaps kernel, increase FW_JUMP_FDT_ADDR
   ```
 
-* **FW_JUMP_FDT_OFFSET** - Address offset from the *FW_TEXT_START* where
+* **FW_JUMP_FDT_OFFSET** - Address offset from the opensbi load address where
   the FDT will be passed to the next booting stage. This offset is used
   as relocatable address of the FDT passed to the next booting stage. If
   *FW_JUMP_FDT_ADDR* is also defined, the firmware will prefer

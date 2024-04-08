@@ -15,14 +15,13 @@ platform-ldflags-y =
 
 # Command for platform specific "make run"
 platform-runcmd = qemu-system-riscv$(PLATFORM_RISCV_XLEN) -M virt -m 256M \
-  -nographic -bios $(build_dir)/platform/generic/firmware/fw_payload.elf
+  -nographic -bios $(build_dir)/platform/generic/firmware/fw_payload.bin
 
 # Objects to build
 platform-objs-y += platform.o
 platform-objs-y += platform_override_modules.o
 
 # Blobs to build
-FW_TEXT_START=0x80000000
 FW_DYNAMIC=y
 FW_JUMP=y
 ifeq ($(PLATFORM_RISCV_XLEN), 32)

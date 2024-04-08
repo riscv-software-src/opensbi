@@ -53,9 +53,7 @@ _try_lottery:
 	bnez	a6, _wait_for_boot_hart
 
 	/* relocate the global table content */
-	li	t0, FW_TEXT_START	/* link start */
-	lla	t1, _fw_start		/* load start */
-	sub	t2, t1, t0		/* load offset */
+	lla	t2, _fw_start
 	lla	t0, __rel_dyn_start
 	lla	t1, __rel_dyn_end
 	beq	t0, t1, _relocate_done

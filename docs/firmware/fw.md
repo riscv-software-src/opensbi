@@ -61,8 +61,6 @@ Firmware Configuration and Compilation
 All firmware types support the following common compile time configuration
 parameters:
 
-* **FW_TEXT_START** - Defines the execution address of the OpenSBI firmware.
-  This configuration parameter is mandatory.
 * **FW_FDT_PATH** - Path to an external flattened device tree binary file to
   be embedded in the *.rodata* section of the final firmware. If this option
   is not provided then the firmware will expect the FDT to be passed as an

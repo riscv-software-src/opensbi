@@ -21,6 +21,5 @@ platform-varprefix-k210.o = dt_k210
 platform-padding-k210.o = 2048
 
 # Blobs to build
-FW_TEXT_START=0x80000000
 FW_PAYLOAD=y
 FW_PAYLOAD_ALIGN=0x1000

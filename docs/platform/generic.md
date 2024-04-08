@@ -9,10 +9,9 @@ boards.
 
 By default, the generic FDT platform makes following assumptions:
 
-1. platform FW_TEXT_START is 0x80000000
-2. platform features are default
-3. platform stack size is default
-4. platform has no quirks or work-arounds
+1. platform features are default
+2. platform stack size is default
+3. platform has no quirks or work-arounds
 
 The above assumptions (except 1) can be overridden by adding special platform
 callbacks which will be called based on FDT root node compatible string.
@@ -32,10 +31,6 @@ Users of the generic FDT platform will have to ensure that:
 
 To build the platform-specific library and firmware images, provide the
 *PLATFORM=generic* parameter to the top level `make` command.
-
-For custom FW_TEXT_START, we can build the platform-specific library and
-firmware images by passing *PLATFORM=generic FW_TEXT_START=<custom_text_start>*
-parameter to the top level `make` command.
 
 Platform Options
 ----------------

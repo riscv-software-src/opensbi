@@ -36,8 +36,8 @@ options. These configuration parameters can be defined using either the top
 level `make` command line or the target platform *objects.mk* configuration
 file. The parameters currently defined are as follows:
 
-* **FW_PAYLOAD_OFFSET** - Offset from *FW_TEXT_START* where the payload binary
-  will be linked in the final *FW_PAYLOAD* firmware binary image. This
+* **FW_PAYLOAD_OFFSET** - Offset from the opensbi load address where the payload
+  binary will be linked in the final *FW_PAYLOAD* firmware binary image. This
   configuration parameter is mandatory if *FW_PAYLOAD_ALIGN* is not defined.
   Compilation errors will result from an incorrect definition of
   *FW_PAYLOAD_OFFSET* or of *FW_PAYLOAD_ALIGN*, or if neither of these
@@ -62,7 +62,7 @@ file. The parameters currently defined are as follows:
   firmware will pass the FDT address passed by the previous booting stage
   to the next booting stage.
 
-* **FW_PAYLOAD_FDT_OFFSET** - Address offset from the *FW_TEXT_START* where
+* **FW_PAYLOAD_FDT_OFFSET** - Address offset from the opensbi load address where
   the FDT will be passed to the next booting stage. This offset is used as
   relocatable address of the FDT passed to the next booting stage. If
   *FW_PAYLOAD_FDT_ADDR* is also defined, the firmware will prefer *FW_PAYLOAD_FDT_ADDR*.
