@@ -208,7 +208,7 @@ static struct sse_global_event *sse_get_global_event(struct sbi_sse_event *e)
 }
 
 /**
- * If event is global, must be called under global event lock
+ * If event is global, must be called under enabled event lock
  */
 static void sse_enabled_event_lock(struct sbi_sse_event *e)
 {
@@ -219,9 +219,9 @@ static void sse_enabled_event_lock(struct sbi_sse_event *e)
 }
 
 /**
- * If event is global, must be called under global event lock
+ * If event is global, must be called under enabled event lock
  */
-static void sse_hart_unlock(struct sbi_sse_event *e)
+static void sse_enabled_event_unlock(struct sbi_sse_event *e)
 {
 	struct sse_hart_state *shs;
 
@@ -753,7 +753,7 @@ int sbi_sse_enable(uint32_t event_id)
 
 	sse_enabled_event_lock(e);
 	ret = sse_event_enable(e);
-	sse_hart_unlock(e);
+	sse_enabled_event_unlock(e);
 	sse_event_put(e);
 
 	return ret;
@@ -770,7 +770,7 @@ int sbi_sse_disable(uint32_t event_id)
 
 	sse_enabled_event_lock(e);
 	ret = sse_event_disable(e);
-	sse_hart_unlock(e);
+	sse_enabled_event_unlock(e);
 
 	sse_event_put(e);
 
