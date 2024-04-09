@@ -959,6 +959,12 @@ int sbi_sse_register(uint32_t event_id, unsigned long handler_entry_pc,
 	if (handler_entry_pc & 0x1)
 		return SBI_EINVAL;
 
+	if (!sbi_domain_check_addr_range(sbi_domain_thishart_ptr(),
+					 handler_entry_pc,
+					 sizeof(unsigned long), PRV_S,
+					 SBI_DOMAIN_EXECUTE))
+		return SBI_EINVALID_ADDR;
+
 	e = sse_event_get(event_id);
 	if (!e)
 		return SBI_EINVAL;
