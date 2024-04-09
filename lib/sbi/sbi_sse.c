@@ -578,9 +578,6 @@ void sbi_sse_process_pending_events(struct sbi_trap_regs *regs)
 
 	spin_lock(&state->enabled_event_lock);
 
-	if (sbi_list_empty(&state->enabled_event_list))
-		goto out;
-
 	sbi_list_for_each_entry(e, &state->enabled_event_list, node) {
 		ret = sse_event_check_inject(e, regs);
 		if (ret)
