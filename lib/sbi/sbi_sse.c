@@ -128,7 +128,7 @@ struct sse_hart_state {
 	 *
 	 * When an event is in a state >= ENABLED, then it is inserted in the
 	 * this enabled_event_list and thus can only be removed from this
-	 * list upon disable ecall or on complete with ONE_SHOT flag.
+	 * list upon disable ecall or on complete with ONESHOT flag.
 	 */
 	struct sbi_dlist enabled_event_list;
 
@@ -202,7 +202,7 @@ static struct sse_hart_state *sse_get_hart_state(struct sbi_sse_event *e)
 	return sse_get_hart_state_ptr(s);
 }
 
-static struct sse_global_event *sse_get_global_event(struct sbi_sse_event* e)
+static struct sse_global_event *sse_get_global_event(struct sbi_sse_event *e)
 {
 	return container_of(e, struct sse_global_event, event);
 }
@@ -552,11 +552,11 @@ static bool sse_event_check_inject(struct sbi_sse_event *e,
 				   struct sbi_trap_regs *regs)
 {
 	/*
-	* List of event is ordered by priority, stop at first running
-	* event since all other events after this one are of lower
-	* priority. This means an event of higher priority is already
-	* running.
-	*/
+	 * List of event is ordered by priority, stop at first running
+	 * event since all other events after this one are of lower
+	 * priority. This means an event of higher priority is already
+	 * running.
+	 */
 	if (sse_event_state(e) == SBI_SSE_STATE_RUNNING) {
 		return true;
 	}
@@ -882,10 +882,10 @@ int sbi_sse_read_attrs(uint32_t event_id, uint32_t base_attr_id,
 
 	/*
 	 * Copy all attributes at once since struct sse_event_attrs is matching
-	 * the SBI_SSE_ATTR_* attributes. While WRITE_ATTR attribute is not used
-	 * in s-mode sse handling path, READ_ATTR is used to retrieve the value
-	 * of registers when interrupted. Rather than doing multiple SBI calls,
-	 * a single one is done allowing to retrieve them all at once.
+	 * the SBI_SSE_ATTR_* attributes. READ_ATTR is used in SSE handling path
+	 * to retrieve the value of registers when interrupted. Rather than
+	 * doing multiple SBI calls a single one is done allowing to retrieve
+	 * them all at once.
 	 */
 	e_attrs = (unsigned long *)&e->attrs;
 	attrs = (unsigned long *)output_phys_lo;
