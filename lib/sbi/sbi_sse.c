@@ -344,7 +344,7 @@ static int sse_event_set_attr_check(struct sbi_sse_event *e, uint32_t attr_id,
 		break;
 	case SBI_SSE_ATTR_PRIO:
 #if __riscv_xlen > 32
-		if (val > 0xFFFFFFFFUL) {
+		if (val != (uint32_t)val) {
 			ret = SBI_EINVAL;
 			break;
 		}
