@@ -837,8 +837,8 @@ int sbi_sse_attr_check(uint32_t base_attr_id, uint32_t attr_count,
 		return SBI_EINVALID_ADDR;
 
 	if (!sbi_domain_check_addr_range(sbi_domain_thishart_ptr(), phys_lo,
-					 sizeof(unsigned long) * attr_count, 1,
-					 access))
+					 sizeof(unsigned long) * attr_count,
+					 PRV_S, access))
 		return SBI_EINVALID_ADDR;
 
 	return SBI_OK;
