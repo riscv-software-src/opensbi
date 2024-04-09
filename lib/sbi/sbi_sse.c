@@ -686,11 +686,11 @@ static int sse_event_enable(struct sbi_sse_event *e)
 	sse_event_set_state(e, SBI_SSE_STATE_ENABLED);
 	sse_event_add_to_list(e);
 
-	if (sse_event_pending(e))
+	sse_event_invoke_cb(e, enable_cb);
+
+	if (sse_event_is_global(e) && sse_event_pending(e))
 		sbi_ipi_send_many(1, e->attrs.hartid, sse_ipi_inject_event,
 				  NULL);
-
-	sse_event_invoke_cb(e, enable_cb);
 
 	return SBI_OK;
 }
