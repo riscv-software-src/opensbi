@@ -148,7 +148,7 @@ bool sbi_system_suspend_supported(u32 sleep_type)
 
 int sbi_system_suspend(u32 sleep_type, ulong resume_addr, ulong opaque)
 {
-	const struct sbi_domain *dom = sbi_domain_thishart_ptr();
+	struct sbi_domain *dom = sbi_domain_thishart_ptr();
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	void (*jump_warmboot)(void) = (void (*)(void))scratch->warmboot_addr;
 	unsigned int hartid = current_hartid();
@@ -171,13 +171,17 @@ int sbi_system_suspend(u32 sleep_type, ulong resume_addr, ulong opaque)
 	if (prev_mode != PRV_S && prev_mode != PRV_U)
 		return SBI_EFAIL;
 
+	spin_lock(&dom->assigned_harts_lock);
 	sbi_hartmask_for_each_hartindex(j, &dom->assigned_harts) {
 		i = sbi_hartindex_to_hartid(j);
 		if (i == hartid)
 			continue;
-		if (__sbi_hsm_hart_get_state(i) != SBI_HSM_STATE_STOPPED)
+		if (__sbi_hsm_hart_get_state(i) != SBI_HSM_STATE_STOPPED) {
+			spin_unlock(&dom->assigned_harts_lock);
 			return SBI_ERR_DENIED;
+		}
 	}
+	spin_unlock(&dom->assigned_harts_lock);
 
 	if (!sbi_domain_check_addr(dom, resume_addr, prev_mode,
 				   SBI_DOMAIN_EXECUTE))

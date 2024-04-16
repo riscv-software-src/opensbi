@@ -10,6 +10,7 @@
 #ifndef __SBI_DOMAIN_H__
 #define __SBI_DOMAIN_H__
 
+#include <sbi/riscv_locks.h>
 #include <sbi/sbi_types.h>
 #include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_domain_context.h>
@@ -173,6 +174,8 @@ struct sbi_domain {
 	 * in the coldboot path
 	 */
 	struct sbi_hartmask assigned_harts;
+	/** Spinlock for accessing assigned_harts */
+	spinlock_t assigned_harts_lock;
 	/** Name of this domain */
 	char name[64];
 	/** Possible HARTs in this domain */
