@@ -9,7 +9,7 @@
 
 #include <sbi/riscv_encoding.h>
 #include <sbi/riscv_asm.h>
-#include <andes/andes45.h>
+#include <andes/andes.h>
 
 	.section .text, "ax", %progbits
 	.align 3

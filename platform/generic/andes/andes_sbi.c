@@ -3,7 +3,7 @@
  * Copyright (C) 2023 Renesas Electronics Corp.
  *
  */
-#include <andes/andes45.h>
+#include <andes/andes.h>
 #include <andes/andes_sbi.h>
 #include <sbi/riscv_asm.h>
 #include <sbi/sbi_error.h>
@@ -13,7 +13,7 @@ enum sbi_ext_andes_fid {
 	SBI_EXT_ANDES_IOCP_SW_WORKAROUND,
 };
 
-static bool andes45_cache_controllable(void)
+static bool andes_cache_controllable(void)
 {
 	return (((csr_read(CSR_MICM_CFG) & MICM_CFG_ISZ_MASK) ||
 		 (csr_read(CSR_MDCM_CFG) & MDCM_CFG_DSZ_MASK)) &&
@@ -22,14 +22,14 @@ static bool andes45_cache_controllable(void)
 		misa_extension('U'));
 }
 
-static bool andes45_iocp_disabled(void)
+static bool andes_iocp_disabled(void)
 {
 	return (csr_read(CSR_MMSC_CFG) & MMSC_IOCP_MASK) ? false : true;
 }
 
-static bool andes45_apply_iocp_sw_workaround(void)
+static bool andes_apply_iocp_sw_workaround(void)
 {
-	return andes45_cache_controllable() & andes45_iocp_disabled();
+	return andes_cache_controllable() & andes_iocp_disabled();
 }
 
 int andes_sbi_vendor_ext_provider(long funcid,
@@ -39,7 +39,7 @@ int andes_sbi_vendor_ext_provider(long funcid,
 {
 	switch (funcid) {
 	case SBI_EXT_ANDES_IOCP_SW_WORKAROUND:
-		out->value = andes45_apply_iocp_sw_workaround();
+		out->value = andes_apply_iocp_sw_workaround();
 		break;
 
 	default:

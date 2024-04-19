@@ -1,7 +1,10 @@
-#ifndef _RISCV_ANDES45_H
-#define _RISCV_ANDES45_H
+/* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * Copyright (C) 2024 Andes Technology Corporation
+ */
 
-#define CSR_MARCHID_MICROID 0xfff
+#ifndef _RISCV_ANDES_H
+#define _RISCV_ANDES_H
 
 /* Memory and Miscellaneous Registers */
 #define CSR_MCACHE_CTL		0x7ca
@@ -23,19 +26,25 @@
 #define CSR_MCOUNTERMASK_U	0x7d3
 #define CSR_MCOUNTEROVF		0x7d4
 
+/* PMA Related Registers */
+#define CSR_PMACFG0		0xbc0
+#define CSR_PMAADDR0		0xbd0
+
 #define MICM_CFG_ISZ_OFFSET		6
-#define MICM_CFG_ISZ_MASK		(0x7  << MICM_CFG_ISZ_OFFSET)
+#define MICM_CFG_ISZ_MASK		(7 << MICM_CFG_ISZ_OFFSET)
 
 #define MDCM_CFG_DSZ_OFFSET		6
-#define MDCM_CFG_DSZ_MASK		(0x7  << MDCM_CFG_DSZ_OFFSET)
+#define MDCM_CFG_DSZ_MASK		(7 << MDCM_CFG_DSZ_OFFSET)
 
 #define MMSC_CFG_CCTLCSR_OFFSET		16
-#define MMSC_CFG_CCTLCSR_MASK		(0x1 << MMSC_CFG_CCTLCSR_OFFSET)
-#define MMSC_IOCP_OFFSET			47
-#define MMSC_IOCP_MASK			(0x1ULL << MMSC_IOCP_OFFSET)
+#define MMSC_CFG_CCTLCSR_MASK		(1 << MMSC_CFG_CCTLCSR_OFFSET)
+#define MMSC_CFG_PPMA_OFFSET		30
+#define MMSC_CFG_PPMA_MASK		(1 << MMSC_CFG_PPMA_OFFSET)
+#define MMSC_IOCP_OFFSET		47
+#define MMSC_IOCP_MASK			(1ULL << MMSC_IOCP_OFFSET)
 
 #define MCACHE_CTL_CCTL_SUEN_OFFSET	8
-#define MCACHE_CTL_CCTL_SUEN_MASK	(0x1 << MCACHE_CTL_CCTL_SUEN_OFFSET)
+#define MCACHE_CTL_CCTL_SUEN_MASK	(1 << MCACHE_CTL_CCTL_SUEN_OFFSET)
 
 /* Performance monitor */
 #define MMSC_CFG_PMNDS_MASK		(1 << 15)
@@ -58,4 +67,4 @@
 
 #endif /* __ASSEMBLER__ */
 
-#endif /* _RISCV_ANDES45_H */
+#endif /* _RISCV_ANDES_H */

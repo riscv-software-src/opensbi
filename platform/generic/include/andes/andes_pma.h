@@ -3,21 +3,21 @@
  * Copyright (C) 2023 Renesas Electronics Corp.
  */
 
-#ifndef _ANDES45_PMA_H_
-#define _ANDES45_PMA_H_
+#ifndef _ANDES_PMA_H_
+#define _ANDES_PMA_H_
 
 #include <sbi/sbi_types.h>
 
-#define ANDES45_MAX_PMA_REGIONS			16
+#define ANDES_MAX_PMA_REGIONS			16
 
 /* Naturally aligned power of 2 region */
-#define ANDES45_PMACFG_ETYP_NAPOT		3
+#define ANDES_PMACFG_ETYP_NAPOT			3
 
 /* Memory, Non-cacheable, Bufferable */
-#define ANDES45_PMACFG_MTYP_MEM_NON_CACHE_BUF	(3 << 2)
+#define ANDES_PMACFG_MTYP_MEM_NON_CACHE_BUF	(3 << 2)
 
 /**
- * struct andes45_pma_region - Describes PMA regions
+ * struct andes_pma_region - Describes PMA regions
  *
  * @pa: Address to be configured in the PMA
  * @size: Size of the region
@@ -32,7 +32,7 @@
  *              be set in the DT node. Note Linux expects single node
  *              with this property set.
  */
-struct andes45_pma_region {
+struct andes_pma_region {
 	unsigned long pa;
 	unsigned long size;
 	u8 flags:7;
@@ -42,7 +42,7 @@ struct andes45_pma_region {
 	bool dma_default;
 };
 
-int andes45_pma_setup_regions(const struct andes45_pma_region *pma_regions,
-			      unsigned int pma_regions_count);
+int andes_pma_setup_regions(const struct andes_pma_region *pma_regions,
+			    unsigned int pma_regions_count);
 
-#endif /* _ANDES45_PMA_H_ */
+#endif /* _ANDES_PMA_H_ */

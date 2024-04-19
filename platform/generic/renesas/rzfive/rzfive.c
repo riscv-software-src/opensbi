@@ -4,19 +4,19 @@
  *
  */
 
-#include <andes/andes45_pma.h>
+#include <andes/andes_pma.h>
 #include <andes/andes_pmu.h>
 #include <andes/andes_sbi.h>
 #include <platform_override.h>
 #include <sbi/sbi_domain.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 
-static const struct andes45_pma_region renesas_rzfive_pma_regions[] = {
+static const struct andes_pma_region renesas_rzfive_pma_regions[] = {
 	{
 		.pa = 0x58000000,
 		.size = 0x8000000,
-		.flags = ANDES45_PMACFG_ETYP_NAPOT |
-			 ANDES45_PMACFG_MTYP_MEM_NON_CACHE_BUF,
+		.flags = ANDES_PMACFG_ETYP_NAPOT |
+			 ANDES_PMACFG_MTYP_MEM_NON_CACHE_BUF,
 		.dt_populate = true,
 		.shared_dma = true,
 		.no_map = true,
@@ -26,8 +26,8 @@ static const struct andes45_pma_region renesas_rzfive_pma_regions[] = {
 
 static int renesas_rzfive_final_init(bool cold_boot, const struct fdt_match *match)
 {
-	return andes45_pma_setup_regions(renesas_rzfive_pma_regions,
-					 array_size(renesas_rzfive_pma_regions));
+	return andes_pma_setup_regions(renesas_rzfive_pma_regions,
+				       array_size(renesas_rzfive_pma_regions));
 }
 
 static int renesas_rzfive_early_init(bool cold_boot, const struct fdt_match *match)

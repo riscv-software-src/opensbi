@@ -10,7 +10,8 @@
  *      Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
  */
 
-#include <andes/andes45_pma.h>
+#include <andes/andes.h>
+#include <andes/andes_pma.h>
 #include <libfdt.h>
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_io.h>
@@ -18,15 +19,7 @@
 #include <sbi/sbi_error.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 
-/* Configuration Registers */
-#define ANDES45_CSR_MMSC_CFG		0xFC2
-#define ANDES45_CSR_MMSC_PPMA_OFFSET	(1 << 30)
-
-#define ANDES45_PMAADDR_0		0xBD0
-
-#define ANDES45_PMACFG_0		0xBC0
-
-static inline unsigned long andes45_pma_read_cfg(unsigned int pma_cfg_off)
+static inline unsigned long andes_pma_read_cfg(unsigned int pma_cfg_off)
 {
 #define switchcase_pma_cfg_read(__pma_cfg_off, __val)		\
 	case __pma_cfg_off:					\
@@ -39,7 +32,7 @@ static inline unsigned long andes45_pma_read_cfg(unsigned int pma_cfg_off)
 	unsigned long ret = 0;
 
 	switch (pma_cfg_off) {
-	switchcase_pma_cfg_read_2(ANDES45_PMACFG_0, ret)
+	switchcase_pma_cfg_read_2(CSR_PMACFG0, ret)
 
 	default:
 		sbi_panic("%s: Unknown PMA CFG offset %#x", __func__, pma_cfg_off);
@@ -52,7 +45,7 @@ static inline unsigned long andes45_pma_read_cfg(unsigned int pma_cfg_off)
 #undef switchcase_pma_cfg_read
 }
 
-static inline void andes45_pma_write_cfg(unsigned int pma_cfg_off, unsigned long val)
+static inline void andes_pma_write_cfg(unsigned int pma_cfg_off, unsigned long val)
 {
 #define switchcase_pma_cfg_write(__pma_cfg_off, __val)		\
 	case __pma_cfg_off:					\
@@ -63,7 +56,7 @@ static inline void andes45_pma_write_cfg(unsigned int pma_cfg_off, unsigned long
 	switchcase_pma_cfg_write(__pma_cfg_off + 2, __val)
 
 	switch (pma_cfg_off) {
-	switchcase_pma_cfg_write_2(ANDES45_PMACFG_0, val)
+	switchcase_pma_cfg_write_2(CSR_PMACFG0, val)
 
 	default:
 		sbi_panic("%s: Unknown PMA CFG offset %#x", __func__, pma_cfg_off);
@@ -74,7 +67,7 @@ static inline void andes45_pma_write_cfg(unsigned int pma_cfg_off, unsigned long
 #undef switchcase_pma_cfg_write
 }
 
-static inline void andes45_pma_write_addr(unsigned int pma_addr_off, unsigned long val)
+static inline void andes_pma_write_addr(unsigned int pma_addr_off, unsigned long val)
 {
 #define switchcase_pma_write(__pma_addr_off, __val)		\
 	case __pma_addr_off:					\
@@ -94,7 +87,7 @@ static inline void andes45_pma_write_addr(unsigned int pma_addr_off, unsigned lo
 	switchcase_pma_write_8(__pma_addr_off + 8, __val)
 
 	switch (pma_addr_off) {
-	switchcase_pma_write_16(ANDES45_PMAADDR_0, val)
+	switchcase_pma_write_16(CSR_PMAADDR0, val)
 
 	default:
 		sbi_panic("%s: Unknown PMA ADDR offset %#x", __func__, pma_addr_off);
@@ -108,7 +101,7 @@ static inline void andes45_pma_write_addr(unsigned int pma_addr_off, unsigned lo
 #undef switchcase_pma_write
 }
 
-static inline unsigned long andes45_pma_read_addr(unsigned int pma_addr_off)
+static inline unsigned long andes_pma_read_addr(unsigned int pma_addr_off)
 {
 #define switchcase_pma_read(__pma_addr_off, __val)		\
 	case __pma_addr_off:					\
@@ -130,7 +123,7 @@ static inline unsigned long andes45_pma_read_addr(unsigned int pma_addr_off)
 	unsigned long ret = 0;
 
 	switch (pma_addr_off) {
-	switchcase_pma_read_16(ANDES45_PMAADDR_0, ret)
+	switchcase_pma_read_16(CSR_PMAADDR0, ret)
 
 	default:
 		sbi_panic("%s: Unknown PMA ADDR offset %#x", __func__, pma_addr_off);
@@ -146,9 +139,8 @@ static inline unsigned long andes45_pma_read_addr(unsigned int pma_addr_off)
 #undef switchcase_pma_read
 }
 
-static unsigned long
-andes45_pma_setup(const struct andes45_pma_region *pma_region,
-		  unsigned int entry_id)
+static unsigned long andes_pma_setup(const struct andes_pma_region *pma_region,
+				     unsigned int entry_id)
 {
 	unsigned long size = pma_region->size;
 	unsigned long addr = pma_region->pa;
@@ -168,30 +160,30 @@ andes45_pma_setup(const struct andes45_pma_region *pma_region,
 	if (entry_id > 15)
 		return SBI_EINVAL;
 
-	if (!(pma_region->flags & ANDES45_PMACFG_ETYP_NAPOT))
+	if (!(pma_region->flags & ANDES_PMACFG_ETYP_NAPOT))
 		return SBI_EINVAL;
 
 	if ((addr & (size - 1)) != 0)
 		return SBI_EINVAL;
 
-	pma_cfg_addr = entry_id / 8 ? ANDES45_PMACFG_0 + 2 : ANDES45_PMACFG_0;
-	pmacfg_val = andes45_pma_read_cfg(pma_cfg_addr);
+	pma_cfg_addr = entry_id / 8 ? CSR_PMACFG0 + 2 : CSR_PMACFG0;
+	pmacfg_val = andes_pma_read_cfg(pma_cfg_addr);
 	pmaxcfg = (char *)&pmacfg_val + (entry_id % 8);
 	*pmaxcfg = 0;
 	*pmaxcfg = pma_region->flags;
 
-	andes45_pma_write_cfg(pma_cfg_addr, pmacfg_val);
+	andes_pma_write_cfg(pma_cfg_addr, pmacfg_val);
 
 	pmaaddr = (addr >> 2) + (size >> 3) - 1;
 
-	andes45_pma_write_addr(ANDES45_PMAADDR_0 + entry_id, pmaaddr);
+	andes_pma_write_addr(CSR_PMAADDR0 + entry_id, pmaaddr);
 
-	return andes45_pma_read_addr(ANDES45_PMAADDR_0 + entry_id) == pmaaddr ?
-			pmaaddr : SBI_EINVAL;
+	return andes_pma_read_addr(CSR_PMAADDR0 + entry_id) == pmaaddr ?
+	       pmaaddr : SBI_EINVAL;
 }
 
-static int andes45_fdt_pma_resv(void *fdt, const struct andes45_pma_region *pma,
-				unsigned int index, int parent)
+static int andes_fdt_pma_resv(void *fdt, const struct andes_pma_region *pma,
+			      unsigned int index, int parent)
 {
 	int na = fdt_address_cells(fdt, 0);
 	int ns = fdt_size_cells(fdt, 0);
@@ -208,15 +200,15 @@ static int andes45_fdt_pma_resv(void *fdt, const struct andes45_pma_region *pma,
 	size_high = (u64)pma->size >> 32;
 	size_low = pma->size;
 
-	if (na > 1 && addr_high)
+	if (na > 1 && addr_high) {
 		sbi_snprintf(name, sizeof(name),
 			     "pma_resv%d@%x,%x", index,
 			     addr_high, addr_low);
-	else
+	} else {
 		sbi_snprintf(name, sizeof(name),
 			     "pma_resv%d@%x", index,
 			     addr_low);
-
+	}
 	subnode = fdt_add_subnode(fdt, parent, name);
 	if (subnode < 0)
 		return subnode;
@@ -244,7 +236,7 @@ static int andes45_fdt_pma_resv(void *fdt, const struct andes45_pma_region *pma,
 		dma_default = true;
 	}
 
-	/* encode the <reg> property value */
+	/* Encode the <reg> property value */
 	val = reg;
 	if (na > 1)
 		*val++ = cpu_to_fdt32(addr_high);
@@ -261,9 +253,9 @@ static int andes45_fdt_pma_resv(void *fdt, const struct andes45_pma_region *pma,
 	return 0;
 }
 
-static int andes45_fdt_reserved_memory_fixup(void *fdt,
-					     const struct andes45_pma_region *pma,
-					     unsigned int entry)
+static int andes_fdt_reserved_memory_fixup(void *fdt,
+					   const struct andes_pma_region *pma,
+					   unsigned int entry)
 {
 	int parent;
 
@@ -292,13 +284,13 @@ static int andes45_fdt_reserved_memory_fixup(void *fdt,
 			return err;
 	}
 
-	return andes45_fdt_pma_resv(fdt, pma, entry, parent);
+	return andes_fdt_pma_resv(fdt, pma, entry, parent);
 }
 
-int andes45_pma_setup_regions(const struct andes45_pma_region *pma_regions,
-			      unsigned int pma_regions_count)
+int andes_pma_setup_regions(const struct andes_pma_region *pma_regions,
+			    unsigned int pma_regions_count)
 {
-	unsigned long mmsc = csr_read(ANDES45_CSR_MMSC_CFG);
+	unsigned long mmsc = csr_read(CSR_MMSC_CFG);
 	unsigned int dt_populate_cnt;
 	unsigned int i, j;
 	unsigned long pa;
@@ -308,15 +300,15 @@ int andes45_pma_setup_regions(const struct andes45_pma_region *pma_regions,
 	if (!pma_regions || !pma_regions_count)
 		return 0;
 
-	if (pma_regions_count > ANDES45_MAX_PMA_REGIONS)
+	if (pma_regions_count > ANDES_MAX_PMA_REGIONS)
 		return SBI_EINVAL;
 
-	if ((mmsc & ANDES45_CSR_MMSC_PPMA_OFFSET) == 0)
+	if ((mmsc & MMSC_CFG_PPMA_MASK) == 0)
 		return SBI_ENOTSUPP;
 
 	/* Configure the PMA regions */
 	for (i = 0; i < pma_regions_count; i++) {
-		pa = andes45_pma_setup(&pma_regions[i], i);
+		pa = andes_pma_setup(&pma_regions[i], i);
 		if (pa == SBI_EINVAL)
 			return SBI_EINVAL;
 	}
@@ -341,7 +333,7 @@ int andes45_pma_setup_regions(const struct andes45_pma_region *pma_regions,
 		if (!pma_regions[i].dt_populate)
 			continue;
 
-		ret = andes45_fdt_reserved_memory_fixup(fdt, &pma_regions[i], j++);
+		ret = andes_fdt_reserved_memory_fixup(fdt, &pma_regions[i], j++);
 		if (ret)
 			return ret;
 	}

@@ -18,7 +18,7 @@
 #include <sbi/sbi_hsm.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_init.h>
-#include <andes/andes45.h>
+#include <andes/andes.h>
 
 static struct smu_data smu = { 0 };
 extern void __ae350_enable_coherency_warmboot(void);
@@ -65,8 +65,9 @@ static int ae350_hart_stop(void)
 	smu_set_wakeup_events(&smu, 0x0, hartid);
 	smu_set_command(&smu, DEEP_SLEEP_CMD, hartid);
 
-	rc = smu_set_reset_vector(&smu, (ulong)__ae350_enable_coherency_warmboot,
-			       hartid);
+	rc = smu_set_reset_vector(&smu,
+				  (ulong)__ae350_enable_coherency_warmboot,
+				  hartid);
 	if (rc)
 		goto fail;
 

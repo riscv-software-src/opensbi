@@ -5,7 +5,7 @@
  * Copyright (C) 2023 Andes Technology Corporation
  */
 
-#include <andes/andes45.h>
+#include <andes/andes.h>
 #include <andes/andes_pmu.h>
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_error.h>
