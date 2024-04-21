@@ -45,8 +45,13 @@ static struct thead_generic_quirks thead_th1520_quirks = {
 	.errata = THEAD_QUIRK_ERRATA_TLB_FLUSH | THEAD_QUIRK_ERRATA_THEAD_PMU,
 };
 
+static struct thead_generic_quirks canaan_k230_quirks = {
+	.errata = THEAD_QUIRK_ERRATA_THEAD_PMU,
+};
+
 static const struct fdt_match thead_generic_match[] = {
 	{ .compatible = "thead,th1520", .data = &thead_th1520_quirks },
+	{ .compatible = "canaan,kendryte-k230", .data = &canaan_k230_quirks },
 	{ },
 };
 
