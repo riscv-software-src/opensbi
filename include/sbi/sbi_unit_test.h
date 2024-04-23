@@ -19,6 +19,7 @@ struct sbiunit_test_case {
 
 struct sbiunit_test_suite {
 	const char *name;
+	void (*init)(void);
 	struct sbiunit_test_case *cases;
 };
 
@@ -34,6 +35,7 @@ struct sbiunit_test_suite {
 #define SBIUNIT_TEST_SUITE(suite_name, cases_arr)		\
 	struct sbiunit_test_suite suite_name = {		\
 		.name = #suite_name,				\
+		.init = NULL,					\
 		.cases = cases_arr				\
 	}
 

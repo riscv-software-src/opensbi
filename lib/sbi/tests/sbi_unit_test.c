@@ -17,6 +17,9 @@ static void run_test_suite(struct sbiunit_test_suite *suite)
 
 	sbi_printf("## Running test suite: %s\n", suite->name);
 
+	if (suite->init)
+		suite->init();
+
 	s_case = suite->cases;
 	while (s_case->test_func) {
 		s_case->test_func(s_case);
