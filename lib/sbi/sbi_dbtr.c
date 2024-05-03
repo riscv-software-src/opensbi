@@ -55,49 +55,29 @@ static unsigned long hart_state_ptr_offset;
 #error "Undefined XLEN"
 #endif
 
-static inline bool sbi_dbtr_shmem_disabled(void)
+/* must call with hs != NULL */
+static inline bool sbi_dbtr_shmem_disabled(
+	struct sbi_dbtr_hart_triggers_state *hs)
 {
-	struct sbi_dbtr_hart_triggers_state *hs = NULL;
-
-	hs = dbtr_get_hart_state_ptr(sbi_scratch_thishart_ptr());
-
-	if (!hs)
-		return true;
-
 	return (hs->shmem.phys_lo == SBI_DBTR_SHMEM_INVALID_ADDR &&
 		hs->shmem.phys_hi == SBI_DBTR_SHMEM_INVALID_ADDR
 		? true : false);
 }
 
-static inline void sbi_dbtr_disable_shmem(void)
+/* must call with hs != NULL */
+static inline void sbi_dbtr_disable_shmem(
+	struct sbi_dbtr_hart_triggers_state *hs)
 {
-	struct sbi_dbtr_hart_triggers_state *hs = NULL;
-
-	hs = dbtr_get_hart_state_ptr(sbi_scratch_thishart_ptr());
-
-	if (!hs)
-		return;
-
 	hs->shmem.phys_lo = SBI_DBTR_SHMEM_INVALID_ADDR;
 	hs->shmem.phys_hi = SBI_DBTR_SHMEM_INVALID_ADDR;
 }
 
-static inline void *hart_shmem_base(void)
+/* must call with hs which is not disabled */
+static inline void *hart_shmem_base(
+	struct sbi_dbtr_hart_triggers_state *hs)
 {
-	unsigned long phys_hi, phys_lo;
-	struct sbi_dbtr_hart_triggers_state *hs = NULL;
-
-	hs = dbtr_get_hart_state_ptr(sbi_scratch_thishart_ptr());
-	if (!hs)
-		return NULL;
-
-	phys_hi = hs->shmem.phys_hi;
-	phys_lo = hs->shmem.phys_lo;
-
-	if (phys_hi == SBI_DBTR_SHMEM_INVALID_ADDR && phys_hi == phys_lo)
-		return NULL;
-
-	return ((void *)(unsigned long)DBTR_SHMEM_MAKE_PHYS(phys_hi, phys_lo));
+	return ((void *)(unsigned long)DBTR_SHMEM_MAKE_PHYS(
+			hs->shmem.phys_hi, hs->shmem.phys_lo));
 }
 
 static void sbi_trigger_init(struct sbi_dbtr_trigger *trig,
@@ -186,7 +166,7 @@ int sbi_dbtr_init(struct sbi_scratch *scratch, bool coldboot)
 	}
 
 	/* disable the shared memory */
-	sbi_dbtr_disable_shmem();
+	sbi_dbtr_disable_shmem(hart_state);
 
 	/* Skip probing triggers if already probed */
 	if (hart_state->probed)
@@ -278,15 +258,19 @@ int sbi_dbtr_setup_shmem(const struct sbi_domain *dom, unsigned long smode,
 		return SBI_ERR_DENIED;
 	}
 
+	hart_state = dbtr_thishart_state_ptr();
+	if (!hart_state)
+		return SBI_ERR_FAILED;
+
 	/* call is to disable shared memory */
 	if (shmem_phys_lo == SBI_DBTR_SHMEM_INVALID_ADDR
 	    && shmem_phys_hi == SBI_DBTR_SHMEM_INVALID_ADDR) {
-		sbi_dbtr_disable_shmem();
+		sbi_dbtr_disable_shmem(hart_state);
 		return SBI_SUCCESS;
 	}
 
 	/* the shared memory must be disabled on this hart */
-	if (!sbi_dbtr_shmem_disabled())
+	if (!sbi_dbtr_shmem_disabled(hart_state))
 		return SBI_ERR_ALREADY_AVAILABLE;
 
 	/* lower physical address must be XLEN/8 bytes aligned */
@@ -297,10 +281,6 @@ int sbi_dbtr_setup_shmem(const struct sbi_domain *dom, unsigned long smode,
 		  DBTR_SHMEM_MAKE_PHYS(shmem_phys_hi, shmem_phys_lo), smode,
 		  SBI_DOMAIN_READ | SBI_DOMAIN_WRITE))
 		return SBI_ERR_INVALID_ADDRESS;
-
-	hart_state = dbtr_thishart_state_ptr();
-	if (!hart_state)
-		return SBI_ERR_FAILED;
 
 	hart_state->shmem.phys_lo = shmem_phys_lo;
 	hart_state->shmem.phys_hi = shmem_phys_hi;
@@ -531,10 +511,10 @@ int sbi_dbtr_read_trig(unsigned long smode,
 	    trig_idx_base + trig_count >= hs->total_trigs)
 		return SBI_ERR_INVALID_PARAM;
 
-	if (sbi_dbtr_shmem_disabled())
+	if (sbi_dbtr_shmem_disabled(hs))
 		return SBI_ERR_NO_SHMEM;
 
-	shmem_base = hart_shmem_base();
+	shmem_base = hart_shmem_base(hs);
 
 	for_each_trig_entry(shmem_base, trig_count, typeof(*entry), entry) {
 		sbi_hart_map_saddr((unsigned long)entry, sizeof(*entry));
@@ -561,11 +541,14 @@ int sbi_dbtr_install_trig(unsigned long smode,
 	struct sbi_dbtr_trigger *trig;
 	struct sbi_dbtr_hart_triggers_state *hs = NULL;
 
-	if (sbi_dbtr_shmem_disabled())
+	hs = dbtr_thishart_state_ptr();
+	if (!hs)
+		return SBI_ERR_FAILED;
+
+	if (sbi_dbtr_shmem_disabled(hs))
 		return SBI_ERR_NO_SHMEM;
 
-	shmem_base = hart_shmem_base();
-	hs = dbtr_thishart_state_ptr();
+	shmem_base = hart_shmem_base(hs);
 
 	/* Check requested triggers configuration */
 	for_each_trig_entry(shmem_base, trig_count, typeof(*entry), entry) {
@@ -673,11 +656,14 @@ int sbi_dbtr_update_trig(unsigned long smode,
 	void *shmem_base = NULL;
 	struct sbi_dbtr_hart_triggers_state *hs = NULL;
 
-	if (sbi_dbtr_shmem_disabled())
+	hs = dbtr_thishart_state_ptr();
+	if (!hs)
+		return SBI_ERR_FAILED;
+
+	if (sbi_dbtr_shmem_disabled(hs))
 		return SBI_ERR_NO_SHMEM;
 
-	shmem_base = hart_shmem_base();
-	hs = dbtr_thishart_state_ptr();
+	shmem_base = hart_shmem_base(hs);
 
 	for_each_set_bit_from(idx, &trig_mask, hs->total_trigs) {
 		trig = INDEX_TO_TRIGGER(idx);
