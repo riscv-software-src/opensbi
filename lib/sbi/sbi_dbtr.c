@@ -55,18 +55,18 @@ static unsigned long hart_state_ptr_offset;
 #error "Undefined XLEN"
 #endif
 
-static inline int sbi_dbtr_shmem_disabled(void)
+static inline bool sbi_dbtr_shmem_disabled(void)
 {
 	struct sbi_dbtr_hart_triggers_state *hs = NULL;
 
 	hs = dbtr_get_hart_state_ptr(sbi_scratch_thishart_ptr());
 
 	if (!hs)
-		return 1;
+		return true;
 
 	return (hs->shmem.phys_lo == SBI_DBTR_SHMEM_INVALID_ADDR &&
 		hs->shmem.phys_hi == SBI_DBTR_SHMEM_INVALID_ADDR
-		? 1 : 0);
+		? true : false);
 }
 
 static inline void sbi_dbtr_disable_shmem(void)
