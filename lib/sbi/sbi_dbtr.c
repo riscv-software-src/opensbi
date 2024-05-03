@@ -48,7 +48,7 @@ static unsigned long hart_state_ptr_offset;
 	     _idx++, _entry = ((_etype *)_base + _idx))
 
 #if __riscv_xlen == 64
-#define DBTR_SHMEM_MAKE_PHYS(_p_hi, _p_lo) (((u64)(_p_hi) << 32) | (_p_lo))
+#define DBTR_SHMEM_MAKE_PHYS(_p_hi, _p_lo) (_p_lo)
 #elif __riscv_xlen == 32
 #define DBTR_SHMEM_MAKE_PHYS(_p_hi, _p_lo) (((u64)(_p_hi) << 32) | (_p_lo))
 #else
