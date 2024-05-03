@@ -684,8 +684,6 @@ int sbi_dbtr_update_trig(unsigned long smode,
 
 	shmem_base = hart_shmem_base();
 	hs = dbtr_thishart_state_ptr();
-	if (!hs)
-		return SBI_ERR_FAILED;
 
 	for_each_set_bit_from(idx, &trig_mask, hs->total_trigs) {
 		trig = INDEX_TO_TRIGGER(idx);
