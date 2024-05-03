@@ -293,16 +293,10 @@ int sbi_dbtr_setup_shmem(const struct sbi_domain *dom, unsigned long smode,
 	if (shmem_phys_lo & SBI_DBTR_SHMEM_ALIGN_MASK)
 		return SBI_ERR_INVALID_PARAM;
 
-	if (dom && !sbi_domain_check_addr(dom, shmem_phys_lo, smode,
-					  SBI_DOMAIN_READ | SBI_DOMAIN_WRITE))
+	if (dom && !sbi_domain_check_addr(dom,
+		  DBTR_SHMEM_MAKE_PHYS(shmem_phys_hi, shmem_phys_lo), smode,
+		  SBI_DOMAIN_READ | SBI_DOMAIN_WRITE))
 		return SBI_ERR_INVALID_ADDRESS;
-
-	if (shmem_phys_hi != SBI_DBTR_SHMEM_INVALID_ADDR) {
-		if (dom &&
-		    !sbi_domain_check_addr(dom, shmem_phys_hi, smode,
-					   SBI_DOMAIN_READ | SBI_DOMAIN_WRITE))
-			return SBI_ERR_INVALID_ADDRESS;
-	}
 
 	hart_state = dbtr_thishart_state_ptr();
 	if (!hart_state)
