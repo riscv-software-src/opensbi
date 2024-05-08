@@ -1121,13 +1121,18 @@ void sbi_sse_exit(struct sbi_scratch *scratch)
 
 	for (i = 0; i < EVENT_COUNT; i++) {
 		e = sse_event_get(supported_events[i]);
-
-		if (!e || e->attrs.hartid != current_hartid())
+		if (!e)
 			continue;
+
+		if (e->attrs.hartid != current_hartid())
+			goto skip;
 
 		if (sse_event_state(e) > SBI_SSE_STATE_REGISTERED) {
 			sbi_printf("Event %d in invalid state at exit", i);
 			sse_event_set_state(e, SBI_SSE_STATE_UNUSED);
 		}
+
+skip:
+		sse_event_put(e);
 	}
 }
