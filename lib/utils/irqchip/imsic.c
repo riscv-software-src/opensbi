@@ -12,6 +12,7 @@
 #include <sbi/riscv_io.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_console.h>
+#include <sbi/sbi_csr_detect.h>
 #include <sbi/sbi_domain.h>
 #include <sbi/sbi_ipi.h>
 #include <sbi/sbi_irqchip.h>
@@ -222,6 +223,8 @@ static void imsic_local_eix_update(unsigned long base_id,
 
 void imsic_local_irqchip_init(void)
 {
+	struct sbi_trap_info trap = { 0 };
+
 	/*
 	 * This function is expected to be called from:
 	 * 1) nascent_init() platform callback which is called
@@ -230,6 +233,11 @@ void imsic_local_irqchip_init(void)
 	 * 2) irqchip_init() platform callback which is called
 	 *    in boot-up path.
 	 */
+
+	/* If Smaia not available then do nothing */
+	csr_read_allowed(CSR_MTOPI, (ulong)&trap);
+	if (trap.cause)
+		return;
 
 	/* Setup threshold to allow all enabled interrupts */
 	imsic_csr_write(IMSIC_EITHRESHOLD, IMSIC_ENABLE_EITHRESHOLD);
