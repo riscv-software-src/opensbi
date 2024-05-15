@@ -13,6 +13,12 @@ firmware-cflags-y +=
 firmware-asflags-y +=
 firmware-ldflags-y +=
 
+ifdef FW_TEXT_START
+firmware-genflags-y += -DFW_TEXT_START=$(FW_TEXT_START)
+else
+firmware-genflags-y += -DFW_TEXT_START=0x0
+endif
+
 ifdef FW_FDT_PATH
 firmware-genflags-y += -DFW_FDT_PATH=\"$(FW_FDT_PATH)\"
 ifdef FW_FDT_PADDING
