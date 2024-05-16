@@ -123,6 +123,9 @@ struct imsic_data *imsic_get_data(u32 hartid)
 {
 	struct sbi_scratch *scratch;
 
+	if (!imsic_ptr_offset)
+		return NULL;
+
 	scratch = sbi_hartid_to_scratch(hartid);
 	if (!scratch)
 		return NULL;
@@ -133,6 +136,9 @@ struct imsic_data *imsic_get_data(u32 hartid)
 int imsic_get_target_file(u32 hartid)
 {
 	struct sbi_scratch *scratch;
+
+	if (!imsic_file_offset)
+		return SBI_ENOENT;
 
 	scratch = sbi_hartid_to_scratch(hartid);
 	if (!scratch)
