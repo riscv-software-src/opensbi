@@ -73,17 +73,26 @@ int gpio_direction_output(struct gpio_pin *gp, int value)
 	if (!gp->chip->direction_output)
 		return SBI_ENOSYS;
 
+	if (gp->flags & GPIO_FLAG_ACTIVE_LOW)
+		value = value == 0 ? 1 : 0;
+
 	return gp->chip->direction_output(gp, value);
 }
 
 int gpio_get(struct gpio_pin *gp)
 {
+	int value;
+
 	if (!gp || !gp->chip || (gp->chip->ngpio <= gp->offset))
 		return SBI_EINVAL;
 	if (!gp->chip->get)
 		return SBI_ENOSYS;
 
-	return gp->chip->get(gp);
+	value = gp->chip->get(gp);
+
+	if (gp->flags & GPIO_FLAG_ACTIVE_LOW)
+		value = value == 0 ? 1 : 0;
+	return value;
 }
 
 int gpio_set(struct gpio_pin *gp, int value)
@@ -92,6 +101,9 @@ int gpio_set(struct gpio_pin *gp, int value)
 		return SBI_EINVAL;
 	if (!gp->chip->set)
 		return SBI_ENOSYS;
+
+	if (gp->flags & GPIO_FLAG_ACTIVE_LOW)
+		value = value == 0 ? 1 : 0;
 
 	gp->chip->set(gp, value);
 	return 0;
