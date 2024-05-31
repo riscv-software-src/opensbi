@@ -109,10 +109,17 @@ static unsigned long andes_pma_setup(const struct andes_pma_region *pma_region,
 	    !(pma_region->flags & ANDES_PMACFG_ETYP_NAPOT))
 		return SBI_EINVAL;
 
+#if __riscv_xlen == 64
 	pma_cfg_addr = CSR_PMACFG0 + ((entry_id / 8) ? 2 : 0);
 	pmacfg_val = andes_pma_read_num(pma_cfg_addr);
 	pmaxcfg = (char *)&pmacfg_val + (entry_id % 8);
-	*pmaxcfg = 0;
+#elif __riscv_xlen == 32
+	pma_cfg_addr = CSR_PMACFG0 + (entry_id / 4);
+	pmacfg_val = andes_pma_read_num(pma_cfg_addr);
+	pmaxcfg = (char *)&pmacfg_val + (entry_id % 4);
+#else
+#error "Unexpected __riscv_xlen"
+#endif
 	*pmaxcfg = pma_region->flags;
 
 	andes_pma_write_num(pma_cfg_addr, pmacfg_val);
