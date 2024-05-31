@@ -10,6 +10,8 @@
 
 #define ANDES_MAX_PMA_REGIONS			16
 
+#define ANDES_PMA_GRANULARITY			(1 << 12)
+
 /* Naturally aligned power of 2 region */
 #define ANDES_PMACFG_ETYP_NAPOT			3
 
