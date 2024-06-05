@@ -720,7 +720,9 @@ aplic_msi_parent_done:
 		deleg->child_index = 0;
 	}
 
-	del = fdt_getprop(fdt, nodeoff, "riscv,delegate", &len);
+	del = fdt_getprop(fdt, nodeoff, "riscv,delegation", &len);
+	if (!del)
+		del = fdt_getprop(fdt, nodeoff, "riscv,delegate", &len);
 	if (!del || len < (3 * sizeof(fdt32_t)))
 		goto skip_delegate_parse;
 	d = 0;
