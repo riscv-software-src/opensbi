@@ -135,8 +135,18 @@ static void mstatus_init(struct sbi_scratch *scratch)
 #endif
 		__set_menvcfg_ext(SBI_HART_EXT_SSTC, ENVCFG_STCE)
 		__set_menvcfg_ext(SBI_HART_EXT_SMCDELEG, ENVCFG_CDE);
+		__set_menvcfg_ext(SBI_HART_EXT_SVADU, ENVCFG_ADUE);
 
 #undef __set_menvcfg_ext
+
+		/*
+		 * When both Svade and Svadu are present in DT, the default scheme for managing
+		 * the PTE A/D bits should use Svade. Check Svadu before Svade extension to ensure
+		 * that the ADUE bit is cleared when the Svade support are specified.
+		 */
+
+		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SVADE))
+			menvcfg_val &= ~ENVCFG_ADUE;
 
 		csr_write(CSR_MENVCFG, menvcfg_val);
 #if __riscv_xlen == 32
@@ -668,6 +678,8 @@ const struct sbi_hart_ext_data sbi_hart_ext[] = {
 	__SBI_HART_EXT_DATA(smcdeleg, SBI_HART_EXT_SMCDELEG),
 	__SBI_HART_EXT_DATA(sscsrind, SBI_HART_EXT_SSCSRIND),
 	__SBI_HART_EXT_DATA(ssccfg, SBI_HART_EXT_SSCCFG),
+	__SBI_HART_EXT_DATA(svade, SBI_HART_EXT_SVADE),
+	__SBI_HART_EXT_DATA(svadu, SBI_HART_EXT_SVADU),
 };
 
 _Static_assert(SBI_HART_EXT_MAX == array_size(sbi_hart_ext),
