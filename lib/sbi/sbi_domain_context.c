@@ -27,7 +27,7 @@ static void switch_to_next_domain_context(struct sbi_context *ctx,
 					  struct sbi_context *dom_ctx)
 {
 	u32 hartindex = sbi_hartid_to_hartindex(current_hartid());
-	struct sbi_trap_regs *trap_regs;
+	struct sbi_trap_context *trap_ctx;
 	struct sbi_domain *current_dom = ctx->dom;
 	struct sbi_domain *target_dom = dom_ctx->dom;
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
@@ -66,10 +66,9 @@ static void switch_to_next_domain_context(struct sbi_context *ctx,
 		ctx->senvcfg	= csr_swap(CSR_SENVCFG, dom_ctx->senvcfg);
 
 	/* Save current trap state and restore target domain's trap state */
-	trap_regs = (struct sbi_trap_regs *)(csr_read(CSR_MSCRATCH) -
-					     SBI_TRAP_REGS_SIZE);
-	sbi_memcpy(&ctx->regs, trap_regs, sizeof(*trap_regs));
-	sbi_memcpy(trap_regs, &dom_ctx->regs, sizeof(*trap_regs));
+	trap_ctx = sbi_trap_get_context(scratch);
+	sbi_memcpy(&ctx->trap_ctx, trap_ctx, sizeof(*trap_ctx));
+	sbi_memcpy(trap_ctx, &dom_ctx->trap_ctx, sizeof(*trap_ctx));
 
 	/* Mark current context structure initialized because context saved */
 	ctx->initialized = true;

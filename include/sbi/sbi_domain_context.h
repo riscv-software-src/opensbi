@@ -14,7 +14,7 @@
 /** Context representation for a hart within a domain */
 struct sbi_context {
 	/** Trap-related states such as GPRs, mepc, and mstatus */
-	struct sbi_trap_regs regs;
+	struct sbi_trap_context trap_ctx;
 
 	/** Supervisor status register */
 	unsigned long sstatus;
