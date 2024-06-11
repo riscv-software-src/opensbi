@@ -22,22 +22,24 @@ int fdt_reset_driver_init(void *fdt, struct fdt_reset *drv)
 	int noff, rc = SBI_ENODEV;
 	const struct fdt_match *match;
 
-	noff = fdt_find_match(fdt, -1, drv->match_table, &match);
-	if (noff < 0)
-		return SBI_ENODEV;
+	noff = -1;
+	while ((noff = fdt_find_match(fdt, noff,
+				drv->match_table, &match)) >= 0) {
+		if (!fdt_node_is_enabled(fdt, noff))
+			continue;
 
-	if (!fdt_node_is_enabled(fdt, noff))
-		return SBI_ENODEV;
-
-	if (drv->init) {
-		rc = drv->init(fdt, noff, match);
-		if (rc && rc != SBI_ENODEV) {
-			sbi_printf("%s: %s init failed, %d\n",
-				   __func__, match->compatible, rc);
+		if (drv->init) {
+			rc = drv->init(fdt, noff, match);
+			if (rc && rc != SBI_ENODEV) {
+				sbi_printf("%s: %s init failed, %d\n",
+					__func__, match->compatible, rc);
+			}
 		}
+
+		return rc;
 	}
 
-	return rc;
+	return SBI_ENODEV;
 }
 
 void fdt_reset_init(void)
