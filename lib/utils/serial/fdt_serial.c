@@ -68,21 +68,21 @@ int fdt_serial_init(void)
 	for (pos = 0; pos < fdt_serial_drivers_size; pos++) {
 		drv = fdt_serial_drivers[pos];
 
-		noff = fdt_find_match(fdt, -1, drv->match_table, &match);
-		if (noff < 0)
-			continue;
+		noff = -1;
+		while ((noff = fdt_find_match(fdt, noff,
+					drv->match_table, &match)) >= 0) {
+			if (!fdt_node_is_enabled(fdt, noff))
+				continue;
 
-		if (!fdt_node_is_enabled(fdt, noff))
-			continue;
+			/* drv->init must not be NULL */
+			if (drv->init == NULL)
+				return SBI_EFAIL;
 
-		/* drv->init must not be NULL */
-		if (drv->init == NULL)
-			return SBI_EFAIL;
-
-		rc = drv->init(fdt, noff, match);
-		if (rc == SBI_ENODEV)
-			continue;
-		return rc;
+			rc = drv->init(fdt, noff, match);
+			if (rc == SBI_ENODEV)
+				continue;
+			return rc;
+		}
 	}
 
 	return SBI_ENODEV;
