@@ -44,6 +44,9 @@ static int fdt_timer_cold_init(void)
 		noff = -1;
 		while ((noff = fdt_find_match(fdt, noff,
 					drv->match_table, &match)) >= 0) {
+			if (!fdt_node_is_enabled(fdt, noff))
+				continue;
+
 			/* drv->cold_init must not be NULL */
 			if (drv->cold_init == NULL)
 				return SBI_EFAIL;
