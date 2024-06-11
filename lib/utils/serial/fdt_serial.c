@@ -40,6 +40,10 @@ int fdt_serial_init(void)
 			else
 				noff = fdt_path_offset(fdt, prop);
 		}
+		if (-1 < noff) {
+			if (!fdt_node_is_enabled(fdt, noff))
+				noff = -1;
+		}
 	}
 
 	/* First check DT node pointed by stdout-path */
@@ -66,6 +70,9 @@ int fdt_serial_init(void)
 
 		noff = fdt_find_match(fdt, -1, drv->match_table, &match);
 		if (noff < 0)
+			continue;
+
+		if (!fdt_node_is_enabled(fdt, noff))
 			continue;
 
 		/* drv->init must not be NULL */
