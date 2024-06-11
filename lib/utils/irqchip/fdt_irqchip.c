@@ -62,6 +62,9 @@ static int fdt_irqchip_cold_init(void)
 		drv_added = false;
 		while ((noff = fdt_find_match(fdt, noff,
 					drv->match_table, &match)) >= 0) {
+			if (!fdt_node_is_enabled(fdt,noff))
+				continue;
+
 			if (drv->cold_init) {
 				rc = drv->cold_init(fdt, noff, match);
 				if (rc == SBI_ENODEV)
