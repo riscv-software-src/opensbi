@@ -26,6 +26,9 @@ int fdt_reset_driver_init(void *fdt, struct fdt_reset *drv)
 	if (noff < 0)
 		return SBI_ENODEV;
 
+	if (!fdt_node_is_enabled(fdt, noff))
+		return SBI_ENODEV;
+
 	if (drv->init) {
 		rc = drv->init(fdt, noff, match);
 		if (rc && rc != SBI_ENODEV) {
