@@ -19,7 +19,7 @@ extern unsigned long fdt_reset_drivers_size;
 
 int fdt_reset_driver_init(void *fdt, struct fdt_reset *drv)
 {
-	int noff, rc = SBI_ENODEV;
+	int noff, rc, cnt = 0;
 	const struct fdt_match *match;
 
 	noff = -1;
@@ -30,16 +30,16 @@ int fdt_reset_driver_init(void *fdt, struct fdt_reset *drv)
 
 		if (drv->init) {
 			rc = drv->init(fdt, noff, match);
-			if (rc && rc != SBI_ENODEV) {
+			if (!rc)
+				cnt++;
+			else if (rc != SBI_ENODEV) {
 				sbi_printf("%s: %s init failed, %d\n",
 					__func__, match->compatible, rc);
 			}
 		}
-
-		return rc;
 	}
 
-	return SBI_ENODEV;
+	return cnt > 0 ? 0 : SBI_ENODEV;
 }
 
 void fdt_reset_init(void)
