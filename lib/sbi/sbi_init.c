@@ -14,6 +14,7 @@
 #include <sbi/sbi_cppc.h>
 #include <sbi/sbi_domain.h>
 #include <sbi/sbi_ecall.h>
+#include <sbi/sbi_fwft.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_heap.h>
@@ -308,6 +309,12 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 	}
 
+	rc = sbi_fwft_init(scratch, true);
+	if (rc) {
+		sbi_printf("%s: fwft init failed (error %d)\n", __func__, rc);
+		sbi_hart_hang();
+	}
+
 	/*
 	 * Note: Finalize domains after HSM initialization so that we
 	 * can startup non-root domains.
@@ -420,6 +427,10 @@ static void __noreturn init_warm_startup(struct sbi_scratch *scratch,
 		sbi_hart_hang();
 
 	rc = sbi_timer_init(scratch, false);
+	if (rc)
+		sbi_hart_hang();
+
+	rc = sbi_fwft_init(scratch, false);
 	if (rc)
 		sbi_hart_hang();
 
