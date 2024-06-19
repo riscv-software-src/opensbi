@@ -100,6 +100,47 @@ static int fwft_get_misaligned_delegation(struct fwft_config *conf,
 	return SBI_OK;
 }
 
+static int fwft_adue_supported(struct fwft_config *conf)
+{
+	if (!sbi_hart_has_extension(sbi_scratch_thishart_ptr(),
+				    SBI_HART_EXT_SVADU))
+		return SBI_ENOTSUPP;
+
+	return SBI_OK;
+}
+
+static int fwft_set_adue(struct fwft_config *conf, unsigned long value)
+{
+	if (value)
+#if __riscv_xlen == 32
+		csr_set(CSR_MENVCFGH, ENVCFG_ADUE >> 32);
+#else
+		csr_set(CSR_MENVCFG, ENVCFG_ADUE);
+#endif
+	else
+#if __riscv_xlen == 32
+		csr_clear(CSR_MENVCFGH, ENVCFG_ADUE >> 32);
+#else
+		csr_clear(CSR_MENVCFG, ENVCFG_ADUE);
+#endif
+
+	return SBI_OK;
+}
+
+static int fwft_get_adue(struct fwft_config *conf, unsigned long *value)
+{
+	unsigned long cfg;
+
+#if __riscv_xlen == 32
+	cfg = csr_read(CSR_MENVCFGH) & (ENVCFG_ADUE >> 32);
+#else
+	cfg = csr_read(CSR_MENVCFG) & ENVCFG_ADUE;
+#endif
+	*value = cfg != 0;
+
+	return SBI_OK;
+}
+
 static struct fwft_config* get_feature_config(enum sbi_fwft_feature_t feature)
 {
 	int i;
@@ -184,6 +225,12 @@ static const struct fwft_feature features[] =
 		.supported = fwft_misaligned_delegation_supported,
 		.set = fwft_set_misaligned_delegation,
 		.get = fwft_get_misaligned_delegation,
+	},
+	{
+		.id = SBI_FWFT_PTE_AD_HW_UPDATING,
+		.supported = fwft_adue_supported,
+		.set = fwft_set_adue,
+		.get = fwft_get_adue,
 	},
 };
 
