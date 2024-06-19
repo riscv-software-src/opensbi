@@ -38,6 +38,10 @@ config SBI_ECALL_CPPC
 	bool "CPPC extension"
 	default y
 
+config SBI_ECALL_FWFT
+	bool "Firmware Feature extension"
+	default y
+
 config SBI_ECALL_LEGACY
 	bool "SBI v0.1 legacy extensions"
 	default y

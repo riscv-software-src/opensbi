@@ -46,6 +46,9 @@ libsbi-objs-$(CONFIG_SBI_ECALL_DBCN) += sbi_ecall_dbcn.o
 carray-sbi_ecall_exts-$(CONFIG_SBI_ECALL_CPPC) += ecall_cppc
 libsbi-objs-$(CONFIG_SBI_ECALL_CPPC) += sbi_ecall_cppc.o
 
+carray-sbi_ecall_exts-$(CONFIG_SBI_ECALL_FWFT) += ecall_fwft
+libsbi-objs-$(CONFIG_SBI_ECALL_FWFT) += sbi_ecall_fwft.o
+
 carray-sbi_ecall_exts-$(CONFIG_SBI_ECALL_LEGACY) += ecall_legacy
 libsbi-objs-$(CONFIG_SBI_ECALL_LEGACY) += sbi_ecall_legacy.o
 
