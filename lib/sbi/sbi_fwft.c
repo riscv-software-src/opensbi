@@ -196,7 +196,7 @@ int sbi_fwft_set(enum sbi_fwft_feature_t feature, unsigned long value,
 		return ret;
 
 	if ((flags & ~SBI_FWFT_SET_FLAG_LOCK) != 0)
-		return SBI_ERR_INVALID_PARAM;
+		return SBI_EINVAL;
 
 	if (conf->flags & SBI_FWFT_SET_FLAG_LOCK)
 		return SBI_EDENIED;
