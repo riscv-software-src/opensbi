@@ -84,10 +84,12 @@ static int fwft_misaligned_delegation_supported(struct fwft_config *conf)
 static int fwft_set_misaligned_delegation(struct fwft_config *conf,
 					 unsigned long value)
 {
-	if (value)
+	if (value == 1)
 		csr_set(CSR_MEDELEG, MIS_DELEG);
-	else
+	else if (value == 0)
 		csr_clear(CSR_MEDELEG, MIS_DELEG);
+	else
+		return SBI_EINVAL;
 
 	return SBI_OK;
 }
@@ -111,18 +113,20 @@ static int fwft_adue_supported(struct fwft_config *conf)
 
 static int fwft_set_adue(struct fwft_config *conf, unsigned long value)
 {
-	if (value)
+	if (value == 1)
 #if __riscv_xlen == 32
 		csr_set(CSR_MENVCFGH, ENVCFG_ADUE >> 32);
 #else
 		csr_set(CSR_MENVCFG, ENVCFG_ADUE);
 #endif
-	else
+	else if (value == 0)
 #if __riscv_xlen == 32
 		csr_clear(CSR_MENVCFGH, ENVCFG_ADUE >> 32);
 #else
 		csr_clear(CSR_MENVCFG, ENVCFG_ADUE);
 #endif
+	else
+		return SBI_EINVAL;
 
 	return SBI_OK;
 }
