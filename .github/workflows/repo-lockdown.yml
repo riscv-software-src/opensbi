@@ -1,0 +1,26 @@
+name: 'Repo Lockdown'
+
+on:
+  pull_request_target:
+    types: opened
+
+permissions:
+  pull-requests: write
+
+jobs:
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dessant/repo-lockdown@v4
+        with:
+          pr-comment: |
+            We have mailing list based patch review so it would be great if you can send these patchs to OpenSBI mailing list.
+
+            You need to join OpenSBI mailing list using following link
+            http://lists.infradead.org/mailman/listinfo/opensbi
+
+            Make sure you use "git send-email" to send the patches.
+
+            Thanks for your contribution to OpenSBI project.
+          lock-pr: true
+          close-pr: true

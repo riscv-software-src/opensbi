@@ -4,6 +4,7 @@
 # exceptions we need even begin with dot
 !.clang-format
 !.gitignore
+!.github
 
 # Object files
 *.o
