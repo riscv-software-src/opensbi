@@ -23,7 +23,7 @@ The *FW_PAYLOAD* firmware can be enabled by any of the following methods:
 2. Specifying `FW_PAYLOAD=y` in the target platform *objects.mk* configuration
    file.
 
-The compiled *FW_PAYLOAD* firmware ELF file is named *fw_jump.elf*. Its
+The compiled *FW_PAYLOAD* firmware ELF file is named *fw_payload.elf*. Its
 expanded image file is *fw_payload.bin*. Both files are created in the
 platform-specific build directory under the
 *build/platform/<platform_subdir>/firmware* directory.
