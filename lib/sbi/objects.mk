@@ -13,7 +13,7 @@ libsbi-objs-y += riscv_hardfp.o
 libsbi-objs-y += riscv_locks.o
 
 libsbi-objs-y += sbi_ecall.o
-libsbi-objs-y += sbi_ecall_exts.o
+libsbi-objs-y += sbi_ecall_exts.carray.o
 
 # The order of below extensions is performance optimized
 carray-sbi_ecall_exts-$(CONFIG_SBI_ECALL_TIME) += ecall_time

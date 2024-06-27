@@ -8,7 +8,7 @@
 #
 
 libsbiutils-objs-$(CONFIG_FDT_IRQCHIP) += irqchip/fdt_irqchip.o
-libsbiutils-objs-$(CONFIG_FDT_IRQCHIP) += irqchip/fdt_irqchip_drivers.o
+libsbiutils-objs-$(CONFIG_FDT_IRQCHIP) += irqchip/fdt_irqchip_drivers.carray.o
 
 carray-fdt_irqchip_drivers-$(CONFIG_FDT_IRQCHIP_APLIC) += fdt_irqchip_aplic
 libsbiutils-objs-$(CONFIG_FDT_IRQCHIP_APLIC) += irqchip/fdt_irqchip_aplic.o
