@@ -687,6 +687,8 @@ clean:
 	$(CMD_PREFIX)mkdir -p $(build_dir)
 	$(if $(V), @echo " RM        $(build_dir)/*.o")
 	$(CMD_PREFIX)find $(build_dir) -type f -name "*.o" -exec rm -rf {} +
+	$(if $(V), @echo " RM        $(build_dir)/*.carray.c")
+	$(CMD_PREFIX)find $(build_dir) -type f -name "*.carray.c" -exec rm -rf {} +
 	$(if $(V), @echo " RM        $(build_dir)/*.a")
 	$(CMD_PREFIX)find $(build_dir) -type f -name "*.a" -exec rm -rf {} +
 	$(if $(V), @echo " RM        $(build_dir)/*.elf")
