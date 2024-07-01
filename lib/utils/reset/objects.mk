@@ -8,7 +8,7 @@
 #
 
 libsbiutils-objs-$(CONFIG_FDT_RESET) += reset/fdt_reset.o
-libsbiutils-objs-$(CONFIG_FDT_RESET) += reset/fdt_reset_drivers.o
+libsbiutils-objs-$(CONFIG_FDT_RESET) += reset/fdt_reset_drivers.carray.o
 
 carray-fdt_reset_drivers-$(CONFIG_FDT_RESET_ATCWDT200) += fdt_reset_atcwdt200
 libsbiutils-objs-$(CONFIG_FDT_RESET_ATCWDT200) += reset/fdt_reset_atcwdt200.o

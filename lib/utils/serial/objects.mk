@@ -8,7 +8,7 @@
 #
 
 libsbiutils-objs-$(CONFIG_FDT_SERIAL) += serial/fdt_serial.o
-libsbiutils-objs-$(CONFIG_FDT_SERIAL) += serial/fdt_serial_drivers.o
+libsbiutils-objs-$(CONFIG_FDT_SERIAL) += serial/fdt_serial_drivers.carray.o
 
 carray-fdt_serial_drivers-$(CONFIG_FDT_SERIAL_CADENCE) += fdt_serial_cadence
 libsbiutils-objs-$(CONFIG_FDT_SERIAL_CADENCE) += serial/fdt_serial_cadence.o

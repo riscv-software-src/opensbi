@@ -1,5 +1,5 @@
 libsbi-objs-$(CONFIG_SBIUNIT) += tests/sbi_unit_test.o
-libsbi-objs-$(CONFIG_SBIUNIT) += tests/sbi_unit_tests.o
+libsbi-objs-$(CONFIG_SBIUNIT) += tests/sbi_unit_tests.carray.o
 
 carray-sbi_unit_tests-$(CONFIG_SBIUNIT) += bitmap_test_suite
 libsbi-objs-$(CONFIG_SBIUNIT) += tests/sbi_bitmap_test.o
