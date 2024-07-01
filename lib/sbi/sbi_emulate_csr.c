@@ -10,7 +10,6 @@
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_bitops.h>
-#include <sbi/sbi_console.h>
 #include <sbi/sbi_emulate_csr.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>
@@ -151,10 +150,6 @@ int sbi_emulate_csr_read(int csr_num, struct sbi_trap_regs *regs,
 		break;
 	}
 
-	if (ret)
-		sbi_dprintf("%s: hartid%d: invalid csr_num=0x%x\n",
-			    __func__, current_hartid(), csr_num);
-
 	return ret;
 }
 
@@ -188,10 +183,6 @@ int sbi_emulate_csr_write(int csr_num, struct sbi_trap_regs *regs,
 		ret = SBI_ENOTSUPP;
 		break;
 	}
-
-	if (ret)
-		sbi_dprintf("%s: hartid%d: invalid csr_num=0x%x\n",
-			    __func__, current_hartid(), csr_num);
 
 	return ret;
 }
