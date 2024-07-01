@@ -57,9 +57,7 @@ carray-sbi_unit_tests-$(CONFIG_SBIUNIT) += string_test_suite
 libsbi-objs-$(CONFIG_SBIUNIT) += tests/sbi_string_test.o
 ```
 
-If you compiled OpenSBI with CONFIG_SBIUNIT enabled before, you may need to
-manually remove the build folder in order to regenerate the carray files:
-`rm -rf build/`.
+Now, run `make clean` in order to regenerate the carray-related files.
 
 Recompile OpenSBI with the CONFIG_SBIUNIT option enabled and run it in QEMU.
 You will see something like this:
