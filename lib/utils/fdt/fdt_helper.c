@@ -411,6 +411,18 @@ static int fdt_parse_isa_one_hart(const char *isa, unsigned long *extensions)
 	return 0;
 }
 
+static void fdt_parse_isa_extensions_one_hart(const char *isa,
+					      unsigned long *extensions,
+					      int len)
+{
+	size_t i;
+
+	for (i = 0; i < SBI_HART_EXT_MAX; i++) {
+		if (fdt_stringlist_contains(isa, len, sbi_hart_ext[i].name))
+			__set_bit(sbi_hart_ext[i].id, extensions);
+	}
+}
+
 static int fdt_parse_isa_all_harts(void *fdt)
 {
 	u32 hartid;
@@ -434,16 +446,23 @@ static int fdt_parse_isa_all_harts(void *fdt)
 		if (!fdt_node_is_enabled(fdt, cpu_offset))
 			continue;
 
-		val = fdt_getprop(fdt, cpu_offset, "riscv,isa", &len);
-		if (!val || len <= 0)
-			return SBI_ENOENT;
-
 		scratch = sbi_hartid_to_scratch(hartid);
 		if (!scratch)
 			return SBI_ENOENT;
 
 		hart_exts = sbi_scratch_offset_ptr(scratch,
 						   fdt_isa_bitmap_offset);
+
+		val = fdt_getprop(fdt, cpu_offset, "riscv,isa-extensions", &len);
+		if (val && len > 0) {
+			fdt_parse_isa_extensions_one_hart((const char *)val,
+							  hart_exts, len);
+			continue;
+		}
+
+		val = fdt_getprop(fdt, cpu_offset, "riscv,isa", &len);
+		if (!val || len <= 0)
+			return SBI_ENOENT;
 
 		err = fdt_parse_isa_one_hart((const char *)val, hart_exts);
 		if (err)
