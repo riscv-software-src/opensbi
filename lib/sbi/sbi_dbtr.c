@@ -47,13 +47,7 @@ static unsigned long hart_state_ptr_offset;
 	     _idx < _max;						\
 	     _idx++, _entry = ((_etype *)_base + _idx))
 
-#if __riscv_xlen == 64
 #define DBTR_SHMEM_MAKE_PHYS(_p_hi, _p_lo) (_p_lo)
-#elif __riscv_xlen == 32
-#define DBTR_SHMEM_MAKE_PHYS(_p_hi, _p_lo) (((u64)(_p_hi) << 32) | (_p_lo))
-#else
-#error "Undefined XLEN"
-#endif
 
 /* must call with hs != NULL */
 static inline bool sbi_dbtr_shmem_disabled(
@@ -276,6 +270,20 @@ int sbi_dbtr_setup_shmem(const struct sbi_domain *dom, unsigned long smode,
 	/* lower physical address must be XLEN/8 bytes aligned */
 	if (shmem_phys_lo & SBI_DBTR_SHMEM_ALIGN_MASK)
 		return SBI_ERR_INVALID_PARAM;
+
+	/*
+	* On RV32, the M-mode can only access the first 4GB of
+	* the physical address space because M-mode does not have
+	* MMU to access full 34-bit physical address space.
+	* So fail if the upper 32 bits of the physical address
+	* is non-zero on RV32.
+	*
+	* On RV64, kernel sets upper 64bit address part to zero.
+	* So fail if the upper 64bit of the physical address
+	* is non-zero on RV64.
+	*/
+	if (shmem_phys_hi)
+		return SBI_EINVALID_ADDR;
 
 	if (dom && !sbi_domain_check_addr(dom,
 		  DBTR_SHMEM_MAKE_PHYS(shmem_phys_hi, shmem_phys_lo), smode,
