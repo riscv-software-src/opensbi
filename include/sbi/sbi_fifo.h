@@ -30,7 +30,7 @@ enum sbi_fifo_inplace_update_types {
 };
 
 int sbi_fifo_dequeue(struct sbi_fifo *fifo, void *data);
-int sbi_fifo_enqueue(struct sbi_fifo *fifo, void *data);
+int sbi_fifo_enqueue(struct sbi_fifo *fifo, void *data, bool force);
 void sbi_fifo_init(struct sbi_fifo *fifo, void *queue_mem, u16 entries,
 		   u16 entry_size);
 int sbi_fifo_is_empty(struct sbi_fifo *fifo);

@@ -351,7 +351,8 @@ static int tlb_update(struct sbi_scratch *scratch,
 
 	ret = sbi_fifo_inplace_update(tlb_fifo_r, data, tlb_update_cb);
 
-	if (ret == SBI_FIFO_UNCHANGED && sbi_fifo_enqueue(tlb_fifo_r, data) < 0) {
+	if (ret == SBI_FIFO_UNCHANGED &&
+	    sbi_fifo_enqueue(tlb_fifo_r, data, false) < 0) {
 		/**
 		 * For now, Busy loop until there is space in the fifo.
 		 * There may be case where target hart is also

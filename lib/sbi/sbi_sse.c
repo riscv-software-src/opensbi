@@ -667,7 +667,7 @@ static int sse_ipi_inject_send(unsigned long hartid, uint32_t event_id)
 	sse_inject_fifo_r =
 		sbi_scratch_offset_ptr(remote_scratch, sse_inject_fifo_off);
 
-	ret = sbi_fifo_enqueue(sse_inject_fifo_r, &evt);
+	ret = sbi_fifo_enqueue(sse_inject_fifo_r, &evt, false);
 	if (ret)
 		return SBI_EFAIL;
 

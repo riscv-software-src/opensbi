@@ -90,6 +90,39 @@ static inline void  __sbi_fifo_enqueue(struct sbi_fifo *fifo, void *data)
 	fifo->avail++;
 }
 
+/* Note: must be called with fifo->qlock held */
+static inline void  __sbi_fifo_dequeue(struct sbi_fifo *fifo, void *data)
+{
+	if (!data)
+		goto skip_data_copy;
+
+	switch (fifo->entry_size) {
+	case 1:
+		*(char *)data = *(char *)(fifo->queue + (u32)fifo->tail * fifo->entry_size);
+		break;
+	case 2:
+		*(u16 *)data = *(u16 *)(fifo->queue + (u32)fifo->tail * fifo->entry_size);
+		break;
+	case 4:
+		*(u32 *)data = *(u32 *)(fifo->queue + (u32)fifo->tail * fifo->entry_size);
+		break;
+#if __riscv_xlen > 32
+	case 8:
+		*(u64 *)data = *(u64 *)(fifo->queue + (u32)fifo->tail * fifo->entry_size);
+		break;
+#endif
+	default:
+		sbi_memcpy(data, fifo->queue + (u32)fifo->tail * fifo->entry_size,
+			   fifo->entry_size);
+		break;
+	}
+
+skip_data_copy:
+	fifo->avail--;
+	fifo->tail++;
+	if (fifo->tail >= fifo->num_entries)
+		fifo->tail = 0;
+}
 
 /* Note: must be called with fifo->qlock held */
 static inline bool __sbi_fifo_is_empty(struct sbi_fifo *fifo)
@@ -173,7 +206,7 @@ int sbi_fifo_inplace_update(struct sbi_fifo *fifo, void *in,
 	return ret;
 }
 
-int sbi_fifo_enqueue(struct sbi_fifo *fifo, void *data)
+int sbi_fifo_enqueue(struct sbi_fifo *fifo, void *data, bool force)
 {
 	if (!fifo || !data)
 		return SBI_EINVAL;
@@ -181,9 +214,13 @@ int sbi_fifo_enqueue(struct sbi_fifo *fifo, void *data)
 	spin_lock(&fifo->qlock);
 
 	if (__sbi_fifo_is_full(fifo)) {
-		spin_unlock(&fifo->qlock);
-		return SBI_ENOSPC;
+		if (!force) {
+			spin_unlock(&fifo->qlock);
+			return SBI_ENOSPC;
+		}
+		__sbi_fifo_dequeue(fifo, NULL);
 	}
+
 	__sbi_fifo_enqueue(fifo, data);
 
 	spin_unlock(&fifo->qlock);
@@ -203,31 +240,7 @@ int sbi_fifo_dequeue(struct sbi_fifo *fifo, void *data)
 		return SBI_ENOENT;
 	}
 
-	switch (fifo->entry_size) {
-	case 1:
-		*(char *)data = *(char *)(fifo->queue + (u32)fifo->tail * fifo->entry_size);
-		break;
-	case 2:
-		*(u16 *)data = *(u16 *)(fifo->queue + (u32)fifo->tail * fifo->entry_size);
-		break;
-	case 4:
-		*(u32 *)data = *(u32 *)(fifo->queue + (u32)fifo->tail * fifo->entry_size);
-		break;
-#if __riscv_xlen > 32
-	case 8:
-		*(u64 *)data = *(u64 *)(fifo->queue + (u32)fifo->tail * fifo->entry_size);
-		break;
-#endif
-	default:
-		sbi_memcpy(data, fifo->queue + (u32)fifo->tail * fifo->entry_size,
-			   fifo->entry_size);
-		break;
-	}
-
-	fifo->avail--;
-	fifo->tail++;
-	if (fifo->tail >= fifo->num_entries)
-		fifo->tail = 0;
+	__sbi_fifo_dequeue(fifo, data);
 
 	spin_unlock(&fifo->qlock);
 
