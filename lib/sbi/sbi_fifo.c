@@ -66,7 +66,26 @@ static inline void  __sbi_fifo_enqueue(struct sbi_fifo *fifo, void *data)
 	if (head >= fifo->num_entries)
 		head = head - fifo->num_entries;
 
-	sbi_memcpy((char *)fifo->queue + head * fifo->entry_size, data, fifo->entry_size);
+	switch (fifo->entry_size) {
+	case 1:
+		*(char *)(fifo->queue + head * fifo->entry_size) = *(char *)data;
+		break;
+	case 2:
+		*(u16 *)(fifo->queue + head * fifo->entry_size) = *(u16 *)data;
+		break;
+	case 4:
+		*(u32 *)(fifo->queue + head * fifo->entry_size) = *(u32 *)data;
+		break;
+#if __riscv_xlen > 32
+	case 8:
+		*(u64 *)(fifo->queue + head * fifo->entry_size) = *(u64 *)data;
+		break;
+#endif
+	default:
+		sbi_memcpy(fifo->queue + head * fifo->entry_size,
+			   data, fifo->entry_size);
+		break;
+	}
 
 	fifo->avail++;
 }
@@ -184,8 +203,26 @@ int sbi_fifo_dequeue(struct sbi_fifo *fifo, void *data)
 		return SBI_ENOENT;
 	}
 
-	sbi_memcpy(data, (char *)fifo->queue + (u32)fifo->tail * fifo->entry_size,
-	       fifo->entry_size);
+	switch (fifo->entry_size) {
+	case 1:
+		*(char *)data = *(char *)(fifo->queue + (u32)fifo->tail * fifo->entry_size);
+		break;
+	case 2:
+		*(u16 *)data = *(u16 *)(fifo->queue + (u32)fifo->tail * fifo->entry_size);
+		break;
+	case 4:
+		*(u32 *)data = *(u32 *)(fifo->queue + (u32)fifo->tail * fifo->entry_size);
+		break;
+#if __riscv_xlen > 32
+	case 8:
+		*(u64 *)data = *(u64 *)(fifo->queue + (u32)fifo->tail * fifo->entry_size);
+		break;
+#endif
+	default:
+		sbi_memcpy(data, fifo->queue + (u32)fifo->tail * fifo->entry_size,
+			   fifo->entry_size);
+		break;
+	}
 
 	fifo->avail--;
 	fifo->tail++;
