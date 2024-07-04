@@ -9,7 +9,6 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
-#include <sbi/sbi_console.h>
 #include <sbi/sbi_const.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_system.h>
@@ -109,10 +108,13 @@ static struct sbi_system_reset_device k210_reset = {
 
 static int k210_early_init(bool cold_boot)
 {
-	if (cold_boot)
-		sbi_system_reset_add_device(&k210_reset);
+	if (!cold_boot)
+		return 0;
 
-	return 0;
+	sbi_system_reset_add_device(&k210_reset);
+
+	return sifive_uart_init(K210_UART_BASE_ADDR, k210_get_clk_freq(),
+				K210_UART_BAUDRATE);
 }
 
 static int k210_final_init(bool cold_boot)
@@ -128,12 +130,6 @@ static int k210_final_init(bool cold_boot)
 	fdt_fixups(fdt);
 
 	return 0;
-}
-
-static int k210_console_init(void)
-{
-	return sifive_uart_init(K210_UART_BASE_ADDR, k210_get_clk_freq(),
-				K210_UART_BAUDRATE);
 }
 
 static int k210_irqchip_init(bool cold_boot)
@@ -180,8 +176,6 @@ const struct sbi_platform_operations platform_ops = {
 	.early_init	= k210_early_init,
 
 	.final_init	= k210_final_init,
-
-	.console_init	= k210_console_init,
 
 	.irqchip_init = k210_irqchip_init,
 

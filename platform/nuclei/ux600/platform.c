@@ -11,7 +11,6 @@
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_io.h>
 #include <sbi/riscv_encoding.h>
-#include <sbi/sbi_console.h>
 #include <sbi/sbi_const.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_system.h>
@@ -150,8 +149,10 @@ static int ux600_early_init(bool cold_boot)
 {
 	u32 regval;
 
-	if (cold_boot)
-		sbi_system_reset_add_device(&ux600_reset);
+	if (!cold_boot)
+		return 0;
+
+	sbi_system_reset_add_device(&ux600_reset);
 
 	/* Measure CPU Frequency using Timer */
 	ux600_clk_freq = ux600_get_clk_freq();
@@ -163,7 +164,9 @@ static int ux600_early_init(bool cold_boot)
 	regval = readl((void *)(UX600_GPIO_ADDR + UX600_GPIO_IOF_EN_OFS)) |
 		UX600_GPIO_IOF_UART0_MASK;
 	writel(regval, (void *)(UX600_GPIO_ADDR + UX600_GPIO_IOF_EN_OFS));
-	return 0;
+
+	return sifive_uart_init(UX600_DEBUG_UART, ux600_clk_freq,
+				UX600_UART_BAUDRATE);
 }
 
 static void ux600_modify_dt(void *fdt)
@@ -182,12 +185,6 @@ static int ux600_final_init(bool cold_boot)
 	ux600_modify_dt(fdt);
 
 	return 0;
-}
-
-static int ux600_console_init(void)
-{
-	return sifive_uart_init(UX600_DEBUG_UART, ux600_clk_freq,
-				UX600_UART_BAUDRATE);
 }
 
 static int ux600_irqchip_init(bool cold_boot)
@@ -234,7 +231,6 @@ static int ux600_timer_init(bool cold_boot)
 const struct sbi_platform_operations platform_ops = {
 	.early_init		= ux600_early_init,
 	.final_init		= ux600_final_init,
-	.console_init		= ux600_console_init,
 	.irqchip_init		= ux600_irqchip_init,
 	.ipi_init		= ux600_ipi_init,
 	.timer_init		= ux600_timer_init,

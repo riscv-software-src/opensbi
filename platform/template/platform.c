@@ -64,7 +64,12 @@ static struct aclint_mtimer_data mtimer = {
  */
 static int platform_early_init(bool cold_boot)
 {
-	return 0;
+	if (!cold_boot)
+		return 0;
+
+	/* Example if the generic UART8250 driver is used */
+	return uart8250_init(PLATFORM_UART_ADDR, PLATFORM_UART_INPUT_FREQ,
+			     PLATFORM_UART_BAUDRATE, 0, 1, 0);
 }
 
 /*
@@ -73,16 +78,6 @@ static int platform_early_init(bool cold_boot)
 static int platform_final_init(bool cold_boot)
 {
 	return 0;
-}
-
-/*
- * Initialize the platform console.
- */
-static int platform_console_init(void)
-{
-	/* Example if the generic UART8250 driver is used */
-	return uart8250_init(PLATFORM_UART_ADDR, PLATFORM_UART_INPUT_FREQ,
-			     PLATFORM_UART_BAUDRATE, 0, 1, 0);
 }
 
 /*
@@ -143,7 +138,6 @@ static int platform_timer_init(bool cold_boot)
 const struct sbi_platform_operations platform_ops = {
 	.early_init		= platform_early_init,
 	.final_init		= platform_final_init,
-	.console_init		= platform_console_init,
 	.irqchip_init		= platform_irqchip_init,
 	.ipi_init		= platform_ipi_init,
 	.timer_init		= platform_timer_init

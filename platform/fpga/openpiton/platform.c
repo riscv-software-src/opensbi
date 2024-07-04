@@ -6,7 +6,6 @@
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/riscv_io.h>
-#include <sbi/sbi_console.h>
 #include <sbi/sbi_const.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
@@ -103,7 +102,10 @@ static int openpiton_early_init(bool cold_boot)
 				    ACLINT_DEFAULT_MTIMECMP_OFFSET;
 	}
 
-	return 0;
+	return uart8250_init(uart.addr, uart.freq, uart.baud,
+			     OPENPITON_DEFAULT_UART_REG_SHIFT,
+			     OPENPITON_DEFAULT_UART_REG_WIDTH,
+			     OPENPITON_DEFAULT_UART_REG_OFFSET);
 }
 
 /*
@@ -120,19 +122,6 @@ static int openpiton_final_init(bool cold_boot)
 	fdt_fixups(fdt);
 
 	return 0;
-}
-
-/*
- * Initialize the openpiton console.
- */
-static int openpiton_console_init(void)
-{
-	return uart8250_init(uart.addr,
-			     uart.freq,
-			     uart.baud,
-			     OPENPITON_DEFAULT_UART_REG_SHIFT,
-			     OPENPITON_DEFAULT_UART_REG_WIDTH,
-			     OPENPITON_DEFAULT_UART_REG_OFFSET);
 }
 
 static int plic_openpiton_warm_irqchip_init(int m_cntx_id, int s_cntx_id)
@@ -210,7 +199,6 @@ static int openpiton_timer_init(bool cold_boot)
 const struct sbi_platform_operations platform_ops = {
 	.early_init = openpiton_early_init,
 	.final_init = openpiton_final_init,
-	.console_init = openpiton_console_init,
 	.irqchip_init = openpiton_irqchip_init,
 	.ipi_init = openpiton_ipi_init,
 	.timer_init = openpiton_timer_init,

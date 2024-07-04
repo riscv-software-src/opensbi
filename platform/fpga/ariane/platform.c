@@ -7,7 +7,6 @@
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/riscv_io.h>
-#include <sbi/sbi_console.h>
 #include <sbi/sbi_const.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
@@ -67,8 +66,15 @@ static struct aclint_mtimer_data mtimer = {
  */
 static int ariane_early_init(bool cold_boot)
 {
-	/* For now nothing to do. */
-	return 0;
+	if (!cold_boot)
+		return 0;
+
+	return uart8250_init(ARIANE_UART_ADDR,
+			     ARIANE_UART_FREQ,
+			     ARIANE_UART_BAUDRATE,
+			     ARIANE_UART_REG_SHIFT,
+			     ARIANE_UART_REG_WIDTH,
+			     ARIANE_UART_REG_OFFSET);
 }
 
 /*
@@ -85,19 +91,6 @@ static int ariane_final_init(bool cold_boot)
 	fdt_fixups(fdt);
 
 	return 0;
-}
-
-/*
- * Initialize the ariane console.
- */
-static int ariane_console_init(void)
-{
-	return uart8250_init(ARIANE_UART_ADDR,
-			     ARIANE_UART_FREQ,
-			     ARIANE_UART_BAUDRATE,
-			     ARIANE_UART_REG_SHIFT,
-			     ARIANE_UART_REG_WIDTH,
-			     ARIANE_UART_REG_OFFSET);
 }
 
 static int plic_ariane_warm_irqchip_init(int m_cntx_id, int s_cntx_id)
@@ -175,7 +168,6 @@ static int ariane_timer_init(bool cold_boot)
 const struct sbi_platform_operations platform_ops = {
 	.early_init = ariane_early_init,
 	.final_init = ariane_final_init,
-	.console_init = ariane_console_init,
 	.irqchip_init = ariane_irqchip_init,
 	.ipi_init = ariane_ipi_init,
 	.timer_init = ariane_timer_init,

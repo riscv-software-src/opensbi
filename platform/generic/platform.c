@@ -221,8 +221,18 @@ static int generic_nascent_init(void)
 
 static int generic_early_init(bool cold_boot)
 {
-	if (cold_boot)
+	int rc;
+
+	if (cold_boot) {
 		fdt_reset_init();
+
+		if (semihosting_enabled())
+			rc = semihosting_init();
+		else
+			rc = fdt_serial_init();
+		if (rc)
+			return rc;
+	}
 
 	if (!generic_plat || !generic_plat->early_init)
 		return 0;
@@ -378,14 +388,6 @@ static uint64_t generic_pmu_xlate_to_mhpmevent(uint32_t event_idx,
 	return evt_val;
 }
 
-static int generic_console_init(void)
-{
-	if (semihosting_enabled())
-		return semihosting_init();
-	else
-		return fdt_serial_init();
-}
-
 const struct sbi_platform_operations platform_ops = {
 	.cold_boot_allowed	= generic_cold_boot_allowed,
 	.nascent_init		= generic_nascent_init,
@@ -395,7 +397,6 @@ const struct sbi_platform_operations platform_ops = {
 	.final_exit		= generic_final_exit,
 	.extensions_init	= generic_extensions_init,
 	.domains_init		= generic_domains_init,
-	.console_init		= generic_console_init,
 	.irqchip_init		= fdt_irqchip_init,
 	.irqchip_exit		= fdt_irqchip_exit,
 	.ipi_init		= fdt_ipi_init,
