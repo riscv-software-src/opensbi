@@ -261,10 +261,6 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_console_init(scratch);
-	if (rc)
-		sbi_hart_hang();
-
 	rc = sbi_sse_init(scratch, true);
 	if (rc) {
 		sbi_printf("%s: sse init failed (error %d)\n", __func__, rc);

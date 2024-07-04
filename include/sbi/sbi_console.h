@@ -58,8 +58,6 @@ void sbi_console_set_device(const struct sbi_console_device *dev);
 
 struct sbi_scratch;
 
-int sbi_console_init(struct sbi_scratch *scratch);
-
 #define SBI_ASSERT(cond, args) do { \
 	if (unlikely(!(cond))) \
 		sbi_panic args; \

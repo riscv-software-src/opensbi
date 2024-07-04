@@ -111,9 +111,6 @@ struct sbi_platform_operations {
 	/** Get platform specific mhpmevent value */
 	uint64_t (*pmu_xlate_to_mhpmevent)(uint32_t event_idx, uint64_t data);
 
-	/** Initialize the platform console */
-	int (*console_init)(void);
-
 	/** Initialize the platform interrupt controller for current HART */
 	int (*irqchip_init)(bool cold_boot);
 	/** Exit the platform interrupt controller for current HART */
@@ -546,20 +543,6 @@ static inline uint64_t sbi_platform_pmu_xlate_to_mhpmevent(const struct sbi_plat
 	if (plat && sbi_platform_ops(plat)->pmu_xlate_to_mhpmevent)
 		return sbi_platform_ops(plat)->pmu_xlate_to_mhpmevent(event_idx,
 								      data);
-	return 0;
-}
-
-/**
- * Initialize the platform console
- *
- * @param plat pointer to struct sbi_platform
- *
- * @return 0 on success and negative error code on failure
- */
-static inline int sbi_platform_console_init(const struct sbi_platform *plat)
-{
-	if (plat && sbi_platform_ops(plat)->console_init)
-		return sbi_platform_ops(plat)->console_init();
 	return 0;
 }
 

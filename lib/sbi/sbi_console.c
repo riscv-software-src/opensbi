@@ -477,14 +477,3 @@ void sbi_console_set_device(const struct sbi_console_device *dev)
 
 	console_dev = dev;
 }
-
-int sbi_console_init(struct sbi_scratch *scratch)
-{
-	int rc = sbi_platform_console_init(sbi_platform_ptr(scratch));
-
-	/* console is not a necessary device */
-	if (rc == SBI_ENODEV)
-		return 0;
-
-	return rc;
-}
