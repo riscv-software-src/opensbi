@@ -9,6 +9,7 @@
 
 #include <sbi/riscv_locks.h>
 #include <sbi/sbi_console.h>
+#include <sbi/sbi_fifo.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
@@ -20,6 +21,15 @@ static const struct sbi_console_device *console_dev = NULL;
 static char console_tbuf[CONSOLE_TBUF_MAX];
 static u32 console_tbuf_len;
 static spinlock_t console_out_lock	       = SPIN_LOCK_INITIALIZER;
+
+#ifdef CONFIG_CONSOLE_EARLY_BUFFER_SIZE
+#define CONSOLE_EARLY_BUFFER_SIZE	CONFIG_CONSOLE_EARLY_BUFFER_SIZE
+#else
+#define CONSOLE_EARLY_BUFFER_SIZE	256
+#endif
+static char console_early_buffer[CONSOLE_EARLY_BUFFER_SIZE] = { 0 };
+static SBI_FIFO_DEFINE(console_early_fifo, console_early_buffer, \
+		       CONSOLE_EARLY_BUFFER_SIZE, sizeof(char));
 
 bool sbi_isprintable(char c)
 {
@@ -39,6 +49,7 @@ int sbi_getc(void)
 
 static unsigned long nputs(const char *str, unsigned long len)
 {
+	char ch;
 	unsigned long i;
 
 	if (console_dev) {
@@ -50,6 +61,11 @@ static unsigned long nputs(const char *str, unsigned long len)
 					console_dev->console_putc('\r');
 				console_dev->console_putc(str[i]);
 			}
+		}
+	} else {
+		for (i = 0; i < len; i++) {
+			ch = str[i];
+			sbi_fifo_enqueue(&console_early_fifo, &ch, true);
 		}
 	}
 	return len;
@@ -472,8 +488,19 @@ const struct sbi_console_device *sbi_console_get_device(void)
 
 void sbi_console_set_device(const struct sbi_console_device *dev)
 {
+	char ch;
+	bool flush_early_fifo = false;
+
 	if (!dev)
 		return;
 
+	if (!console_dev)
+		flush_early_fifo = true;
+
 	console_dev = dev;
+
+	if (flush_early_fifo) {
+		while (!sbi_fifo_dequeue(&console_early_fifo, &ch))
+			sbi_putc(ch);
+	}
 }

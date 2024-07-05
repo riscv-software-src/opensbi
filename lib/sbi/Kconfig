@@ -1,6 +1,10 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-menu "SBI Extension Support"
+menu "Generic SBI Support"
+
+config CONSOLE_EARLY_BUFFER_SIZE
+	int "Early console buffer size (bytes)"
+	default 256
 
 config SBI_ECALL_TIME
 	bool "Timer extension"
