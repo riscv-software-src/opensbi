@@ -23,6 +23,18 @@ struct sbi_fifo {
 	u16 tail;
 };
 
+#define SBI_FIFO_INITIALIZER(__queue_mem, __entries, __entry_size)	\
+{	.queue = __queue_mem,						\
+	.qlock = SPIN_LOCK_INITIALIZER,					\
+	.num_entries = __entries,					\
+	.entry_size = __entry_size,					\
+	.avail = 0,							\
+	.tail = 0,							\
+}
+
+#define SBI_FIFO_DEFINE(__name, __queue_mem, __entries, __entry_size)	\
+struct sbi_fifo __name = SBI_FIFO_INITIALIZER(__queue_mem, __entries, __entry_size)
+
 enum sbi_fifo_inplace_update_types {
 	SBI_FIFO_SKIP,
 	SBI_FIFO_UPDATED,
