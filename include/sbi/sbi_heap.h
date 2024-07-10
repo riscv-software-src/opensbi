@@ -24,6 +24,11 @@ struct sbi_scratch;
 void *sbi_malloc(size_t size);
 void *sbi_malloc_from(struct heap_control *hpctrl, size_t size);
 
+/** Allocate aligned from heap area */
+void *sbi_memalign(size_t alignment, size_t size);
+void *sbi_memalign_from(struct heap_control *hpctrl, size_t alignment,
+			size_t size);
+
 /** Zero allocate from heap area */
 void *sbi_zalloc(size_t size);
 void *sbi_zalloc_from(struct heap_control *hpctrl, size_t size);

@@ -37,7 +37,8 @@ struct heap_control {
 
 static struct heap_control global_hpctrl;
 
-void *sbi_malloc_from(struct heap_control *hpctrl, size_t size)
+static void *alloc_with_align(struct heap_control *hpctrl,
+			      size_t align, size_t size)
 {
 	void *ret = NULL;
 	struct heap_node *n, *np;
@@ -45,8 +46,8 @@ void *sbi_malloc_from(struct heap_control *hpctrl, size_t size)
 	if (!size)
 		return NULL;
 
-	size += HEAP_ALLOC_ALIGN - 1;
-	size &= ~((unsigned long)HEAP_ALLOC_ALIGN - 1);
+	size += align - 1;
+	size &= ~((unsigned long)align - 1);
 
 	spin_lock(&hpctrl->lock);
 
@@ -80,9 +81,39 @@ void *sbi_malloc_from(struct heap_control *hpctrl, size_t size)
 	return ret;
 }
 
+void *sbi_malloc_from(struct heap_control *hpctrl, size_t size)
+{
+	return alloc_with_align(hpctrl, HEAP_ALLOC_ALIGN, size);
+}
+
 void *sbi_malloc(size_t size)
 {
 	return sbi_malloc_from(&global_hpctrl, size);
+}
+
+void *sbi_memalign_from(struct heap_control *hpctrl, size_t alignment,
+			size_t size)
+{
+	if(alignment < HEAP_ALLOC_ALIGN) {
+		alignment = HEAP_ALLOC_ALIGN;
+	}
+
+	// Make sure alignment is power of two
+	if((alignment & (alignment - 1)) != 0) {
+		return NULL;
+	}
+
+	// Make sure size is multiple of alignment
+	if(size % alignment != 0) {
+		return NULL;
+	}
+
+	return alloc_with_align(hpctrl, alignment, size);
+}
+
+void *sbi_memalign(size_t alignment, size_t size)
+{
+	return sbi_memalign_from(&global_hpctrl, alignment, size);
 }
 
 void *sbi_zalloc_from(struct heap_control *hpctrl, size_t size)
