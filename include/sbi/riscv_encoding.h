@@ -947,7 +947,10 @@
 #define REG_PTR(insn, pos, regs)	\
 	(ulong *)((ulong)(regs) + REG_OFFSET(insn, pos))
 
-#define GET_RM(insn)			(((insn) >> 12) & 7)
+#define GET_RM(insn)			((insn & MASK_FUNCT3) >> SHIFT_FUNCT3)
+
+#define GET_RS1_NUM(insn)		((insn & MASK_RS1) >> 15)
+#define GET_CSR_NUM(insn)		((insn & MASK_CSR) >> SHIFT_CSR)
 
 #define GET_RS1(insn, regs)		(*REG_PTR(insn, SH_RS1, regs))
 #define GET_RS2(insn, regs)		(*REG_PTR(insn, SH_RS2, regs))
@@ -959,7 +962,20 @@
 #define IMM_I(insn)			((s32)(insn) >> 20)
 #define IMM_S(insn)			(((s32)(insn) >> 25 << 5) | \
 					 (s32)(((insn) >> 7) & 0x1f))
+
 #define MASK_FUNCT3			0x7000
+#define MASK_RS1			0xf8000
+#define MASK_CSR			0xfff00000
+
+#define SHIFT_FUNCT3			12
+#define SHIFT_CSR			20
+
+#define CSRRW 1
+#define CSRRS 2
+#define CSRRC 3
+#define CSRRWI 5
+#define CSRRSI 6
+#define CSRRCI 7
 
 /* clang-format on */
 

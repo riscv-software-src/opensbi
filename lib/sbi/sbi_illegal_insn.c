@@ -48,9 +48,10 @@ static int misc_mem_opcode_insn(ulong insn, struct sbi_trap_regs *regs)
 
 static int system_opcode_insn(ulong insn, struct sbi_trap_regs *regs)
 {
-	int do_write, rs1_num = (insn >> 15) & 0x1f;
-	ulong rs1_val = GET_RS1(insn, regs);
-	int csr_num   = (u32)insn >> 20;
+	bool do_write	= false;
+	int rs1_num	= GET_RS1_NUM(insn);
+	ulong rs1_val	= GET_RS1(insn, regs);
+	int csr_num	= GET_CSR_NUM((u32)insn);
 	ulong prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
 	ulong csr_val, new_csr_val;
 
@@ -60,32 +61,41 @@ static int system_opcode_insn(ulong insn, struct sbi_trap_regs *regs)
 		return SBI_EFAIL;
 	}
 
-	/* TODO: Ensure that we got CSR read/write instruction */
+	/* Ensure that we got CSR read/write instruction */
+	int funct3 = GET_RM(insn);
+	if (funct3 == 0 || funct3 == 4) {
+		sbi_printf("%s: Invalid opcode for CSR read/write instruction",
+			   __func__);
+		return truly_illegal_insn(insn, regs);
+	}
 
 	if (sbi_emulate_csr_read(csr_num, regs, &csr_val))
 		return truly_illegal_insn(insn, regs);
 
-	do_write = rs1_num;
-	switch (GET_RM(insn)) {
-	case 1:
+	switch (funct3) {
+	case CSRRW:
 		new_csr_val = rs1_val;
-		do_write    = 1;
+		do_write    = true;
 		break;
-	case 2:
+	case CSRRS:
 		new_csr_val = csr_val | rs1_val;
+		do_write    = (rs1_num != 0);
 		break;
-	case 3:
+	case CSRRC:
 		new_csr_val = csr_val & ~rs1_val;
+		do_write    = (rs1_num != 0);
 		break;
-	case 5:
+	case CSRRWI:
 		new_csr_val = rs1_num;
-		do_write    = 1;
+		do_write    = true;
 		break;
-	case 6:
+	case CSRRSI:
 		new_csr_val = csr_val | rs1_num;
+		do_write    = (rs1_num != 0);
 		break;
-	case 7:
+	case CSRRCI:
 		new_csr_val = csr_val & ~rs1_num;
+		do_write    = (rs1_num != 0);
 		break;
 	default:
 		return truly_illegal_insn(insn, regs);

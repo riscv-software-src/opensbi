@@ -15,7 +15,6 @@
 #include <sbi/sbi_types.h>
 
 #define GET_PRECISION(insn) (((insn) >> 25) & 3)
-#define GET_RM(insn) (((insn) >> 12) & 7)
 #define PRECISION_S 0
 #define PRECISION_D 1
 
