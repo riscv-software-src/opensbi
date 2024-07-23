@@ -120,6 +120,27 @@ static char get_pmaxcfg(int entry_id)
 	return *pmaxcfg;
 }
 
+static void set_pmaxcfg(int entry_id, char flags)
+{
+	unsigned int pmacfg_addr;
+	unsigned long pmacfg_val;
+	char *pmaxcfg;
+
+#if __riscv_xlen == 64
+	pmacfg_addr = CSR_PMACFG0 + ((entry_id / 8) ? 2 : 0);
+	pmacfg_val = andes_pma_read_num(pmacfg_addr);
+	pmaxcfg = (char *)&pmacfg_val + (entry_id % 8);
+#elif __riscv_xlen == 32
+	pmacfg_addr = CSR_PMACFG0 + (entry_id / 4);
+	pmacfg_val = andes_pma_read_num(pmacfg_addr);
+	pmaxcfg = (char *)&pmacfg_val + (entry_id % 4);
+#else
+#error "Unexpected __riscv_xlen"
+#endif
+	*pmaxcfg = flags;
+	andes_pma_write_num(pmacfg_addr, pmacfg_val);
+}
+
 static void decode_pmaaddrx(int entry_id, unsigned long *start,
 			    unsigned long *size)
 {
@@ -167,30 +188,14 @@ static unsigned long andes_pma_setup(const struct andes_pma_region *pma_region,
 {
 	unsigned long size = pma_region->size;
 	unsigned long addr = pma_region->pa;
-	unsigned int pma_cfg_addr;
-	unsigned long pmacfg_val;
 	unsigned long pmaaddr;
-	char *pmaxcfg;
 
 	/* Check for a 4KiB granularity NAPOT region*/
 	if (size < ANDES_PMA_GRANULARITY || not_napot(addr, size) ||
 	    !(pma_region->flags & ANDES_PMACFG_ETYP_NAPOT))
 		return SBI_EINVAL;
 
-#if __riscv_xlen == 64
-	pma_cfg_addr = CSR_PMACFG0 + ((entry_id / 8) ? 2 : 0);
-	pmacfg_val = andes_pma_read_num(pma_cfg_addr);
-	pmaxcfg = (char *)&pmacfg_val + (entry_id % 8);
-#elif __riscv_xlen == 32
-	pma_cfg_addr = CSR_PMACFG0 + (entry_id / 4);
-	pmacfg_val = andes_pma_read_num(pma_cfg_addr);
-	pmaxcfg = (char *)&pmacfg_val + (entry_id % 4);
-#else
-#error "Unexpected __riscv_xlen"
-#endif
-	*pmaxcfg = pma_region->flags;
-
-	andes_pma_write_num(pma_cfg_addr, pmacfg_val);
+	set_pmaxcfg(entry_id, pma_region->flags);
 
 	pmaaddr = (addr >> 2) + (size >> 3) - 1;
 
@@ -403,4 +408,36 @@ int andes_sbi_set_pma(unsigned long pa, unsigned long size, u8 flags)
 	}
 
 	return SBI_SUCCESS;
+}
+
+int andes_sbi_free_pma(unsigned long pa)
+{
+	unsigned long start, size;
+	char pmaxcfg;
+
+	if (!andes_sbi_probe_pma()) {
+		sbi_printf("ERROR %s(): Platform does not support PPMA.\n",
+			   __func__);
+		return SBI_ERR_NOT_SUPPORTED;
+	}
+
+	for (int i = 0; i < ANDES_MAX_PMA_REGIONS; i++) {
+		pmaxcfg = get_pmaxcfg(i);
+		if (is_pma_entry_disable(pmaxcfg))
+			continue;
+
+		decode_pmaaddrx(i, &start, &size);
+		if (start != pa)
+			continue;
+
+		set_pmaxcfg(i, ANDES_PMACFG_ETYP_OFF);
+		andes_pma_write_num(CSR_PMAADDR0 + i, 0);
+
+		return SBI_SUCCESS;
+	}
+
+	sbi_printf("ERROR %s(): Failed to find the entry with PA %#lx\n",
+		   __func__, pa);
+
+	return SBI_ERR_FAILED;
 }

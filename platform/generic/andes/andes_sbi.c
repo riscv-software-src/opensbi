@@ -14,6 +14,7 @@ enum sbi_ext_andes_fid {
 	SBI_EXT_ANDES_IOCP_SW_WORKAROUND,
 	SBI_EXT_ANDES_PMA_PROBE,
 	SBI_EXT_ANDES_PMA_SET,
+	SBI_EXT_ANDES_PMA_FREE,
 };
 
 static bool andes_cache_controllable(void)
@@ -51,6 +52,9 @@ int andes_sbi_vendor_ext_provider(long funcid,
 		break;
 	case SBI_EXT_ANDES_PMA_SET:
 		ret = andes_sbi_set_pma(regs->a0, regs->a1, regs->a2);
+		break;
+	case SBI_EXT_ANDES_PMA_FREE:
+		ret = andes_sbi_free_pma(regs->a0);
 		break;
 	default:
 		ret = SBI_ENOTSUPP;

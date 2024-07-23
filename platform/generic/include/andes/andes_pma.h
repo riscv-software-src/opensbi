@@ -77,4 +77,13 @@ bool andes_sbi_probe_pma(void);
  */
 int andes_sbi_set_pma(unsigned long pa, unsigned long size, u8 flags);
 
+/**
+ * Reset the memory attribute of a NAPOT region
+ * @param pa Start address of the NAPOT region
+ *
+ * @return SBI_SUCCESS on success
+ * @return SBI_ERR_FAILED if the given region is not set before
+ */
+int andes_sbi_free_pma(unsigned long pa);
+
 #endif /* _ANDES_PMA_H_ */
