@@ -5,12 +5,14 @@
  */
 #include <andes/andes.h>
 #include <andes/andes_sbi.h>
+#include <andes/andes_pma.h>
 #include <sbi/riscv_asm.h>
 #include <sbi/sbi_error.h>
 
 enum sbi_ext_andes_fid {
 	SBI_EXT_ANDES_FID0 = 0, /* Reserved for future use */
 	SBI_EXT_ANDES_IOCP_SW_WORKAROUND,
+	SBI_EXT_ANDES_PMA_PROBE,
 };
 
 static bool andes_cache_controllable(void)
@@ -40,6 +42,9 @@ int andes_sbi_vendor_ext_provider(long funcid,
 	switch (funcid) {
 	case SBI_EXT_ANDES_IOCP_SW_WORKAROUND:
 		out->value = andes_apply_iocp_sw_workaround();
+		break;
+	case SBI_EXT_ANDES_PMA_PROBE:
+		out->value = andes_sbi_probe_pma();
 		break;
 
 	default:

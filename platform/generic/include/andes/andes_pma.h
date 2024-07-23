@@ -47,4 +47,16 @@ struct andes_pma_region {
 int andes_pma_setup_regions(const struct andes_pma_region *pma_regions,
 			    unsigned int pma_regions_count);
 
+/**
+ * Programmable PMA(PPMA) is a feature for Andes. PPMA allows dynamic adjustment
+ * of memory attributes in the runtime. It contains a configurable amount of PMA
+ * entries implemented as CSRs to control the attributes of memory locations.
+ *
+ * Check if hardware supports PPMA
+ *
+ * @return true if PPMA is supported
+ * @return false if PPMA is not supported
+ */
+bool andes_sbi_probe_pma(void);
+
 #endif /* _ANDES_PMA_H_ */

@@ -241,7 +241,6 @@ static int andes_fdt_reserved_memory_fixup(void *fdt,
 int andes_pma_setup_regions(const struct andes_pma_region *pma_regions,
 			    unsigned int pma_regions_count)
 {
-	unsigned long mmsc = csr_read(CSR_MMSC_CFG);
 	unsigned int dt_populate_cnt;
 	unsigned int i, j;
 	unsigned long pa;
@@ -254,7 +253,7 @@ int andes_pma_setup_regions(const struct andes_pma_region *pma_regions,
 	if (pma_regions_count > ANDES_MAX_PMA_REGIONS)
 		return SBI_EINVAL;
 
-	if ((mmsc & MMSC_CFG_PPMA_MASK) == 0)
+	if (!andes_sbi_probe_pma())
 		return SBI_ENOTSUPP;
 
 	/* Configure the PMA regions */
@@ -289,4 +288,9 @@ int andes_pma_setup_regions(const struct andes_pma_region *pma_regions,
 	}
 
 	return 0;
+}
+
+bool andes_sbi_probe_pma(void)
+{
+	return (csr_read(CSR_MMSC_CFG) & MMSC_CFG_PPMA_MASK) ? true : false;
 }
