@@ -33,6 +33,7 @@ config PLATFORM_ANDES_AE350
 	bool "Andes AE350 support"
 	select SYS_ATCSMU
 	select ANDES_PMU
+	select ANDES_PMA
 	default n
 
 config PLATFORM_RENESAS_RZFIVE
