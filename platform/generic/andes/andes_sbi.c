@@ -13,6 +13,7 @@ enum sbi_ext_andes_fid {
 	SBI_EXT_ANDES_FID0 = 0, /* Reserved for future use */
 	SBI_EXT_ANDES_IOCP_SW_WORKAROUND,
 	SBI_EXT_ANDES_PMA_PROBE,
+	SBI_EXT_ANDES_PMA_SET,
 };
 
 static bool andes_cache_controllable(void)
@@ -39,6 +40,8 @@ int andes_sbi_vendor_ext_provider(long funcid,
 				  struct sbi_ecall_return *out,
 				  const struct fdt_match *match)
 {
+	int ret = 0;
+
 	switch (funcid) {
 	case SBI_EXT_ANDES_IOCP_SW_WORKAROUND:
 		out->value = andes_apply_iocp_sw_workaround();
@@ -46,10 +49,12 @@ int andes_sbi_vendor_ext_provider(long funcid,
 	case SBI_EXT_ANDES_PMA_PROBE:
 		out->value = andes_sbi_probe_pma();
 		break;
-
+	case SBI_EXT_ANDES_PMA_SET:
+		ret = andes_sbi_set_pma(regs->a0, regs->a1, regs->a2);
+		break;
 	default:
-		return SBI_EINVAL;
+		ret = SBI_ENOTSUPP;
 	}
 
-	return 0;
+	return ret;
 }

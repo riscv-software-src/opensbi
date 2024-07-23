@@ -94,6 +94,74 @@ static inline bool not_napot(unsigned long addr, unsigned long size)
 	return ((size & (size - 1)) || (addr & (size - 1)));
 }
 
+static inline bool is_pma_entry_disable(char pmaxcfg)
+{
+	return (pmaxcfg & ANDES_PMACFG_ETYP_MASK) == ANDES_PMACFG_ETYP_OFF ?
+	       true : false;
+}
+
+static char get_pmaxcfg(int entry_id)
+{
+	unsigned int pmacfg_addr;
+	unsigned long pmacfg_val;
+	char *pmaxcfg;
+
+#if __riscv_xlen == 64
+	pmacfg_addr = CSR_PMACFG0 + ((entry_id / 8) ? 2 : 0);
+	pmacfg_val = andes_pma_read_num(pmacfg_addr);
+	pmaxcfg = (char *)&pmacfg_val + (entry_id % 8);
+#elif __riscv_xlen == 32
+	pmacfg_addr = CSR_PMACFG0 + (entry_id / 4);
+	pmacfg_val = andes_pma_read_num(pmacfg_addr);
+	pmaxcfg = (char *)&pmacfg_val + (entry_id % 4);
+#else
+#error "Unexpected __riscv_xlen"
+#endif
+	return *pmaxcfg;
+}
+
+static void decode_pmaaddrx(int entry_id, unsigned long *start,
+			    unsigned long *size)
+{
+	unsigned long pmaaddr;
+	int k;
+
+	/**
+	 * Given $pmaaddr, let k = # of trailing 1s of $pmaaddr
+	 * size = 2 ^ (k + 3)
+	 * start = 4 * ($pmaaddr - (size / 8) + 1)
+	 */
+	pmaaddr = andes_pma_read_num(CSR_PMAADDR0 + entry_id);
+	k = sbi_ffz(pmaaddr);
+	*size = 1 << (k + 3);
+	*start = (pmaaddr - (1 << k) + 1) << 2;
+}
+
+static bool has_pma_region_overlap(unsigned long start, unsigned long size)
+{
+	unsigned long _start, _size, _end, end;
+	char pmaxcfg;
+
+	end = start + size - 1;
+	for (int i = 0; i < ANDES_MAX_PMA_REGIONS; i++) {
+		pmaxcfg = get_pmaxcfg(i);
+		if (is_pma_entry_disable(pmaxcfg))
+			continue;
+
+		decode_pmaaddrx(i, &_start, &_size);
+		_end = _start + _size - 1;
+
+		if (MAX(start, _start) <= MIN(end, _end)) {
+			sbi_printf(
+				"ERROR %s(): %#lx ~ %#lx overlaps with PMA%d: %#lx ~ %#lx\n",
+				__func__, start, end, i, _start, _end);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 static unsigned long andes_pma_setup(const struct andes_pma_region *pma_region,
 				     unsigned int entry_id)
 {
@@ -293,4 +361,46 @@ int andes_pma_setup_regions(const struct andes_pma_region *pma_regions,
 bool andes_sbi_probe_pma(void)
 {
 	return (csr_read(CSR_MMSC_CFG) & MMSC_CFG_PPMA_MASK) ? true : false;
+}
+
+int andes_sbi_set_pma(unsigned long pa, unsigned long size, u8 flags)
+{
+	unsigned int entry_id;
+	unsigned long rc;
+	char pmaxcfg;
+	struct andes_pma_region region;
+
+	if (!andes_sbi_probe_pma()) {
+		sbi_printf("ERROR %s(): Platform does not support PPMA.\n",
+			   __func__);
+		return SBI_ERR_NOT_SUPPORTED;
+	}
+
+	if (has_pma_region_overlap(pa, size))
+		return SBI_ERR_INVALID_PARAM;
+
+	for (entry_id = 0; entry_id < ANDES_MAX_PMA_REGIONS; entry_id++) {
+		pmaxcfg = get_pmaxcfg(entry_id);
+		if (is_pma_entry_disable(pmaxcfg)) {
+			region.pa = pa;
+			region.size = size;
+			region.flags = flags;
+			break;
+		}
+	}
+
+	if (entry_id == ANDES_MAX_PMA_REGIONS) {
+		sbi_printf("ERROR %s(): All PMA entries have run out\n",
+			   __func__);
+		return SBI_ERR_FAILED;
+	}
+
+	rc = andes_pma_setup(&region, entry_id);
+	if (rc == SBI_EINVAL) {
+		sbi_printf("ERROR %s(): Failed to set PMAADDR%d\n",
+			   __func__, entry_id);
+		return SBI_ERR_FAILED;
+	}
+
+	return SBI_SUCCESS;
 }
