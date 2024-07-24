@@ -395,8 +395,7 @@ static int __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 		val64 = fdt32_to_cpu(val[0]);
 		val64 = (val64 << 32) | fdt32_to_cpu(val[1]);
 	} else {
-		if (domain_offset == *cold_domain_offset)
-			val64 = sbi_scratch_thishart_ptr()->next_arg1;
+		val64 = sbi_scratch_thishart_ptr()->next_arg1;
 	}
 	dom->next_arg1 = val64;
 

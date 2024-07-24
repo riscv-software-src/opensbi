@@ -180,9 +180,7 @@ The DT properties of a domain instance DT node are as follows:
   boot HART of the domain instance.
 * **next-arg1** (Optional) - The 64 bit next booting stage arg1 for the
   domain instance. If this DT property is not available and coldboot HART
-  is not assigned to the domain instance then **0x0** is used as default
-  value. If this DT property is not available and coldboot HART is assigned
-  to the domain instance then **next booting stage arg1 of coldboot HART**
+  is not assigned to the domain instance then **next booting stage arg1 of coldboot HART**
   is used as default value.
 * **next-addr** (Optional) - The 64 bit next booting stage address for the
   domain instance. If this DT property is not available and coldboot HART
