@@ -13,6 +13,7 @@ ENTRY(_start)
 SECTIONS
 {
 	#include "fw_base.ldS"
+	#include "sanctum_params_mod.lds"
 
 #ifdef FW_PAYLOAD_OFFSET
 	. = FW_TEXT_START + FW_PAYLOAD_OFFSET;

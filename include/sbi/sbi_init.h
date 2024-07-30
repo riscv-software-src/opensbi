@@ -14,12 +14,14 @@
 
 struct sbi_scratch;
 
-void __noreturn sbi_init(struct sbi_scratch *scratch);
+void __noreturn sbi_init(struct sbi_scratch *scratch, bool flag);
 
 unsigned long sbi_entry_count(u32 hartid);
 
 unsigned long sbi_init_count(u32 hartid);
 
 void __noreturn sbi_exit(struct sbi_scratch *scratch);
+
+void to_be_stopped(struct sbi_scratch *scratch);
 
 #endif
