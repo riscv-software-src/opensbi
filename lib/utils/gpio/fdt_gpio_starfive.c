@@ -71,7 +71,7 @@ static void starfive_gpio_set(struct gpio_pin *gp, int value)
 
 extern struct fdt_gpio fdt_gpio_starfive;
 
-static int starfive_gpio_init(void *fdt, int nodeoff, u32 phandle,
+static int starfive_gpio_init(const void *fdt, int nodeoff, u32 phandle,
 			      const struct fdt_match *match)
 {
 	int rc;

@@ -78,7 +78,7 @@ static void dw_gpio_set(struct gpio_pin *gp, int value)
  * bank A is the only one with irq support but we're not using it here
 */
 
-static int dw_gpio_init_bank(void *fdt, int nodeoff, u32 phandle,
+static int dw_gpio_init_bank(const void *fdt, int nodeoff, u32 phandle,
 			     const struct fdt_match *match)
 {
 	struct dw_gpio_chip *chip;

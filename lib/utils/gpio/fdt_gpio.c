@@ -31,7 +31,7 @@ static struct fdt_gpio *fdt_gpio_driver(struct gpio_chip *chip)
 	return NULL;
 }
 
-static int fdt_gpio_init(void *fdt, u32 phandle)
+static int fdt_gpio_init(const void *fdt, u32 phandle)
 {
 	int pos, nodeoff, rc;
 	struct fdt_gpio *drv;
@@ -64,7 +64,7 @@ static int fdt_gpio_init(void *fdt, u32 phandle)
 	return SBI_ENOSYS;
 }
 
-static int fdt_gpio_chip_find(void *fdt, u32 phandle,
+static int fdt_gpio_chip_find(const void *fdt, u32 phandle,
 			      struct gpio_chip **out_chip)
 {
 	int rc;
@@ -88,7 +88,7 @@ static int fdt_gpio_chip_find(void *fdt, u32 phandle,
 	return 0;
 }
 
-int fdt_gpio_pin_get(void *fdt, int nodeoff, int index,
+int fdt_gpio_pin_get(const void *fdt, int nodeoff, int index,
 		     struct gpio_pin *out_pin)
 {
 	int rc;

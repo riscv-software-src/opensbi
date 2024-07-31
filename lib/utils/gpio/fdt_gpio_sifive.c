@@ -62,7 +62,7 @@ static void sifive_gpio_set(struct gpio_pin *gp, int value)
 
 extern struct fdt_gpio fdt_gpio_sifive;
 
-static int sifive_gpio_init(void *fdt, int nodeoff, u32 phandle,
+static int sifive_gpio_init(const void *fdt, int nodeoff, u32 phandle,
 			    const struct fdt_match *match)
 {
 	int rc;
