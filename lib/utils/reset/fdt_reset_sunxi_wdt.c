@@ -49,7 +49,7 @@ static struct sbi_system_reset_device sunxi_wdt_reset = {
 	.system_reset = sunxi_wdt_system_reset,
 };
 
-static int sunxi_wdt_reset_init(void *fdt, int nodeoff,
+static int sunxi_wdt_reset_init(const void *fdt, int nodeoff,
 				const struct fdt_match *match)
 {
 	uint64_t reg_addr;

@@ -186,9 +186,9 @@ static struct sbi_system_reset_device pm_reset = {
 	.system_reset = pm_system_reset
 };
 
-static int starfive_jh7110_inst_init(void *fdt);
+static int starfive_jh7110_inst_init(const void *fdt);
 
-static int pm_reset_init(void *fdt, int nodeoff,
+static int pm_reset_init(const void *fdt, int nodeoff,
 			 const struct fdt_match *match)
 {
 	int rc;
@@ -232,7 +232,7 @@ static struct fdt_reset fdt_reset_pmic = {
 	.init = pm_reset_init,
 };
 
-static int starfive_jh7110_inst_init(void *fdt)
+static int starfive_jh7110_inst_init(const void *fdt)
 {
 	int noff, rc = 0;
 	const fdt32_t *val;

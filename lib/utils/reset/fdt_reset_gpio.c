@@ -113,7 +113,7 @@ static struct sbi_system_reset_device gpio_restart = {
 	.system_reset = gpio_system_restart
 };
 
-static int gpio_reset_init(void *fdt, int nodeoff,
+static int gpio_reset_init(const void *fdt, int nodeoff,
 			   const struct fdt_match *match)
 {
 	int rc, len;

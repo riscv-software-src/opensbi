@@ -173,7 +173,7 @@ static struct sbi_system_reset_device da9063_reset_i2c = {
 	.system_reset = da9063_system_reset
 };
 
-static int da9063_reset_init(void *fdt, int nodeoff,
+static int da9063_reset_init(const void *fdt, int nodeoff,
 			     const struct fdt_match *match)
 {
 	int rc, i2c_bus;

@@ -96,8 +96,8 @@ static struct sbi_system_reset_device syscon_reboot = {
 	.system_reset = syscon_do_reboot
 };
 
-static int syscon_reset_init(void *fdt, int nodeoff,
-			   const struct fdt_match *match)
+static int syscon_reset_init(const void *fdt, int nodeoff,
+			     const struct fdt_match *match)
 {
 	int rc, len;
 	const fdt32_t *val, *mask;

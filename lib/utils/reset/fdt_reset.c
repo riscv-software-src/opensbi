@@ -17,7 +17,7 @@
 extern struct fdt_reset *fdt_reset_drivers[];
 extern unsigned long fdt_reset_drivers_size;
 
-int fdt_reset_driver_init(void *fdt, struct fdt_reset *drv)
+int fdt_reset_driver_init(const void *fdt, struct fdt_reset *drv)
 {
 	int noff, rc, cnt = 0;
 	const struct fdt_match *match;
@@ -45,7 +45,7 @@ int fdt_reset_driver_init(void *fdt, struct fdt_reset *drv)
 void fdt_reset_init(void)
 {
 	int pos;
-	void *fdt = fdt_get_address();
+	const void *fdt = fdt_get_address();
 
 	for (pos = 0; pos < fdt_reset_drivers_size; pos++)
 		fdt_reset_driver_init(fdt, fdt_reset_drivers[pos]);

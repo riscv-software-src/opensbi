@@ -11,7 +11,7 @@
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/sys/htif.h>
 
-static int htif_reset_init(void *fdt, int nodeoff,
+static int htif_reset_init(const void *fdt, int nodeoff,
 			   const struct fdt_match *match)
 {
 	bool custom = false;
