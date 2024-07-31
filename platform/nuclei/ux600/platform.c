@@ -181,7 +181,7 @@ static int ux600_final_init(bool cold_boot)
 	if (!cold_boot)
 		return 0;
 
-	fdt = fdt_get_address();
+	fdt = fdt_get_address_rw();
 	ux600_modify_dt(fdt);
 
 	return 0;

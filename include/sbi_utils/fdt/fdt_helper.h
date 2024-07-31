@@ -114,7 +114,12 @@ int fdt_parse_plicsw_node(const void *fdt, int nodeoffset, unsigned long *plicsw
 int fdt_parse_compat_addr(const void *fdt, uint64_t *addr,
 			  const char *compatible);
 
-static inline void *fdt_get_address(void)
+static inline const void *fdt_get_address(void)
+{
+	return (const void *)root.next_arg1;
+}
+
+static inline void *fdt_get_address_rw(void)
 {
 	return (void *)root.next_arg1;
 }

@@ -243,7 +243,7 @@ static int generic_early_init(bool cold_boot)
 
 static int generic_final_init(bool cold_boot)
 {
-	void *fdt = fdt_get_address();
+	void *fdt = fdt_get_address_rw();
 	int rc;
 
 	if (generic_plat && generic_plat->final_init) {
@@ -314,7 +314,7 @@ static int generic_extensions_init(struct sbi_hart_features *hfeatures)
 
 static int generic_domains_init(void)
 {
-	void *fdt = fdt_get_address();
+	const void *fdt = fdt_get_address();
 	int offset, ret;
 
 	ret = fdt_domains_populate(fdt);

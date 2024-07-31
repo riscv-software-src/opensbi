@@ -124,7 +124,7 @@ static int k210_final_init(bool cold_boot)
 	if (!cold_boot)
 		return 0;
 
-	fdt = fdt_get_address();
+	fdt = fdt_get_address_rw();
 
 	fdt_cpu_fixup(fdt);
 	fdt_fixups(fdt);
