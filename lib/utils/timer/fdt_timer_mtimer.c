@@ -30,7 +30,7 @@ static SBI_LIST_HEAD(mtn_list);
 
 static struct aclint_mtimer_data *mt_reference = NULL;
 
-static int timer_mtimer_cold_init(void *fdt, int nodeoff,
+static int timer_mtimer_cold_init(const void *fdt, int nodeoff,
 				  const struct fdt_match *match)
 {
 	int rc;

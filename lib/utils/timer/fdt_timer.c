@@ -36,7 +36,7 @@ static int fdt_timer_cold_init(void)
 	int pos, noff, rc;
 	struct fdt_timer *drv;
 	const struct fdt_match *match;
-	void *fdt = fdt_get_address();
+	const void *fdt = fdt_get_address();
 
 	for (pos = 0; pos < fdt_timer_drivers_size; pos++) {
 		drv = fdt_timer_drivers[pos];

@@ -13,7 +13,7 @@
 
 extern struct plmt_data plmt;
 
-static int fdt_plmt_cold_timer_init(void *fdt, int nodeoff,
+static int fdt_plmt_cold_timer_init(const void *fdt, int nodeoff,
 				    const struct fdt_match *match)
 {
 	int rc;
