@@ -15,8 +15,8 @@
 #include <sbi_utils/i2c/dw_i2c.h>
 #include <sbi_utils/i2c/fdt_i2c.h>
 
-static int fdt_dw_i2c_init(void *fdt, int nodeoff,
-			     const struct fdt_match *match)
+static int fdt_dw_i2c_init(const void *fdt, int nodeoff,
+			   const struct fdt_match *match)
 {
 	int rc;
 	struct dw_i2c_adapter *adapter;

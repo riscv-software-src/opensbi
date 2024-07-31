@@ -20,7 +20,7 @@
 extern struct fdt_i2c_adapter *fdt_i2c_adapter_drivers[];
 extern unsigned long fdt_i2c_adapter_drivers_size;
 
-static int fdt_i2c_adapter_init(void *fdt, int nodeoff)
+static int fdt_i2c_adapter_init(const void *fdt, int nodeoff)
 {
 	int pos, rc;
 	struct fdt_i2c_adapter *drv;
@@ -43,7 +43,7 @@ static int fdt_i2c_adapter_init(void *fdt, int nodeoff)
 	return SBI_ENOSYS;
 }
 
-static int fdt_i2c_adapter_find(void *fdt, int nodeoff,
+static int fdt_i2c_adapter_find(const void *fdt, int nodeoff,
 				struct i2c_adapter **out_adapter)
 {
 	int rc;
@@ -67,7 +67,7 @@ static int fdt_i2c_adapter_find(void *fdt, int nodeoff,
 	return 0;
 }
 
-int fdt_i2c_adapter_get(void *fdt, int nodeoff,
+int fdt_i2c_adapter_get(const void *fdt, int nodeoff,
 			struct i2c_adapter **out_adapter)
 {
 	int rc;
