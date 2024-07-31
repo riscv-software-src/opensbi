@@ -25,7 +25,7 @@ struct fdt_regmap {
 int fdt_regmap_get_by_phandle(void *fdt, u32 phandle,
 			      struct regmap **out_rmap);
 
-/** Get regmap instance based on "regmap' property of the specified DT node */
+/** Get regmap instance based on "regmap" property of the specified DT node */
 int fdt_regmap_get(void *fdt, int nodeoff, struct regmap **out_rmap);
 
 #endif
