@@ -29,7 +29,7 @@ int fdt_reset_driver_init(const void *fdt, struct fdt_reset *drv);
  *
  * This function shall be invoked in final init.
  */
-void fdt_reset_init(void);
+void fdt_reset_init(const void *fdt);
 
 #else
 
@@ -37,7 +37,7 @@ static inline int fdt_reset_driver_init(const void *fdt, struct fdt_reset *drv)
 {
 	return 0;
 }
-static inline void fdt_reset_init(void) { }
+static inline void fdt_reset_init(const void *fdt) { }
 
 #endif
 

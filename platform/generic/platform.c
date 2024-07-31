@@ -225,7 +225,7 @@ static int generic_early_init(bool cold_boot)
 	int rc;
 
 	if (cold_boot) {
-		fdt_reset_init();
+		fdt_reset_init(fdt);
 
 		if (semihosting_enabled())
 			rc = semihosting_init();

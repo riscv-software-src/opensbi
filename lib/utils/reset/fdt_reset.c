@@ -42,10 +42,9 @@ int fdt_reset_driver_init(const void *fdt, struct fdt_reset *drv)
 	return cnt > 0 ? 0 : SBI_ENODEV;
 }
 
-void fdt_reset_init(void)
+void fdt_reset_init(const void *fdt)
 {
 	int pos;
-	const void *fdt = fdt_get_address();
 
 	for (pos = 0; pos < fdt_reset_drivers_size; pos++)
 		fdt_reset_driver_init(fdt, fdt_reset_drivers[pos]);
