@@ -18,7 +18,7 @@ static const struct fdt_match serial_htif_match[] = {
 	{ },
 };
 
-static int serial_htif_init(void *fdt, int nodeoff,
+static int serial_htif_init(const void *fdt, int nodeoff,
 			    const struct fdt_match *match)
 {
 	int rc;

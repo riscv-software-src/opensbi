@@ -12,7 +12,7 @@
 #include <sbi_utils/serial/fdt_serial.h>
 #include <sbi_utils/serial/litex-uart.h>
 
-static int serial_litex_init(void *fdt, int nodeoff,
+static int serial_litex_init(const void *fdt, int nodeoff,
 			     const struct fdt_match *match)
 {
 	uint64_t reg_addr, reg_size;

@@ -10,7 +10,7 @@
 #include <sbi_utils/serial/fdt_serial.h>
 #include <sbi_utils/serial/cadence-uart.h>
 
-static int serial_cadence_init(void *fdt, int nodeoff,
+static int serial_cadence_init(const void *fdt, int nodeoff,
 			       const struct fdt_match *match)
 {
 	int rc;

@@ -9,8 +9,8 @@
 #include <sbi_utils/serial/fdt_serial.h>
 #include <sbi_utils/serial/shakti-uart.h>
 
-static int serial_shakti_init(void *fdt, int nodeoff,
-				const struct fdt_match *match)
+static int serial_shakti_init(const void *fdt, int nodeoff,
+			      const struct fdt_match *match)
 {
 	int rc;
 	struct platform_uart_data uart = { 0 };

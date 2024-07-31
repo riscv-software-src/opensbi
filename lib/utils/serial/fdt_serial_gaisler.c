@@ -11,7 +11,7 @@
 #include <sbi_utils/serial/fdt_serial.h>
 #include <sbi_utils/serial/gaisler-uart.h>
 
-static int serial_gaisler_init(void *fdt, int nodeoff,
+static int serial_gaisler_init(const void *fdt, int nodeoff,
 			       const struct fdt_match *match)
 {
 	int rc;

@@ -11,8 +11,8 @@
 #include <sbi_utils/serial/fdt_serial.h>
 #include <sbi_utils/serial/xlnx_uartlite.h>
 
-static int serial_xlnx_uartlite_init(void *fdt, int nodeoff,
-				const struct fdt_match *match)
+static int serial_xlnx_uartlite_init(const void *fdt, int nodeoff,
+				     const struct fdt_match *match)
 {
 	int rc;
 	struct platform_uart_data uart = { 0 };

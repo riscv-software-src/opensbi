@@ -11,7 +11,7 @@
 #include <sbi_utils/serial/fdt_serial.h>
 #include <sbi_utils/serial/uart8250.h>
 
-static int serial_uart8250_init(void *fdt, int nodeoff,
+static int serial_uart8250_init(const void *fdt, int nodeoff,
 				const struct fdt_match *match)
 {
 	int rc;
