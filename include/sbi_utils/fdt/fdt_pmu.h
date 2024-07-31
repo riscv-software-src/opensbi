@@ -52,7 +52,7 @@ int fdt_pmu_fixup(void *fdt);
  *
  * @return 0 on success and negative error code on failure
  */
-int fdt_pmu_setup(void *fdt);
+int fdt_pmu_setup(const void *fdt);
 
 /**
  * Get the mhpmevent select value read from DT for a given event
@@ -70,7 +70,7 @@ extern uint32_t hw_event_count;
 #else
 
 static inline void fdt_pmu_fixup(void *fdt) { }
-static inline int fdt_pmu_setup(void *fdt) { return 0; }
+static inline int fdt_pmu_setup(const void *fdt) { return 0; }
 static inline uint64_t fdt_pmu_get_select_value(uint32_t event_idx) { return 0; }
 
 #endif

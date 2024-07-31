@@ -56,7 +56,7 @@ int fdt_pmu_fixup(void *fdt)
 	return 0;
 }
 
-int fdt_pmu_setup(void *fdt)
+int fdt_pmu_setup(const void *fdt)
 {
 	int i, pmu_offset, len, result;
 	const u32 *event_val;

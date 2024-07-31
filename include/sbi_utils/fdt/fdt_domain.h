@@ -70,12 +70,12 @@ void fdt_domain_fixup(void *fdt);
  *
  * @return 0 on success and negative error code on failure
  */
-int fdt_domains_populate(void *fdt);
+int fdt_domains_populate(const void *fdt);
 
 #else
 
 static inline void fdt_domain_fixup(void *fdt) { }
-static inline int fdt_domains_populate(void *fdt) { return 0; }
+static inline int fdt_domains_populate(const void *fdt) { return 0; }
 
 #endif
 

@@ -33,7 +33,7 @@
 #define DEFAULT_SHAKTI_UART_FREQ		50000000
 #define DEFAULT_SHAKTI_UART_BAUD		115200
 
-const struct fdt_match *fdt_match_node(void *fdt, int nodeoff,
+const struct fdt_match *fdt_match_node(const void *fdt, int nodeoff,
 				       const struct fdt_match *match_table)
 {
 	int ret;
@@ -52,7 +52,7 @@ const struct fdt_match *fdt_match_node(void *fdt, int nodeoff,
 	return NULL;
 }
 
-int fdt_find_match(void *fdt, int startoff,
+int fdt_find_match(const void *fdt, int startoff,
 		   const struct fdt_match *match_table,
 		   const struct fdt_match **out_match)
 {
@@ -75,7 +75,7 @@ int fdt_find_match(void *fdt, int startoff,
 	return SBI_ENODEV;
 }
 
-int fdt_parse_phandle_with_args(void *fdt, int nodeoff,
+int fdt_parse_phandle_with_args(const void *fdt, int nodeoff,
 				const char *prop, const char *cells_prop,
 				int index, struct fdt_phandle_args *out_args)
 {
@@ -122,7 +122,7 @@ int fdt_parse_phandle_with_args(void *fdt, int nodeoff,
 	return SBI_ENOENT;
 }
 
-static int fdt_translate_address(void *fdt, uint64_t reg, int parent,
+static int fdt_translate_address(const void *fdt, uint64_t reg, int parent,
 				 uint64_t *addr)
 {
 	int i, rlen;
@@ -160,7 +160,7 @@ static int fdt_translate_address(void *fdt, uint64_t reg, int parent,
 	return 0;
 }
 
-int fdt_get_node_addr_size(void *fdt, int node, int index,
+int fdt_get_node_addr_size(const void *fdt, int node, int index,
 			   uint64_t *addr, uint64_t *size)
 {
 	int parent, len, i, rc;
@@ -216,7 +216,7 @@ int fdt_get_node_addr_size(void *fdt, int node, int index,
 	return 0;
 }
 
-int fdt_get_node_addr_size_by_name(void *fdt, int node, const char *name,
+int fdt_get_node_addr_size_by_name(const void *fdt, int node, const char *name,
 				   uint64_t *addr, uint64_t *size)
 {
 	int i, j, count;
@@ -242,7 +242,7 @@ int fdt_get_node_addr_size_by_name(void *fdt, int node, const char *name,
 	return SBI_ENODEV;
 }
 
-bool fdt_node_is_enabled(void *fdt, int nodeoff)
+bool fdt_node_is_enabled(const void *fdt, int nodeoff)
 {
 	int len;
 	const void *prop;
@@ -260,7 +260,7 @@ bool fdt_node_is_enabled(void *fdt, int nodeoff)
 	return false;
 }
 
-int fdt_parse_hart_id(void *fdt, int cpu_offset, u32 *hartid)
+int fdt_parse_hart_id(const void *fdt, int cpu_offset, u32 *hartid)
 {
 	int len;
 	const void *prop;
@@ -288,7 +288,7 @@ int fdt_parse_hart_id(void *fdt, int cpu_offset, u32 *hartid)
 	return 0;
 }
 
-int fdt_parse_max_enabled_hart_id(void *fdt, u32 *max_hartid)
+int fdt_parse_max_enabled_hart_id(const void *fdt, u32 *max_hartid)
 {
 	u32 hartid;
 	int err, cpu_offset, cpus_offset;
@@ -319,7 +319,7 @@ int fdt_parse_max_enabled_hart_id(void *fdt, u32 *max_hartid)
 	return 0;
 }
 
-int fdt_parse_timebase_frequency(void *fdt, unsigned long *freq)
+int fdt_parse_timebase_frequency(const void *fdt, unsigned long *freq)
 {
 	const fdt32_t *val;
 	int len, cpus_offset;
@@ -423,7 +423,7 @@ static void fdt_parse_isa_extensions_one_hart(const char *isa,
 	}
 }
 
-static int fdt_parse_isa_all_harts(void *fdt)
+static int fdt_parse_isa_all_harts(const void *fdt)
 {
 	u32 hartid;
 	const fdt32_t *val;
@@ -472,7 +472,7 @@ static int fdt_parse_isa_all_harts(void *fdt)
 	return 0;
 }
 
-int fdt_parse_isa_extensions(void *fdt, unsigned int hartid,
+int fdt_parse_isa_extensions(const void *fdt, unsigned int hartid,
 			unsigned long *extensions)
 {
 	int rc, i;
@@ -502,7 +502,7 @@ int fdt_parse_isa_extensions(void *fdt, unsigned int hartid,
 	return 0;
 }
 
-static int fdt_parse_uart_node_common(void *fdt, int nodeoffset,
+static int fdt_parse_uart_node_common(const void *fdt, int nodeoffset,
 				      struct platform_uart_data *uart,
 				      unsigned long default_freq,
 				      unsigned long default_baud)
@@ -539,7 +539,7 @@ static int fdt_parse_uart_node_common(void *fdt, int nodeoffset,
 	return 0;
 }
 
-int fdt_parse_gaisler_uart_node(void *fdt, int nodeoffset,
+int fdt_parse_gaisler_uart_node(const void *fdt, int nodeoffset,
 				struct platform_uart_data *uart)
 {
 	return fdt_parse_uart_node_common(fdt, nodeoffset, uart,
@@ -547,7 +547,7 @@ int fdt_parse_gaisler_uart_node(void *fdt, int nodeoffset,
 					DEFAULT_UART_BAUD);
 }
 
-int fdt_parse_renesas_scif_node(void *fdt, int nodeoffset,
+int fdt_parse_renesas_scif_node(const void *fdt, int nodeoffset,
 				struct platform_uart_data *uart)
 {
 	return fdt_parse_uart_node_common(fdt, nodeoffset, uart,
@@ -555,7 +555,7 @@ int fdt_parse_renesas_scif_node(void *fdt, int nodeoffset,
 					  DEFAULT_RENESAS_SCIF_BAUD);
 }
 
-int fdt_parse_shakti_uart_node(void *fdt, int nodeoffset,
+int fdt_parse_shakti_uart_node(const void *fdt, int nodeoffset,
 			       struct platform_uart_data *uart)
 {
 	return fdt_parse_uart_node_common(fdt, nodeoffset, uart,
@@ -563,7 +563,7 @@ int fdt_parse_shakti_uart_node(void *fdt, int nodeoffset,
 					DEFAULT_SHAKTI_UART_BAUD);
 }
 
-int fdt_parse_sifive_uart_node(void *fdt, int nodeoffset,
+int fdt_parse_sifive_uart_node(const void *fdt, int nodeoffset,
 			       struct platform_uart_data *uart)
 {
 	return fdt_parse_uart_node_common(fdt, nodeoffset, uart,
@@ -571,7 +571,7 @@ int fdt_parse_sifive_uart_node(void *fdt, int nodeoffset,
 					DEFAULT_SIFIVE_UART_BAUD);
 }
 
-int fdt_parse_uart_node(void *fdt, int nodeoffset,
+int fdt_parse_uart_node(const void *fdt, int nodeoffset,
 			struct platform_uart_data *uart)
 {
 	int len, rc;
@@ -604,7 +604,7 @@ int fdt_parse_uart_node(void *fdt, int nodeoffset,
 	return 0;
 }
 
-int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
+int fdt_parse_uart8250(const void *fdt, struct platform_uart_data *uart,
 		   const char *compatible)
 {
 	int nodeoffset;
@@ -619,13 +619,13 @@ int fdt_parse_uart8250(void *fdt, struct platform_uart_data *uart,
 	return fdt_parse_uart_node(fdt, nodeoffset, uart);
 }
 
-int fdt_parse_xlnx_uartlite_node(void *fdt, int nodeoffset,
+int fdt_parse_xlnx_uartlite_node(const void *fdt, int nodeoffset,
 			       struct platform_uart_data *uart)
 {
 	return fdt_parse_uart_node_common(fdt, nodeoffset, uart, 0, 0);
 }
 
-int fdt_parse_aplic_node(void *fdt, int nodeoff, struct aplic_data *aplic)
+int fdt_parse_aplic_node(const void *fdt, int nodeoff, struct aplic_data *aplic)
 {
 	bool child_found;
 	const fdt32_t *val;
@@ -785,7 +785,7 @@ skip_delegate_parse:
 	return 0;
 }
 
-bool fdt_check_imsic_mlevel(void *fdt)
+bool fdt_check_imsic_mlevel(const void *fdt)
 {
 	const fdt32_t *val;
 	int i, len, noff = 0;
@@ -808,7 +808,7 @@ bool fdt_check_imsic_mlevel(void *fdt)
 	return false;
 }
 
-int fdt_parse_imsic_node(void *fdt, int nodeoff, struct imsic_data *imsic)
+int fdt_parse_imsic_node(const void *fdt, int nodeoff, struct imsic_data *imsic)
 {
 	const fdt32_t *val;
 	struct imsic_regs *regs;
@@ -887,7 +887,7 @@ int fdt_parse_imsic_node(void *fdt, int nodeoff, struct imsic_data *imsic)
 	return 0;
 }
 
-int fdt_parse_plic_node(void *fdt, int nodeoffset, struct plic_data *plic)
+int fdt_parse_plic_node(const void *fdt, int nodeoffset, struct plic_data *plic)
 {
 	int len, rc;
 	const fdt32_t *val;
@@ -910,7 +910,7 @@ int fdt_parse_plic_node(void *fdt, int nodeoffset, struct plic_data *plic)
 	return 0;
 }
 
-int fdt_parse_plic(void *fdt, struct plic_data *plic, const char *compat)
+int fdt_parse_plic(const void *fdt, struct plic_data *plic, const char *compat)
 {
 	int nodeoffset;
 
@@ -924,7 +924,7 @@ int fdt_parse_plic(void *fdt, struct plic_data *plic, const char *compat)
 	return fdt_parse_plic_node(fdt, nodeoffset, plic);
 }
 
-static int fdt_get_aclint_addr_size_by_name(void *fdt, int nodeoffset,
+static int fdt_get_aclint_addr_size_by_name(const void *fdt, int nodeoffset,
 					    unsigned long *out_addr1,
 					    unsigned long *out_size1,
 					    unsigned long *out_addr2,
@@ -950,7 +950,7 @@ static int fdt_get_aclint_addr_size_by_name(void *fdt, int nodeoffset,
 	return 0;
 }
 
-static int fdt_get_aclint_addr_size(void *fdt, int nodeoffset,
+static int fdt_get_aclint_addr_size(const void *fdt, int nodeoffset,
 				    unsigned long *out_addr1,
 				    unsigned long *out_size1,
 				    unsigned long *out_addr2,
@@ -978,7 +978,7 @@ static int fdt_get_aclint_addr_size(void *fdt, int nodeoffset,
 	return 0;
 }
 
-int fdt_parse_aclint_node(void *fdt, int nodeoffset,
+int fdt_parse_aclint_node(const void *fdt, int nodeoffset,
 			  bool for_timer, bool allow_regname,
 			  unsigned long *out_addr1, unsigned long *out_size1,
 			  unsigned long *out_addr2, unsigned long *out_size2,
@@ -1053,7 +1053,7 @@ int fdt_parse_aclint_node(void *fdt, int nodeoffset,
 	return 0;
 }
 
-int fdt_parse_plmt_node(void *fdt, int nodeoffset, unsigned long *plmt_base,
+int fdt_parse_plmt_node(const void *fdt, int nodeoffset, unsigned long *plmt_base,
 			  unsigned long *plmt_size, u32 *hart_count)
 {
 	const fdt32_t *val;
@@ -1109,7 +1109,7 @@ int fdt_parse_plmt_node(void *fdt, int nodeoffset, unsigned long *plmt_base,
 	return 0;
 }
 
-int fdt_parse_plicsw_node(void *fdt, int nodeoffset, unsigned long *plicsw_base,
+int fdt_parse_plicsw_node(const void *fdt, int nodeoffset, unsigned long *plicsw_base,
 			  unsigned long *size, u32 *hart_count)
 {
 	const fdt32_t *val;
@@ -1165,7 +1165,7 @@ int fdt_parse_plicsw_node(void *fdt, int nodeoffset, unsigned long *plicsw_base,
 	return 0;
 }
 
-int fdt_parse_compat_addr(void *fdt, uint64_t *addr,
+int fdt_parse_compat_addr(const void *fdt, uint64_t *addr,
 			  const char *compatible)
 {
 	int nodeoffset, rc;

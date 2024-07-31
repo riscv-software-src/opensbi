@@ -48,6 +48,14 @@ int fdt_iterate_each_domain(void *fdt, void *opaque,
 	return 0;
 }
 
+static int fdt_iterate_each_domain_ro(const void *fdt, void *opaque,
+				      int (*fn)(const void *fdt, int domain_offset,
+						void *opaque))
+{
+	return fdt_iterate_each_domain((void *)fdt, opaque,
+				       (int (*)(void *, int,  void *))fn);
+}
+
 int fdt_iterate_each_memregion(void *fdt, int domain_offset, void *opaque,
 			       int (*fn)(void *fdt, int domain_offset,
 					 int region_offset, u32 region_access,
@@ -86,6 +94,15 @@ int fdt_iterate_each_memregion(void *fdt, int domain_offset, void *opaque,
 	}
 
 	return 0;
+}
+
+static int fdt_iterate_each_memregion_ro(const void *fdt, int domain_offset, void *opaque,
+					 int (*fn)(const void *fdt, int domain_offset,
+						   int region_offset, u32 region_access,
+						   void *opaque))
+{
+	return fdt_iterate_each_memregion((void *)fdt, domain_offset, opaque,
+					  (int (*)(void *, int, int, u32, void *))fn);
 }
 
 struct __fixup_find_domain_offset_info {
@@ -228,7 +245,7 @@ struct parse_region_data {
 	u32 max_regions;
 };
 
-static int __fdt_parse_region(void *fdt, int domain_offset,
+static int __fdt_parse_region(const void *fdt, int domain_offset,
 			      int region_offset, u32 region_access,
 			      void *opaque)
 {
@@ -283,7 +300,7 @@ static int __fdt_parse_region(void *fdt, int domain_offset,
 	return 0;
 }
 
-static int __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
+static int __fdt_parse_domain(const void *fdt, int domain_offset, void *opaque)
 {
 	u32 val32;
 	u64 val64;
@@ -347,8 +364,8 @@ static int __fdt_parse_domain(void *fdt, int domain_offset, void *opaque)
 	}
 
 	/* Setup memregions from DT */
-	err = fdt_iterate_each_memregion(fdt, domain_offset, &preg,
-					 __fdt_parse_region);
+	err = fdt_iterate_each_memregion_ro(fdt, domain_offset, &preg,
+					    __fdt_parse_region);
 	if (err)
 		goto fail_free_all;
 
@@ -490,7 +507,7 @@ fail_free_domain:
 	return err;
 }
 
-int fdt_domains_populate(void *fdt)
+int fdt_domains_populate(const void *fdt)
 {
 	const u32 *val;
 	int cold_domain_offset;
@@ -529,6 +546,6 @@ int fdt_domains_populate(void *fdt)
 	}
 
 	/* Iterate over each domain in FDT and populate details */
-	return fdt_iterate_each_domain(fdt, &cold_domain_offset,
-				       __fdt_parse_domain);
+	return fdt_iterate_each_domain_ro(fdt, &cold_domain_offset,
+					  __fdt_parse_domain);
 }
