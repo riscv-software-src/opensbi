@@ -29,7 +29,7 @@ struct platform_override {
 	int (*extensions_init)(const struct fdt_match *match,
 			       struct sbi_hart_features *hfeatures);
 	int (*pmu_init)(const struct fdt_match *match);
-	void (*fw_init)(void *fdt, const struct fdt_match *match);
+	void (*fw_init)(const void *fdt, const struct fdt_match *match);
 	int (*vendor_ext_provider)(long funcid,
 				   struct sbi_trap_regs *regs,
 				   struct sbi_ecall_return *out,

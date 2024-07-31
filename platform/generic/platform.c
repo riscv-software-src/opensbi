@@ -36,7 +36,7 @@ extern unsigned long platform_override_modules_size;
 static const struct platform_override *generic_plat = NULL;
 static const struct fdt_match *generic_plat_match = NULL;
 
-static void fw_platform_lookup_special(void *fdt, int root_offset)
+static void fw_platform_lookup_special(const void *fdt, int root_offset)
 {
 	const struct platform_override *plat;
 	const struct fdt_match *match;
@@ -81,7 +81,7 @@ static DECLARE_BITMAP(generic_coldboot_harts, SBI_HARTMASK_MAX_BITS);
  * according to the DT property "cold-boot-harts" in "/chosen/opensbi-config" 
  * DT node. If there is no "cold-boot-harts" in DT, all harts will be allowed.
  */
-static void fw_platform_coldboot_harts_init(void *fdt)
+static void fw_platform_coldboot_harts_init(const void *fdt)
 {
 	int chosen_offset, config_offset, cpu_offset, len, err;
 	u32 val32;
@@ -146,7 +146,7 @@ unsigned long fw_platform_init(unsigned long arg0, unsigned long arg1,
 				unsigned long arg4)
 {
 	const char *model;
-	void *fdt = (void *)arg1;
+	const void *fdt = (void *)arg1;
 	u32 hartid, hart_count = 0;
 	int rc, root_offset, cpus_offset, cpu_offset, len;
 

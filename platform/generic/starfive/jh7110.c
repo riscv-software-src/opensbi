@@ -298,7 +298,7 @@ static bool starfive_jh7110_cold_boot_allowed(u32 hartid,
 	return true;
 }
 
-static void starfive_jh7110_fw_init(void *fdt, const struct fdt_match *match)
+static void starfive_jh7110_fw_init(const void *fdt, const struct fdt_match *match)
 {
 	const fdt32_t *val;
 	int len, coff;
