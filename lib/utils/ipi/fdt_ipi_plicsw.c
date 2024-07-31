@@ -17,8 +17,8 @@
 
 extern struct plicsw_data plicsw;
 
-int fdt_plicsw_cold_ipi_init(void *fdt, int nodeoff,
-				const struct fdt_match *match)
+int fdt_plicsw_cold_ipi_init(const void *fdt, int nodeoff,
+			     const struct fdt_match *match)
 {
 	int rc;
 

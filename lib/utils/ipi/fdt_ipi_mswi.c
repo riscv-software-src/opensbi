@@ -13,7 +13,7 @@
 #include <sbi_utils/ipi/fdt_ipi.h>
 #include <sbi_utils/ipi/aclint_mswi.h>
 
-static int ipi_mswi_cold_init(void *fdt, int nodeoff,
+static int ipi_mswi_cold_init(const void *fdt, int nodeoff,
 			      const struct fdt_match *match)
 {
 	int rc;
