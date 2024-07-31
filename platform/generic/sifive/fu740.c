@@ -226,11 +226,10 @@ static u64 sifive_fu740_tlbr_flush_limit(const struct fdt_match *match)
 	return 0;
 }
 
-static int sifive_fu740_final_init(bool cold_boot,
+static int sifive_fu740_final_init(bool cold_boot, void *fdt,
 				   const struct fdt_match *match)
 {
 	int rc;
-	void *fdt = fdt_get_address();
 
 	if (cold_boot) {
 		rc = fdt_reset_driver_init(fdt, &fdt_reset_da9063);

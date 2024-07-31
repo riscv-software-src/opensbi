@@ -221,6 +221,7 @@ static int generic_nascent_init(void)
 
 static int generic_early_init(bool cold_boot)
 {
+	const void *fdt = fdt_get_address();
 	int rc;
 
 	if (cold_boot) {
@@ -237,24 +238,22 @@ static int generic_early_init(bool cold_boot)
 	if (!generic_plat || !generic_plat->early_init)
 		return 0;
 
-	return generic_plat->early_init(cold_boot, generic_plat_match);
+	return generic_plat->early_init(cold_boot, fdt, generic_plat_match);
 }
 
 static int generic_final_init(bool cold_boot)
 {
-	void *fdt;
+	void *fdt = fdt_get_address();
 	int rc;
 
 	if (generic_plat && generic_plat->final_init) {
-		rc = generic_plat->final_init(cold_boot, generic_plat_match);
+		rc = generic_plat->final_init(cold_boot, fdt, generic_plat_match);
 		if (rc)
 			return rc;
 	}
 
 	if (!cold_boot)
 		return 0;
-
-	fdt = fdt_get_address();
 
 	fdt_cpu_fixup(fdt);
 	fdt_fixups(fdt);

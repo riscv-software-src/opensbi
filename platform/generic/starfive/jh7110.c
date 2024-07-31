@@ -277,11 +277,9 @@ err:
 	return rc;
 }
 
-static int starfive_jh7110_final_init(bool cold_boot,
+static int starfive_jh7110_final_init(bool cold_boot, void *fdt,
 				      const struct fdt_match *match)
 {
-	void *fdt = fdt_get_address();
-
 	if (cold_boot) {
 		fdt_reset_driver_init(fdt, &fdt_reset_pmic);
 	}

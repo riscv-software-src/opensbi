@@ -21,8 +21,8 @@ struct platform_override {
 	u64 (*tlbr_flush_limit)(const struct fdt_match *match);
 	u32 (*tlb_num_entries)(const struct fdt_match *match);
 	bool (*cold_boot_allowed)(u32 hartid, const struct fdt_match *match);
-	int (*early_init)(bool cold_boot, const struct fdt_match *match);
-	int (*final_init)(bool cold_boot, const struct fdt_match *match);
+	int (*early_init)(bool cold_boot, const void *fdt, const struct fdt_match *match);
+	int (*final_init)(bool cold_boot, void *fdt, const struct fdt_match *match);
 	void (*early_exit)(const struct fdt_match *match);
 	void (*final_exit)(const struct fdt_match *match);
 	int (*fdt_fixup)(void *fdt, const struct fdt_match *match);

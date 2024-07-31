@@ -21,7 +21,7 @@
 #define SOPHGO_SG2042_TIMER_SIZE	0x10000UL
 #define SOPHGO_SG2042_TIMER_NUM		16
 
-static int sophgo_sg2042_early_init(bool cold_boot,
+static int sophgo_sg2042_early_init(bool cold_boot, const void *fdt,
 				    const struct fdt_match *match)
 {
 	thead_register_tlb_flush_trap_handler();

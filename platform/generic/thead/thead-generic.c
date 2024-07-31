@@ -19,7 +19,7 @@ struct thead_generic_quirks {
 	u64	errata;
 };
 
-static int thead_generic_early_init(bool cold_boot,
+static int thead_generic_early_init(bool cold_boot, const void *fdt,
 				    const struct fdt_match *match)
 {
 	struct thead_generic_quirks *quirks = (void *)match->data;

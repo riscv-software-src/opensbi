@@ -88,12 +88,9 @@ static const struct sbi_hsm_device andes_smu = {
 	.hart_stop    = ae350_hart_stop,
 };
 
-static void ae350_hsm_device_init(void)
+static void ae350_hsm_device_init(const void *fdt)
 {
 	int rc;
-	void *fdt;
-
-	fdt = fdt_get_address();
 
 	rc = fdt_parse_compat_addr(fdt, (uint64_t *)&smu.addr,
 				   "andestech,atcsmu");
@@ -103,10 +100,11 @@ static void ae350_hsm_device_init(void)
 	}
 }
 
-static int ae350_final_init(bool cold_boot, const struct fdt_match *match)
+static int ae350_final_init(bool cold_boot, void *fdt,
+			    const struct fdt_match *match)
 {
 	if (cold_boot)
-		ae350_hsm_device_init();
+		ae350_hsm_device_init(fdt);
 
 	return 0;
 }

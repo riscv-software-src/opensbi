@@ -187,7 +187,8 @@ static const struct sbi_hsm_device sun20i_d1_ppu = {
 	.hart_resume	= sun20i_d1_hart_resume,
 };
 
-static int sun20i_d1_final_init(bool cold_boot, const struct fdt_match *match)
+static int sun20i_d1_final_init(bool cold_boot, void *fdt,
+				const struct fdt_match *match)
 {
 	if (cold_boot) {
 		sun20i_d1_riscv_cfg_init();

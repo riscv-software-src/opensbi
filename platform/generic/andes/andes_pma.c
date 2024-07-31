@@ -311,13 +311,13 @@ static int andes_fdt_reserved_memory_fixup(void *fdt,
 	return andes_fdt_pma_resv(fdt, pma, entry, parent);
 }
 
-int andes_pma_setup_regions(const struct andes_pma_region *pma_regions,
+int andes_pma_setup_regions(void *fdt,
+			    const struct andes_pma_region *pma_regions,
 			    unsigned int pma_regions_count)
 {
 	unsigned int dt_populate_cnt;
 	unsigned int i, j;
 	unsigned long pa;
-	void *fdt;
 	int ret;
 
 	if (!pma_regions || !pma_regions_count)
@@ -341,8 +341,6 @@ int andes_pma_setup_regions(const struct andes_pma_region *pma_regions,
 
 	if (!dt_populate_cnt)
 		return 0;
-
-	fdt = fdt_get_address();
 
 	ret = fdt_open_into(fdt, fdt,
 			    fdt_totalsize(fdt) + (64 * dt_populate_cnt));

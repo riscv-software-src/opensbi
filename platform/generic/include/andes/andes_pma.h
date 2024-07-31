@@ -48,7 +48,8 @@ struct andes_pma_region {
 	bool dma_default;
 };
 
-int andes_pma_setup_regions(const struct andes_pma_region *pma_regions,
+int andes_pma_setup_regions(void *fdt,
+			    const struct andes_pma_region *pma_regions,
 			    unsigned int pma_regions_count);
 
 /**

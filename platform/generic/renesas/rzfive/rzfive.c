@@ -24,13 +24,15 @@ static const struct andes_pma_region renesas_rzfive_pma_regions[] = {
 	},
 };
 
-static int renesas_rzfive_final_init(bool cold_boot, const struct fdt_match *match)
+static int renesas_rzfive_final_init(bool cold_boot, void *fdt,
+				     const struct fdt_match *match)
 {
-	return andes_pma_setup_regions(renesas_rzfive_pma_regions,
+	return andes_pma_setup_regions(fdt, renesas_rzfive_pma_regions,
 				       array_size(renesas_rzfive_pma_regions));
 }
 
-static int renesas_rzfive_early_init(bool cold_boot, const struct fdt_match *match)
+static int renesas_rzfive_early_init(bool cold_boot, const void *fdt,
+				     const struct fdt_match *match)
 {
 	/*
 	 * Renesas RZ/Five RISC-V SoC has Instruction local memory and
