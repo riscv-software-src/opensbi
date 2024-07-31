@@ -17,13 +17,12 @@
 extern struct fdt_serial *fdt_serial_drivers[];
 extern unsigned long fdt_serial_drivers_size;
 
-int fdt_serial_init(void)
+int fdt_serial_init(const void *fdt)
 {
 	const void *prop;
 	struct fdt_serial *drv;
 	const struct fdt_match *match;
 	int pos, noff = -1, len, coff, rc;
-	const void *fdt = fdt_get_address();
 
 	/* Find offset of node pointed to by stdout-path */
 	coff = fdt_path_offset(fdt, "/chosen");

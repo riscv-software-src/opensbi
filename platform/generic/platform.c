@@ -230,7 +230,7 @@ static int generic_early_init(bool cold_boot)
 		if (semihosting_enabled())
 			rc = semihosting_init();
 		else
-			rc = fdt_serial_init();
+			rc = fdt_serial_init(fdt);
 		if (rc)
 			return rc;
 	}

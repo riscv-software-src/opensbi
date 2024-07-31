@@ -19,11 +19,11 @@ struct fdt_serial {
 	int (*init)(const void *fdt, int nodeoff, const struct fdt_match *match);
 };
 
-int fdt_serial_init(void);
+int fdt_serial_init(const void *fdt);
 
 #else
 
-static inline int fdt_serial_init(void) { return 0; }
+static inline int fdt_serial_init(const void *fdt) { return 0; }
 
 #endif
 
