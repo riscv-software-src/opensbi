@@ -16,7 +16,7 @@
 extern struct fdt_regmap *fdt_regmap_drivers[];
 extern unsigned long fdt_regmap_drivers_size;
 
-static int fdt_regmap_init(void *fdt, int nodeoff, u32 phandle)
+static int fdt_regmap_init(const void *fdt, int nodeoff, u32 phandle)
 {
 	int pos, rc;
 	struct fdt_regmap *drv;
@@ -39,7 +39,7 @@ static int fdt_regmap_init(void *fdt, int nodeoff, u32 phandle)
 	return SBI_ENOSYS;
 }
 
-static int fdt_regmap_find(void *fdt, int nodeoff, u32 phandle,
+static int fdt_regmap_find(const void *fdt, int nodeoff, u32 phandle,
 			   struct regmap **out_rmap)
 {
 	int rc;
@@ -63,7 +63,7 @@ static int fdt_regmap_find(void *fdt, int nodeoff, u32 phandle,
 	return 0;
 }
 
-int fdt_regmap_get_by_phandle(void *fdt, u32 phandle,
+int fdt_regmap_get_by_phandle(const void *fdt, u32 phandle,
 			      struct regmap **out_rmap)
 {
 	int pnodeoff;
@@ -78,7 +78,7 @@ int fdt_regmap_get_by_phandle(void *fdt, u32 phandle,
 	return fdt_regmap_find(fdt, pnodeoff, phandle, out_rmap);
 }
 
-int fdt_regmap_get(void *fdt, int nodeoff, struct regmap **out_rmap)
+int fdt_regmap_get(const void *fdt, int nodeoff, struct regmap **out_rmap)
 {
 	int len;
 	const fdt32_t *val;

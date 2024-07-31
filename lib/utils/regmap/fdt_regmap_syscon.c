@@ -159,7 +159,7 @@ static int regmap_syscon_write_be32(struct regmap *rmap, unsigned int reg,
 	return 0;
 }
 
-static int regmap_syscon_init(void *fdt, int nodeoff, u32 phandle,
+static int regmap_syscon_init(const void *fdt, int nodeoff, u32 phandle,
 			      const struct fdt_match *match)
 {
 	struct syscon_regmap *srm;
