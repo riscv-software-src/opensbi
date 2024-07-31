@@ -30,7 +30,7 @@ struct sbi_cpu_idle_state {
  * @param states: array of idle state descriptions, ending with empty element
  * @return zero on success and -ve on failure
  */
-int fdt_add_cpu_idle_states(void *dtb, const struct sbi_cpu_idle_state *state);
+int fdt_add_cpu_idle_states(void *fdt, const struct sbi_cpu_idle_state *state);
 
 /**
  * Fix up the CPU node in the device tree
