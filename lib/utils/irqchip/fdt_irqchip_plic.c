@@ -85,7 +85,7 @@ static int irqchip_plic_warm_init(void)
 				      plic_get_hart_scontext(scratch));
 }
 
-static int irqchip_plic_update_hartid_table(void *fdt, int nodeoff,
+static int irqchip_plic_update_hartid_table(const void *fdt, int nodeoff,
 					    struct plic_data *pd)
 {
 	const fdt32_t *val;
@@ -132,7 +132,7 @@ static int irqchip_plic_update_hartid_table(void *fdt, int nodeoff,
 	return 0;
 }
 
-static int irqchip_plic_cold_init(void *fdt, int nodeoff,
+static int irqchip_plic_cold_init(const void *fdt, int nodeoff,
 				  const struct fdt_match *match)
 {
 	int rc;

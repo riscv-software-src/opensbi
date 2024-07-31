@@ -16,7 +16,7 @@
 
 struct fdt_irqchip {
 	const struct fdt_match *match_table;
-	int (*cold_init)(void *fdt, int nodeoff, const struct fdt_match *match);
+	int (*cold_init)(const void *fdt, int nodeoff, const struct fdt_match *match);
 	int (*warm_init)(void);
 	void (*exit)(void);
 };

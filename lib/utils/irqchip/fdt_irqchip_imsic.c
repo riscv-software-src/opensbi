@@ -16,7 +16,7 @@
 #include <sbi_utils/irqchip/fdt_irqchip.h>
 #include <sbi_utils/irqchip/imsic.h>
 
-static int irqchip_imsic_update_hartid_table(void *fdt, int nodeoff,
+static int irqchip_imsic_update_hartid_table(const void *fdt, int nodeoff,
 					     struct imsic_data *id)
 {
 	const fdt32_t *val;
@@ -58,8 +58,8 @@ static int irqchip_imsic_update_hartid_table(void *fdt, int nodeoff,
 	return 0;
 }
 
-static int irqchip_imsic_cold_init(void *fdt, int nodeoff,
-				    const struct fdt_match *match)
+static int irqchip_imsic_cold_init(const void *fdt, int nodeoff,
+				   const struct fdt_match *match)
 {
 	int rc;
 	struct imsic_data *id;

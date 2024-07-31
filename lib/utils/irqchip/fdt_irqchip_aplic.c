@@ -22,8 +22,8 @@ static int irqchip_aplic_warm_init(void)
 	return 0;
 }
 
-static int irqchip_aplic_cold_init(void *fdt, int nodeoff,
-				  const struct fdt_match *match)
+static int irqchip_aplic_cold_init(const void *fdt, int nodeoff,
+				   const struct fdt_match *match)
 {
 	int rc;
 	struct aplic_data *pd;

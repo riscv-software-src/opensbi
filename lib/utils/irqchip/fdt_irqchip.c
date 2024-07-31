@@ -53,7 +53,7 @@ static int fdt_irqchip_cold_init(void)
 	int pos, noff, rc;
 	struct fdt_irqchip *drv;
 	const struct fdt_match *match;
-	void *fdt = fdt_get_address();
+	const void *fdt = fdt_get_address();
 
 	for (pos = 0; pos < fdt_irqchip_drivers_size; pos++) {
 		drv = fdt_irqchip_drivers[pos];
