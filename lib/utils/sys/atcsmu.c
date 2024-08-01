@@ -84,7 +84,7 @@ inline int smu_set_reset_vector(struct smu_data *smu, ulong wakeup_addr,
 
 	if (reset_vector != (u64)wakeup_addr) {
 		sbi_printf(
-			"hard%d (PCS%d): Failed to program the reset vector.\n",
+			"hart%d (PCS%d): Failed to program the reset vector.\n",
 			hartid, hartid + 3);
 		return SBI_EFAIL;
 	} else
