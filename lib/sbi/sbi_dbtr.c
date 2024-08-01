@@ -357,7 +357,7 @@ static void dbtr_trigger_enable(struct sbi_dbtr_trigger *trig)
 	unsigned long state;
 	unsigned long tdata1;
 
-	if (!trig && !(trig->state & RV_DBTR_BIT_MASK(TS, MAPPED)))
+	if (!trig || !(trig->state & RV_DBTR_BIT_MASK(TS, MAPPED)))
 		return;
 
 	state = trig->state;
@@ -403,7 +403,7 @@ static void dbtr_trigger_disable(struct sbi_dbtr_trigger *trig)
 {
 	unsigned long tdata1;
 
-	if (!trig && !(trig->state & RV_DBTR_BIT_MASK(TS, MAPPED)))
+	if (!trig || !(trig->state & RV_DBTR_BIT_MASK(TS, MAPPED)))
 		return;
 
 	tdata1 = trig->tdata1;
@@ -429,7 +429,7 @@ static void dbtr_trigger_disable(struct sbi_dbtr_trigger *trig)
 
 static void dbtr_trigger_clear(struct sbi_dbtr_trigger *trig)
 {
-	if (!trig && !(trig->state & RV_DBTR_BIT_MASK(TS, MAPPED)))
+	if (!trig || !(trig->state & RV_DBTR_BIT_MASK(TS, MAPPED)))
 		return;
 
 	csr_write(CSR_TSELECT, trig->index);
