@@ -251,7 +251,7 @@ int sbi_fwft_init(struct sbi_scratch *scratch, bool cold_boot)
 
 	fhs = fwft_get_hart_state_ptr(scratch);
 	if (!fhs) {
-		fhs = sbi_zalloc(sizeof(fhs) + array_size(features) * sizeof(struct fwft_config));
+		fhs = sbi_zalloc(sizeof(*fhs) + array_size(features) * sizeof(struct fwft_config));
 		if (!fhs)
 			return SBI_ENOMEM;
 
