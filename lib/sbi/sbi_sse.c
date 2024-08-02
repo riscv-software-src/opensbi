@@ -678,8 +678,7 @@ static int sse_ipi_inject_send(unsigned long hartid, uint32_t event_id)
 	return SBI_OK;
 }
 
-static int sse_inject_event(uint32_t event_id, unsigned long hartid,
-			    struct sbi_ecall_return *out)
+static int sse_inject_event(uint32_t event_id, unsigned long hartid)
 {
 	int ret;
 	struct sbi_sse_event *e;
@@ -812,15 +811,12 @@ int sbi_sse_inject_from_ecall(uint32_t event_id, unsigned long hartid,
 	if (!sbi_domain_is_assigned_hart(sbi_domain_thishart_ptr(), hartid))
 		return SBI_EINVAL;
 
-	return sse_inject_event(event_id, hartid, out);
+	return sse_inject_event(event_id, hartid);
 }
 
 int sbi_sse_inject_event(uint32_t event_id)
 {
-	/* We don't really care about return value here */
-	struct sbi_ecall_return out;
-
-	return sse_inject_event(event_id, current_hartid(), &out);
+	return sse_inject_event(event_id, current_hartid());
 }
 
 int sbi_sse_set_cb_ops(uint32_t event_id, const struct sbi_sse_cb_ops *cb_ops)
