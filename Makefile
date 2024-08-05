@@ -91,7 +91,16 @@ endif
 # Find library version
 OPENSBI_VERSION_MAJOR=`grep "define OPENSBI_VERSION_MAJOR" $(include_dir)/sbi/sbi_version.h | sed 's/.*MAJOR.*\([0-9][0-9]*\)/\1/'`
 OPENSBI_VERSION_MINOR=`grep "define OPENSBI_VERSION_MINOR" $(include_dir)/sbi/sbi_version.h | sed 's/.*MINOR.*\([0-9][0-9]*\)/\1/'`
-OPENSBI_VERSION_GIT=$(shell if [ -d $(src_dir)/.git ]; then git describe 2> /dev/null; fi)
+OPENSBI_VERSION_GIT=
+
+# Detect 'git' presence before issuing 'git' commands
+GIT_AVAIL=$(shell command -v git 2> /dev/null)
+ifneq ($(GIT_AVAIL),)
+GIT_DIR=$(shell git rev-parse --git-dir 2> /dev/null)
+ifneq ($(GIT_DIR),)
+OPENSBI_VERSION_GIT=$(shell if [ -d $(GIT_DIR) ]; then git describe 2> /dev/null; fi)
+endif
+endif
 
 # Setup compilation commands
 ifneq ($(LLVM),)
