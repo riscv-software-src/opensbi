@@ -5,6 +5,7 @@
  *
  * Authors:
  *   Rahul Pathak <rpathak@ventanamicro.com>
+ *   Subrahmanya Lingappa <slingappa@ventanamicro.com>
  */
 
 #ifndef __RPMI_MSGPROT_H__
@@ -197,6 +198,7 @@ enum rpmi_servicegroup_id {
 	RPMI_SRVGRP_ID_MIN = 0,
 	RPMI_SRVGRP_BASE = 0x0001,
 	RPMI_SRVGRP_SYSTEM_RESET = 0x0002,
+	RPMI_SRVGRP_SYSTEM_SUSPEND = 0x0003,
 	RPMI_SRVGRP_ID_MAX_COUNT,
 
 	/* Reserved range for service groups */
@@ -277,6 +279,39 @@ enum rpmi_sysrst_reset_type {
 struct rpmi_sysrst_get_reset_attributes_resp {
 	s32 status;
 	u32 flags;
+};
+
+/** RPMI System Suspend ServiceGroup Service IDs */
+enum rpmi_system_suspend_service_id {
+	RPMI_SYSSUSP_SRV_ENABLE_NOTIFICATION = 0x01,
+	RPMI_SYSSUSP_SRV_GET_ATTRIBUTES = 0x02,
+	RPMI_SYSSUSP_SRV_SYSTEM_SUSPEND = 0x03,
+	RPMI_SYSSUSP_SRV_ID_MAX_COUNT,
+};
+
+/** Request for system suspend attributes */
+struct rpmi_syssusp_get_attr_req {
+	u32 susp_type;
+};
+
+#define RPMI_SYSSUSP_ATTRS_FLAGS_RESUMEADDR	(1U << 1)
+#define RPMI_SYSSUSP_ATTRS_FLAGS_SUSPENDTYPE	1U
+
+/** Response for system suspend attributes */
+struct rpmi_syssusp_get_attr_resp {
+	s32 status;
+	u32 flags;
+};
+
+struct rpmi_syssusp_suspend_req {
+	u32 hartid;
+	u32 suspend_type;
+	u32 resume_addr_lo;
+	u32 resume_addr_hi;
+};
+
+struct rpmi_syssusp_suspend_resp {
+	s32 status;
 };
 
 #endif /* !__RPMI_MSGPROT_H__ */

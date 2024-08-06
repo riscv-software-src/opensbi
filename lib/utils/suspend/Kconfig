@@ -7,4 +7,13 @@ config FDT_SUSPEND
 	depends on FDT
 	default n
 
+if FDT_SUSPEND
+
+config FDT_SUSPEND_RPMI
+	bool "FDT RPMI suspend driver"
+	depends on FDT_MAILBOX && RPMI_MAILBOX
+	default n
+
+endif
+
 endmenu
