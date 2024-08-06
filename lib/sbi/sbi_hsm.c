@@ -223,10 +223,10 @@ static int hsm_device_hart_stop(void)
 	return SBI_ENOTSUPP;
 }
 
-static int hsm_device_hart_suspend(u32 suspend_type)
+static int hsm_device_hart_suspend(u32 suspend_type, ulong mmode_resume_addr)
 {
 	if (hsm_dev && hsm_dev->hart_suspend)
-		return hsm_dev->hart_suspend(suspend_type);
+		return hsm_dev->hart_suspend(suspend_type, mmode_resume_addr);
 	return SBI_ENOTSUPP;
 }
 
@@ -532,7 +532,7 @@ int sbi_hsm_hart_suspend(struct sbi_scratch *scratch, u32 suspend_type,
 		__sbi_hsm_suspend_non_ret_save(scratch);
 
 	/* Try platform specific suspend */
-	ret = hsm_device_hart_suspend(suspend_type);
+	ret = hsm_device_hart_suspend(suspend_type, scratch->warmboot_addr);
 	if (ret == SBI_ENOTSUPP) {
 		/* Try generic implementation of default suspend types */
 		if (suspend_type == SBI_HSM_SUSPEND_RET_DEFAULT ||

@@ -130,7 +130,7 @@ static void sun20i_d1_riscv_cfg_init(void)
 	writel_relaxed(entry >> 32, SUN20I_D1_RISCV_CFG_BASE + RESET_ENTRY_HI_REG);
 }
 
-static int sun20i_d1_hart_suspend(u32 suspend_type)
+static int sun20i_d1_hart_suspend(u32 suspend_type, ulong mmode_resume_addr)
 {
 	/* Use the generic code for retentive suspend. */
 	if (!(suspend_type & SBI_HSM_SUSP_NON_RET_BIT))
