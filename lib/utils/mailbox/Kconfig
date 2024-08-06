@@ -8,8 +8,22 @@ config FDT_MAILBOX
 	select MAILBOX
 	default n
 
+config RPMI_MAILBOX
+	bool "RPMI based mailbox drivers"
+	select MAILBOX
+	default n
+
 config MAILBOX
 	bool "Mailbox support"
 	default n
+
+if FDT_MAILBOX
+
+config FDT_MAILBOX_RPMI_SHMEM
+	bool "RPMI Shared Memory Mailbox Controller"
+	depends on RPMI_MAILBOX
+	default n
+
+endif
 
 endmenu
