@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+menu "System Suspend Support"
+
+config FDT_SUSPEND
+	bool "FDT based suspend drivers"
+	depends on FDT
+	default n
+
+endmenu
