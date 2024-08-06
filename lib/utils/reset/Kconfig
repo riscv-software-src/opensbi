@@ -24,6 +24,11 @@ config FDT_RESET_HTIF
 	select SYS_HTIF
 	default n
 
+config FDT_RESET_RPMI
+	bool "RPMI FDT reset driver"
+	depends on FDT_MAILBOX && RPMI_MAILBOX
+	default n
+
 config FDT_RESET_SG2042_HWMON_MCU
 	bool "Sophgo SG2042 hwmon MCU FDT reset driver"
 	default n

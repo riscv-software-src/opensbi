@@ -196,6 +196,7 @@ struct rpmi_message_args {
 enum rpmi_servicegroup_id {
 	RPMI_SRVGRP_ID_MIN = 0,
 	RPMI_SRVGRP_BASE = 0x0001,
+	RPMI_SRVGRP_SYSTEM_RESET = 0x0002,
 	RPMI_SRVGRP_ID_MAX_COUNT,
 
 	/* Reserved range for service groups */
@@ -250,6 +251,32 @@ struct rpmi_base_get_platform_info_resp {
 	s32 status;
 	u32 plat_info_len;
 	char plat_info[];
+};
+
+/** RPMI System Reset ServiceGroup Service IDs */
+enum rpmi_system_reset_service_id {
+	RPMI_SYSRST_SRV_ENABLE_NOTIFICATION = 0x01,
+	RPMI_SYSRST_SRV_GET_ATTRIBUTES = 0x02,
+	RPMI_SYSRST_SRV_SYSTEM_RESET = 0x03,
+	RPMI_SYSRST_SRV_ID_MAX_COUNT,
+};
+
+/** RPMI System Reset types */
+enum rpmi_sysrst_reset_type {
+	RPMI_SYSRST_TYPE_SHUTDOWN = 0x0,
+	RPMI_SYSRST_TYPE_COLD_REBOOT = 0x1,
+	RPMI_SYSRST_TYPE_WARM_REBOOT = 0x2,
+	RPMI_SYSRST_TYPE_MAX,
+};
+
+#define RPMI_SYSRST_ATTRS_FLAGS_RESETTYPE_POS		(1)
+#define RPMI_SYSRST_ATTRS_FLAGS_RESETTYPE_MASK		\
+			(1U << RPMI_SYSRST_ATTRS_FLAGS_RESETTYPE_POS)
+
+/** Response for system reset attributes */
+struct rpmi_sysrst_get_reset_attributes_resp {
+	s32 status;
+	u32 flags;
 };
 
 #endif /* !__RPMI_MSGPROT_H__ */
