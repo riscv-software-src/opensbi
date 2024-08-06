@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+menu "HSM Device Support"
+
+config FDT_HSM
+	bool "FDT based HSM drivers"
+	depends on FDT
+	default n
+
+endmenu

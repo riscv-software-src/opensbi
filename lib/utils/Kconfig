@@ -6,6 +6,8 @@ source "$(OPENSBI_SRC_DIR)/lib/utils/fdt/Kconfig"
 
 source "$(OPENSBI_SRC_DIR)/lib/utils/gpio/Kconfig"
 
+source "$(OPENSBI_SRC_DIR)/lib/utils/hsm/Kconfig"
+
 source "$(OPENSBI_SRC_DIR)/lib/utils/i2c/Kconfig"
 
 source "$(OPENSBI_SRC_DIR)/lib/utils/ipi/Kconfig"

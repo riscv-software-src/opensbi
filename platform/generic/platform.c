@@ -21,6 +21,7 @@
 #include <sbi_utils/fdt/fdt_fixup.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/fdt/fdt_pmu.h>
+#include <sbi_utils/hsm/fdt_hsm.h>
 #include <sbi_utils/irqchip/fdt_irqchip.h>
 #include <sbi_utils/irqchip/imsic.h>
 #include <sbi_utils/serial/fdt_serial.h>
@@ -249,6 +250,7 @@ static int generic_early_init(bool cold_boot)
 	if (cold_boot) {
 		fdt_reset_init(fdt);
 		fdt_suspend_init(fdt);
+		fdt_hsm_init(fdt);
 
 		if (semihosting_enabled())
 			rc = semihosting_init();
