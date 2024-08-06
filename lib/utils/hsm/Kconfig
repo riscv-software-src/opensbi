@@ -7,4 +7,13 @@ config FDT_HSM
 	depends on FDT
 	default n
 
+if FDT_HSM
+
+config FDT_HSM_RPMI
+	bool "FDT RPMI HSM driver"
+	depends on FDT_MAILBOX && RPMI_MAILBOX
+	default n
+
+endif
+
 endmenu
