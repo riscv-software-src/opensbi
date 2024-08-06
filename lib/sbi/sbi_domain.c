@@ -24,7 +24,7 @@ SBI_LIST_HEAD(domain_list);
 static u32 domain_count = 0;
 static bool domain_finalized = false;
 
-#define ROOT_REGION_MAX	16
+#define ROOT_REGION_MAX	32
 static u32 root_memregs_count = 0;
 
 struct sbi_domain root = {
