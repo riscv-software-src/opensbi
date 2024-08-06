@@ -14,6 +14,8 @@ source "$(OPENSBI_SRC_DIR)/lib/utils/irqchip/Kconfig"
 
 source "$(OPENSBI_SRC_DIR)/lib/utils/libfdt/Kconfig"
 
+source "$(OPENSBI_SRC_DIR)/lib/utils/mailbox/Kconfig"
+
 source "$(OPENSBI_SRC_DIR)/lib/utils/regmap/Kconfig"
 
 source "$(OPENSBI_SRC_DIR)/lib/utils/reset/Kconfig"
