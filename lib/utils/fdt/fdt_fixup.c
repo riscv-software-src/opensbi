@@ -401,8 +401,38 @@ void fdt_config_fixup(void *fdt)
 	fdt_nop_node(fdt, config_offset);
 }
 
+static SBI_LIST_HEAD(fixup_list);
+
+int fdt_register_general_fixup(struct fdt_general_fixup *fixup)
+{
+	struct fdt_general_fixup *f;
+
+	if (!fixup || !fixup->name || !fixup->do_fixup)
+		return SBI_EINVAL;
+
+	sbi_list_for_each_entry(f, &fixup_list, head) {
+		if (f == fixup)
+			return SBI_EALREADY;
+	}
+
+	SBI_INIT_LIST_HEAD(&fixup->head);
+	sbi_list_add_tail(&fixup->head, &fixup_list);
+
+	return 0;
+}
+
+void fdt_unregister_general_fixup(struct fdt_general_fixup *fixup)
+{
+	if (!fixup)
+		return;
+
+	sbi_list_del(&fixup->head);
+}
+
 void fdt_fixups(void *fdt)
 {
+	struct fdt_general_fixup *f;
+
 	fdt_aplic_fixup(fdt);
 
 	fdt_imsic_fixup(fdt);
@@ -416,4 +446,7 @@ void fdt_fixups(void *fdt)
 #endif
 
 	fdt_config_fixup(fdt);
+
+	sbi_list_for_each_entry(f, &fixup_list, head)
+		f->do_fixup(f, fdt);
 }
