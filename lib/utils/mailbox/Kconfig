@@ -2,6 +2,12 @@
 
 menu "Mailbox Support"
 
+config FDT_MAILBOX
+	bool "FDT based mailbox drivers"
+	depends on FDT
+	select MAILBOX
+	default n
+
 config MAILBOX
 	bool "Mailbox support"
 	default n
