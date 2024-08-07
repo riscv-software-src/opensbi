@@ -7,4 +7,13 @@ config FDT_CPPC
 	depends on FDT
 	default n
 
+if FDT_CPPC
+
+config FDT_CPPC_RPMI
+	bool "FDT RPMI CPPC driver"
+	depends on FDT_MAILBOX && RPMI_MAILBOX
+	default n
+
+endif
+
 endmenu
