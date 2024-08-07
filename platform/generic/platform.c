@@ -17,6 +17,7 @@
 #include <sbi/sbi_string.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_tlb.h>
+#include <sbi_utils/cppc/fdt_cppc.h>
 #include <sbi_utils/fdt/fdt_domain.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
 #include <sbi_utils/fdt/fdt_helper.h>
@@ -251,6 +252,7 @@ static int generic_early_init(bool cold_boot)
 		fdt_reset_init(fdt);
 		fdt_suspend_init(fdt);
 		fdt_hsm_init(fdt);
+		fdt_cppc_init(fdt);
 
 		if (semihosting_enabled())
 			rc = semihosting_init();

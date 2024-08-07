@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+menu "CPPC Device Support"
+
+config FDT_CPPC
+	bool "FDT based CPPC drivers"
+	depends on FDT
+	default n
+
+endmenu
