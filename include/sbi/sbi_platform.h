@@ -126,6 +126,9 @@ struct sbi_platform_operations {
 	/** Initialize platform timer during cold boot */
 	int (*timer_init)(void);
 
+	/** Initialize the platform Message Proxy(MPXY) driver */
+	int (*mpxy_init)(void);
+
 	/** Check if SBI vendor extension is implemented or not */
 	bool (*vendor_ext_check)(void);
 	/** platform specific SBI extension implementation provider */
@@ -579,6 +582,20 @@ static inline int sbi_platform_timer_init(const struct sbi_platform *plat)
 {
 	if (plat && sbi_platform_ops(plat)->timer_init)
 		return sbi_platform_ops(plat)->timer_init();
+	return 0;
+}
+
+/**
+ * Initialize the platform Message Proxy drivers
+ *
+ * @param plat pointer to struct sbi_platform
+ *
+ * @return 0 on success and negative error code on failure
+ */
+static inline int sbi_platform_mpxy_init(const struct sbi_platform *plat)
+{
+	if (plat && sbi_platform_ops(plat)->mpxy_init)
+		return sbi_platform_ops(plat)->mpxy_init();
 	return 0;
 }
 
