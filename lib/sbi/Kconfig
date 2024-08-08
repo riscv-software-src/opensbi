@@ -66,4 +66,7 @@ config SBI_ECALL_SSE
 	bool "SSE extension"
 	default y
 
+config SBI_ECALL_MPXY
+	bool "MPXY extension"
+	default y
 endmenu

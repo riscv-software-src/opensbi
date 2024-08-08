@@ -37,6 +37,7 @@
 #define SBI_EXT_DBTR				0x44425452
 #define SBI_EXT_SSE				0x535345
 #define SBI_EXT_FWFT				0x46574654
+#define SBI_EXT_MPXY				0x4D505859
 
 /* SBI function IDs for BASE extension*/
 #define SBI_EXT_BASE_GET_SPEC_VERSION		0x0
@@ -420,6 +421,15 @@ enum sbi_sse_state {
 
 #define SBI_SSE_EVENT_GLOBAL_BIT		(1 << 15)
 #define SBI_SSE_EVENT_PLATFORM_BIT		(1 << 14)
+
+/* SBI function IDs for MPXY extension */
+#define SBI_EXT_MPXY_SET_SHMEM			0x0
+#define SBI_EXT_MPXY_GET_CHANNEL_IDS		0x1
+#define SBI_EXT_MPXY_READ_ATTRS			0x2
+#define SBI_EXT_MPXY_WRITE_ATTRS		0x3
+#define SBI_EXT_MPXY_SEND_MSG_WITH_RESP		0x4
+#define SBI_EXT_MPXY_SEND_MSG_NO_RESP		0x5
+#define SBI_EXT_MPXY_GET_NOTIFICATION_EVENTS	0x6
 
 /* SBI base specification related macros */
 #define SBI_SPEC_VERSION_MAJOR_OFFSET		24
