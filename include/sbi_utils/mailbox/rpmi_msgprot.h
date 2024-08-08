@@ -201,6 +201,7 @@ enum rpmi_servicegroup_id {
 	RPMI_SRVGRP_SYSTEM_SUSPEND = 0x0003,
 	RPMI_SRVGRP_HSM = 0x0004,
 	RPMI_SRVGRP_CPPC = 0x0005,
+	RPMI_SRVGRP_CLOCK = 0x0007,
 	RPMI_SRVGRP_ID_MAX_COUNT,
 
 	/* Reserved range for service groups */
@@ -509,6 +510,98 @@ struct rpmi_cppc_hart_list_resp {
 	u32 returned;
 	/* remaining space need to be adjusted for the above 3 u32's */
 	u32 hartid[(RPMI_MSG_DATA_SIZE(RPMI_SLOT_SIZE_MIN) - (sizeof(u32) * 3)) / sizeof(u32)];
+};
+
+/** RPMI Clock ServiceGroup Service IDs */
+enum rpmi_clock_service_id {
+	RPMI_CLOCK_SRV_ENABLE_NOTIFICATION = 0x01,
+	RPMI_CLOCK_SRV_GET_NUM_CLOCKS = 0x02,
+	RPMI_CLOCK_SRV_GET_ATTRIBUTES = 0x03,
+	RPMI_CLOCK_SRV_GET_SUPPORTED_RATES = 0x04,
+	RPMI_CLOCK_SRV_SET_CONFIG = 0x05,
+	RPMI_CLOCK_SRV_GET_CONFIG = 0x06,
+	RPMI_CLOCK_SRV_SET_RATE = 0x07,
+	RPMI_CLOCK_SRV_GET_RATE = 0x08,
+	RPMI_CLOCK_SRV_MAX_COUNT,
+};
+
+struct rpmi_clock_get_num_clocks_resp {
+	s32 status;
+	u32 num_clocks;
+};
+
+struct rpmi_clock_get_attributes_req {
+	u32 clock_id;
+};
+
+struct rpmi_clock_get_attributes_resp {
+	s32 status;
+#define RPMI_CLOCK_FLAGS_FORMAT_POS		30
+#define RPMI_CLOCK_FLAGS_FORMAT_MASK		\
+			(3U << RPMI_CLOCK_FLAGS_CLOCK_FORMAT_POS)
+#define RPMI_CLOCK_FLAGS_FORMAT_DISCRETE	0
+#define RPMI_CLOCK_FLAGS_FORMAT_LINEAR		1
+	u32 flags;
+	u32 num_rates;
+	u32 transition_latency;
+	u8 name[16];
+};
+
+struct rpmi_clock_get_supported_rates_req {
+	u32 clock_id;
+	u32 clock_rate_index;
+};
+
+struct rpmi_clock_get_supported_rates_resp {
+	s32 status;
+	u32 flags;
+	u32 remaining;
+	u32 returned;
+	u32 clock_rate[0];
+};
+
+struct rpmi_clock_set_config_req {
+	u32 clock_id;
+#define RPMI_CLOCK_CONFIG_ENABLE		(1U << 0)
+	u32 config;
+};
+
+struct rpmi_clock_set_config_resp {
+	s32 status;
+};
+
+struct rpmi_clock_get_config_req {
+	u32 clock_id;
+};
+
+struct rpmi_clock_get_config_resp {
+	s32 status;
+	u32 config;
+};
+
+struct rpmi_clock_set_rate_req {
+	u32 clock_id;
+#define RPMI_CLOCK_SET_RATE_FLAGS_MASK		(3U << 0)
+#define RPMI_CLOCK_SET_RATE_FLAGS_ROUND_DOWN	0
+#define RPMI_CLOCK_SET_RATE_FLAGS_ROUND_UP	1
+#define RPMI_CLOCK_SET_RATE_FLAGS_ROUND_PLAT	2
+	u32 flags;
+	u32 clock_rate_low;
+	u32 clock_rate_high;
+};
+
+struct rpmi_clock_set_rate_resp {
+	s32 status;
+};
+
+struct rpmi_clock_get_rate_req {
+	u32 clock_id;
+};
+
+struct rpmi_clock_get_rate_resp {
+	s32 status;
+	u32 clock_rate_low;
+	u32 clock_rate_high;
 };
 
 #endif /* !__RPMI_MSGPROT_H__ */
