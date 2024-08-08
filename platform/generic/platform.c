@@ -17,6 +17,7 @@
 #include <sbi/sbi_string.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_tlb.h>
+#include <sbi_utils/mpxy/fdt_mpxy.h>
 #include <sbi_utils/cppc/fdt_cppc.h>
 #include <sbi_utils/fdt/fdt_domain.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
@@ -415,6 +416,14 @@ static uint64_t generic_pmu_xlate_to_mhpmevent(uint32_t event_idx,
 	return evt_val;
 }
 
+static int generic_mpxy_init(void)
+{
+	const void *fdt = fdt_get_address();
+
+	fdt_mpxy_init(fdt);
+	return 0;
+}
+
 const struct sbi_platform_operations platform_ops = {
 	.cold_boot_allowed	= generic_cold_boot_allowed,
 	.nascent_init		= generic_nascent_init,
@@ -431,6 +440,7 @@ const struct sbi_platform_operations platform_ops = {
 	.get_tlbr_flush_limit	= generic_tlbr_flush_limit,
 	.get_tlb_num_entries	= generic_tlb_num_entries,
 	.timer_init		= fdt_timer_init,
+	.mpxy_init		= generic_mpxy_init,
 	.vendor_ext_check	= generic_vendor_ext_check,
 	.vendor_ext_provider	= generic_vendor_ext_provider,
 };

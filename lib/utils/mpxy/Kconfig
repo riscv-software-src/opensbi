@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+menu "MPXY Device Support"
+
+config FDT_MPXY
+	bool "FDT based MPXY drivers"
+	depends on FDT
+	default n
+
+endmenu
