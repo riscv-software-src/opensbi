@@ -63,8 +63,9 @@ void *sbi_malloc_from(struct sbi_heap_control *hpctrl, size_t size)
 			n = sbi_list_first_entry(&hpctrl->free_node_list,
 						 struct heap_node, head);
 			sbi_list_del(&n->head);
-			n->addr = np->addr + np->size - size;
+			n->addr = np->addr;
 			n->size = size;
+			np->addr += size;
 			np->size -= size;
 			sbi_list_add_tail(&n->head, &hpctrl->used_space_list);
 			ret = (void *)n->addr;
