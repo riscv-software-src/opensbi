@@ -31,6 +31,15 @@ static inline void *sbi_malloc(size_t size)
 	return sbi_malloc_from(&global_hpctrl, size);
 }
 
+/** Allocate aligned from heap area */
+void *sbi_aligned_alloc_from(struct sbi_heap_control *hpctrl,
+			     size_t alignment,size_t size);
+
+static inline void *sbi_aligned_alloc(size_t alignment, size_t size)
+{
+	return sbi_aligned_alloc_from(&global_hpctrl, alignment, size);
+}
+
 /** Zero allocate from heap area */
 void *sbi_zalloc_from(struct sbi_heap_control *hpctrl, size_t size);
 

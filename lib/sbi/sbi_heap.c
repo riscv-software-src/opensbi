@@ -37,27 +37,67 @@ struct sbi_heap_control {
 
 struct sbi_heap_control global_hpctrl;
 
-void *sbi_malloc_from(struct sbi_heap_control *hpctrl, size_t size)
+static void *alloc_with_align(struct sbi_heap_control *hpctrl,
+			      size_t align, size_t size)
 {
 	void *ret = NULL;
-	struct heap_node *n, *np;
+	struct heap_node *n, *np, *rem;
+	unsigned long lowest_aligned;
+	size_t pad;
 
 	if (!size)
 		return NULL;
 
-	size += HEAP_ALLOC_ALIGN - 1;
-	size &= ~((unsigned long)HEAP_ALLOC_ALIGN - 1);
+	size += align - 1;
+	size &= ~((unsigned long)align - 1);
 
 	spin_lock(&hpctrl->lock);
 
 	np = NULL;
 	sbi_list_for_each_entry(n, &hpctrl->free_space_list, head) {
-		if (size <= n->size) {
+		lowest_aligned = ROUNDUP(n->addr, align);
+		pad = lowest_aligned - n->addr;
+
+		if (size + pad <= n->size) {
 			np = n;
 			break;
 		}
 	}
-	if (np) {
+	if (!np)
+		goto out;
+
+	if (pad) {
+		if (sbi_list_empty(&hpctrl->free_node_list)) {
+			goto out;
+		}
+
+		n = sbi_list_first_entry(&hpctrl->free_node_list,
+					 struct heap_node, head);
+		sbi_list_del(&n->head);
+
+		if ((size + pad < np->size) &&
+		    !sbi_list_empty(&hpctrl->free_node_list)) {
+			rem = sbi_list_first_entry(&hpctrl->free_node_list,
+						   struct heap_node, head);
+			sbi_list_del(&rem->head);
+			rem->addr = np->addr + (size + pad);
+			rem->size = np->size - (size + pad);
+			sbi_list_add_tail(&rem->head,
+					  &hpctrl->free_space_list);
+		} else if (size + pad != np->size) {
+			/* Can't allocate, return n */
+			sbi_list_add(&n->head, &hpctrl->free_node_list);
+			ret = NULL;
+			goto out;
+		}
+
+		n->addr = lowest_aligned;
+		n->size = size;
+		sbi_list_add_tail(&n->head, &hpctrl->used_space_list);
+
+		np->size = pad;
+		ret = (void *)n->addr;
+	} else {
 		if ((size < np->size) &&
 		    !sbi_list_empty(&hpctrl->free_node_list)) {
 			n = sbi_list_first_entry(&hpctrl->free_node_list,
@@ -76,9 +116,32 @@ void *sbi_malloc_from(struct sbi_heap_control *hpctrl, size_t size)
 		}
 	}
 
+out:
 	spin_unlock(&hpctrl->lock);
 
 	return ret;
+}
+
+void *sbi_malloc_from(struct sbi_heap_control *hpctrl, size_t size)
+{
+	return alloc_with_align(hpctrl, HEAP_ALLOC_ALIGN, size);
+}
+
+void *sbi_aligned_alloc_from(struct sbi_heap_control *hpctrl,
+			     size_t alignment, size_t size)
+{
+	if (alignment < HEAP_ALLOC_ALIGN)
+		alignment = HEAP_ALLOC_ALIGN;
+
+	/* Make sure alignment is power of two */
+	if ((alignment & (alignment - 1)) != 0)
+		return NULL;
+
+	/* Make sure size is multiple of alignment */
+	if (size % alignment != 0)
+		return NULL;
+
+	return alloc_with_align(hpctrl, alignment, size);
 }
 
 void *sbi_zalloc_from(struct sbi_heap_control *hpctrl, size_t size)
