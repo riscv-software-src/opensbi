@@ -67,6 +67,8 @@ enum sbi_hart_extensions {
 	SBI_HART_EXT_SVADE,
 	/** Hart has Svadu extension */
 	SBI_HART_EXT_SVADU,
+	/** Hart has Smnpm extension */
+	SBI_HART_EXT_SMNPM,
 
 	/** Maximum index of Hart extension */
 	SBI_HART_EXT_MAX,

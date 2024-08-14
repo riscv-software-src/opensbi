@@ -213,6 +213,10 @@
 #define ENVCFG_PBMTE			(_ULL(1) << 62)
 #define ENVCFG_ADUE			(_ULL(1) << 61)
 #define ENVCFG_CDE			(_ULL(1) << 60)
+#define ENVCFG_PMM			(_ULL(0x3) << 32)
+#define ENVCFG_PMM_PMLEN_0		(_ULL(0x0) << 32)
+#define ENVCFG_PMM_PMLEN_7		(_ULL(0x2) << 32)
+#define ENVCFG_PMM_PMLEN_16		(_ULL(0x3) << 32)
 #define ENVCFG_CBZE			(_UL(1) << 7)
 #define ENVCFG_CBCFE			(_UL(1) << 6)
 #define ENVCFG_CBIE_SHIFT		4
