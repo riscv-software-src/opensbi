@@ -98,26 +98,26 @@ static void fw_platform_coldboot_harts_init(const void *fdt)
 		goto default_config;
 
 	val = fdt_getprop(fdt, config_offset, "cold-boot-harts", &len);
+	if (!val || !len)
+		goto default_config;
+
 	len = len / sizeof(u32);
-	if (val && len) {
-		for (int i = 0; i < len; i++) {
-			cpu_offset = fdt_node_offset_by_phandle(fdt,
-							fdt32_to_cpu(val[i]));
-			if (cpu_offset < 0)
-				goto default_config;
+	for (int i = 0; i < len; i++) {
+		cpu_offset = fdt_node_offset_by_phandle(fdt,
+						fdt32_to_cpu(val[i]));
+		if (cpu_offset < 0)
+			goto default_config;
 
-			err = fdt_parse_hart_id(fdt, cpu_offset, &val32);
-			if (err)
-				goto default_config;
+		err = fdt_parse_hart_id(fdt, cpu_offset, &val32);
+		if (err)
+			goto default_config;
 
-			if (!fdt_node_is_enabled(fdt, cpu_offset))
-				continue;
+		if (!fdt_node_is_enabled(fdt, cpu_offset))
+			continue;
 
-			for (int i = 0; i < platform.hart_count; i++) {
-				if (val32 == generic_hart_index2id[i])
-					bitmap_set(generic_coldboot_harts, i, 1);
-			}
-
+		for (int i = 0; i < platform.hart_count; i++) {
+			if (val32 == generic_hart_index2id[i])
+				bitmap_set(generic_coldboot_harts, i, 1);
 		}
 	}
 
