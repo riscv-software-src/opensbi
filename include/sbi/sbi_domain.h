@@ -11,6 +11,7 @@
 #define __SBI_DOMAIN_H__
 
 #include <sbi/riscv_locks.h>
+#include <sbi/sbi_list.h>
 #include <sbi/sbi_types.h>
 #include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_domain_context.h>
@@ -158,11 +159,10 @@ struct sbi_domain_memregion {
 	unsigned long flags;
 };
 
-/** Maximum number of domains */
-#define SBI_DOMAIN_MAX_INDEX			32
-
 /** Representation of OpenSBI domain */
 struct sbi_domain {
+	/** Node in linked list of domains */
+	struct sbi_dlist node;
 	/** Logical index of this domain */
 	u32 index;
 	/** HARTs assigned to this domain */
@@ -206,16 +206,12 @@ void sbi_update_hartindex_to_domain(u32 hartindex, struct sbi_domain *dom);
 #define sbi_domain_thishart_ptr() \
 	sbi_hartindex_to_domain(sbi_hartid_to_hartindex(current_hartid()))
 
-/** Index to domain table */
-extern struct sbi_domain *domidx_to_domain_table[];
-
-/** Get pointer to sbi_domain from index */
-#define sbi_index_to_domain(__index) \
-	domidx_to_domain_table[__index]
+/** Head of linked list of domains */
+extern struct sbi_dlist domain_list;
 
 /** Iterate over each domain */
-#define sbi_domain_for_each(__i, __d) \
-	for ((__i) = 0; ((__d) = sbi_index_to_domain(__i)); (__i)++)
+#define sbi_domain_for_each(__d) \
+	sbi_list_for_each_entry(__d, &domain_list, node)
 
 /** Iterate over each memory region of a domain */
 #define sbi_domain_for_each_memregion(__d, __r) \

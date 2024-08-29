@@ -107,7 +107,7 @@ int sbi_domain_context_enter(struct sbi_domain *dom)
 
 int sbi_domain_context_exit(void)
 {
-	u32 i, hartindex = sbi_hartid_to_hartindex(current_hartid());
+	u32 hartindex = sbi_hartid_to_hartindex(current_hartid());
 	struct sbi_domain *dom;
 	struct sbi_context *ctx = sbi_domain_context_thishart_ptr();
 	struct sbi_context *dom_ctx, *tmp;
@@ -118,7 +118,7 @@ int sbi_domain_context_exit(void)
 	 * its context on the current hart if valid.
 	 */
 	if (!ctx) {
-		sbi_domain_for_each(i, dom) {
+		sbi_domain_for_each(dom) {
 			if (!sbi_hartmask_test_hartindex(hartindex,
 							 dom->possible_harts))
 				continue;
@@ -140,7 +140,7 @@ int sbi_domain_context_exit(void)
 	/* If no previous caller context */
 	if (!dom_ctx) {
 		/* Try to find next uninitialized user-defined domain's context */
-		sbi_domain_for_each(i, dom) {
+		sbi_domain_for_each(dom) {
 			if (dom == &root || dom == sbi_domain_thishart_ptr())
 				continue;
 

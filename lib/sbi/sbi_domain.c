@@ -13,16 +13,14 @@
 #include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_heap.h>
 #include <sbi/sbi_hsm.h>
+#include <sbi/sbi_list.h>
 #include <sbi/sbi_math.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_string.h>
 
-/*
- * We allocate an extra element because sbi_domain_for_each() expects
- * the array to be null-terminated.
- */
-struct sbi_domain *domidx_to_domain_table[SBI_DOMAIN_MAX_INDEX + 1] = { 0 };
+SBI_LIST_HEAD(domain_list);
+
 static u32 domain_count = 0;
 static bool domain_finalized = false;
 
@@ -519,10 +517,9 @@ void sbi_domain_dump(const struct sbi_domain *dom, const char *suffix)
 
 void sbi_domain_dump_all(const char *suffix)
 {
-	u32 i;
 	const struct sbi_domain *dom;
 
-	sbi_domain_for_each(i, dom) {
+	sbi_domain_for_each(dom) {
 		sbi_domain_dump(dom, suffix);
 		sbi_printf("\n");
 	}
@@ -541,19 +538,9 @@ int sbi_domain_register(struct sbi_domain *dom,
 		return SBI_EINVAL;
 
 	/* Check if domain already discovered */
-	sbi_domain_for_each(i, tdom) {
+	sbi_domain_for_each(tdom) {
 		if (tdom == dom)
 			return SBI_EALREADY;
-	}
-
-	/*
-	 * Ensure that we have room for Domain Index to
-	 * HART ID mapping
-	 */
-	if (SBI_DOMAIN_MAX_INDEX <= domain_count) {
-		sbi_printf("%s: No room for %s\n",
-			   __func__, dom->name);
-		return SBI_ENOSPC;
 	}
 
 	/* Sanitize discovered domain */
@@ -565,9 +552,10 @@ int sbi_domain_register(struct sbi_domain *dom,
 		return rc;
 	}
 
+	sbi_list_add_tail(&dom->node, &domain_list);
+
 	/* Assign index to domain */
 	dom->index = domain_count++;
-	domidx_to_domain_table[dom->index] = dom;
 
 	/* Initialize spinlock for dom->assigned_harts */
 	SPIN_LOCK_INIT(dom->assigned_harts_lock);
@@ -692,7 +680,7 @@ int sbi_domain_root_add_memrange(unsigned long addr, unsigned long size,
 int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 {
 	int rc;
-	u32 i, dhart;
+	u32 dhart;
 	struct sbi_domain *dom;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
@@ -705,7 +693,7 @@ int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 	}
 
 	/* Startup boot HART of domains */
-	sbi_domain_for_each(i, dom) {
+	sbi_domain_for_each(dom) {
 		/* Domain boot HART index */
 		dhart = sbi_hartid_to_hartindex(dom->boot_hartid);
 
