@@ -78,8 +78,10 @@ u64 sbi_timer_get_delta(void);
 /** Set timer delta value for current HART */
 void sbi_timer_set_delta(ulong delta);
 
+#if __riscv_xlen == 32
 /** Set upper 32-bits of timer delta value for current HART */
 void sbi_timer_set_delta_upper(ulong delta_upper);
+#endif
 
 /** Start timer event for current HART */
 void sbi_timer_event_start(u64 next_event);

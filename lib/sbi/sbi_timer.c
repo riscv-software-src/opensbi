@@ -114,20 +114,21 @@ u64 sbi_timer_get_delta(void)
 
 void sbi_timer_set_delta(ulong delta)
 {
-	u64 *time_delta = sbi_scratch_offset_ptr(sbi_scratch_thishart_ptr(),
-						 time_delta_off);
+	ulong *time_delta = sbi_scratch_offset_ptr(sbi_scratch_thishart_ptr(),
+						   time_delta_off);
 
-	*time_delta = (u64)delta;
+	*time_delta = delta;
 }
 
+#if __riscv_xlen == 32
 void sbi_timer_set_delta_upper(ulong delta_upper)
 {
-	u64 *time_delta = sbi_scratch_offset_ptr(sbi_scratch_thishart_ptr(),
-						 time_delta_off);
+	ulong *time_delta = sbi_scratch_offset_ptr(sbi_scratch_thishart_ptr(),
+						   time_delta_off);
 
-	*time_delta &= 0xffffffffULL;
-	*time_delta |= ((u64)delta_upper << 32);
+	*(time_delta + 1) = delta_upper;
 }
+#endif
 
 void sbi_timer_event_start(u64 next_event)
 {
