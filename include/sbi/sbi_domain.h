@@ -163,16 +163,9 @@ struct sbi_domain_memregion {
 
 /** Representation of OpenSBI domain */
 struct sbi_domain {
-	/**
-	 * Logical index of this domain
-	 * Note: This set by sbi_domain_finalize() in the coldboot path
-	 */
+	/** Logical index of this domain */
 	u32 index;
-	/**
-	 * HARTs assigned to this domain
-	 * Note: This set by sbi_domain_init() and sbi_domain_finalize()
-	 * in the coldboot path
-	 */
+	/** HARTs assigned to this domain */
 	struct sbi_hartmask assigned_harts;
 	/** Spinlock for accessing assigned_harts */
 	spinlock_t assigned_harts_lock;
