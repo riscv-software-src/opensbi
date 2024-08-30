@@ -72,7 +72,7 @@ int sbi_hsm_hart_suspend(struct sbi_scratch *scratch, u32 suspend_type,
 			 ulong raddr, ulong rmode, ulong arg1);
 bool sbi_hsm_hart_change_state(struct sbi_scratch *scratch, long oldstate,
 			       long newstate);
-int __sbi_hsm_hart_get_state(u32 hartid);
+int __sbi_hsm_hart_get_state(u32 hartindex);
 int sbi_hsm_hart_get_state(const struct sbi_domain *dom, u32 hartid);
 int sbi_hsm_hart_interruptible_mask(const struct sbi_domain *dom,
 				    ulong hbase, ulong *out_hmask);

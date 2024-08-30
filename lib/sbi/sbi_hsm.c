@@ -60,12 +60,12 @@ bool sbi_hsm_hart_change_state(struct sbi_scratch *scratch, long oldstate,
 	return __sbi_hsm_hart_change_state(hdata, oldstate, newstate);
 }
 
-int __sbi_hsm_hart_get_state(u32 hartid)
+int __sbi_hsm_hart_get_state(u32 hartindex)
 {
 	struct sbi_hsm_data *hdata;
 	struct sbi_scratch *scratch;
 
-	scratch = sbi_hartid_to_scratch(hartid);
+	scratch = sbi_hartindex_to_scratch(hartindex);
 	if (!scratch)
 		return SBI_EINVAL;
 
@@ -75,10 +75,12 @@ int __sbi_hsm_hart_get_state(u32 hartid)
 
 int sbi_hsm_hart_get_state(const struct sbi_domain *dom, u32 hartid)
 {
+	u32 hartindex = sbi_hartid_to_hartindex(hartid);
+
 	if (!sbi_domain_is_assigned_hart(dom, hartid))
 		return SBI_EINVAL;
 
-	return __sbi_hsm_hart_get_state(hartid);
+	return __sbi_hsm_hart_get_state(hartindex);
 }
 
 /*
@@ -120,6 +122,7 @@ int sbi_hsm_hart_interruptible_mask(const struct sbi_domain *dom,
 {
 	int hstate;
 	ulong i, hmask, dmask;
+	u32 hartindex;
 
 	*out_hmask = 0;
 	if (!sbi_hartid_valid(hbase))
@@ -131,7 +134,8 @@ int sbi_hsm_hart_interruptible_mask(const struct sbi_domain *dom,
 		if (!(dmask & hmask))
 			continue;
 
-		hstate = __sbi_hsm_hart_get_state(hbase + i);
+		hartindex = sbi_hartid_to_hartindex(hbase + i);
+		hstate = __sbi_hsm_hart_get_state(hartindex);
 		if (hstate == SBI_HSM_STATE_STARTED ||
 		    hstate == SBI_HSM_STATE_SUSPENDED ||
 		    hstate == SBI_HSM_STATE_RESUME_PENDING)
