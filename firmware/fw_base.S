@@ -218,6 +218,8 @@ _scratch_init:
 #endif
 	REG_S	a0, SBI_SCRATCH_OPTIONS_OFFSET(tp)
 	MOV_3R	a0, s0, a1, s1, a2, s2
+	/* Store hart index in scratch space */
+	REG_S	t1, SBI_SCRATCH_HARTINDEX_OFFSET(tp)
 	/* Move to next scratch space */
 	add	t1, t1, t2
 	blt	t1, s7, _scratch_init

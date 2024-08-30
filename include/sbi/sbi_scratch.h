@@ -42,8 +42,10 @@
 #define SBI_SCRATCH_TMP0_OFFSET			(12 * __SIZEOF_POINTER__)
 /** Offset of options member in sbi_scratch */
 #define SBI_SCRATCH_OPTIONS_OFFSET		(13 * __SIZEOF_POINTER__)
+/** Offset of hartindex member in sbi_scratch */
+#define SBI_SCRATCH_HARTINDEX_OFFSET		(14 * __SIZEOF_POINTER__)
 /** Offset of extra space in sbi_scratch */
-#define SBI_SCRATCH_EXTRA_SPACE_OFFSET		(14 * __SIZEOF_POINTER__)
+#define SBI_SCRATCH_EXTRA_SPACE_OFFSET		(15 * __SIZEOF_POINTER__)
 /** Maximum size of sbi_scratch (4KB) */
 #define SBI_SCRATCH_SIZE			(0x1000)
 
@@ -83,6 +85,8 @@ struct sbi_scratch {
 	unsigned long tmp0;
 	/** Options for OpenSBI library */
 	unsigned long options;
+	/** Index of the hart */
+	unsigned long hartindex;
 };
 
 /**
@@ -201,6 +205,10 @@ do {									\
 	*((__type *)sbi_scratch_offset_ptr((__scratch), (__offset)))	\
 					= (__type)(__ptr);		\
 } while (0)
+
+/** Get the hart index of the current hart */
+#define current_hartindex() \
+	(sbi_scratch_thishart_ptr()->hartindex)
 
 /** Last HART index having a sbi_scratch pointer */
 extern u32 last_hartindex_having_scratch;
