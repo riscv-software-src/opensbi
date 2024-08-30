@@ -119,28 +119,28 @@ int imsic_map_hartid_to_data(u32 hartid, struct imsic_data *imsic, int file)
 	return 0;
 }
 
-struct imsic_data *imsic_get_data(u32 hartid)
+struct imsic_data *imsic_get_data(u32 hartindex)
 {
 	struct sbi_scratch *scratch;
 
 	if (!imsic_ptr_offset)
 		return NULL;
 
-	scratch = sbi_hartid_to_scratch(hartid);
+	scratch = sbi_hartindex_to_scratch(hartindex);
 	if (!scratch)
 		return NULL;
 
 	return imsic_get_hart_data_ptr(scratch);
 }
 
-int imsic_get_target_file(u32 hartid)
+int imsic_get_target_file(u32 hartindex)
 {
 	struct sbi_scratch *scratch;
 
 	if (!imsic_file_offset)
 		return SBI_ENOENT;
 
-	scratch = sbi_hartid_to_scratch(hartid);
+	scratch = sbi_hartindex_to_scratch(hartindex);
 	if (!scratch)
 		return SBI_ENOENT;
 
@@ -257,7 +257,7 @@ void imsic_local_irqchip_init(void)
 
 int imsic_warm_irqchip_init(void)
 {
-	struct imsic_data *imsic = imsic_get_data(current_hartid());
+	struct imsic_data *imsic = imsic_get_data(current_hartindex());
 
 	/* Sanity checks */
 	if (!imsic || !imsic->targets_mmode)
