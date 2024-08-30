@@ -243,10 +243,9 @@ int sbi_dbtr_setup_shmem(const struct sbi_domain *dom, unsigned long smode,
 			 unsigned long shmem_phys_lo,
 			 unsigned long shmem_phys_hi)
 {
-	u32 hartid = current_hartid();
 	struct sbi_dbtr_hart_triggers_state *hart_state;
 
-	if (dom && !sbi_domain_is_assigned_hart(dom, hartid)) {
+	if (dom && !sbi_domain_is_assigned_hart(dom, current_hartindex())) {
 		sbi_dprintf("%s: calling hart not assigned to this domain\n",
 			   __func__);
 		return SBI_ERR_DENIED;

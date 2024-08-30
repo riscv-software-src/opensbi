@@ -220,10 +220,10 @@ extern struct sbi_dlist domain_list;
 /**
  * Check whether given HART is assigned to specified domain
  * @param dom pointer to domain
- * @param hartid the HART ID
+ * @param hartindex the HART index
  * @return true if HART is assigned to domain otherwise false
  */
-bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartid);
+bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartindex);
 
 /**
  * Get the assigned HART mask for given domain

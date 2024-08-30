@@ -323,7 +323,7 @@ static int sse_event_set_hart_id_check(struct sbi_sse_event *e,
 	if (!sse_event_is_global(e))
 		return SBI_EBAD_RANGE;
 
-	if (!sbi_domain_is_assigned_hart(hd, new_hartid))
+	if (!sbi_domain_is_assigned_hart(hd, sbi_hartid_to_hartindex(hartid)))
 		return SBI_EINVAL;
 
 	hstate = sbi_hsm_hart_get_state(hd, hartid);
@@ -810,7 +810,8 @@ int sbi_sse_disable(uint32_t event_id)
 int sbi_sse_inject_from_ecall(uint32_t event_id, unsigned long hartid,
 			      struct sbi_ecall_return *out)
 {
-	if (!sbi_domain_is_assigned_hart(sbi_domain_thishart_ptr(), hartid))
+	if (!sbi_domain_is_assigned_hart(sbi_domain_thishart_ptr(),
+					 sbi_hartid_to_hartindex(hartid)))
 		return SBI_EINVAL;
 
 	return sse_inject_event(event_id, hartid);

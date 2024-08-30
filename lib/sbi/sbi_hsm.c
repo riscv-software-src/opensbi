@@ -77,7 +77,7 @@ int sbi_hsm_hart_get_state(const struct sbi_domain *dom, u32 hartid)
 {
 	u32 hartindex = sbi_hartid_to_hartindex(hartid);
 
-	if (!sbi_domain_is_assigned_hart(dom, hartid))
+	if (!sbi_domain_is_assigned_hart(dom, hartindex))
 		return SBI_EINVAL;
 
 	return __sbi_hsm_hart_get_state(hartindex);
@@ -300,6 +300,7 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 		       const struct sbi_domain *dom,
 		       u32 hartid, ulong saddr, ulong smode, ulong arg1)
 {
+	u32 hartindex = sbi_hartid_to_hartindex(hartid);
 	unsigned long init_count, entry_count;
 	unsigned int hstate;
 	struct sbi_scratch *rscratch;
@@ -309,13 +310,13 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 	/* For now, we only allow start mode to be S-mode or U-mode. */
 	if (smode != PRV_S && smode != PRV_U)
 		return SBI_EINVAL;
-	if (dom && !sbi_domain_is_assigned_hart(dom, hartid))
+	if (dom && !sbi_domain_is_assigned_hart(dom, hartindex))
 		return SBI_EINVAL;
 	if (dom && !sbi_domain_check_addr(dom, saddr, smode,
 					  SBI_DOMAIN_EXECUTE))
 		return SBI_EINVALID_ADDR;
 
-	rscratch = sbi_hartid_to_scratch(hartid);
+	rscratch = sbi_hartindex_to_scratch(hartindex);
 	if (!rscratch)
 		return SBI_EINVAL;
 
@@ -355,7 +356,7 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 	   (hsm_device_has_hart_secondary_boot() && !init_count)) {
 		rc = hsm_device_hart_start(hartid, scratch->warmboot_addr);
 	} else {
-		rc = sbi_ipi_raw_send(sbi_hartid_to_hartindex(hartid));
+		rc = sbi_ipi_raw_send(hartindex);
 	}
 
 	if (!rc)

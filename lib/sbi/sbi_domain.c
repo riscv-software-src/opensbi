@@ -60,7 +60,7 @@ void sbi_update_hartindex_to_domain(u32 hartindex, struct sbi_domain *dom)
 	sbi_scratch_write_type(scratch, void *, domain_hart_ptr_offset, dom);
 }
 
-bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartid)
+bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartindex)
 {
 	bool ret;
 	struct sbi_domain *tdom = (struct sbi_domain *)dom;
@@ -69,7 +69,7 @@ bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartid)
 		return false;
 
 	spin_lock(&tdom->assigned_harts_lock);
-	ret = sbi_hartmask_test_hartid(hartid, &tdom->assigned_harts);
+	ret = sbi_hartmask_test_hartindex(hartindex, &tdom->assigned_harts);
 	spin_unlock(&tdom->assigned_harts_lock);
 
 	return ret;
@@ -446,7 +446,7 @@ void sbi_domain_dump(const struct sbi_domain *dom, const char *suffix)
 	sbi_hartmask_for_each_hartindex(i, dom->possible_harts) {
 		j = sbi_hartindex_to_hartid(i);
 		sbi_printf("%s%d%s", (k++) ? "," : "",
-			   j, sbi_domain_is_assigned_hart(dom, j) ? "*" : "");
+			   j, sbi_domain_is_assigned_hart(dom, i) ? "*" : "");
 	}
 	sbi_printf("\n");
 
