@@ -233,7 +233,7 @@ void sbi_ipi_process(void)
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	struct sbi_ipi_data *ipi_data =
 			sbi_scratch_offset_ptr(scratch, ipi_data_off);
-	u32 hartindex = sbi_hartid_to_hartindex(current_hartid());
+	u32 hartindex = current_hartindex();
 
 	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_IPI_RECVD);
 	sbi_ipi_raw_clear(hartindex);

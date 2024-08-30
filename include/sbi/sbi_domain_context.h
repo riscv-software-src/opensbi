@@ -52,10 +52,9 @@ struct sbi_context {
 	(__d)->hartindex_to_context_table[__hartindex]
 
 /** Macro to obtain the current hart's context pointer */
-#define sbi_domain_context_thishart_ptr()                  \
-	sbi_hartindex_to_domain_context(                   \
-		sbi_hartid_to_hartindex(current_hartid()), \
-		sbi_domain_thishart_ptr())
+#define sbi_domain_context_thishart_ptr() \
+	sbi_hartindex_to_domain_context(current_hartindex(), \
+					sbi_domain_thishart_ptr())
 
 /**
  * Enter a specific domain context synchronously

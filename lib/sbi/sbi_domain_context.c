@@ -26,7 +26,7 @@
 static void switch_to_next_domain_context(struct sbi_context *ctx,
 					  struct sbi_context *dom_ctx)
 {
-	u32 hartindex = sbi_hartid_to_hartindex(current_hartid());
+	u32 hartindex = current_hartindex();
 	struct sbi_trap_context *trap_ctx;
 	struct sbi_domain *current_dom = ctx->dom;
 	struct sbi_domain *target_dom = dom_ctx->dom;
@@ -91,7 +91,7 @@ int sbi_domain_context_enter(struct sbi_domain *dom)
 {
 	struct sbi_context *ctx = sbi_domain_context_thishart_ptr();
 	struct sbi_context *dom_ctx = sbi_hartindex_to_domain_context(
-		sbi_hartid_to_hartindex(current_hartid()), dom);
+		current_hartindex(), dom);
 
 	/* Validate the domain context existence */
 	if (!dom_ctx)
@@ -107,7 +107,7 @@ int sbi_domain_context_enter(struct sbi_domain *dom)
 
 int sbi_domain_context_exit(void)
 {
-	u32 hartindex = sbi_hartid_to_hartindex(current_hartid());
+	u32 hartindex = current_hartindex();
 	struct sbi_domain *dom;
 	struct sbi_context *ctx = sbi_domain_context_thishart_ptr();
 	struct sbi_context *dom_ctx, *tmp;

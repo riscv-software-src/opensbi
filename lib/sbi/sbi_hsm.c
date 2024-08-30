@@ -261,7 +261,7 @@ int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 			hdata = sbi_scratch_offset_ptr(rscratch,
 						       hart_data_offset);
 			ATOMIC_INIT(&hdata->state,
-				    (sbi_hartindex_to_hartid(i) == hartid) ?
+				    (i == current_hartindex()) ?
 				    SBI_HSM_STATE_START_PENDING :
 				    SBI_HSM_STATE_STOPPED);
 			ATOMIC_INIT(&hdata->start_ticket, 0);

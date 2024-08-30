@@ -204,7 +204,7 @@ void sbi_update_hartindex_to_domain(u32 hartindex, struct sbi_domain *dom);
 
 /** Get pointer to sbi_domain for current HART */
 #define sbi_domain_thishart_ptr() \
-	sbi_hartindex_to_domain(sbi_hartid_to_hartindex(current_hartid()))
+	sbi_hartindex_to_domain(current_hartindex())
 
 /** Head of linked list of domains */
 extern struct sbi_dlist domain_list;
