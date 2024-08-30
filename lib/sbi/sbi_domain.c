@@ -75,20 +75,19 @@ bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartid)
 	return ret;
 }
 
-ulong sbi_domain_get_assigned_hartmask(const struct sbi_domain *dom,
-				       ulong hbase)
+int sbi_domain_get_assigned_hartmask(const struct sbi_domain *dom,
+				     struct sbi_hartmask *mask)
 {
 	ulong ret = 0;
 	struct sbi_domain *tdom = (struct sbi_domain *)dom;
 
-	if (!dom)
+	if (!dom) {
+		sbi_hartmask_clear_all(mask);
 		return 0;
+	}
 
 	spin_lock(&tdom->assigned_harts_lock);
-	for (int i = 0; i < 8 * sizeof(ret); i++) {
-		if (sbi_hartmask_test_hartid(hbase + i, &tdom->assigned_harts))
-			ret |= 1UL << i;
-	}
+	sbi_hartmask_copy(mask, &tdom->assigned_harts);
 	spin_unlock(&tdom->assigned_harts_lock);
 
 	return ret;

@@ -226,14 +226,13 @@ extern struct sbi_dlist domain_list;
 bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartid);
 
 /**
- * Get ulong assigned HART mask for given domain and HART base ID
+ * Get the assigned HART mask for given domain
  * @param dom pointer to domain
- * @param hbase the HART base ID
- * @return ulong possible HART mask
- * Note: the return ulong mask will be set to zero on failure.
+ * @param mask the output hartmask to fill
+ * @return 0 on success and SBI_Exxx (< 0) on failure
  */
-ulong sbi_domain_get_assigned_hartmask(const struct sbi_domain *dom,
-				       ulong hbase);
+int sbi_domain_get_assigned_hartmask(const struct sbi_domain *dom,
+				     struct sbi_hartmask *mask);
 
 /**
  * Initialize a domain memory region based on it's physical

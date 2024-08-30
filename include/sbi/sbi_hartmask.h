@@ -128,6 +128,18 @@ static inline void sbi_hartmask_clear_all(struct sbi_hartmask *dstp)
 }
 
 /**
+ * *dstp = *srcp
+ * @param dstp the hartmask destination
+ * @param srcp the hartmask source
+ */
+static inline void sbi_hartmask_copy(struct sbi_hartmask *dstp,
+				     const struct sbi_hartmask *srcp)
+{
+	bitmap_copy(sbi_hartmask_bits(dstp), sbi_hartmask_bits(srcp),
+		    SBI_HARTMASK_MAX_BITS);
+}
+
+/**
  * *dstp = *src1p & *src2p
  * @param dstp the hartmask result
  * @param src1p the first input

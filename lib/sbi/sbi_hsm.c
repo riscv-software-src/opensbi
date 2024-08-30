@@ -110,36 +110,27 @@ static void hsm_start_ticket_release(struct sbi_hsm_data *hdata)
 }
 
 /**
- * Get ulong HART mask for given HART base ID
+ * Get the mask of harts which are valid IPI targets
  * @param dom the domain to be used for output HART mask
- * @param hbase the HART base ID
- * @param out_hmask the output ulong HART mask
+ * @param mask the output hartmask to fill
  * @return 0 on success and SBI_Exxx (< 0) on failure
- * Note: the output HART mask will be set to zero on failure as well.
  */
 int sbi_hsm_hart_interruptible_mask(const struct sbi_domain *dom,
-				    ulong hbase, ulong *out_hmask)
+				    struct sbi_hartmask *mask)
 {
-	int hstate;
-	ulong i, hmask, dmask;
-	u32 hartindex;
+	int hstate, ret;
+	u32 i;
 
-	*out_hmask = 0;
-	if (!sbi_hartid_valid(hbase))
-		return SBI_EINVAL;
+	ret = sbi_domain_get_assigned_hartmask(dom, mask);
+	if (ret)
+		return ret;
 
-	dmask = sbi_domain_get_assigned_hartmask(dom, hbase);
-	for (i = 0; i < BITS_PER_LONG; i++) {
-		hmask = 1UL << i;
-		if (!(dmask & hmask))
-			continue;
-
-		hartindex = sbi_hartid_to_hartindex(hbase + i);
-		hstate = __sbi_hsm_hart_get_state(hartindex);
-		if (hstate == SBI_HSM_STATE_STARTED ||
-		    hstate == SBI_HSM_STATE_SUSPENDED ||
-		    hstate == SBI_HSM_STATE_RESUME_PENDING)
-			*out_hmask |= hmask;
+	sbi_hartmask_for_each_hartindex(i, mask) {
+		hstate = __sbi_hsm_hart_get_state(i);
+		if (hstate != SBI_HSM_STATE_STARTED &&
+		    hstate != SBI_HSM_STATE_SUSPENDED &&
+		    hstate != SBI_HSM_STATE_RESUME_PENDING)
+			sbi_hartmask_clear_hartindex(i, mask);
 	}
 
 	return 0;

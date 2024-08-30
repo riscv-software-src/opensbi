@@ -10,6 +10,7 @@
 #ifndef __SBI_HSM_H__
 #define __SBI_HSM_H__
 
+#include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_types.h>
 
 /** Hart state managment device */
@@ -75,7 +76,7 @@ bool sbi_hsm_hart_change_state(struct sbi_scratch *scratch, long oldstate,
 int __sbi_hsm_hart_get_state(u32 hartindex);
 int sbi_hsm_hart_get_state(const struct sbi_domain *dom, u32 hartid);
 int sbi_hsm_hart_interruptible_mask(const struct sbi_domain *dom,
-				    ulong hbase, ulong *out_hmask);
+				    struct sbi_hartmask *mask);
 void __sbi_hsm_suspend_non_ret_save(struct sbi_scratch *scratch);
 void __noreturn sbi_hsm_hart_start_finish(struct sbi_scratch *scratch,
 					  u32 hartid);
