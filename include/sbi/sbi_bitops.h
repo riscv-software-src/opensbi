@@ -14,6 +14,8 @@
 
 #define BITS_PER_LONG		(8 * __SIZEOF_LONG__)
 
+#define BITS_PER_LONG_LONG	64
+
 #define EXTRACT_FIELD(val, which) \
 	(((val) & (which)) / ((which) & ~((which)-1)))
 #define INSERT_FIELD(val, which, fieldval) \
@@ -28,9 +30,13 @@
 #define BIT_WORD_OFFSET(bit)	((bit) & (BITS_PER_LONG - 1))
 #define BIT_ALIGN(bit, align)	(((bit) + ((align) - 1)) & ~((align) - 1))
 
+#define BIT_ULL(nr)		(1ULL << (nr))
+
 #define GENMASK(h, l) \
 	(((~0UL) - (1UL << (l)) + 1) & (~0UL >> (BITS_PER_LONG - 1 - (h))))
 
+#define GENMASK_ULL(h, l) \
+	(((~0ULL) - (1ULL << (l)) + 1) & (~0ULL >> (BITS_PER_LONG_LONG - 1 - (h))))
 /**
  * sbi_ffs - find first (less-significant) set bit in a long word.
  * @word: The word to search
