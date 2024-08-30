@@ -65,20 +65,11 @@ bool sbi_system_reset_supported(u32 reset_type, u32 reset_reason)
 
 void __noreturn sbi_system_reset(u32 reset_type, u32 reset_reason)
 {
-	ulong hbase = 0, hmask;
-	u32 cur_hartid = current_hartid();
 	struct sbi_domain *dom = sbi_domain_thishart_ptr();
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	/* Send HALT IPI to every hart other than the current hart */
-	while (!sbi_hsm_hart_interruptible_mask(dom, hbase, &hmask)) {
-		if ((hbase <= cur_hartid)
-			  && (cur_hartid < hbase + BITS_PER_LONG))
-			hmask &= ~(1UL << (cur_hartid - hbase));
-		if (hmask)
-			sbi_ipi_send_halt(hmask, hbase);
-		hbase += BITS_PER_LONG;
-	}
+	sbi_ipi_send_halt(0, -1UL);
 
 	/* Stop current HART */
 	sbi_hsm_hart_stop(scratch, false);

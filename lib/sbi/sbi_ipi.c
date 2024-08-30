@@ -208,6 +208,15 @@ void sbi_ipi_clear_smode(void)
 	csr_clear(CSR_MIP, MIP_SSIP);
 }
 
+static int sbi_ipi_update_halt(struct sbi_scratch *scratch,
+			       struct sbi_scratch *remote_scratch,
+			       u32 remote_hartindex, void *data)
+{
+	/* Never send a halt IPI to the local hart. */
+	return scratch == remote_scratch ?
+		SBI_IPI_UPDATE_BREAK : SBI_IPI_UPDATE_SUCCESS;
+}
+
 static void sbi_ipi_process_halt(struct sbi_scratch *scratch)
 {
 	sbi_hsm_hart_stop(scratch, true);
@@ -215,6 +224,7 @@ static void sbi_ipi_process_halt(struct sbi_scratch *scratch)
 
 static struct sbi_ipi_event_ops ipi_halt_ops = {
 	.name = "IPI_HALT",
+	.update = sbi_ipi_update_halt,
 	.process = sbi_ipi_process_halt,
 };
 
