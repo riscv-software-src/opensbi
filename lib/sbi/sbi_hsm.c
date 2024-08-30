@@ -324,8 +324,8 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 	if (!hsm_start_ticket_acquire(hdata))
 		return SBI_EINVAL;
 
-	init_count = sbi_init_count(hartid);
-	entry_count = sbi_entry_count(hartid);
+	init_count = sbi_init_count(hartindex);
+	entry_count = sbi_entry_count(hartindex);
 
 	rscratch->next_arg1 = arg1;
 	rscratch->next_addr = saddr;

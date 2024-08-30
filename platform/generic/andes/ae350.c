@@ -27,13 +27,15 @@ extern void __ae350_disable_coherency(void);
 
 static int ae350_hart_start(u32 hartid, ulong saddr)
 {
+	u32 hartindex = sbi_hartid_to_hartindex(hartid);
+
 	/*
 	 * Don't send wakeup command when:
 	 * 1) boot-time
 	 * 2) the target hart is non-sleepable 25-series hart0
 	 */
-	if (!sbi_init_count(hartid) || (is_andes(25) && hartid == 0))
-		return sbi_ipi_raw_send(sbi_hartid_to_hartindex(hartid));
+	if (!sbi_init_count(hartindex) || (is_andes(25) && hartid == 0))
+		return sbi_ipi_raw_send(hartindex);
 
 	/* Write wakeup command to the sleep hart */
 	smu_set_command(&smu, WAKEUP_CMD, hartid);

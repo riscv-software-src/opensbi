@@ -551,7 +551,7 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 		init_warmboot(scratch, hartid);
 }
 
-unsigned long sbi_entry_count(u32 hartid)
+unsigned long sbi_entry_count(u32 hartindex)
 {
 	struct sbi_scratch *scratch;
 	unsigned long *entry_count;
@@ -559,7 +559,7 @@ unsigned long sbi_entry_count(u32 hartid)
 	if (!entry_count_offset)
 		return 0;
 
-	scratch = sbi_hartid_to_scratch(hartid);
+	scratch = sbi_hartindex_to_scratch(hartindex);
 	if (!scratch)
 		return 0;
 
@@ -568,7 +568,7 @@ unsigned long sbi_entry_count(u32 hartid)
 	return *entry_count;
 }
 
-unsigned long sbi_init_count(u32 hartid)
+unsigned long sbi_init_count(u32 hartindex)
 {
 	struct sbi_scratch *scratch;
 	unsigned long *init_count;
@@ -576,7 +576,7 @@ unsigned long sbi_init_count(u32 hartid)
 	if (!init_count_offset)
 		return 0;
 
-	scratch = sbi_hartid_to_scratch(hartid);
+	scratch = sbi_hartindex_to_scratch(hartindex);
 	if (!scratch)
 		return 0;
 
