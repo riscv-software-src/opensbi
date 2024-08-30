@@ -157,7 +157,7 @@ void __noreturn sbi_hsm_hart_start_finish(struct sbi_scratch *scratch,
 	sbi_hart_switch_mode(hartid, next_arg1, next_addr, next_mode, false);
 }
 
-static void sbi_hsm_hart_wait(struct sbi_scratch *scratch, u32 hartid)
+static void sbi_hsm_hart_wait(struct sbi_scratch *scratch)
 {
 	unsigned long saved_mie;
 	struct sbi_hsm_data *hdata = sbi_scratch_offset_ptr(scratch,
@@ -236,7 +236,7 @@ static void hsm_device_hart_resume(void)
 		hsm_dev->hart_resume();
 }
 
-int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
+int sbi_hsm_init(struct sbi_scratch *scratch, bool cold_boot)
 {
 	u32 i;
 	struct sbi_scratch *rscratch;
@@ -262,7 +262,7 @@ int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot)
 			ATOMIC_INIT(&hdata->start_ticket, 0);
 		}
 	} else {
-		sbi_hsm_hart_wait(scratch, hartid);
+		sbi_hsm_hart_wait(scratch);
 	}
 
 	return 0;

@@ -193,14 +193,14 @@ static void sbi_boot_print_hart(struct sbi_scratch *scratch, u32 hartid)
 
 static unsigned long coldboot_done;
 
-static void wait_for_coldboot(struct sbi_scratch *scratch, u32 hartid)
+static void wait_for_coldboot(struct sbi_scratch *scratch)
 {
 	/* Wait for coldboot to finish */
 	while (!__smp_load_acquire(&coldboot_done))
 		cpu_relax();
 }
 
-static void wake_coldboot_harts(struct sbi_scratch *scratch, u32 hartid)
+static void wake_coldboot_harts(struct sbi_scratch *scratch)
 {
 	/* Mark coldboot done */
 	__smp_store_release(&coldboot_done, 1);
@@ -241,7 +241,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	count = sbi_scratch_offset_ptr(scratch, entry_count_offset);
 	(*count)++;
 
-	rc = sbi_hsm_init(scratch, hartid, true);
+	rc = sbi_hsm_init(scratch, true);
 	if (rc)
 		sbi_hart_hang();
 
@@ -251,7 +251,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	 * have these HARTs busy spin in wait_for_coldboot() until coldboot
 	 * path is completed.
 	 */
-	wake_coldboot_harts(scratch, hartid);
+	wake_coldboot_harts(scratch);
 
 	rc = sbi_platform_early_init(plat, true);
 	if (rc)
@@ -386,7 +386,7 @@ static void __noreturn init_warm_startup(struct sbi_scratch *scratch,
 	(*count)++;
 
 	/* Note: This has to be first thing in warmboot init sequence */
-	rc = sbi_hsm_init(scratch, hartid, false);
+	rc = sbi_hsm_init(scratch, false);
 	if (rc)
 		sbi_hart_hang();
 
@@ -470,7 +470,7 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 {
 	int hstate;
 
-	wait_for_coldboot(scratch, hartid);
+	wait_for_coldboot(scratch);
 
 	hstate = sbi_hsm_hart_get_state(sbi_domain_thishart_ptr(), hartid);
 	if (hstate < 0)

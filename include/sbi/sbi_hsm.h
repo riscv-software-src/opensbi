@@ -59,7 +59,7 @@ const struct sbi_hsm_device *sbi_hsm_get_device(void);
 
 void sbi_hsm_set_device(const struct sbi_hsm_device *dev);
 
-int sbi_hsm_init(struct sbi_scratch *scratch, u32 hartid, bool cold_boot);
+int sbi_hsm_init(struct sbi_scratch *scratch, bool cold_boot);
 void __noreturn sbi_hsm_exit(struct sbi_scratch *scratch);
 
 int sbi_hsm_hart_start(struct sbi_scratch *scratch,
