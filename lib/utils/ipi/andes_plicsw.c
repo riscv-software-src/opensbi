@@ -67,10 +67,8 @@ static struct sbi_ipi_device plicsw_ipi = {
 
 int plicsw_warm_ipi_init(void)
 {
-	u32 hartid = current_hartid();
-
 	/* Clear PLICSW IPI */
-	plicsw_ipi_clear(hartid);
+	plicsw_ipi_clear(current_hartindex());
 
 	return 0;
 }
