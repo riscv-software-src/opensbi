@@ -825,7 +825,7 @@ static int hart_detect_features(struct sbi_scratch *scratch)
 		} else {						\
 			csr_write_allowed(__csr, &trap, __wrval);	\
 			if (!trap.cause) {				\
-				if (csr_swap(__csr, oldval) == __wrval)	\
+				if ((csr_swap(__csr, oldval) & __wrval) == __wrval)	\
 					(hfeatures->__field)++;		\
 				else					\
 					goto __skip;			\
