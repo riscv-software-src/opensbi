@@ -178,19 +178,11 @@ static int openpiton_ipi_init(bool cold_boot)
 }
 
 /*
- * Initialize openpiton timer for current HART.
+ * Initialize openpiton timer during cold boot.
  */
-static int openpiton_timer_init(bool cold_boot)
+static int openpiton_timer_init(void)
 {
-	int ret;
-
-	if (cold_boot) {
-		ret = aclint_mtimer_cold_init(&mtimer, NULL);
-		if (ret)
-			return ret;
-	}
-
-	return 0;
+	return aclint_mtimer_cold_init(&mtimer, NULL);
 }
 
 /*

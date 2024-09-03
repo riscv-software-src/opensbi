@@ -192,6 +192,10 @@ int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot)
 
 		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_ZICNTR))
 			get_time_val = get_ticks;
+
+		ret = sbi_platform_timer_init(plat);
+		if (ret)
+			return ret;
 	} else {
 		if (!time_delta_off)
 			return SBI_ENOMEM;
@@ -199,10 +203,6 @@ int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot)
 
 	time_delta = sbi_scratch_offset_ptr(scratch, time_delta_off);
 	*time_delta = 0;
-
-	ret = sbi_platform_timer_init(plat, cold_boot);
-	if (ret)
-		return ret;
 
 	if (timer_dev && timer_dev->warm_init) {
 		ret = timer_dev->warm_init();
@@ -220,6 +220,4 @@ void sbi_timer_exit(struct sbi_scratch *scratch)
 
 	csr_clear(CSR_MIP, MIP_STIP);
 	csr_clear(CSR_MIE, MIP_MTIP);
-
-	sbi_platform_timer_exit(sbi_platform_ptr(scratch));
 }

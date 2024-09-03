@@ -127,10 +127,8 @@ struct sbi_platform_operations {
 	/** Get tlb fifo num entries*/
 	u32 (*get_tlb_num_entries)(void);
 
-	/** Initialize platform timer for current HART */
-	int (*timer_init)(bool cold_boot);
-	/** Exit platform timer for current HART */
-	void (*timer_exit)(void);
+	/** Initialize platform timer during cold boot */
+	int (*timer_init)(void);
 
 	/** Check if SBI vendor extension is implemented or not */
 	bool (*vendor_ext_check)(void);
@@ -601,30 +599,17 @@ static inline void sbi_platform_ipi_exit(const struct sbi_platform *plat)
 }
 
 /**
- * Initialize the platform timer for current HART
+ * Initialize the platform timer during cold boot
  *
  * @param plat pointer to struct sbi_platform
- * @param cold_boot whether cold boot (true) or warm_boot (false)
  *
  * @return 0 on success and negative error code on failure
  */
-static inline int sbi_platform_timer_init(const struct sbi_platform *plat,
-					  bool cold_boot)
+static inline int sbi_platform_timer_init(const struct sbi_platform *plat)
 {
 	if (plat && sbi_platform_ops(plat)->timer_init)
-		return sbi_platform_ops(plat)->timer_init(cold_boot);
+		return sbi_platform_ops(plat)->timer_init();
 	return 0;
-}
-
-/**
- * Exit the platform timer for current HART
- *
- * @param plat pointer to struct sbi_platform
- */
-static inline void sbi_platform_timer_exit(const struct sbi_platform *plat)
-{
-	if (plat && sbi_platform_ops(plat)->timer_exit)
-		sbi_platform_ops(plat)->timer_exit();
 }
 
 /**

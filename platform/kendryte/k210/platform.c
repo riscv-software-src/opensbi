@@ -159,17 +159,9 @@ static int k210_ipi_init(bool cold_boot)
 	return aclint_mswi_warm_init();
 }
 
-static int k210_timer_init(bool cold_boot)
+static int k210_timer_init(void)
 {
-	int rc;
-
-	if (cold_boot) {
-		rc = aclint_mtimer_cold_init(&mtimer, NULL);
-		if (rc)
-			return rc;
-	}
-
-	return 0;
+	return aclint_mtimer_cold_init(&mtimer, NULL);
 }
 
 const struct sbi_platform_operations platform_ops = {

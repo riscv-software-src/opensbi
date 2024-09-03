@@ -405,7 +405,6 @@ const struct sbi_platform_operations platform_ops = {
 	.get_tlbr_flush_limit	= generic_tlbr_flush_limit,
 	.get_tlb_num_entries	= generic_tlb_num_entries,
 	.timer_init		= fdt_timer_init,
-	.timer_exit		= fdt_timer_exit,
 	.vendor_ext_check	= generic_vendor_ext_check,
 	.vendor_ext_provider	= generic_vendor_ext_provider,
 };
