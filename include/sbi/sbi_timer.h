@@ -28,6 +28,9 @@ struct sbi_timer_device {
 
 	/** Stop timer event for current HART */
 	void (*timer_event_stop)(void);
+
+	/** Initialize timer device for current HART */
+	int (*warm_init)(void);
 };
 
 struct sbi_scratch;

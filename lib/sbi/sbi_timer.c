@@ -183,6 +183,7 @@ int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot)
 {
 	u64 *time_delta;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	int ret;
 
 	if (cold_boot) {
 		time_delta_off = sbi_scratch_alloc_offset(sizeof(*time_delta));
@@ -199,7 +200,17 @@ int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot)
 	time_delta = sbi_scratch_offset_ptr(scratch, time_delta_off);
 	*time_delta = 0;
 
-	return sbi_platform_timer_init(plat, cold_boot);
+	ret = sbi_platform_timer_init(plat, cold_boot);
+	if (ret)
+		return ret;
+
+	if (timer_dev && timer_dev->warm_init) {
+		ret = timer_dev->warm_init();
+		if (ret)
+			return ret;
+	}
+
+	return 0;
 }
 
 void sbi_timer_exit(struct sbi_scratch *scratch)

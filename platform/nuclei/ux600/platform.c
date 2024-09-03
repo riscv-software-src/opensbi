@@ -225,7 +225,7 @@ static int ux600_timer_init(bool cold_boot)
 			return rc;
 	}
 
-	return aclint_mtimer_warm_init();
+	return 0;
 }
 
 const struct sbi_platform_operations platform_ops = {

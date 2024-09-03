@@ -143,7 +143,7 @@ void aclint_mtimer_set_reference(struct aclint_mtimer_data *mt,
 	mt->time_delta_computed = 0;
 }
 
-int aclint_mtimer_warm_init(void)
+static int aclint_mtimer_warm_init(void)
 {
 	u64 *mt_time_cmp;
 	u32 target_hart = current_hartid();
@@ -260,6 +260,7 @@ int aclint_mtimer_cold_init(struct aclint_mtimer_data *mt,
 	}
 
 	mtimer.timer_freq = mt->mtime_freq;
+	mtimer.warm_init = aclint_mtimer_warm_init;
 	sbi_timer_set_device(&mtimer);
 
 	return 0;

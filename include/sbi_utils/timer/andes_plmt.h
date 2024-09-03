@@ -24,6 +24,5 @@ struct plmt_data {
 };
 
 int plmt_cold_timer_init(struct plmt_data *plmt);
-int plmt_warm_timer_init(void);
 
 #endif /* __TIMER_ANDES_PLMT_H__ */

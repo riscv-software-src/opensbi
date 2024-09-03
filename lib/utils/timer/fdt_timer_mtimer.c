@@ -165,6 +165,6 @@ static const struct fdt_match timer_mtimer_match[] = {
 struct fdt_timer fdt_timer_mtimer = {
 	.match_table = timer_mtimer_match,
 	.cold_init = timer_mtimer_cold_init,
-	.warm_init = aclint_mtimer_warm_init,
+	.warm_init = NULL,
 	.exit = NULL,
 };

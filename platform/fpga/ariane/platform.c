@@ -159,7 +159,7 @@ static int ariane_timer_init(bool cold_boot)
 			return ret;
 	}
 
-	return aclint_mtimer_warm_init();
+	return 0;
 }
 
 /*

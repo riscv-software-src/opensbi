@@ -47,8 +47,6 @@ void aclint_mtimer_sync(struct aclint_mtimer_data *mt);
 void aclint_mtimer_set_reference(struct aclint_mtimer_data *mt,
 				 struct aclint_mtimer_data *ref);
 
-int aclint_mtimer_warm_init(void);
-
 int aclint_mtimer_cold_init(struct aclint_mtimer_data *mt,
 			    struct aclint_mtimer_data *reference);
 
