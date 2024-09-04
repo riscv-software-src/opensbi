@@ -16,21 +16,6 @@
 extern struct fdt_gpio *fdt_gpio_drivers[];
 extern unsigned long fdt_gpio_drivers_size;
 
-static struct fdt_gpio *fdt_gpio_driver(struct gpio_chip *chip)
-{
-	int pos;
-
-	if (!chip)
-		return NULL;
-
-	for (pos = 0; pos < fdt_gpio_drivers_size; pos++) {
-		if (chip->driver == fdt_gpio_drivers[pos])
-			return fdt_gpio_drivers[pos];
-	}
-
-	return NULL;
-}
-
 static int fdt_gpio_init(const void *fdt, u32 phandle)
 {
 	int pos, nodeoff, rc;
@@ -112,7 +97,7 @@ int fdt_gpio_pin_get(const void *fdt, int nodeoff, int index,
 	if (rc)
 		return rc;
 
-	drv = fdt_gpio_driver(chip);
+	drv = chip->driver;
 	if (!drv || !drv->xlate)
 		return SBI_ENOSYS;
 
