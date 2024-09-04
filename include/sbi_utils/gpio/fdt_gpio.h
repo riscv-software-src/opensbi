@@ -20,7 +20,7 @@ struct fdt_gpio {
 	int (*xlate)(struct gpio_chip *chip,
 		     const struct fdt_phandle_args *pargs,
 		     struct gpio_pin *out_pin);
-	int (*init)(const void *fdt, int nodeoff, u32 phandle,
+	int (*init)(const void *fdt, int nodeoff,
 		    const struct fdt_match *match);
 };
 

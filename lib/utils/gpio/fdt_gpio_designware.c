@@ -75,7 +75,7 @@ static void dw_gpio_set(struct gpio_pin *gp, int value)
  * bank A is the only one with irq support but we're not using it here
 */
 
-static int dw_gpio_init_bank(const void *fdt, int nodeoff, u32 phandle,
+static int dw_gpio_init_bank(const void *fdt, int nodeoff,
 			     const struct fdt_match *match)
 {
 	struct dw_gpio_chip *chip;
@@ -111,7 +111,7 @@ static int dw_gpio_init_bank(const void *fdt, int nodeoff, u32 phandle,
 	chip->dr = (void *)(uintptr_t)addr + (bank * 0xc);
 	chip->ext = (void *)(uintptr_t)addr + (bank * 4) + 0x50;
 	chip->chip.driver = &fdt_gpio_designware;
-	chip->chip.id = phandle;
+	chip->chip.id = nodeoff;
 	chip->chip.ngpio = nr_pins;
 	chip->chip.set = dw_gpio_set;
 	chip->chip.direction_output = dw_gpio_direction_output;
