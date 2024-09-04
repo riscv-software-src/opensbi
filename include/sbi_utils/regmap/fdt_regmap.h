@@ -17,7 +17,7 @@ struct fdt_phandle_args;
 /** FDT based regmap driver */
 struct fdt_regmap {
 	const struct fdt_match *match_table;
-	int (*init)(const void *fdt, int nodeoff, u32 phandle,
+	int (*init)(const void *fdt, int nodeoff,
 		    const struct fdt_match *match);
 };
 
