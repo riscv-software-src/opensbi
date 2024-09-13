@@ -14,8 +14,8 @@
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_trap.h>
 
-#define BOOT_STATUS_LOTTERY_DONE	1
-#define BOOT_STATUS_BOOT_HART_DONE	2
+#define BOOT_LOTTERY_ACQUIRED		1
+#define BOOT_STATUS_BOOT_HART_DONE	1
 
 .macro	MOV_3R __d0, __s0, __d1, __s1, __d2, __s2
 	add	\__d0, \__s0, zero
@@ -47,8 +47,8 @@ _start:
 	bne	a0, a6, _wait_for_boot_hart
 _try_lottery:
 	/* Jump to relocation wait loop if we don't get relocation lottery */
-	lla	a6, _boot_status
-	li	a7, BOOT_STATUS_LOTTERY_DONE
+	lla	a6, _boot_lottery
+	li	a7, BOOT_LOTTERY_ACQUIRED
 	amoswap.w a6, a7, (a6)
 	bnez	a6, _wait_for_boot_hart
 
@@ -357,6 +357,8 @@ _skip_trap_handler_hyp:
 
 	.data
 	.align 3
+_boot_lottery:
+	RISCV_PTR	0
 _boot_status:
 	RISCV_PTR	0
 
