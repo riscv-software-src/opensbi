@@ -146,6 +146,68 @@ static int fwft_get_adue(struct fwft_config *conf, unsigned long *value)
 	return SBI_OK;
 }
 
+static int fwft_lpad_supported(struct fwft_config *conf)
+{
+	if (!sbi_hart_has_extension(sbi_scratch_thishart_ptr(),
+				    SBI_HART_EXT_ZICFILP))
+		return SBI_ENOTSUPP;
+
+	return SBI_OK;
+}
+
+static int fwft_enable_lpad(struct fwft_config *conf, unsigned long value)
+{
+	if (value == 1)
+		csr_set(CSR_MENVCFG, ENVCFG_LPE);
+	else if (value == 0)
+		csr_clear(CSR_MENVCFG, ENVCFG_LPE);
+	else
+		return SBI_EINVAL;
+
+	return SBI_OK;
+}
+
+static int fwft_get_lpad(struct fwft_config *conf, unsigned long *value)
+{
+	unsigned long cfg;
+
+	cfg = csr_read(CSR_MENVCFG) & ENVCFG_LPE;
+	*value = cfg != 0;
+
+	return SBI_OK;
+}
+
+static int fwft_sstack_supported(struct fwft_config *conf)
+{
+	if (!sbi_hart_has_extension(sbi_scratch_thishart_ptr(),
+				    SBI_HART_EXT_ZICFISS))
+		return SBI_ENOTSUPP;
+
+	return SBI_OK;
+}
+
+static int fwft_enable_sstack(struct fwft_config *conf, unsigned long value)
+{
+	if (value == 1)
+		csr_set(CSR_MENVCFG, ENVCFG_SSE);
+	else if (value == 0)
+		csr_clear(CSR_MENVCFG, ENVCFG_SSE);
+	else
+		return SBI_EINVAL;
+
+	return SBI_OK;
+}
+
+static int fwft_get_sstack(struct fwft_config *conf, unsigned long *value)
+{
+	unsigned long cfg;
+
+	cfg = csr_read(CSR_MENVCFG) & ENVCFG_SSE;
+	*value = cfg != 0;
+
+	return SBI_OK;
+}
+
 #if __riscv_xlen > 32
 static int fwft_pmlen_supported(struct fwft_config *conf)
 {
@@ -288,6 +350,18 @@ static const struct fwft_feature features[] =
 		.supported = fwft_misaligned_delegation_supported,
 		.set = fwft_set_misaligned_delegation,
 		.get = fwft_get_misaligned_delegation,
+	},
+	{
+		.id = SBI_FWFT_LANDING_PAD,
+		.supported = fwft_lpad_supported,
+		.set = fwft_enable_lpad,
+		.get = fwft_get_lpad,
+	},
+	{
+		.id = SBI_FWFT_SHADOW_STACK,
+		.supported = fwft_sstack_supported,
+		.set = fwft_enable_sstack,
+		.get = fwft_get_sstack,
 	},
 	{
 		.id = SBI_FWFT_PTE_AD_HW_UPDATING,
