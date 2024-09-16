@@ -681,6 +681,8 @@ const struct sbi_hart_ext_data sbi_hart_ext[] = {
 	__SBI_HART_EXT_DATA(svade, SBI_HART_EXT_SVADE),
 	__SBI_HART_EXT_DATA(svadu, SBI_HART_EXT_SVADU),
 	__SBI_HART_EXT_DATA(smnpm, SBI_HART_EXT_SMNPM),
+	__SBI_HART_EXT_DATA(zicfilp, SBI_HART_EXT_ZICFILP),
+	__SBI_HART_EXT_DATA(zicfiss, SBI_HART_EXT_ZICFISS),
 };
 
 _Static_assert(SBI_HART_EXT_MAX == array_size(sbi_hart_ext),

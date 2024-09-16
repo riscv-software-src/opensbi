@@ -69,6 +69,10 @@ enum sbi_hart_extensions {
 	SBI_HART_EXT_SVADU,
 	/** Hart has Smnpm extension */
 	SBI_HART_EXT_SMNPM,
+	/** HART has zicfilp extension */
+	SBI_HART_EXT_ZICFILP,
+	/** HART has zicfiss extension */
+	SBI_HART_EXT_ZICFISS,
 
 	/** Maximum index of Hart extension */
 	SBI_HART_EXT_MAX,

@@ -103,6 +103,7 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 		      const struct sbi_trap_info *trap)
 {
 	ulong hstatus, vsstatus, prev_mode;
+	bool elp = false;
 #if __riscv_xlen == 32
 	bool prev_virt = (regs->mstatusH & MSTATUSH_MPV) ? true : false;
 #else
@@ -115,6 +116,17 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 	prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
 	if (prev_mode != PRV_S && prev_mode != PRV_U)
 		return SBI_ENOTSUPP;
+
+	/* If hart support for zicfilp, clear MPELP because redirecting to VS or (H)S */
+	if (sbi_hart_has_extension(sbi_scratch_thishart_ptr(), SBI_HART_EXT_ZICFILP)) {
+#if __riscv_xlen == 32
+		elp = regs->mstatusH & MSTATUSH_MPELP;
+		regs->mstatusH &= ~MSTATUSH_MPELP;
+#else
+		elp = regs->mstatus & MSTATUS_MPELP;
+		regs->mstatus &= ~MSTATUS_MPELP;
+#endif
+	}
 
 	/* If exceptions came from VS/VU-mode, redirect to VS-mode if
 	 * delegated in hedeleg
@@ -169,6 +181,10 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 		/* Get VS-mode SSTATUS CSR */
 		vsstatus = csr_read(CSR_VSSTATUS);
 
+		/* If elp was set, set it back in vsstatus */
+		if (elp)
+			vsstatus |= MSTATUS_SPELP;
+
 		/* Set SPP for VS-mode */
 		vsstatus &= ~SSTATUS_SPP;
 		if (prev_mode == PRV_S)
@@ -209,6 +225,10 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 
 		/* Clear SIE for S-mode */
 		regs->mstatus &= ~MSTATUS_SIE;
+
+		/* If elp was set, set it back in mstatus */
+		if (elp)
+			regs->mstatus |= MSTATUS_SPELP;
 	}
 
 	return 0;
