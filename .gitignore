@@ -5,6 +5,7 @@
 !.clang-format
 !.gitignore
 !.github
+!.editorconfig
 
 # Object files
 *.o
