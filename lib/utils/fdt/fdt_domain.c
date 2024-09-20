@@ -253,8 +253,8 @@ static int __fdt_parse_region(const void *fdt, int domain_offset,
 	u32 val32;
 	u64 val64;
 	const u32 *val;
+	unsigned long base, order, flags;
 	struct parse_region_data *preg = opaque;
-	struct sbi_domain_memregion *region;
 
 	/*
 	 * Non-root domains cannot add a region with only M-mode
@@ -271,7 +271,6 @@ static int __fdt_parse_region(const void *fdt, int domain_offset,
 	/* Find next region of the domain */
 	if (preg->max_regions <= preg->region_count)
 		return SBI_ENOSPC;
-	region = &preg->dom->regions[preg->region_count];
 
 	/* Read "base" DT property */
 	val = fdt_getprop(fdt, region_offset, "base", &len);
@@ -279,7 +278,7 @@ static int __fdt_parse_region(const void *fdt, int domain_offset,
 		return SBI_EINVAL;
 	val64 = fdt32_to_cpu(val[0]);
 	val64 = (val64 << 32) | fdt32_to_cpu(val[1]);
-	region->base = val64;
+	base = val64;
 
 	/* Read "order" DT property */
 	val = fdt_getprop(fdt, region_offset, "order", &len);
@@ -288,12 +287,15 @@ static int __fdt_parse_region(const void *fdt, int domain_offset,
 	val32 = fdt32_to_cpu(*val);
 	if (val32 < 3 || __riscv_xlen < val32)
 		return SBI_EINVAL;
-	region->order = val32;
+	order = val32;
 
 	/* Read "mmio" DT property */
-	region->flags = region_access & SBI_DOMAIN_MEMREGION_ACCESS_MASK;
+	flags = region_access & SBI_DOMAIN_MEMREGION_ACCESS_MASK;
 	if (fdt_get_property(fdt, region_offset, "mmio", NULL))
-		region->flags |= SBI_DOMAIN_MEMREGION_MMIO;
+		flags |= SBI_DOMAIN_MEMREGION_MMIO;
+
+	sbi_domain_memregion_init(base, (order == __riscv_xlen) ? ~0UL : BIT(order),
+				  flags, &preg->dom->regions[preg->region_count]);
 
 	preg->region_count++;
 
