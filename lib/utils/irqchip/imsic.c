@@ -348,7 +348,6 @@ int imsic_data_check(struct imsic_data *imsic)
 int imsic_cold_irqchip_init(struct imsic_data *imsic)
 {
 	int i, rc;
-	struct sbi_domain_memregion reg;
 
 	/* Sanity checks */
 	rc = imsic_data_check(imsic);
@@ -378,13 +377,12 @@ int imsic_cold_irqchip_init(struct imsic_data *imsic)
 
 	/* Add IMSIC regions to the root domain */
 	for (i = 0; i < IMSIC_MAX_REGS && imsic->regs[i].size; i++) {
-		sbi_domain_memregion_init(imsic->regs[i].addr,
-					  imsic->regs[i].size,
-					  (SBI_DOMAIN_MEMREGION_MMIO |
-					   SBI_DOMAIN_MEMREGION_M_READABLE |
-					   SBI_DOMAIN_MEMREGION_M_WRITABLE),
-					  &reg);
-		rc = sbi_domain_root_add_memregion(&reg);
+		rc = sbi_domain_root_add_memrange(imsic->regs[i].addr,
+						  imsic->regs[i].size,
+						  IMSIC_MMIO_PAGE_SZ,
+						  SBI_DOMAIN_MEMREGION_MMIO |
+						  SBI_DOMAIN_MEMREGION_M_READABLE |
+						  SBI_DOMAIN_MEMREGION_M_WRITABLE);
 		if (rc)
 			return rc;
 	}
