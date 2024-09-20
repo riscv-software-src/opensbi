@@ -293,16 +293,6 @@ int sbi_domain_register(struct sbi_domain *dom,
 			const struct sbi_hartmask *assign_mask);
 
 /**
- * Add a memory region to the root domain
- * @param reg pointer to the memory region to be added
- *
- * @return 0 on success
- * @return SBI_EALREADY if memory region conflicts with the existing one
- * @return SBI_EINVAL otherwise
- */
-int sbi_domain_root_add_memregion(const struct sbi_domain_memregion *reg);
-
-/**
  * Add a memory range with its flags to the root domain
  * @param addr start physical address of memory range
  * @param size physical size of memory range

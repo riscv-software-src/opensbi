@@ -589,7 +589,7 @@ int sbi_domain_register(struct sbi_domain *dom,
 	return 0;
 }
 
-int sbi_domain_root_add_memregion(const struct sbi_domain_memregion *reg)
+static int root_add_memregion(const struct sbi_domain_memregion *reg)
 {
 	int rc;
 	bool reg_merged;
@@ -667,7 +667,7 @@ int sbi_domain_root_add_memrange(unsigned long addr, unsigned long size,
 				(end - pos) : align;
 
 		sbi_domain_memregion_init(pos, rsize, region_flags, &reg);
-		rc = sbi_domain_root_add_memregion(&reg);
+		rc = root_add_memregion(&reg);
 		if (rc)
 			return rc;
 		pos += rsize;
