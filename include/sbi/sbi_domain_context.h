@@ -9,7 +9,8 @@
 
 #include <sbi/sbi_types.h>
 #include <sbi/sbi_trap.h>
-#include <sbi/sbi_domain.h>
+
+struct sbi_domain;
 
 /** Context representation for a hart within a domain */
 struct sbi_context {

@@ -13,6 +13,7 @@
 #include <sbi/sbi_heap.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_string.h>
+#include <sbi/sbi_domain.h>
 #include <sbi/sbi_domain_context.h>
 
 /**
