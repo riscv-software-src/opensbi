@@ -78,6 +78,8 @@ void sbi_sse_exit(struct sbi_scratch *scratch);
 int sbi_sse_register(uint32_t event_id, unsigned long handler_entry_pc,
 		     unsigned long handler_entry_arg);
 int sbi_sse_unregister(uint32_t event_id);
+int sbi_sse_hart_mask(void);
+int sbi_sse_hart_unmask(void);
 int sbi_sse_enable(uint32_t event_id);
 int sbi_sse_disable(uint32_t event_id);
 int sbi_sse_complete(struct sbi_trap_regs *regs, struct sbi_ecall_return *out);

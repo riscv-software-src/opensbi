@@ -342,6 +342,8 @@ enum sbi_cppc_reg_id {
 #define SBI_EXT_SSE_DISABLE		0x00000005
 #define SBI_EXT_SSE_COMPLETE		0x00000006
 #define SBI_EXT_SSE_INJECT		0x00000007
+#define SBI_EXT_SSE_HART_UNMASK		0x00000008
+#define SBI_EXT_SSE_HART_MASK		0x00000009
 
 /* SBI SSE Event Attributes. */
 enum sbi_sse_attr_id {

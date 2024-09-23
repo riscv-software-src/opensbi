@@ -142,6 +142,12 @@ struct sse_hart_state {
 	 * List of local events allocated at boot time.
 	 */
 	struct sbi_sse_event *local_events;
+
+	/**
+	 * State to track if the hart is ready to take sse events.
+	 * One hart cannot modify this state of another hart.
+	 */
+	bool masked;
 };
 
 /**
@@ -610,6 +616,10 @@ void sbi_sse_process_pending_events(struct sbi_trap_regs *regs)
 	struct sbi_sse_event *e;
 	struct sse_hart_state *state = sse_thishart_state_ptr();
 
+	/* if sse is masked on this hart, do nothing */
+	if (state->masked)
+		return;
+
 	spin_lock(&state->enabled_event_lock);
 
 	sbi_list_for_each_entry(e, &state->enabled_event_list, node) {
@@ -805,6 +815,36 @@ int sbi_sse_disable(uint32_t event_id)
 	sse_event_put(e);
 
 	return ret;
+}
+
+int sbi_sse_hart_mask(void)
+{
+	struct sse_hart_state *state = sse_thishart_state_ptr();
+
+	if (!state)
+		return SBI_EFAIL;
+
+	if (state->masked)
+		return SBI_EALREADY_STARTED;
+
+	state->masked = true;
+
+	return SBI_SUCCESS;
+}
+
+int sbi_sse_hart_unmask(void)
+{
+	struct sse_hart_state *state = sse_thishart_state_ptr();
+
+	if (!state)
+		return SBI_EFAIL;
+
+	if (!state->masked)
+		return SBI_EALREADY_STOPPED;
+
+	state->masked = false;
+
+	return SBI_SUCCESS;
 }
 
 int sbi_sse_inject_from_ecall(uint32_t event_id, unsigned long hartid,
@@ -1126,6 +1166,9 @@ int sbi_sse_init(struct sbi_scratch *scratch, bool cold_boot)
 			return SBI_ENOMEM;
 
 		shs->local_events = (struct sbi_sse_event *)(shs + 1);
+
+		/* SSE events are masked until hart unmasks them */
+		shs->masked = true;
 
 		sse_set_hart_state_ptr(scratch, shs);
 	}
