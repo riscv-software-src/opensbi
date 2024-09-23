@@ -586,6 +586,15 @@ int sbi_domain_register(struct sbi_domain *dom,
 		}
 	}
 
+	/* Setup data for the discovered domain */
+	rc = sbi_domain_setup_data(dom);
+	if (rc) {
+		sbi_printf("%s: domain data setup failed for %s (error %d)\n",
+			   __func__, dom->name, rc);
+		sbi_list_del(&dom->node);
+		return rc;
+	}
+
 	return 0;
 }
 
@@ -751,6 +760,8 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 	struct sbi_hartmask *root_hmask;
 	struct sbi_domain_memregion *root_memregs;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+
+	SBI_INIT_LIST_HEAD(&domain_list);
 
 	if (scratch->fw_rw_offset == 0 ||
 	    (scratch->fw_rw_offset & (scratch->fw_rw_offset - 1)) != 0) {

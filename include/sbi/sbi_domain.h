@@ -15,6 +15,7 @@
 #include <sbi/sbi_types.h>
 #include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_domain_context.h>
+#include <sbi/sbi_domain_data.h>
 
 struct sbi_scratch;
 
@@ -163,6 +164,8 @@ struct sbi_domain_memregion {
 struct sbi_domain {
 	/** Node in linked list of domains */
 	struct sbi_dlist node;
+	/** Internal state of per-domain data */
+	struct sbi_domain_data_priv data_priv;
 	/** Logical index of this domain */
 	u32 index;
 	/** HARTs assigned to this domain */
