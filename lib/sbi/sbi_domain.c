@@ -780,11 +780,16 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 	if (!domain_hart_ptr_offset)
 		return SBI_ENOMEM;
 
+	/* Initialize domain context support */
+	rc = sbi_domain_context_init();
+	if (rc)
+		goto fail_free_domain_hart_ptr_offset;
+
 	root_memregs = sbi_calloc(sizeof(*root_memregs), ROOT_REGION_MAX + 1);
 	if (!root_memregs) {
 		sbi_printf("%s: no memory for root regions\n", __func__);
 		rc = SBI_ENOMEM;
-		goto fail_free_domain_hart_ptr_offset;
+		goto fail_deinit_context;
 	}
 	root.regions = root_memregs;
 
@@ -849,6 +854,8 @@ fail_free_root_hmask:
 	sbi_free(root_hmask);
 fail_free_root_memregs:
 	sbi_free(root_memregs);
+fail_deinit_context:
+	sbi_domain_context_deinit();
 fail_free_domain_hart_ptr_offset:
 	sbi_scratch_free_offset(domain_hart_ptr_offset);
 	return rc;
