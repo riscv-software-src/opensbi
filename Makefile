@@ -355,12 +355,7 @@ GENFLAGS	+=	$(libsbiutils-genflags-y)
 GENFLAGS	+=	$(platform-genflags-y)
 GENFLAGS	+=	$(firmware-genflags-y)
 
-CFLAGS		=	-g -Wall -Werror -ffreestanding -nostdlib -fno-stack-protector -fno-strict-aliasing
-ifneq ($(DEBUG),)
-CFLAGS		+=	-O0
-else
-CFLAGS		+=	-O2
-endif
+CFLAGS		=	-g -Wall -Werror -ffreestanding -nostdlib -fno-stack-protector -fno-strict-aliasing -ffunction-sections -fdata-sections
 CFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
 # Optionally supported flags
 ifeq ($(CC_SUPPORT_SAVE_RESTORE),y)
@@ -406,6 +401,7 @@ ASFLAGS		+=	$(firmware-asflags-y)
 ARFLAGS		=	rcs
 
 ELFFLAGS	+=	$(USE_LD_FLAG)
+ELFFLAGS	+=	-Wl,--gc-sections
 ifeq ($(OPENSBI_LD_EXCLUDE_LIBS),y)
 ELFFLAGS	+=	-Wl,--exclude-libs,ALL
 endif
@@ -423,6 +419,13 @@ endif
 MERGEFLAGS	+=	-m elf$(PLATFORM_RISCV_XLEN)lriscv
 
 DTSCPPFLAGS	=	$(CPPFLAGS) -nostdinc -nostdlib -fno-builtin -D__DTS__ -x assembler-with-cpp
+
+ifneq ($(DEBUG),)
+CFLAGS		+=	-O0
+ELFFLAGS	+=	-Wl,--print-gc-sections
+else
+CFLAGS		+=	-O2
+endif
 
 # Setup functions for compilation
 define dynamic_flags
