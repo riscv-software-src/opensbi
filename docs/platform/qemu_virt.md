@@ -56,7 +56,14 @@ qemu-system-riscv64 -M virt -m 256M -nographic \
 **Linux Kernel Payload**
 
 Note: We assume that the Linux kernel is compiled using
-*arch/riscv/configs/defconfig*.
+*arch/riscv/configs/defconfig*. The kernel must be a flattened image (a file
+called `Image`) rather than an ELF (`vmlinux`).
+
+Example of building a Linux kernel:
+```
+make ARCH=riscv CROSS_COMPILE=riscv64-linux- defconfig
+make ARCH=riscv CROSS_COMPILE=riscv64-linux- Image
+```
 
 Build:
 ```
