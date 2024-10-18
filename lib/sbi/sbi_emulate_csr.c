@@ -47,11 +47,7 @@ int sbi_emulate_csr_read(int csr_num, struct sbi_trap_regs *regs,
 	int ret = 0;
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	ulong prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
-#if __riscv_xlen == 32
-	bool virt = (regs->mstatusH & MSTATUSH_MPV) ? true : false;
-#else
-	bool virt = (regs->mstatus & MSTATUS_MPV) ? true : false;
-#endif
+	bool virt = sbi_regs_from_virt(regs);
 
 	switch (csr_num) {
 	case CSR_HTIMEDELTA:
@@ -157,11 +153,7 @@ int sbi_emulate_csr_write(int csr_num, struct sbi_trap_regs *regs,
 {
 	int ret = 0;
 	ulong prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
-#if __riscv_xlen == 32
-	bool virt = (regs->mstatusH & MSTATUSH_MPV) ? true : false;
-#else
-	bool virt = (regs->mstatus & MSTATUS_MPV) ? true : false;
-#endif
+	bool virt = sbi_regs_from_virt(regs);
 
 	switch (csr_num) {
 	case CSR_HTIMEDELTA:

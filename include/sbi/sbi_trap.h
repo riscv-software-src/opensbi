@@ -236,6 +236,15 @@ static inline unsigned long sbi_regs_gva(const struct sbi_trap_regs *regs)
 #endif
 }
 
+static inline bool sbi_regs_from_virt(const struct sbi_trap_regs *regs)
+{
+#if __riscv_xlen == 32
+	return (regs->mstatusH & MSTATUSH_MPV) ? true : false;
+#else
+	return (regs->mstatus & MSTATUS_MPV) ? true : false;
+#endif
+}
+
 int sbi_trap_redirect(struct sbi_trap_regs *regs,
 		      const struct sbi_trap_info *trap);
 
