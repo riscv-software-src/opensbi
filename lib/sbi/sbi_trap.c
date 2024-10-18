@@ -109,7 +109,7 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 	bool next_virt = false;
 
 	/* Sanity check on previous mode */
-	prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
+	prev_mode = sbi_mstatus_prev_mode(regs->mstatus);
 	if (prev_mode != PRV_S && prev_mode != PRV_U)
 		return SBI_ENOTSUPP;
 
@@ -361,7 +361,7 @@ trap_done:
 	if (rc)
 		sbi_trap_error(msg, rc, tcntx);
 
-	if (((regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT) != PRV_M)
+	if (sbi_mstatus_prev_mode(regs->mstatus) != PRV_M)
 		sbi_sse_process_pending_events(regs);
 
 	sbi_trap_set_context(scratch, tcntx->prev_context);

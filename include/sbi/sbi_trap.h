@@ -245,6 +245,11 @@ static inline bool sbi_regs_from_virt(const struct sbi_trap_regs *regs)
 #endif
 }
 
+static inline int sbi_mstatus_prev_mode(unsigned long mstatus)
+{
+	return (mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
+}
+
 int sbi_trap_redirect(struct sbi_trap_regs *regs,
 		      const struct sbi_trap_info *trap);
 

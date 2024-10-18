@@ -46,7 +46,7 @@ int sbi_emulate_csr_read(int csr_num, struct sbi_trap_regs *regs,
 {
 	int ret = 0;
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
-	ulong prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
+	ulong prev_mode = sbi_mstatus_prev_mode(regs->mstatus);
 	bool virt = sbi_regs_from_virt(regs);
 
 	switch (csr_num) {
@@ -152,7 +152,7 @@ int sbi_emulate_csr_write(int csr_num, struct sbi_trap_regs *regs,
 			  ulong csr_val)
 {
 	int ret = 0;
-	ulong prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
+	ulong prev_mode = sbi_mstatus_prev_mode(regs->mstatus);
 	bool virt = sbi_regs_from_virt(regs);
 
 	switch (csr_num) {

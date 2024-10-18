@@ -52,7 +52,7 @@ static int system_opcode_insn(ulong insn, struct sbi_trap_regs *regs)
 	int rs1_num	= GET_RS1_NUM(insn);
 	ulong rs1_val	= GET_RS1(insn, regs);
 	int csr_num	= GET_CSR_NUM((u32)insn);
-	ulong prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
+	ulong prev_mode = sbi_mstatus_prev_mode(regs->mstatus);
 	ulong csr_val, new_csr_val;
 
 	if (prev_mode == PRV_M) {

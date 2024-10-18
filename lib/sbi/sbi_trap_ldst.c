@@ -318,7 +318,7 @@ static int sbi_ld_access_emulator(int rlen, union sbi_ldst_data *out_val,
 	struct sbi_trap_regs *regs = &tcntx->regs;
 
 	/* If fault came from M mode, just fail */
-	if (((regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT) == PRV_M)
+	if (sbi_mstatus_prev_mode(regs->mstatus) == PRV_M)
 		return SBI_EINVAL;
 
 	/* If platform emulator failed, we redirect instead of fail */
@@ -341,7 +341,7 @@ static int sbi_st_access_emulator(int wlen, union sbi_ldst_data in_val,
 	struct sbi_trap_regs *regs = &tcntx->regs;
 
 	/* If fault came from M mode, just fail */
-	if (((regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT) == PRV_M)
+	if (sbi_mstatus_prev_mode(regs->mstatus) == PRV_M)
 		return SBI_EINVAL;
 
 	/* If platform emulator failed, we redirect instead of fail */

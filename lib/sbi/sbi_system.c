@@ -158,7 +158,7 @@ int sbi_system_suspend(u32 sleep_type, ulong resume_addr, ulong opaque)
 	if (ret != SBI_OK)
 		return ret;
 
-	prev_mode = (csr_read(CSR_MSTATUS) & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
+	prev_mode = sbi_mstatus_prev_mode(csr_read(CSR_MSTATUS));
 	if (prev_mode != PRV_S && prev_mode != PRV_U)
 		return SBI_EFAIL;
 
