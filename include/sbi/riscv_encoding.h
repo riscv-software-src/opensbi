@@ -214,7 +214,8 @@
 
 #define ENVCFG_STCE			(_ULL(1) << 63)
 #define ENVCFG_PBMTE			(_ULL(1) << 62)
-#define ENVCFG_ADUE			(_ULL(1) << 61)
+#define ENVCFG_ADUE_SHIFT		61
+#define ENVCFG_ADUE			(_ULL(1) << ENVCFG_ADUE_SHIFT)
 #define ENVCFG_CDE			(_ULL(1) << 60)
 #define ENVCFG_DTE			(_ULL(1) << 59)
 #define ENVCFG_PMM			(_ULL(0x3) << 32)
@@ -228,8 +229,10 @@
 #define ENVCFG_CBIE_ILL			_UL(0x0)
 #define ENVCFG_CBIE_FLUSH		_UL(0x1)
 #define ENVCFG_CBIE_INV			_UL(0x3)
-#define ENVCFG_SSE			(_UL(1) << 3)
-#define ENVCFG_LPE			(_UL(1) << 2)
+#define ENVCFG_SSE_SHIFT		3
+#define ENVCFG_SSE			(_UL(1) << ENVCFG_SSE_SHIFT)
+#define ENVCFG_LPE_SHIFT		2
+#define ENVCFG_LPE			(_UL(1) << ENVCFG_LPE_SHIFT)
 #define ENVCFG_FIOM			_UL(0x1)
 
 /* ===== User-level CSRs ===== */
