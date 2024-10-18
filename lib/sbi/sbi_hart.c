@@ -117,6 +117,9 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		menvcfg_val |= ((uint64_t)csr_read(CSR_MENVCFGH)) << 32;
 #endif
 
+		/* Disable double trap by default */
+		menvcfg_val &= ~ENVCFG_DTE;
+
 #define __set_menvcfg_ext(__ext, __bits)				\
 		if (sbi_hart_has_extension(scratch, __ext))		\
 			menvcfg_val |= __bits;
@@ -684,6 +687,7 @@ const struct sbi_hart_ext_data sbi_hart_ext[] = {
 	__SBI_HART_EXT_DATA(smnpm, SBI_HART_EXT_SMNPM),
 	__SBI_HART_EXT_DATA(zicfilp, SBI_HART_EXT_ZICFILP),
 	__SBI_HART_EXT_DATA(zicfiss, SBI_HART_EXT_ZICFISS),
+	__SBI_HART_EXT_DATA(ssdbltrp, SBI_HART_EXT_SSDBLTRP),
 };
 
 _Static_assert(SBI_HART_EXT_MAX == array_size(sbi_hart_ext),

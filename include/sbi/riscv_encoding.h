@@ -216,6 +216,7 @@
 #define ENVCFG_PBMTE			(_ULL(1) << 62)
 #define ENVCFG_ADUE			(_ULL(1) << 61)
 #define ENVCFG_CDE			(_ULL(1) << 60)
+#define ENVCFG_DTE			(_ULL(1) << 59)
 #define ENVCFG_PMM			(_ULL(0x3) << 32)
 #define ENVCFG_PMM_PMLEN_0		(_ULL(0x0) << 32)
 #define ENVCFG_PMM_PMLEN_7		(_ULL(0x2) << 32)
@@ -773,7 +774,8 @@
 #define CAUSE_FETCH_PAGE_FAULT		0xc
 #define CAUSE_LOAD_PAGE_FAULT		0xd
 #define CAUSE_STORE_PAGE_FAULT		0xf
-#define CAUSE_SW_CHECK_EXCP			0x12
+#define CAUSE_DOUBLE_TRAP		0x10
+#define CAUSE_SW_CHECK_EXCP		0x12
 #define CAUSE_FETCH_GUEST_PAGE_FAULT	0x14
 #define CAUSE_LOAD_GUEST_PAGE_FAULT	0x15
 #define CAUSE_VIRTUAL_INST_FAULT	0x16

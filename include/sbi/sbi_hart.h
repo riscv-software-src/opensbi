@@ -73,6 +73,8 @@ enum sbi_hart_extensions {
 	SBI_HART_EXT_ZICFILP,
 	/** HART has zicfiss extension */
 	SBI_HART_EXT_ZICFISS,
+	/** Hart has Ssdbltrp extension */
+	SBI_HART_EXT_SSDBLTRP,
 
 	/** Maximum index of Hart extension */
 	SBI_HART_EXT_MAX,
