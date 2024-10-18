@@ -26,5 +26,5 @@ int sbi_double_trap_handler(struct sbi_trap_context *tcntx)
 	if (prev_virt)
 		return sbi_trap_redirect(regs, trap);
 
-	return SBI_ENOTSUPP;
+	return sbi_sse_inject_event(SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP);
 }
