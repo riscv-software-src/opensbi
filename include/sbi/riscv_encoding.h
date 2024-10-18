@@ -217,7 +217,8 @@
 #define ENVCFG_ADUE_SHIFT		61
 #define ENVCFG_ADUE			(_ULL(1) << ENVCFG_ADUE_SHIFT)
 #define ENVCFG_CDE			(_ULL(1) << 60)
-#define ENVCFG_DTE			(_ULL(1) << 59)
+#define ENVCFG_DTE_SHIFT		59
+#define ENVCFG_DTE			(_ULL(1) << ENVCFG_DTE_SHIFT)
 #define ENVCFG_PMM			(_ULL(0x3) << 32)
 #define ENVCFG_PMM_PMLEN_0		(_ULL(0x0) << 32)
 #define ENVCFG_PMM_PMLEN_7		(_ULL(0x2) << 32)

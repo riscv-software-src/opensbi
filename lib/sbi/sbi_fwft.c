@@ -137,6 +137,25 @@ static int fwft_get_misaligned_delegation(struct fwft_config *conf,
 	return SBI_OK;
 }
 
+static int fwft_double_trap_supported(struct fwft_config *conf)
+{
+	if (!sbi_hart_has_extension(sbi_scratch_thishart_ptr(),
+				    SBI_HART_EXT_SSDBLTRP))
+		return SBI_ENOTSUPP;
+
+	return SBI_OK;
+}
+
+static int fwft_set_double_trap(struct fwft_config *conf, unsigned long value)
+{
+	return fwft_menvcfg_set_bit(value, ENVCFG_DTE_SHIFT);
+}
+
+static int fwft_get_double_trap(struct fwft_config *conf, unsigned long *value)
+{
+	return fwft_menvcfg_read_bit(value, ENVCFG_DTE_SHIFT);
+}
+
 static int fwft_adue_supported(struct fwft_config *conf)
 {
 	if (!sbi_hart_has_extension(sbi_scratch_thishart_ptr(),
@@ -348,6 +367,12 @@ static const struct fwft_feature features[] =
 		.supported = fwft_sstack_supported,
 		.set = fwft_enable_sstack,
 		.get = fwft_get_sstack,
+	},
+	{
+		.id = SBI_FWFT_DOUBLE_TRAP,
+		.supported = fwft_double_trap_supported,
+		.set = fwft_set_double_trap,
+		.get = fwft_get_double_trap,
 	},
 	{
 		.id = SBI_FWFT_PTE_AD_HW_UPDATING,
