@@ -31,6 +31,16 @@
 	add	\__d4, \__s4, zero
 .endm
 
+.macro CLEAR_MDT tmp
+#if __riscv_xlen == 32
+	li 	\tmp, MSTATUSH_MDT
+	csrc	CSR_MSTATUSH, \tmp
+#else
+	li 	\tmp, MSTATUS_MDT
+	csrc	CSR_MSTATUS, \tmp
+#endif
+.endm
+
 	.section .entry, "ax", %progbits
 	.align 3
 	.globl _start
@@ -90,6 +100,14 @@ _bss_zero:
 	/* Setup temporary trap handler */
 	lla	s4, _start_hang
 	csrw	CSR_MTVEC, s4
+
+	/*
+	 * While at this point, trap handling is rudimentary, if a trap happens,
+	 * it will end up in _start_hang which is enough to hook up a GDB. Clear
+	 * MDT to avoid generating a double trap and thus entering a
+	 * critical-error state.
+	 */
+	CLEAR_MDT t0
 
 	/* Setup temporary stack */
 	lla	s4, _fw_end
@@ -348,6 +366,9 @@ _start_warm:
 _skip_trap_handler_hyp:
 	csrw	CSR_MTVEC, a4
 
+	/* Clear MDT here again for all harts */
+	CLEAR_MDT t0
+
 	/* Initialize SBI runtime */
 	csrr	a0, CSR_MSCRATCH
 	call	sbi_init
@@ -545,6 +566,9 @@ memcmp:
 	li	t0, 0
 .endif
 	REG_S	t0, (SBI_TRAP_REGS_SIZE + SBI_TRAP_INFO_OFFSET(gva))(sp)
+
+	/* We are ready to take another trap, clear MDT */
+	CLEAR_MDT t0
 .endm
 
 .macro	TRAP_CALL_C_ROUTINE
@@ -587,15 +611,18 @@ memcmp:
 .endm
 
 .macro	TRAP_RESTORE_MEPC_MSTATUS have_mstatush
-	/* Restore MEPC and MSTATUS CSRs */
-	REG_L	t0, SBI_TRAP_REGS_OFFSET(mepc)(a0)
-	csrw	CSR_MEPC, t0
-	REG_L	t0, SBI_TRAP_REGS_OFFSET(mstatus)(a0)
-	csrw	CSR_MSTATUS, t0
+	/*
+	 * Restore MSTATUS and MEPC CSRs starting with MSTATUS/H to set MDT
+	 * flags since we can not take a trap now or MEPC would be cloberred
+	 */
 	.if \have_mstatush
 	REG_L	t0, SBI_TRAP_REGS_OFFSET(mstatusH)(a0)
 	csrw	CSR_MSTATUSH, t0
 	.endif
+	REG_L	t0, SBI_TRAP_REGS_OFFSET(mstatus)(a0)
+	csrw	CSR_MSTATUS, t0
+	REG_L	t0, SBI_TRAP_REGS_OFFSET(mepc)(a0)
+	csrw	CSR_MEPC, t0
 .endm
 
 .macro TRAP_RESTORE_A0_T0
