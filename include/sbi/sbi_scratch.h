@@ -22,7 +22,7 @@
 #define SBI_SCRATCH_FW_RW_OFFSET		(2 * __SIZEOF_POINTER__)
 /** Offset of fw_heap_offset member in sbi_scratch */
 #define SBI_SCRATCH_FW_HEAP_OFFSET		(3 * __SIZEOF_POINTER__)
-/** Offset of fw_heap_size_offset member in sbi_scratch */
+/** Offset of fw_heap_size member in sbi_scratch */
 #define SBI_SCRATCH_FW_HEAP_SIZE_OFFSET		(4 * __SIZEOF_POINTER__)
 /** Offset of next_arg1 member in sbi_scratch */
 #define SBI_SCRATCH_NEXT_ARG1_OFFSET		(5 * __SIZEOF_POINTER__)
