@@ -45,15 +45,11 @@ static void mswi_ipi_send(u32 hart_index)
 			mswi->first_hartid]);
 }
 
-static void mswi_ipi_clear(u32 hart_index)
+static void mswi_ipi_clear(void)
 {
 	u32 *msip;
-	struct sbi_scratch *scratch;
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	struct aclint_mswi_data *mswi;
-
-	scratch = sbi_hartindex_to_scratch(hart_index);
-	if (!scratch)
-		return;
 
 	mswi = mswi_get_hart_data_ptr(scratch);
 	if (!mswi)
@@ -61,8 +57,7 @@ static void mswi_ipi_clear(u32 hart_index)
 
 	/* Clear ACLINT IPI */
 	msip = (void *)mswi->addr;
-	writel_relaxed(0, &msip[sbi_hartindex_to_hartid(hart_index) -
-			mswi->first_hartid]);
+	writel_relaxed(0, &msip[current_hartid() - mswi->first_hartid]);
 }
 
 static struct sbi_ipi_device aclint_mswi = {
@@ -74,7 +69,7 @@ static struct sbi_ipi_device aclint_mswi = {
 int aclint_mswi_warm_init(void)
 {
 	/* Clear IPI for current HART */
-	mswi_ipi_clear(current_hartindex());
+	mswi_ipi_clear();
 
 	return 0;
 }

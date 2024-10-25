@@ -41,9 +41,9 @@ static void plicsw_ipi_send(u32 hart_index)
 	writel_relaxed(BIT(pending_bit), (void *)pending_reg);
 }
 
-static void plicsw_ipi_clear(u32 hart_index)
+static void plicsw_ipi_clear(void)
 {
-	u32 target_hart = sbi_hartindex_to_hartid(hart_index);
+	u32 target_hart = current_hartid();
 	ulong reg = plicsw.addr + PLICSW_CONTEXT_BASE + PLICSW_CONTEXT_CLAIM +
 		    PLICSW_CONTEXT_STRIDE * target_hart;
 
@@ -68,7 +68,7 @@ static struct sbi_ipi_device plicsw_ipi = {
 int plicsw_warm_ipi_init(void)
 {
 	/* Clear PLICSW IPI */
-	plicsw_ipi_clear(current_hartindex());
+	plicsw_ipi_clear();
 
 	return 0;
 }

@@ -26,8 +26,8 @@ struct sbi_ipi_device {
 	/** Send IPI to a target HART index */
 	void (*ipi_send)(u32 hart_index);
 
-	/** Clear IPI for a target HART index */
-	void (*ipi_clear)(u32 hart_index);
+	/** Clear IPI for the current hart */
+	void (*ipi_clear)(void);
 };
 
 enum sbi_ipi_update_type {
@@ -87,7 +87,7 @@ void sbi_ipi_process(void);
 
 int sbi_ipi_raw_send(u32 hartindex);
 
-void sbi_ipi_raw_clear(u32 hartindex);
+void sbi_ipi_raw_clear(void);
 
 const struct sbi_ipi_device *sbi_ipi_get_device(void);
 

@@ -479,7 +479,7 @@ static void __noreturn init_warmboot(struct sbi_scratch *scratch, u32 hartid)
 	if (hstate == SBI_HSM_STATE_SUSPENDED) {
 		init_warm_resume(scratch, hartid);
 	} else {
-		sbi_ipi_raw_clear(sbi_hartid_to_hartindex(hartid));
+		sbi_ipi_raw_clear();
 		init_warm_startup(scratch, hartid);
 	}
 }
