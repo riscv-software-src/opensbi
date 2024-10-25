@@ -65,14 +65,6 @@ static struct sbi_ipi_device plicsw_ipi = {
 	.ipi_clear = plicsw_ipi_clear
 };
 
-int plicsw_warm_ipi_init(void)
-{
-	/* Clear PLICSW IPI */
-	plicsw_ipi_clear();
-
-	return 0;
-}
-
 int plicsw_cold_ipi_init(struct plicsw_data *plicsw)
 {
 	int rc;

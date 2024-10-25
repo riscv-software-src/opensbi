@@ -66,14 +66,6 @@ static struct sbi_ipi_device aclint_mswi = {
 	.ipi_clear = mswi_ipi_clear
 };
 
-int aclint_mswi_warm_init(void)
-{
-	/* Clear IPI for current HART */
-	mswi_ipi_clear();
-
-	return 0;
-}
-
 int aclint_mswi_cold_init(struct aclint_mswi_data *mswi)
 {
 	u32 i;

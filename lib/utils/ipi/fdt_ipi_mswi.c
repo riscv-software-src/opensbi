@@ -64,6 +64,6 @@ static const struct fdt_match ipi_mswi_match[] = {
 struct fdt_ipi fdt_ipi_mswi = {
 	.match_table = ipi_mswi_match,
 	.cold_init = ipi_mswi_cold_init,
-	.warm_init = aclint_mswi_warm_init,
+	.warm_init = NULL,
 	.exit = NULL,
 };

@@ -32,8 +32,6 @@ struct plicsw_data {
 	uint32_t hart_count;
 };
 
-int plicsw_warm_ipi_init(void);
-
 int plicsw_cold_ipi_init(struct plicsw_data *plicsw);
 
 #endif /* _IPI_ANDES_PLICSW_H_ */

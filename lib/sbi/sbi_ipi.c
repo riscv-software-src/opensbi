@@ -332,13 +332,13 @@ int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
 	ipi_data = sbi_scratch_offset_ptr(scratch, ipi_data_off);
 	ipi_data->ipi_type = 0x00;
 
-	/*
-	 * Initialize platform IPI support. This will also clear any
-	 * pending IPIs for current/calling HART.
-	 */
+	/* Initialize platform IPI support */
 	ret = sbi_platform_ipi_init(sbi_platform_ptr(scratch), cold_boot);
 	if (ret)
 		return ret;
+
+	/* Clear any pending IPIs for the current hart */
+	sbi_ipi_raw_clear();
 
 	/* Enable software interrupts */
 	csr_set(CSR_MIE, MIP_MSIP);

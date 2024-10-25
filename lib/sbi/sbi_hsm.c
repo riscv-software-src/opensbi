@@ -178,7 +178,7 @@ static void sbi_hsm_hart_wait(struct sbi_scratch *scratch)
 
 	/*
 	 * No need to clear IPI here because the sbi_ipi_init() will
-	 * clear it for current HART via sbi_platform_ipi_init().
+	 * clear it for current HART.
 	 */
 }
 

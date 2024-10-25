@@ -212,7 +212,7 @@ static int ux600_ipi_init(bool cold_boot)
 			return rc;
 	}
 
-	return aclint_mswi_warm_init();
+	return 0;
 }
 
 static int ux600_timer_init(void)
