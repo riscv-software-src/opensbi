@@ -101,6 +101,14 @@
 		__v;                                            \
 	})
 
+/* Variant of csr_read() that allows the compiler to cache the value. */
+#define csr_read_relaxed(csr)                                     \
+	({                                                        \
+		register unsigned long __v;                       \
+		__asm__ ("csrr %0, " __ASM_STR(csr) : "=r"(__v)); \
+		__v;                                              \
+	})
+
 #define csr_write(csr, val)                                        \
 	({                                                         \
 		unsigned long __v = (unsigned long)(val);          \
@@ -163,7 +171,7 @@ void csr_write_num(int csr_num, unsigned long val);
 	} while (0)
 
 /* Get current HART id */
-#define current_hartid()	((unsigned int)csr_read(CSR_MHARTID))
+#define current_hartid()	((unsigned int)csr_read_relaxed(CSR_MHARTID))
 
 /* determine CPU extension, return non-zero support */
 int misa_extension_imp(char ext);

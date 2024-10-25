@@ -159,7 +159,7 @@ enum sbi_scratch_options {
 
 /** Get pointer to sbi_scratch for current HART */
 #define sbi_scratch_thishart_ptr() \
-	((struct sbi_scratch *)csr_read(CSR_MSCRATCH))
+	((struct sbi_scratch *)csr_read_relaxed(CSR_MSCRATCH))
 
 /** Get Arg1 of next booting stage for current HART */
 #define sbi_scratch_thishart_arg1_ptr() \
