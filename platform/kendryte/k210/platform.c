@@ -146,17 +146,9 @@ static int k210_irqchip_init(bool cold_boot)
 	return plic_warm_irqchip_init(&plic, hartid * 2, hartid * 2 + 1);
 }
 
-static int k210_ipi_init(bool cold_boot)
+static int k210_ipi_init(void)
 {
-	int rc;
-
-	if (cold_boot) {
-		rc = aclint_mswi_cold_init(&mswi);
-		if (rc)
-			return rc;
-	}
-
-	return 0;
+	return aclint_mswi_cold_init(&mswi);
 }
 
 static int k210_timer_init(void)

@@ -16,22 +16,7 @@
 extern struct fdt_ipi *fdt_ipi_drivers[];
 extern unsigned long fdt_ipi_drivers_size;
 
-static struct fdt_ipi *current_driver = NULL;
-
-void fdt_ipi_exit(void)
-{
-	if (current_driver && current_driver->exit)
-		current_driver->exit();
-}
-
-static int fdt_ipi_warm_init(void)
-{
-	if (current_driver && current_driver->warm_init)
-		return current_driver->warm_init();
-	return 0;
-}
-
-static int fdt_ipi_cold_init(void)
+int fdt_ipi_init(void)
 {
 	int pos, noff, rc;
 	struct fdt_ipi *drv;
@@ -56,7 +41,6 @@ static int fdt_ipi_cold_init(void)
 				continue;
 			if (rc)
 				return rc;
-			current_driver = drv;
 
 			/*
 			 * We will have multiple IPI devices on multi-die or
@@ -70,17 +54,4 @@ static int fdt_ipi_cold_init(void)
 	 * so we cannot return a failure here
 	 */
 	return 0;
-}
-
-int fdt_ipi_init(bool cold_boot)
-{
-	int rc;
-
-	if (cold_boot) {
-		rc = fdt_ipi_cold_init();
-		if (rc)
-			return rc;
-	}
-
-	return fdt_ipi_warm_init();
 }

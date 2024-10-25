@@ -131,19 +131,11 @@ static int ariane_irqchip_init(bool cold_boot)
 }
 
 /*
- * Initialize IPI for current HART.
+ * Initialize IPI during cold boot.
  */
-static int ariane_ipi_init(bool cold_boot)
+static int ariane_ipi_init(void)
 {
-	int ret;
-
-	if (cold_boot) {
-		ret = aclint_mswi_cold_init(&mswi);
-		if (ret)
-			return ret;
-	}
-
-	return 0;
+	return aclint_mswi_cold_init(&mswi);
 }
 
 /*

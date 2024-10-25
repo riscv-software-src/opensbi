@@ -202,17 +202,9 @@ static int ux600_irqchip_init(bool cold_boot)
 				      (hartid) ? (2 * hartid) : -1);
 }
 
-static int ux600_ipi_init(bool cold_boot)
+static int ux600_ipi_init(void)
 {
-	int rc;
-
-	if (cold_boot) {
-		rc = aclint_mswi_cold_init(&mswi);
-		if (rc)
-			return rc;
-	}
-
-	return 0;
+	return aclint_mswi_cold_init(&mswi);
 }
 
 static int ux600_timer_init(void)

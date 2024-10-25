@@ -321,6 +321,11 @@ int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
 		if (ret < 0)
 			return ret;
 		ipi_halt_event = ret;
+
+		/* Initialize platform IPI support */
+		ret = sbi_platform_ipi_init(sbi_platform_ptr(scratch));
+		if (ret)
+			return ret;
 	} else {
 		if (!ipi_data_off)
 			return SBI_ENOMEM;
@@ -331,11 +336,6 @@ int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
 
 	ipi_data = sbi_scratch_offset_ptr(scratch, ipi_data_off);
 	ipi_data->ipi_type = 0x00;
-
-	/* Initialize platform IPI support */
-	ret = sbi_platform_ipi_init(sbi_platform_ptr(scratch), cold_boot);
-	if (ret)
-		return ret;
 
 	/* Clear any pending IPIs for the current hart */
 	sbi_ipi_raw_clear();
@@ -353,7 +353,4 @@ void sbi_ipi_exit(struct sbi_scratch *scratch)
 
 	/* Process pending IPIs */
 	sbi_ipi_process();
-
-	/* Platform exit */
-	sbi_platform_ipi_exit(sbi_platform_ptr(scratch));
 }

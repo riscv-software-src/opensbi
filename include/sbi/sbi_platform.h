@@ -116,10 +116,8 @@ struct sbi_platform_operations {
 	/** Exit the platform interrupt controller for current HART */
 	void (*irqchip_exit)(void);
 
-	/** Initialize IPI for current HART */
-	int (*ipi_init)(bool cold_boot);
-	/** Exit IPI for current HART */
-	void (*ipi_exit)(void);
+	/** Initialize IPI during cold boot */
+	int (*ipi_init)(void);
 
 	/** Get tlb flush limit value **/
 	u64 (*get_tlbr_flush_limit)(void);
@@ -572,30 +570,17 @@ static inline void sbi_platform_irqchip_exit(const struct sbi_platform *plat)
 }
 
 /**
- * Initialize the platform IPI support for current HART
+ * Initialize the platform IPI support during cold boot
  *
  * @param plat pointer to struct sbi_platform
- * @param cold_boot whether cold boot (true) or warm_boot (false)
  *
  * @return 0 on success and negative error code on failure
  */
-static inline int sbi_platform_ipi_init(const struct sbi_platform *plat,
-					bool cold_boot)
+static inline int sbi_platform_ipi_init(const struct sbi_platform *plat)
 {
 	if (plat && sbi_platform_ops(plat)->ipi_init)
-		return sbi_platform_ops(plat)->ipi_init(cold_boot);
+		return sbi_platform_ops(plat)->ipi_init();
 	return 0;
-}
-
-/**
- * Exit the platform IPI support for current HART
- *
- * @param plat pointer to struct sbi_platform
- */
-static inline void sbi_platform_ipi_exit(const struct sbi_platform *plat)
-{
-	if (plat && sbi_platform_ops(plat)->ipi_exit)
-		sbi_platform_ops(plat)->ipi_exit();
 }
 
 /**
