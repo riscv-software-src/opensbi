@@ -19,6 +19,9 @@ struct sbi_scratch;
 struct sbi_irqchip_device {
 	/** Node in the list of irqchip devices */
 	struct sbi_dlist node;
+
+	/** Initialize per-hart state for the current hart */
+	int (*warm_init)(struct sbi_irqchip_device *dev);
 };
 
 /**

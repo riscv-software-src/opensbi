@@ -42,8 +42,6 @@ void plic_suspend(void);
 
 void plic_resume(void);
 
-int plic_warm_irqchip_init(void);
-
 int plic_cold_irqchip_init(struct plic_data *plic);
 
 #endif

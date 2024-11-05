@@ -16,12 +16,6 @@
 #include <sbi_utils/irqchip/fdt_irqchip.h>
 #include <sbi_utils/irqchip/aplic.h>
 
-static int irqchip_aplic_warm_init(void)
-{
-	/* Nothing to do here. */
-	return 0;
-}
-
 static int irqchip_aplic_cold_init(const void *fdt, int nodeoff,
 				   const struct fdt_match *match)
 {
@@ -55,6 +49,6 @@ static const struct fdt_match irqchip_aplic_match[] = {
 struct fdt_irqchip fdt_irqchip_aplic = {
 	.match_table = irqchip_aplic_match,
 	.cold_init = irqchip_aplic_cold_init,
-	.warm_init = irqchip_aplic_warm_init,
+	.warm_init = NULL,
 	.exit = NULL,
 };

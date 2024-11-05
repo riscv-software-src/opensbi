@@ -146,7 +146,7 @@ static int k210_irqchip_init(bool cold_boot)
 			return rc;
 	}
 
-	return plic_warm_irqchip_init();
+	return 0;
 }
 
 static int k210_ipi_init(void)

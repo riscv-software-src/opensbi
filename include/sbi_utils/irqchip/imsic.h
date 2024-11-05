@@ -43,8 +43,6 @@ int imsic_get_target_file(u32 hartindex);
 
 void imsic_local_irqchip_init(void);
 
-int imsic_warm_irqchip_init(void);
-
 int imsic_data_check(struct imsic_data *imsic);
 
 int imsic_cold_irqchip_init(struct imsic_data *imsic);

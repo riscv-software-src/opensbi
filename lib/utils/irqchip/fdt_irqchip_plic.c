@@ -108,6 +108,6 @@ static const struct fdt_match irqchip_plic_match[] = {
 struct fdt_irqchip fdt_irqchip_plic = {
 	.match_table = irqchip_plic_match,
 	.cold_init = irqchip_plic_cold_init,
-	.warm_init = plic_warm_irqchip_init,
+	.warm_init = NULL,
 	.exit = NULL,
 };

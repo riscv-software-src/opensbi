@@ -40,10 +40,19 @@ int sbi_irqchip_init(struct sbi_scratch *scratch, bool cold_boot)
 {
 	int rc;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	struct sbi_irqchip_device *dev;
 
 	rc = sbi_platform_irqchip_init(plat, cold_boot);
 	if (rc)
 		return rc;
+
+	sbi_list_for_each_entry(dev, &irqchip_list, node) {
+		if (!dev->warm_init)
+			continue;
+		rc = dev->warm_init(dev);
+		if (rc)
+			return rc;
+	}
 
 	if (ext_irqfn != default_irqfn)
 		csr_set(CSR_MIE, MIP_MEIP);

@@ -255,7 +255,7 @@ void imsic_local_irqchip_init(void)
 	imsic_local_eix_update(IMSIC_IPI_ID, 1, false, true);
 }
 
-int imsic_warm_irqchip_init(void)
+static int imsic_warm_irqchip_init(struct sbi_irqchip_device *dev)
 {
 	struct imsic_data *imsic = imsic_get_data(current_hartindex());
 
@@ -346,6 +346,7 @@ int imsic_data_check(struct imsic_data *imsic)
 }
 
 static struct sbi_irqchip_device imsic_device = {
+	.warm_init	= imsic_warm_irqchip_init,
 };
 
 int imsic_cold_irqchip_init(struct imsic_data *imsic)

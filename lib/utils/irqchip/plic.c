@@ -190,7 +190,7 @@ void plic_resume(void)
 	plic_delegate(plic);
 }
 
-int plic_warm_irqchip_init(void)
+static int plic_warm_irqchip_init(struct sbi_irqchip_device *dev)
 {
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	const struct plic_data *plic = plic_get_hart_data_ptr(scratch);
@@ -222,6 +222,7 @@ int plic_warm_irqchip_init(void)
 }
 
 static struct sbi_irqchip_device plic_device = {
+	.warm_init	= plic_warm_irqchip_init,
 };
 
 int plic_cold_irqchip_init(struct plic_data *plic)

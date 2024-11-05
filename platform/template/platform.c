@@ -100,7 +100,7 @@ static int platform_irqchip_init(bool cold_boot)
 			return ret;
 	}
 
-	return plic_warm_irqchip_init();
+	return 0;
 }
 
 /*
