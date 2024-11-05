@@ -17,6 +17,7 @@ struct plic_data {
 	unsigned long size;
 	unsigned long num_src;
 	unsigned long flags;
+	void *pm_data;
 	s16 context_map[][2];
 };
 
@@ -24,6 +25,8 @@ struct plic_data {
 #define PLIC_FLAG_ARIANE_BUG		BIT(0)
 /** PLIC must be delegated to S-mode like T-HEAD C906 and C910 */
 #define PLIC_FLAG_THEAD_DELEGATION	BIT(1)
+/** Allocate space for power management save/restore operations */
+#define PLIC_FLAG_ENABLE_PM		BIT(2)
 
 #define PLIC_M_CONTEXT			0
 #define PLIC_S_CONTEXT			1
@@ -31,22 +34,14 @@ struct plic_data {
 #define PLIC_DATA_SIZE(__hart_count)	(sizeof(struct plic_data) + \
 					 (__hart_count) * 2 * sizeof(s16))
 
-/* So far, priorities on all consumers of these functions fit in 8 bits. */
-void plic_priority_save(const struct plic_data *plic, u8 *priority, u32 num);
+#define PLIC_IE_WORDS(__p)		((__p)->num_src / 32 + 1)
 
-void plic_priority_restore(const struct plic_data *plic, const u8 *priority,
-			   u32 num);
+void plic_suspend(const struct plic_data *plic);
 
-void plic_delegate(const struct plic_data *plic);
-
-void plic_context_save(const struct plic_data *plic, bool smode,
-		       u32 *enable, u32 *threshold, u32 num);
-
-void plic_context_restore(const struct plic_data *plic, bool smode,
-			  const u32 *enable, u32 threshold, u32 num);
+void plic_resume(const struct plic_data *plic);
 
 int plic_warm_irqchip_init(const struct plic_data *plic);
 
-int plic_cold_irqchip_init(const struct plic_data *plic);
+int plic_cold_irqchip_init(struct plic_data *plic);
 
 #endif

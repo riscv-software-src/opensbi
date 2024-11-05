@@ -26,35 +26,25 @@ static unsigned long plic_ptr_offset;
 #define plic_set_hart_data_ptr(__scratch, __plic)			\
 	sbi_scratch_write_type((__scratch), void *, plic_ptr_offset, (__plic))
 
-void fdt_plic_priority_save(u8 *priority, u32 num)
+struct plic_data *fdt_plic_get(void)
 {
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
-	plic_priority_save(plic_get_hart_data_ptr(scratch), priority, num);
+	return plic_get_hart_data_ptr(scratch);
 }
 
-void fdt_plic_priority_restore(const u8 *priority, u32 num)
+void fdt_plic_suspend(void)
 {
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
-	plic_priority_restore(plic_get_hart_data_ptr(scratch), priority, num);
+	plic_suspend(plic_get_hart_data_ptr(scratch));
 }
 
-void fdt_plic_context_save(bool smode, u32 *enable, u32 *threshold, u32 num)
+void fdt_plic_resume(void)
 {
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
-	plic_context_save(plic_get_hart_data_ptr(scratch), smode,
-			  enable, threshold, num);
-}
-
-void fdt_plic_context_restore(bool smode, const u32 *enable, u32 threshold,
-			      u32 num)
-{
-	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
-
-	plic_context_restore(plic_get_hart_data_ptr(scratch), smode,
-			     enable, threshold, num);
+	plic_resume(plic_get_hart_data_ptr(scratch));
 }
 
 static int irqchip_plic_warm_init(void)
@@ -151,20 +141,12 @@ fail_free_data:
 	return rc;
 }
 
-void thead_plic_restore(void)
-{
-	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
-	struct plic_data *plic = plic_get_hart_data_ptr(scratch);
-
-	plic_delegate(plic);
-}
-
 static const struct fdt_match irqchip_plic_match[] = {
 	{ .compatible = "andestech,nceplic100" },
 	{ .compatible = "riscv,plic0" },
 	{ .compatible = "sifive,plic-1.0.0" },
 	{ .compatible = "thead,c900-plic",
-	  .data = (void *)PLIC_FLAG_THEAD_DELEGATION },
+	  .data = (void *)(PLIC_FLAG_THEAD_DELEGATION | PLIC_FLAG_ENABLE_PM) },
 	{ /* sentinel */ }
 };
 
