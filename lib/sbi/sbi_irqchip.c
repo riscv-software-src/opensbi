@@ -8,7 +8,10 @@
  */
 
 #include <sbi/sbi_irqchip.h>
+#include <sbi/sbi_list.h>
 #include <sbi/sbi_platform.h>
+
+static SBI_LIST_HEAD(irqchip_list);
 
 static int default_irqfn(void)
 {
@@ -26,6 +29,11 @@ void sbi_irqchip_set_irqfn(int (*fn)(void))
 int sbi_irqchip_process(void)
 {
 	return ext_irqfn();
+}
+
+void sbi_irqchip_add_device(struct sbi_irqchip_device *dev)
+{
+	sbi_list_add_tail(&dev->node, &irqchip_list);
 }
 
 int sbi_irqchip_init(struct sbi_scratch *scratch, bool cold_boot)

@@ -10,9 +10,16 @@
 #ifndef __SBI_IRQCHIP_H__
 #define __SBI_IRQCHIP_H__
 
+#include <sbi/sbi_list.h>
 #include <sbi/sbi_types.h>
 
 struct sbi_scratch;
+
+/** irqchip hardware device */
+struct sbi_irqchip_device {
+	/** Node in the list of irqchip devices */
+	struct sbi_dlist node;
+};
 
 /**
  * Set external interrupt handling function
@@ -33,6 +40,9 @@ void sbi_irqchip_set_irqfn(int (*fn)(void));
  * @param regs pointer for trap registers
  */
 int sbi_irqchip_process(void);
+
+/** Register an irqchip device to receive callbacks */
+void sbi_irqchip_add_device(struct sbi_irqchip_device *dev);
 
 /** Initialize interrupt controllers */
 int sbi_irqchip_init(struct sbi_scratch *scratch, bool cold_boot);

@@ -12,6 +12,7 @@
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_domain.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_irqchip.h>
 #include <sbi_utils/irqchip/aplic.h>
 
 #define APLIC_MAX_IDC			(1UL << 14)
@@ -165,6 +166,9 @@ static int aplic_check_msicfg(struct aplic_msicfg_data *msicfg)
 	return 0;
 }
 
+static struct sbi_irqchip_device aplic_device = {
+};
+
 int aplic_cold_irqchip_init(struct aplic_data *aplic)
 {
 	int rc;
@@ -274,6 +278,9 @@ int aplic_cold_irqchip_init(struct aplic_data *aplic)
 		if (rc)
 			return rc;
 	}
+
+	/* Register irqchip device */
+	sbi_irqchip_add_device(&aplic_device);
 
 	return 0;
 }

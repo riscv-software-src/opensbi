@@ -345,6 +345,9 @@ int imsic_data_check(struct imsic_data *imsic)
 	return 0;
 }
 
+static struct sbi_irqchip_device imsic_device = {
+};
+
 int imsic_cold_irqchip_init(struct imsic_data *imsic)
 {
 	int i, rc;
@@ -386,6 +389,9 @@ int imsic_cold_irqchip_init(struct imsic_data *imsic)
 		if (rc)
 			return rc;
 	}
+
+	/* Register irqchip device */
+	sbi_irqchip_add_device(&imsic_device);
 
 	/* Register IPI device */
 	sbi_ipi_set_device(&imsic_ipi_device);
