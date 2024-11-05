@@ -121,8 +121,8 @@ void plic_context_restore(const struct plic_data *plic, int context_id,
 	plic_set_thresh(plic, context_id, threshold);
 }
 
-int plic_context_init(const struct plic_data *plic, int context_id,
-		      bool enable, u32 threshold)
+static int plic_context_init(const struct plic_data *plic, int context_id,
+			     bool enable, u32 threshold)
 {
 	u32 ie_words, ie_value;
 
@@ -143,18 +143,23 @@ int plic_context_init(const struct plic_data *plic, int context_id,
 int plic_warm_irqchip_init(const struct plic_data *plic,
 			   int m_cntx_id, int s_cntx_id)
 {
+	bool enable;
 	int ret;
 
-	/* By default, disable all IRQs for M-mode of target HART */
+	/*
+	 * By default, disable all IRQs for the target HART. Ariane
+	 * has a bug which requires enabling all interrupts at boot.
+	 */
+	enable = plic->flags & PLIC_FLAG_ARIANE_BUG;
+
 	if (m_cntx_id > -1) {
-		ret = plic_context_init(plic, m_cntx_id, false, 0x7);
+		ret = plic_context_init(plic, m_cntx_id, enable, 0x7);
 		if (ret)
 			return ret;
 	}
 
-	/* By default, disable all IRQs for S-mode of target HART */
 	if (s_cntx_id > -1) {
-		ret = plic_context_init(plic, s_cntx_id, false, 0x7);
+		ret = plic_context_init(plic, s_cntx_id, enable, 0x7);
 		if (ret)
 			return ret;
 	}

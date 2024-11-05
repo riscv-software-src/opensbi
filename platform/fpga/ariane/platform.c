@@ -39,6 +39,7 @@ static struct plic_data plic = {
 	.addr = ARIANE_PLIC_ADDR,
 	.size = ARIANE_PLIC_SIZE,
 	.num_src = ARIANE_PLIC_NUM_SOURCES,
+	.flags = PLIC_FLAG_ARIANE_BUG,
 };
 
 static struct aclint_mswi_data mswi = {
@@ -93,27 +94,6 @@ static int ariane_final_init(bool cold_boot)
 	return 0;
 }
 
-static int plic_ariane_warm_irqchip_init(int m_cntx_id, int s_cntx_id)
-{
-	int ret;
-
-	/* By default, enable all IRQs for M-mode of target HART */
-	if (m_cntx_id > -1) {
-		ret = plic_context_init(&plic, m_cntx_id, true, 0x1);
-		if (ret)
-			return ret;
-	}
-
-	/* Enable all IRQs for S-mode of target HART */
-	if (s_cntx_id > -1) {
-		ret = plic_context_init(&plic, s_cntx_id, true, 0x0);
-		if (ret)
-			return ret;
-	}
-
-	return 0;
-}
-
 /*
  * Initialize the ariane interrupt controller for current HART.
  */
@@ -127,7 +107,8 @@ static int ariane_irqchip_init(bool cold_boot)
 		if (ret)
 			return ret;
 	}
-	return plic_ariane_warm_irqchip_init(2 * hartid, 2 * hartid + 1);
+
+	return plic_warm_irqchip_init(&plic, 2 * hartid, 2 * hartid + 1);
 }
 
 /*

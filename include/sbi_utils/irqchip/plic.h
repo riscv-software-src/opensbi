@@ -16,7 +16,11 @@ struct plic_data {
 	unsigned long addr;
 	unsigned long size;
 	unsigned long num_src;
+	unsigned long flags;
 };
+
+/** Work around a bug on Ariane that requires enabling interrupts at boot */
+#define PLIC_FLAG_ARIANE_BUG		BIT(0)
 
 /* So far, priorities on all consumers of these functions fit in 8 bits. */
 void plic_priority_save(const struct plic_data *plic, u8 *priority, u32 num);
@@ -29,9 +33,6 @@ void plic_context_save(const struct plic_data *plic, int context_id,
 
 void plic_context_restore(const struct plic_data *plic, int context_id,
 			  const u32 *enable, u32 threshold, u32 num);
-
-int plic_context_init(const struct plic_data *plic, int context_id,
-		      bool enable, u32 threshold);
 
 int plic_warm_irqchip_init(const struct plic_data *plic,
 			   int m_cntx_id, int s_cntx_id);
