@@ -24,6 +24,8 @@
 #define PLIC_CONTEXT_BASE 0x200000
 #define PLIC_CONTEXT_STRIDE 0x1000
 
+#define THEAD_PLIC_CTRL_REG 0x1ffffc
+
 static u32 plic_get_priority(const struct plic_data *plic, u32 source)
 {
 	volatile void *plic_priority = (char *)plic->addr +
@@ -91,6 +93,13 @@ static void plic_set_ie(const struct plic_data *plic, u32 cntxid,
 		   PLIC_ENABLE_BASE + PLIC_ENABLE_STRIDE * cntxid +
 		   4 * word_index;
 	writel(val, plic_ie);
+}
+
+void plic_delegate(const struct plic_data *plic)
+{
+	/* If this is a T-HEAD PLIC, delegate access to S-mode */
+	if (plic->flags & PLIC_FLAG_THEAD_DELEGATION)
+		writel_relaxed(BIT(0), (char *)plic->addr + THEAD_PLIC_CTRL_REG);
 }
 
 void plic_context_save(const struct plic_data *plic, int context_id,
@@ -177,6 +186,8 @@ int plic_cold_irqchip_init(const struct plic_data *plic)
 	/* Configure default priorities of all IRQs */
 	for (i = 1; i <= plic->num_src; i++)
 		plic_set_priority(plic, i, 0);
+
+	plic_delegate(plic);
 
 	return sbi_domain_root_add_memrange(plic->addr, plic->size, BIT(20),
 					(SBI_DOMAIN_MEMREGION_MMIO |
