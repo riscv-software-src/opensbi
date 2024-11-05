@@ -20,12 +20,6 @@ static int default_irqfn(void)
 
 static int (*ext_irqfn)(void) = default_irqfn;
 
-void sbi_irqchip_set_irqfn(int (*fn)(void))
-{
-	if (fn)
-		ext_irqfn = fn;
-}
-
 int sbi_irqchip_process(void)
 {
 	return ext_irqfn();
@@ -34,6 +28,9 @@ int sbi_irqchip_process(void)
 void sbi_irqchip_add_device(struct sbi_irqchip_device *dev)
 {
 	sbi_list_add_tail(&dev->node, &irqchip_list);
+
+	if (dev->irq_handle)
+		ext_irqfn = dev->irq_handle;
 }
 
 int sbi_irqchip_init(struct sbi_scratch *scratch, bool cold_boot)

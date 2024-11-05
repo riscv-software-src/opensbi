@@ -22,17 +22,10 @@ struct sbi_irqchip_device {
 
 	/** Initialize per-hart state for the current hart */
 	int (*warm_init)(struct sbi_irqchip_device *dev);
-};
 
-/**
- * Set external interrupt handling function
- *
- * This function is called by OpenSBI platform code to set a handler for
- * external interrupts
- *
- * @param fn function pointer for handling external irqs
- */
-void sbi_irqchip_set_irqfn(int (*fn)(void));
+	/** Handle an IRQ from this irqchip */
+	int (*irq_handle)(void);
+};
 
 /**
  * Process external interrupts

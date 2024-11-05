@@ -347,6 +347,7 @@ int imsic_data_check(struct imsic_data *imsic)
 
 static struct sbi_irqchip_device imsic_device = {
 	.warm_init	= imsic_warm_irqchip_init,
+	.irq_handle	= imsic_external_irqfn,
 };
 
 int imsic_cold_irqchip_init(struct imsic_data *imsic)
@@ -375,9 +376,6 @@ int imsic_cold_irqchip_init(struct imsic_data *imsic)
 		if (!imsic_file_offset)
 			return SBI_ENOMEM;
 	}
-
-	/* Setup external interrupt function for IMSIC */
-	sbi_irqchip_set_irqfn(imsic_external_irqfn);
 
 	/* Add IMSIC regions to the root domain */
 	for (i = 0; i < IMSIC_MAX_REGS && imsic->regs[i].size; i++) {
