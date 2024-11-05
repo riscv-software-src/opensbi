@@ -87,20 +87,12 @@ static int platform_final_init(bool cold_boot)
 }
 
 /*
- * Initialize the platform interrupt controller for current HART.
+ * Initialize the platform interrupt controller during cold boot.
  */
-static int platform_irqchip_init(bool cold_boot)
+static int platform_irqchip_init(void)
 {
-	int ret;
-
 	/* Example if the generic PLIC driver is used */
-	if (cold_boot) {
-		ret = plic_cold_irqchip_init(&plic);
-		if (ret)
-			return ret;
-	}
-
-	return 0;
+	return plic_cold_irqchip_init(&plic);
 }
 
 /*

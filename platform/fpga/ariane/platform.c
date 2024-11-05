@@ -98,19 +98,11 @@ static int ariane_final_init(bool cold_boot)
 }
 
 /*
- * Initialize the ariane interrupt controller for current HART.
+ * Initialize the ariane interrupt controller during cold boot.
  */
-static int ariane_irqchip_init(bool cold_boot)
+static int ariane_irqchip_init(void)
 {
-	int ret;
-
-	if (cold_boot) {
-		ret = plic_cold_irqchip_init(&plic);
-		if (ret)
-			return ret;
-	}
-
-	return 0;
+	return plic_cold_irqchip_init(&plic);
 }
 
 /*

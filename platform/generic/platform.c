@@ -419,7 +419,6 @@ const struct sbi_platform_operations platform_ops = {
 	.extensions_init	= generic_extensions_init,
 	.domains_init		= generic_domains_init,
 	.irqchip_init		= fdt_irqchip_init,
-	.irqchip_exit		= fdt_irqchip_exit,
 	.ipi_init		= fdt_ipi_init,
 	.pmu_init		= generic_pmu_init,
 	.pmu_xlate_to_mhpmevent = generic_pmu_xlate_to_mhpmevent,

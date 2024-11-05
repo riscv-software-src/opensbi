@@ -111,10 +111,8 @@ struct sbi_platform_operations {
 	/** Get platform specific mhpmevent value */
 	uint64_t (*pmu_xlate_to_mhpmevent)(uint32_t event_idx, uint64_t data);
 
-	/** Initialize the platform interrupt controller for current HART */
-	int (*irqchip_init)(bool cold_boot);
-	/** Exit the platform interrupt controller for current HART */
-	void (*irqchip_exit)(void);
+	/** Initialize the platform interrupt controller during cold boot */
+	int (*irqchip_init)(void);
 
 	/** Initialize IPI during cold boot */
 	int (*ipi_init)(void);
@@ -543,30 +541,17 @@ static inline uint64_t sbi_platform_pmu_xlate_to_mhpmevent(const struct sbi_plat
 }
 
 /**
- * Initialize the platform interrupt controller for current HART
+ * Initialize the platform interrupt controller during cold boot
  *
  * @param plat pointer to struct sbi_platform
- * @param cold_boot whether cold boot (true) or warm_boot (false)
  *
  * @return 0 on success and negative error code on failure
  */
-static inline int sbi_platform_irqchip_init(const struct sbi_platform *plat,
-					    bool cold_boot)
+static inline int sbi_platform_irqchip_init(const struct sbi_platform *plat)
 {
 	if (plat && sbi_platform_ops(plat)->irqchip_init)
-		return sbi_platform_ops(plat)->irqchip_init(cold_boot);
+		return sbi_platform_ops(plat)->irqchip_init();
 	return 0;
-}
-
-/**
- * Exit the platform interrupt controller for current HART
- *
- * @param plat pointer to struct sbi_platform
- */
-static inline void sbi_platform_irqchip_exit(const struct sbi_platform *plat)
-{
-	if (plat && sbi_platform_ops(plat)->irqchip_exit)
-		sbi_platform_ops(plat)->irqchip_exit();
 }
 
 /**

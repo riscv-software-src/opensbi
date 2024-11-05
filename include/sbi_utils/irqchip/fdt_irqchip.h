@@ -17,19 +17,13 @@
 struct fdt_irqchip {
 	const struct fdt_match *match_table;
 	int (*cold_init)(const void *fdt, int nodeoff, const struct fdt_match *match);
-	int (*warm_init)(void);
-	void (*exit)(void);
 };
 
-void fdt_irqchip_exit(void);
-
-int fdt_irqchip_init(bool cold_boot);
+int fdt_irqchip_init(void);
 
 #else
 
-static inline void fdt_irqchip_exit(void) { }
-
-static inline int fdt_irqchip_init(bool cold_boot) { return 0; }
+static inline int fdt_irqchip_init(void) { return 0; }
 
 #endif
 

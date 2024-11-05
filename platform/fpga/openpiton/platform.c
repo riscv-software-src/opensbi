@@ -131,19 +131,11 @@ static int openpiton_final_init(bool cold_boot)
 }
 
 /*
- * Initialize the openpiton interrupt controller for current HART.
+ * Initialize the openpiton interrupt controller during cold boot.
  */
-static int openpiton_irqchip_init(bool cold_boot)
+static int openpiton_irqchip_init(void)
 {
-	int ret;
-
-	if (cold_boot) {
-		ret = plic_cold_irqchip_init(&plic);
-		if (ret)
-			return ret;
-	}
-
-	return 0;
+	return plic_cold_irqchip_init(&plic);
 }
 
 /*
