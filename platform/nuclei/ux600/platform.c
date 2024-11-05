@@ -200,7 +200,7 @@ static int ux600_irqchip_init(bool cold_boot)
 			return rc;
 	}
 
-	return plic_warm_irqchip_init(&plic);
+	return plic_warm_irqchip_init();
 }
 
 static int ux600_ipi_init(void)

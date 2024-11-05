@@ -17,7 +17,7 @@
 #include <sbi/sbi_scratch.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
 #include <sbi_utils/fdt/fdt_helper.h>
-#include <sbi_utils/irqchip/fdt_irqchip_plic.h>
+#include <sbi_utils/irqchip/plic.h>
 
 #define SUN20I_D1_CCU_BASE		((void *)0x02001000)
 #define SUN20I_D1_RISCV_CFG_BASE	((void *)0x06010000)
@@ -92,7 +92,7 @@ static void sun20i_d1_ppu_restore(void)
 
 static void sun20i_d1_riscv_cfg_save(void)
 {
-	struct plic_data *plic = fdt_plic_get();
+	struct plic_data *plic = plic_get();
 	u32 *plic_sie = plic->pm_data;
 
 	/* Enable MMIO access. Do not assume S-mode leaves the clock enabled. */
@@ -136,7 +136,7 @@ static int sun20i_d1_hart_suspend(u32 suspend_type)
 	if (!(suspend_type & SBI_HSM_SUSP_NON_RET_BIT))
 		return SBI_ENOTSUPP;
 
-	fdt_plic_suspend();
+	plic_suspend();
 	sun20i_d1_ppu_save();
 	sun20i_d1_riscv_cfg_save();
 	sun20i_d1_csr_save();
@@ -156,7 +156,7 @@ static void sun20i_d1_hart_resume(void)
 	sun20i_d1_csr_restore();
 	sun20i_d1_riscv_cfg_restore();
 	sun20i_d1_ppu_restore();
-	fdt_plic_resume();
+	plic_resume();
 }
 
 static const struct sbi_hsm_device sun20i_d1_ppu = {

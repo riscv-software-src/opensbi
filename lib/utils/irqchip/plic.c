@@ -27,6 +27,21 @@
 
 #define THEAD_PLIC_CTRL_REG 0x1ffffc
 
+static unsigned long plic_ptr_offset;
+
+#define plic_get_hart_data_ptr(__scratch)				\
+	sbi_scratch_read_type((__scratch), void *, plic_ptr_offset)
+
+#define plic_set_hart_data_ptr(__scratch, __plic)			\
+	sbi_scratch_write_type((__scratch), void *, plic_ptr_offset, (__plic))
+
+struct plic_data *plic_get(void)
+{
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+
+	return plic_get_hart_data_ptr(scratch);
+}
+
 static u32 plic_get_priority(const struct plic_data *plic, u32 source)
 {
 	volatile void *plic_priority = (char *)plic->addr +
@@ -109,8 +124,10 @@ static int plic_context_init(const struct plic_data *plic, int context_id,
 	return 0;
 }
 
-void plic_suspend(const struct plic_data *plic)
+void plic_suspend(void)
 {
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	const struct plic_data *plic = plic_get_hart_data_ptr(scratch);
 	u32 ie_words = PLIC_IE_WORDS(plic);
 	u32 *data_word = plic->pm_data;
 	u8 *data_byte;
@@ -138,8 +155,10 @@ void plic_suspend(const struct plic_data *plic)
 		*data_byte++ = plic_get_priority(plic, i);
 }
 
-void plic_resume(const struct plic_data *plic)
+void plic_resume(void)
 {
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	const struct plic_data *plic = plic_get_hart_data_ptr(scratch);
 	u32 ie_words = PLIC_IE_WORDS(plic);
 	u32 *data_word = plic->pm_data;
 	u8 *data_byte;
@@ -170,8 +189,10 @@ void plic_resume(const struct plic_data *plic)
 	plic_delegate(plic);
 }
 
-int plic_warm_irqchip_init(const struct plic_data *plic)
+int plic_warm_irqchip_init(void)
 {
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	const struct plic_data *plic = plic_get_hart_data_ptr(scratch);
 	u32 hartindex = current_hartindex();
 	s16 m_cntx_id = plic->context_map[hartindex][PLIC_M_CONTEXT];
 	s16 s_cntx_id = plic->context_map[hartindex][PLIC_S_CONTEXT];
@@ -201,10 +222,16 @@ int plic_warm_irqchip_init(const struct plic_data *plic)
 
 int plic_cold_irqchip_init(struct plic_data *plic)
 {
-	int i;
+	int i, ret;
 
 	if (!plic)
 		return SBI_EINVAL;
+
+	if (!plic_ptr_offset) {
+		plic_ptr_offset = sbi_scratch_alloc_type_offset(void *);
+		if (!plic_ptr_offset)
+			return SBI_ENOMEM;
+	}
 
 	if (plic->flags & PLIC_FLAG_ENABLE_PM) {
 		unsigned long data_size = 0;
@@ -237,7 +264,19 @@ int plic_cold_irqchip_init(struct plic_data *plic)
 
 	plic_delegate(plic);
 
-	return sbi_domain_root_add_memrange(plic->addr, plic->size, BIT(20),
+	ret = sbi_domain_root_add_memrange(plic->addr, plic->size, BIT(20),
 					(SBI_DOMAIN_MEMREGION_MMIO |
 					 SBI_DOMAIN_MEMREGION_SHARED_SURW_MRW));
+	if (ret)
+		return ret;
+
+	for (u32 i = 0; i <= sbi_scratch_last_hartindex(); i++) {
+		if (plic->context_map[i][PLIC_M_CONTEXT] < 0 &&
+		    plic->context_map[i][PLIC_S_CONTEXT] < 0)
+			continue;
+
+		plic_set_hart_data_ptr(sbi_hartindex_to_scratch(i), plic);
+	}
+
+	return 0;
 }

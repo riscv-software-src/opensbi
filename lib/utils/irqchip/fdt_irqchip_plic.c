@@ -18,48 +18,11 @@
 #include <sbi_utils/irqchip/fdt_irqchip.h>
 #include <sbi_utils/irqchip/plic.h>
 
-static unsigned long plic_ptr_offset;
-
-#define plic_get_hart_data_ptr(__scratch)				\
-	sbi_scratch_read_type((__scratch), void *, plic_ptr_offset)
-
-#define plic_set_hart_data_ptr(__scratch, __plic)			\
-	sbi_scratch_write_type((__scratch), void *, plic_ptr_offset, (__plic))
-
-struct plic_data *fdt_plic_get(void)
-{
-	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
-
-	return plic_get_hart_data_ptr(scratch);
-}
-
-void fdt_plic_suspend(void)
-{
-	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
-
-	plic_suspend(plic_get_hart_data_ptr(scratch));
-}
-
-void fdt_plic_resume(void)
-{
-	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
-
-	plic_resume(plic_get_hart_data_ptr(scratch));
-}
-
-static int irqchip_plic_warm_init(void)
-{
-	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
-
-	return plic_warm_irqchip_init(plic_get_hart_data_ptr(scratch));
-}
-
 static int irqchip_plic_update_context_map(const void *fdt, int nodeoff,
 					   struct plic_data *pd)
 {
 	const fdt32_t *val;
 	u32 phandle, hwirq, hartid, hartindex;
-	struct sbi_scratch *scratch;
 	int i, err, count, cpu_offset, cpu_intc_offset;
 
 	val = fdt_getprop(fdt, nodeoff, "interrupts-extended", &count);
@@ -84,11 +47,9 @@ static int irqchip_plic_update_context_map(const void *fdt, int nodeoff,
 			continue;
 
 		hartindex = sbi_hartid_to_hartindex(hartid);
-		scratch = sbi_hartindex_to_scratch(hartindex);
-		if (!scratch)
+		if (hartindex == -1U)
 			continue;
 
-		plic_set_hart_data_ptr(scratch, pd);
 		switch (hwirq) {
 		case IRQ_M_EXT:
 			pd->context_map[hartindex][PLIC_M_CONTEXT] = i / 2;
@@ -109,12 +70,6 @@ static int irqchip_plic_cold_init(const void *fdt, int nodeoff,
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	int rc;
 	struct plic_data *pd;
-
-	if (!plic_ptr_offset) {
-		plic_ptr_offset = sbi_scratch_alloc_type_offset(void *);
-		if (!plic_ptr_offset)
-			return SBI_ENOMEM;
-	}
 
 	pd = sbi_zalloc(PLIC_DATA_SIZE(plat->hart_count));
 	if (!pd)
@@ -153,6 +108,6 @@ static const struct fdt_match irqchip_plic_match[] = {
 struct fdt_irqchip fdt_irqchip_plic = {
 	.match_table = irqchip_plic_match,
 	.cold_init = irqchip_plic_cold_init,
-	.warm_init = irqchip_plic_warm_init,
+	.warm_init = plic_warm_irqchip_init,
 	.exit = NULL,
 };

@@ -36,11 +36,13 @@ struct plic_data {
 
 #define PLIC_IE_WORDS(__p)		((__p)->num_src / 32 + 1)
 
-void plic_suspend(const struct plic_data *plic);
+struct plic_data *plic_get(void);
 
-void plic_resume(const struct plic_data *plic);
+void plic_suspend(void);
 
-int plic_warm_irqchip_init(const struct plic_data *plic);
+void plic_resume(void);
+
+int plic_warm_irqchip_init(void);
 
 int plic_cold_irqchip_init(struct plic_data *plic);
 

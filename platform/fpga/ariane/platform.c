@@ -110,7 +110,7 @@ static int ariane_irqchip_init(bool cold_boot)
 			return ret;
 	}
 
-	return plic_warm_irqchip_init(&plic);
+	return plic_warm_irqchip_init();
 }
 
 /*
