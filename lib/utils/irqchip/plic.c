@@ -102,9 +102,11 @@ void plic_delegate(const struct plic_data *plic)
 		writel_relaxed(BIT(0), (char *)plic->addr + THEAD_PLIC_CTRL_REG);
 }
 
-void plic_context_save(const struct plic_data *plic, int context_id,
+void plic_context_save(const struct plic_data *plic, bool smode,
 		       u32 *enable, u32 *threshold, u32 num)
 {
+	u32 hartindex = current_hartindex();
+	s16 context_id = plic->context_map[hartindex][smode];
 	u32 ie_words = plic->num_src / 32 + 1;
 
 	if (num > ie_words)
@@ -116,9 +118,11 @@ void plic_context_save(const struct plic_data *plic, int context_id,
 	*threshold = plic_get_thresh(plic, context_id);
 }
 
-void plic_context_restore(const struct plic_data *plic, int context_id,
+void plic_context_restore(const struct plic_data *plic, bool smode,
 			  const u32 *enable, u32 threshold, u32 num)
 {
+	u32 hartindex = current_hartindex();
+	s16 context_id = plic->context_map[hartindex][smode];
 	u32 ie_words = plic->num_src / 32 + 1;
 
 	if (num > ie_words)
@@ -149,9 +153,11 @@ static int plic_context_init(const struct plic_data *plic, int context_id,
 	return 0;
 }
 
-int plic_warm_irqchip_init(const struct plic_data *plic,
-			   int m_cntx_id, int s_cntx_id)
+int plic_warm_irqchip_init(const struct plic_data *plic)
 {
+	u32 hartindex = current_hartindex();
+	s16 m_cntx_id = plic->context_map[hartindex][PLIC_M_CONTEXT];
+	s16 s_cntx_id = plic->context_map[hartindex][PLIC_S_CONTEXT];
 	bool enable;
 	int ret;
 

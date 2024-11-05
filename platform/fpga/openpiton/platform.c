@@ -44,6 +44,11 @@ static struct plic_data plic = {
 	.size = OPENPITON_DEFAULT_PLIC_SIZE,
 	.num_src = OPENPITON_DEFAULT_PLIC_NUM_SOURCES,
 	.flags = PLIC_FLAG_ARIANE_BUG,
+	.context_map = {
+		[0] = { 0, 1 },
+		[1] = { 2, 3 },
+		[2] = { 4, 5 },
+	},
 };
 
 static struct aclint_mswi_data mswi = {
@@ -130,7 +135,6 @@ static int openpiton_final_init(bool cold_boot)
  */
 static int openpiton_irqchip_init(bool cold_boot)
 {
-	u32 hartid = current_hartid();
 	int ret;
 
 	if (cold_boot) {
@@ -139,7 +143,7 @@ static int openpiton_irqchip_init(bool cold_boot)
 			return ret;
 	}
 
-	return plic_warm_irqchip_init(&plic, 2 * hartid, 2 * hartid + 1);
+	return plic_warm_irqchip_init(&plic);
 }
 
 /*

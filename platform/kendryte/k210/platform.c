@@ -33,6 +33,10 @@ static struct plic_data plic = {
 	.addr = K210_PLIC_BASE_ADDR,
 	.size = K210_PLIC_BASE_SIZE,
 	.num_src = K210_PLIC_NUM_SOURCES,
+	.context_map = {
+		[0] = { 0, 1 },
+		[1] = { 2, 3 },
+	},
 };
 
 static struct aclint_mswi_data mswi = {
@@ -135,7 +139,6 @@ static int k210_final_init(bool cold_boot)
 static int k210_irqchip_init(bool cold_boot)
 {
 	int rc;
-	u32 hartid = current_hartid();
 
 	if (cold_boot) {
 		rc = plic_cold_irqchip_init(&plic);
@@ -143,7 +146,7 @@ static int k210_irqchip_init(bool cold_boot)
 			return rc;
 	}
 
-	return plic_warm_irqchip_init(&plic, hartid * 2, hartid * 2 + 1);
+	return plic_warm_irqchip_init(&plic);
 }
 
 static int k210_ipi_init(void)

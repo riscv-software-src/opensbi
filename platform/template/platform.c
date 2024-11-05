@@ -37,6 +37,12 @@ static struct plic_data plic = {
 	.addr = PLATFORM_PLIC_ADDR,
 	.size = PLATFORM_PLIC_SIZE,
 	.num_src = PLATFORM_PLIC_NUM_SOURCES,
+	.context_map = {
+		[0] = { 0, 1 },
+		[1] = { 2, 3 },
+		[2] = { 4, 5 },
+		[3] = { 6, 7 },
+	},
 };
 
 static struct aclint_mswi_data mswi = {
@@ -85,7 +91,6 @@ static int platform_final_init(bool cold_boot)
  */
 static int platform_irqchip_init(bool cold_boot)
 {
-	u32 hartid = current_hartid();
 	int ret;
 
 	/* Example if the generic PLIC driver is used */
@@ -95,7 +100,7 @@ static int platform_irqchip_init(bool cold_boot)
 			return ret;
 	}
 
-	return plic_warm_irqchip_init(&plic, 2 * hartid, 2 * hartid + 1);
+	return plic_warm_irqchip_init(&plic);
 }
 
 /*

@@ -12,6 +12,7 @@
 #include <sbi/riscv_io.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_heap.h>
+#include <sbi/sbi_platform.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/irqchip/fdt_irqchip.h>
@@ -24,22 +25,6 @@ static unsigned long plic_ptr_offset;
 
 #define plic_set_hart_data_ptr(__scratch, __plic)			\
 	sbi_scratch_write_type((__scratch), void *, plic_ptr_offset, (__plic))
-
-static unsigned long plic_mcontext_offset;
-
-#define plic_get_hart_mcontext(__scratch)				\
-	(sbi_scratch_read_type((__scratch), long, plic_mcontext_offset) - 1)
-
-#define plic_set_hart_mcontext(__scratch, __mctx)			\
-	sbi_scratch_write_type((__scratch), long, plic_mcontext_offset, (__mctx) + 1)
-
-static unsigned long plic_scontext_offset;
-
-#define plic_get_hart_scontext(__scratch)				\
-	(sbi_scratch_read_type((__scratch), long, plic_scontext_offset) - 1)
-
-#define plic_set_hart_scontext(__scratch, __sctx)			\
-	sbi_scratch_write_type((__scratch), long, plic_scontext_offset, (__sctx) + 1)
 
 void fdt_plic_priority_save(u8 *priority, u32 num)
 {
@@ -59,9 +44,7 @@ void fdt_plic_context_save(bool smode, u32 *enable, u32 *threshold, u32 num)
 {
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
-	plic_context_save(plic_get_hart_data_ptr(scratch),
-			  smode ? plic_get_hart_scontext(scratch) :
-				  plic_get_hart_mcontext(scratch),
+	plic_context_save(plic_get_hart_data_ptr(scratch), smode,
 			  enable, threshold, num);
 }
 
@@ -70,9 +53,7 @@ void fdt_plic_context_restore(bool smode, const u32 *enable, u32 threshold,
 {
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
-	plic_context_restore(plic_get_hart_data_ptr(scratch),
-			     smode ? plic_get_hart_scontext(scratch) :
-				     plic_get_hart_mcontext(scratch),
+	plic_context_restore(plic_get_hart_data_ptr(scratch), smode,
 			     enable, threshold, num);
 }
 
@@ -80,16 +61,14 @@ static int irqchip_plic_warm_init(void)
 {
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
-	return plic_warm_irqchip_init(plic_get_hart_data_ptr(scratch),
-				      plic_get_hart_mcontext(scratch),
-				      plic_get_hart_scontext(scratch));
+	return plic_warm_irqchip_init(plic_get_hart_data_ptr(scratch));
 }
 
-static int irqchip_plic_update_hartid_table(const void *fdt, int nodeoff,
-					    struct plic_data *pd)
+static int irqchip_plic_update_context_map(const void *fdt, int nodeoff,
+					   struct plic_data *pd)
 {
 	const fdt32_t *val;
-	u32 phandle, hwirq, hartid;
+	u32 phandle, hwirq, hartid, hartindex;
 	struct sbi_scratch *scratch;
 	int i, err, count, cpu_offset, cpu_intc_offset;
 
@@ -114,17 +93,18 @@ static int irqchip_plic_update_hartid_table(const void *fdt, int nodeoff,
 		if (err)
 			continue;
 
-		scratch = sbi_hartid_to_scratch(hartid);
+		hartindex = sbi_hartid_to_hartindex(hartid);
+		scratch = sbi_hartindex_to_scratch(hartindex);
 		if (!scratch)
 			continue;
 
 		plic_set_hart_data_ptr(scratch, pd);
 		switch (hwirq) {
 		case IRQ_M_EXT:
-			plic_set_hart_mcontext(scratch, i / 2);
+			pd->context_map[hartindex][PLIC_M_CONTEXT] = i / 2;
 			break;
 		case IRQ_S_EXT:
-			plic_set_hart_scontext(scratch, i / 2);
+			pd->context_map[hartindex][PLIC_S_CONTEXT] = i / 2;
 			break;
 		}
 	}
@@ -135,6 +115,8 @@ static int irqchip_plic_update_hartid_table(const void *fdt, int nodeoff,
 static int irqchip_plic_cold_init(const void *fdt, int nodeoff,
 				  const struct fdt_match *match)
 {
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	int rc;
 	struct plic_data *pd;
 
@@ -144,19 +126,7 @@ static int irqchip_plic_cold_init(const void *fdt, int nodeoff,
 			return SBI_ENOMEM;
 	}
 
-	if (!plic_mcontext_offset) {
-		plic_mcontext_offset = sbi_scratch_alloc_type_offset(long);
-		if (!plic_mcontext_offset)
-			return SBI_ENOMEM;
-	}
-
-	if (!plic_scontext_offset) {
-		plic_scontext_offset = sbi_scratch_alloc_type_offset(long);
-		if (!plic_scontext_offset)
-			return SBI_ENOMEM;
-	}
-
-	pd = sbi_zalloc(sizeof(*pd));
+	pd = sbi_zalloc(PLIC_DATA_SIZE(plat->hart_count));
 	if (!pd)
 		return SBI_ENOMEM;
 
@@ -166,11 +136,11 @@ static int irqchip_plic_cold_init(const void *fdt, int nodeoff,
 
 	pd->flags = (unsigned long)match->data;
 
-	rc = plic_cold_irqchip_init(pd);
+	rc = irqchip_plic_update_context_map(fdt, nodeoff, pd);
 	if (rc)
 		goto fail_free_data;
 
-	rc = irqchip_plic_update_hartid_table(fdt, nodeoff, pd);
+	rc = plic_cold_irqchip_init(pd);
 	if (rc)
 		goto fail_free_data;
 

@@ -66,6 +66,9 @@ static struct plic_data plic = {
 	.addr = UX600_PLIC_ADDR,
 	.size = UX600_PLIC_SIZE,
 	.num_src = UX600_PLIC_NUM_SOURCES,
+	.context_map = {
+		[0] = { 0, -1 },
+	},
 };
 
 static struct aclint_mswi_data mswi = {
@@ -190,7 +193,6 @@ static int ux600_final_init(bool cold_boot)
 static int ux600_irqchip_init(bool cold_boot)
 {
 	int rc;
-	u32 hartid = current_hartid();
 
 	if (cold_boot) {
 		rc = plic_cold_irqchip_init(&plic);
@@ -198,8 +200,7 @@ static int ux600_irqchip_init(bool cold_boot)
 			return rc;
 	}
 
-	return plic_warm_irqchip_init(&plic, (hartid) ? (2 * hartid - 1) : 0,
-				      (hartid) ? (2 * hartid) : -1);
+	return plic_warm_irqchip_init(&plic);
 }
 
 static int ux600_ipi_init(void)
