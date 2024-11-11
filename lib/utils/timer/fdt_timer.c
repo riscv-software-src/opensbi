@@ -13,44 +13,13 @@
 #include <sbi_utils/timer/fdt_timer.h>
 
 /* List of FDT timer drivers generated at compile time */
-extern struct fdt_timer *const fdt_timer_drivers[];
+extern const struct fdt_driver *const fdt_timer_drivers[];
 
 int fdt_timer_init(void)
 {
-	int pos, noff, rc;
-	struct fdt_timer *drv;
-	const struct fdt_match *match;
-	const void *fdt = fdt_get_address();
-
-	for (pos = 0; fdt_timer_drivers[pos]; pos++) {
-		drv = fdt_timer_drivers[pos];
-
-		noff = -1;
-		while ((noff = fdt_find_match(fdt, noff,
-					drv->match_table, &match)) >= 0) {
-			if (!fdt_node_is_enabled(fdt, noff))
-				continue;
-
-			/* drv->cold_init must not be NULL */
-			if (drv->cold_init == NULL)
-				return SBI_EFAIL;
-
-			rc = drv->cold_init(fdt, noff, match);
-			if (rc == SBI_ENODEV)
-				continue;
-			if (rc)
-				return rc;
-
-			/*
-			 * We will have multiple timer devices on multi-die or
-			 * multi-socket systems so we cannot break here.
-			 */
-		}
-	}
-
 	/*
-	 * We can't fail here since systems with Sstc might not provide
-	 * mtimer/clint DT node in the device tree.
+	 * Systems with Sstc might not provide any node in the FDT,
+	 * so do not return a failure if no device is found.
 	 */
-	return 0;
+	return fdt_driver_init_all(fdt_get_address(), fdt_timer_drivers);
 }

@@ -43,7 +43,7 @@ static const struct fdt_match timer_plmt_match[] = {
 	{},
 };
 
-struct fdt_timer fdt_timer_plmt = {
+const struct fdt_driver fdt_timer_plmt = {
 	.match_table = timer_plmt_match,
-	.cold_init   = fdt_plmt_cold_timer_init,
+	.init = fdt_plmt_cold_timer_init,
 };

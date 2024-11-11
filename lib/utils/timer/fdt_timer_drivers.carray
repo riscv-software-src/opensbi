@@ -1,3 +1,3 @@
 HEADER: sbi_utils/timer/fdt_timer.h
-TYPE: struct fdt_timer
+TYPE: const struct fdt_driver
 NAME: fdt_timer_drivers
