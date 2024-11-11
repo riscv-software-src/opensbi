@@ -150,7 +150,7 @@ struct sbi_platform_operations {
 
 /** Platform default heap size */
 #define SBI_PLATFORM_DEFAULT_HEAP_SIZE(__num_hart)	\
-					(0x8000 + 0x800 * (__num_hart))
+					(0x8000 + 0x1000 * (__num_hart))
 
 /** Representation of a platform */
 struct sbi_platform {
