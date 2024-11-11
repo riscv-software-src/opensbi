@@ -49,7 +49,7 @@ static const struct fdt_match fdt_dw_i2c_match[] = {
 	{ },
 };
 
-struct fdt_i2c_adapter fdt_i2c_adapter_dw = {
+const struct fdt_driver fdt_i2c_adapter_dw = {
 	.match_table = fdt_dw_i2c_match,
 	.init = fdt_dw_i2c_init,
 };

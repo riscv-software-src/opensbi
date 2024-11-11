@@ -265,7 +265,7 @@ static const struct fdt_match sifive_i2c_match[] = {
 	{ },
 };
 
-struct fdt_i2c_adapter fdt_i2c_adapter_sifive = {
+const struct fdt_driver fdt_i2c_adapter_sifive = {
 	.match_table = sifive_i2c_match,
 	.init = sifive_i2c_init,
 };
