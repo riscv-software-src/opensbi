@@ -11,13 +11,9 @@
 #define __FDT_IPI_H__
 
 #include <sbi/sbi_types.h>
+#include <sbi_utils/fdt/fdt_driver.h>
 
 #ifdef CONFIG_FDT_IPI
-
-struct fdt_ipi {
-	const struct fdt_match *match_table;
-	int (*cold_init)(const void *fdt, int nodeoff, const struct fdt_match *match);
-};
 
 int fdt_ipi_init(void);
 

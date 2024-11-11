@@ -39,7 +39,7 @@ static const struct fdt_match ipi_plicsw_match[] = {
 	{},
 };
 
-struct fdt_ipi fdt_ipi_plicsw = {
+const struct fdt_driver fdt_ipi_plicsw = {
 	.match_table = ipi_plicsw_match,
-	.cold_init   = fdt_plicsw_cold_ipi_init,
+	.init = fdt_plicsw_cold_ipi_init,
 };
