@@ -29,7 +29,7 @@ static const struct fdt_match serial_xlnx_uartlite_match[] = {
 	{ },
 };
 
-struct fdt_serial fdt_serial_xlnx_uartlite = {
+const struct fdt_driver fdt_serial_xlnx_uartlite = {
 	.match_table = serial_xlnx_uartlite_match,
 	.init = serial_xlnx_uartlite_init,
 };

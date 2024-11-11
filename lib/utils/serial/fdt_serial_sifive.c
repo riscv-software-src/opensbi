@@ -30,7 +30,7 @@ static const struct fdt_match serial_sifive_match[] = {
 	{ },
 };
 
-struct fdt_serial fdt_serial_sifive = {
+const struct fdt_driver fdt_serial_sifive = {
 	.match_table = serial_sifive_match,
 	.init = serial_sifive_init
 };

@@ -33,7 +33,7 @@ static const struct fdt_match serial_litex_match[] = {
 	{ },
 };
 
-struct fdt_serial fdt_serial_litex = {
+const struct fdt_driver fdt_serial_litex = {
 	.match_table = serial_litex_match,
 	.init = serial_litex_init
 };

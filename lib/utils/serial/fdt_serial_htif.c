@@ -41,7 +41,7 @@ static int serial_htif_init(const void *fdt, int nodeoff,
 	return htif_serial_init(custom, fromhost_addr, tohost_addr);
 }
 
-struct fdt_serial fdt_serial_htif = {
+const struct fdt_driver fdt_serial_htif = {
 	.match_table = serial_htif_match,
 	.init = serial_htif_init
 };

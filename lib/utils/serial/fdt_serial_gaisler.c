@@ -29,7 +29,7 @@ static const struct fdt_match serial_gaisler_match[] = {
 	{},
 };
 
-struct fdt_serial fdt_serial_gaisler = {
+const struct fdt_driver fdt_serial_gaisler = {
 	.match_table = serial_gaisler_match,
 	.init = serial_gaisler_init
 };

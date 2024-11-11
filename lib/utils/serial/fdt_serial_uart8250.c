@@ -33,7 +33,7 @@ static const struct fdt_match serial_uart8250_match[] = {
 	{ },
 };
 
-struct fdt_serial fdt_serial_uart8250 = {
+const struct fdt_driver fdt_serial_uart8250 = {
 	.match_table = serial_uart8250_match,
 	.init = serial_uart8250_init,
 };

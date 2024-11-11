@@ -25,7 +25,7 @@ static const struct fdt_match serial_renesas_scif_match[] = {
 	{ /* sentinel */ }
 };
 
-struct fdt_serial fdt_serial_renesas_scif = {
+const struct fdt_driver fdt_serial_renesas_scif = {
 	.match_table = serial_renesas_scif_match,
 	.init = serial_renesas_scif_init
 };

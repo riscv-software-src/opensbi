@@ -30,7 +30,7 @@ static const struct fdt_match serial_cadence_match[] = {
 	{ },
 };
 
-struct fdt_serial fdt_serial_cadence = {
+const struct fdt_driver fdt_serial_cadence = {
 	.match_table = serial_cadence_match,
 	.init = serial_cadence_init
 };
