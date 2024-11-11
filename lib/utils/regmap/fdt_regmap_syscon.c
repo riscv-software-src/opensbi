@@ -263,7 +263,7 @@ static const struct fdt_match regmap_syscon_match[] = {
 	{ },
 };
 
-struct fdt_regmap fdt_regmap_syscon = {
+const struct fdt_driver fdt_regmap_syscon = {
 	.match_table = regmap_syscon_match,
 	.init = regmap_syscon_init,
 };

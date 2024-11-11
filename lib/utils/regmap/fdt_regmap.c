@@ -13,30 +13,7 @@
 #include <sbi_utils/regmap/fdt_regmap.h>
 
 /* List of FDT regmap drivers generated at compile time */
-extern struct fdt_regmap *const fdt_regmap_drivers[];
-
-static int fdt_regmap_init(const void *fdt, int nodeoff)
-{
-	int pos, rc;
-	struct fdt_regmap *drv;
-	const struct fdt_match *match;
-
-	/* Try all I2C drivers one-by-one */
-	for (pos = 0; fdt_regmap_drivers[pos]; pos++) {
-		drv = fdt_regmap_drivers[pos];
-		match = fdt_match_node(fdt, nodeoff, drv->match_table);
-		if (match && drv->init) {
-			rc = drv->init(fdt, nodeoff, match);
-			if (rc == SBI_ENODEV)
-				continue;
-			if (rc)
-				return rc;
-			return 0;
-		}
-	}
-
-	return SBI_ENOSYS;
-}
+extern const struct fdt_driver *const fdt_regmap_drivers[];
 
 static int fdt_regmap_find(const void *fdt, int nodeoff,
 			   struct regmap **out_rmap)
@@ -46,7 +23,8 @@ static int fdt_regmap_find(const void *fdt, int nodeoff,
 
 	if (!rmap) {
 		/* Regmap not found so initialize matching driver */
-		rc = fdt_regmap_init(fdt, nodeoff);
+		rc = fdt_driver_init_by_offset(fdt, nodeoff,
+					       fdt_regmap_drivers);
 		if (rc)
 			return rc;
 
