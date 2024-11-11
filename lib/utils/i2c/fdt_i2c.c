@@ -17,8 +17,7 @@
 #include <sbi_utils/i2c/fdt_i2c.h>
 
 /* List of FDT i2c adapter drivers generated at compile time */
-extern struct fdt_i2c_adapter *fdt_i2c_adapter_drivers[];
-extern unsigned long fdt_i2c_adapter_drivers_size;
+extern struct fdt_i2c_adapter *const fdt_i2c_adapter_drivers[];
 
 static int fdt_i2c_adapter_init(const void *fdt, int nodeoff)
 {
@@ -27,7 +26,7 @@ static int fdt_i2c_adapter_init(const void *fdt, int nodeoff)
 	const struct fdt_match *match;
 
 	/* Try all I2C drivers one-by-one */
-	for (pos = 0; pos < fdt_i2c_adapter_drivers_size; pos++) {
+	for (pos = 0; fdt_i2c_adapter_drivers[pos]; pos++) {
 		drv = fdt_i2c_adapter_drivers[pos];
 		match = fdt_match_node(fdt, nodeoff, drv->match_table);
 		if (match && drv->init) {

@@ -11,8 +11,7 @@
 #define ANSI_COLOR_RED "\x1b[31m"
 #define ANSI_COLOR_RESET "\x1b[0m"
 
-extern struct sbiunit_test_suite *sbi_unit_tests[];
-extern unsigned long sbi_unit_tests_size;
+extern struct sbiunit_test_suite *const sbi_unit_tests[];
 
 static void run_test_suite(struct sbiunit_test_suite *suite)
 {
@@ -48,6 +47,6 @@ void run_all_tests(void)
 
 	sbi_printf("\n# Running SBIUNIT tests #\n");
 
-	for (i = 0; i < sbi_unit_tests_size; i++)
+	for (i = 0; sbi_unit_tests[i]; i++)
 		run_test_suite(sbi_unit_tests[i]);
 }

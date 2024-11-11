@@ -69,10 +69,9 @@ for VAR in ${VAR_LIST}; do
 done
 printf "\n"
 
-printf "%s *%s[] = {\n" "${TYPE_NAME}" "${ARRAY_NAME}"
+printf "%s *const %s[] = {\n" "${TYPE_NAME}" "${ARRAY_NAME}"
 for VAR in ${VAR_LIST}; do
 	printf "\t&%s,\n" "${VAR}"
 done
-printf "};\n\n"
-
-printf "unsigned long %s_size = sizeof(%s) / sizeof(%s *);\n" "${ARRAY_NAME}" "${ARRAY_NAME}" "${TYPE_NAME}"
+	printf "\tNULL\n"
+printf "};\n"

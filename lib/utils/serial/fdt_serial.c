@@ -14,8 +14,7 @@
 #include <sbi_utils/serial/fdt_serial.h>
 
 /* List of FDT serial drivers generated at compile time */
-extern struct fdt_serial *fdt_serial_drivers[];
-extern unsigned long fdt_serial_drivers_size;
+extern struct fdt_serial *const fdt_serial_drivers[];
 
 int fdt_serial_init(const void *fdt)
 {
@@ -46,7 +45,7 @@ int fdt_serial_init(const void *fdt)
 	}
 
 	/* First check DT node pointed by stdout-path */
-	for (pos = 0; pos < fdt_serial_drivers_size && -1 < noff; pos++) {
+	for (pos = 0; fdt_serial_drivers[pos] && -1 < noff; pos++) {
 		drv = fdt_serial_drivers[pos];
 
 		match = fdt_match_node(fdt, noff, drv->match_table);
@@ -64,7 +63,7 @@ int fdt_serial_init(const void *fdt)
 	}
 
 	/* Lastly check all DT nodes */
-	for (pos = 0; pos < fdt_serial_drivers_size; pos++) {
+	for (pos = 0; fdt_serial_drivers[pos]; pos++) {
 		drv = fdt_serial_drivers[pos];
 
 		noff = -1;

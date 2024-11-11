@@ -13,8 +13,7 @@
 #include <sbi_utils/gpio/fdt_gpio.h>
 
 /* List of FDT gpio drivers generated at compile time */
-extern struct fdt_gpio *fdt_gpio_drivers[];
-extern unsigned long fdt_gpio_drivers_size;
+extern struct fdt_gpio *const fdt_gpio_drivers[];
 
 static int fdt_gpio_init(const void *fdt, int nodeoff)
 {
@@ -27,7 +26,7 @@ static int fdt_gpio_init(const void *fdt, int nodeoff)
 		return SBI_EINVAL;
 
 	/* Try all GPIO drivers one-by-one */
-	for (pos = 0; pos < fdt_gpio_drivers_size; pos++) {
+	for (pos = 0; fdt_gpio_drivers[pos]; pos++) {
 		drv = fdt_gpio_drivers[pos];
 
 		match = fdt_match_node(fdt, nodeoff, drv->match_table);

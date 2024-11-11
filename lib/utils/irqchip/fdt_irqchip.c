@@ -13,8 +13,7 @@
 #include <sbi_utils/irqchip/fdt_irqchip.h>
 
 /* List of FDT irqchip drivers generated at compile time */
-extern struct fdt_irqchip *fdt_irqchip_drivers[];
-extern unsigned long fdt_irqchip_drivers_size;
+extern struct fdt_irqchip *const fdt_irqchip_drivers[];
 
 int fdt_irqchip_init(void)
 {
@@ -23,7 +22,7 @@ int fdt_irqchip_init(void)
 	const struct fdt_match *match;
 	const void *fdt = fdt_get_address();
 
-	for (pos = 0; pos < fdt_irqchip_drivers_size; pos++) {
+	for (pos = 0; fdt_irqchip_drivers[pos]; pos++) {
 		drv = fdt_irqchip_drivers[pos];
 
 		noff = -1;

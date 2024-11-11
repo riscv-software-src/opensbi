@@ -30,8 +30,7 @@
 #include <sbi_utils/serial/semihosting.h>
 
 /* List of platform override modules generated at compile time */
-extern const struct platform_override *platform_override_modules[];
-extern unsigned long platform_override_modules_size;
+extern const struct platform_override *const platform_override_modules[];
 
 static const struct platform_override *generic_plat = NULL;
 static const struct fdt_match *generic_plat_match = NULL;
@@ -42,7 +41,7 @@ static void fw_platform_lookup_special(const void *fdt, int root_offset)
 	const struct fdt_match *match;
 	int pos;
 
-	for (pos = 0; pos < platform_override_modules_size; pos++) {
+	for (pos = 0; platform_override_modules[pos]; pos++) {
 		plat = platform_override_modules[pos];
 		if (!plat->match_table)
 			continue;

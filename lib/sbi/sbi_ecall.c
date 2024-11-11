@@ -13,8 +13,7 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_trap.h>
 
-extern struct sbi_ecall_extension *sbi_ecall_exts[];
-extern unsigned long sbi_ecall_exts_size;
+extern struct sbi_ecall_extension *const sbi_ecall_exts[];
 
 u16 sbi_ecall_version_major(void)
 {
@@ -148,7 +147,7 @@ int sbi_ecall_init(void)
 	struct sbi_ecall_extension *ext;
 	unsigned long i;
 
-	for (i = 0; i < sbi_ecall_exts_size; i++) {
+	for (i = 0; sbi_ecall_exts[i]; i++) {
 		ext = sbi_ecall_exts[i];
 		ret = SBI_ENODEV;
 

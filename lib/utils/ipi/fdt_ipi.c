@@ -13,8 +13,7 @@
 #include <sbi_utils/ipi/fdt_ipi.h>
 
 /* List of FDT ipi drivers generated at compile time */
-extern struct fdt_ipi *fdt_ipi_drivers[];
-extern unsigned long fdt_ipi_drivers_size;
+extern struct fdt_ipi *const fdt_ipi_drivers[];
 
 int fdt_ipi_init(void)
 {
@@ -23,7 +22,7 @@ int fdt_ipi_init(void)
 	const struct fdt_match *match;
 	const void *fdt = fdt_get_address();
 
-	for (pos = 0; pos < fdt_ipi_drivers_size; pos++) {
+	for (pos = 0; fdt_ipi_drivers[pos]; pos++) {
 		drv = fdt_ipi_drivers[pos];
 
 		noff = -1;

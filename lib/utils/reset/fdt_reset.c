@@ -14,8 +14,7 @@
 #include <sbi_utils/reset/fdt_reset.h>
 
 /* List of FDT reset drivers generated at compile time */
-extern struct fdt_reset *fdt_reset_drivers[];
-extern unsigned long fdt_reset_drivers_size;
+extern struct fdt_reset *const fdt_reset_drivers[];
 
 int fdt_reset_driver_init(const void *fdt, struct fdt_reset *drv)
 {
@@ -46,6 +45,6 @@ void fdt_reset_init(const void *fdt)
 {
 	int pos;
 
-	for (pos = 0; pos < fdt_reset_drivers_size; pos++)
+	for (pos = 0; fdt_reset_drivers[pos]; pos++)
 		fdt_reset_driver_init(fdt, fdt_reset_drivers[pos]);
 }
