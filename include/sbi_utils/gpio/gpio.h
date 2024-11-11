@@ -40,7 +40,7 @@ struct gpio_pin {
 /** Representation of a GPIO chip */
 struct gpio_chip {
 	/** Pointer to GPIO driver owning this GPIO chip */
-	void *driver;
+	const void *driver;
 	/** Uniquie ID of the GPIO chip assigned by the driver */
 	unsigned int id;
 	/** Number of GPIOs supported by the GPIO chip */

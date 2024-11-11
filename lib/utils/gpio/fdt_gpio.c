@@ -13,34 +13,15 @@
 #include <sbi_utils/gpio/fdt_gpio.h>
 
 /* List of FDT gpio drivers generated at compile time */
-extern struct fdt_gpio *const fdt_gpio_drivers[];
+extern const struct fdt_driver *const fdt_gpio_drivers[];
 
 static int fdt_gpio_init(const void *fdt, int nodeoff)
 {
-	int pos, rc;
-	struct fdt_gpio *drv;
-	const struct fdt_match *match;
-
 	/* Check "gpio-controller" property */
-	if (!fdt_getprop(fdt, nodeoff, "gpio-controller", &rc))
+	if (!fdt_getprop(fdt, nodeoff, "gpio-controller", NULL))
 		return SBI_EINVAL;
 
-	/* Try all GPIO drivers one-by-one */
-	for (pos = 0; fdt_gpio_drivers[pos]; pos++) {
-		drv = fdt_gpio_drivers[pos];
-
-		match = fdt_match_node(fdt, nodeoff, drv->match_table);
-		if (match && drv->init) {
-			rc = drv->init(fdt, nodeoff, match);
-			if (rc == SBI_ENODEV)
-				continue;
-			if (rc)
-				return rc;
-			return 0;
-		}
-	}
-
-	return SBI_ENOSYS;
+	return fdt_driver_init_by_offset(fdt, nodeoff, fdt_gpio_drivers);
 }
 
 static int fdt_gpio_chip_find(const void *fdt, int nodeoff,
@@ -71,7 +52,7 @@ int fdt_gpio_pin_get(const void *fdt, int nodeoff, int index,
 		     struct gpio_pin *out_pin)
 {
 	int rc;
-	struct fdt_gpio *drv;
+	const struct fdt_gpio *drv;
 	struct gpio_chip *chip = NULL;
 	struct fdt_phandle_args pargs;
 

@@ -30,7 +30,7 @@ struct dw_gpio_chip {
 	struct gpio_chip chip;
 };
 
-extern struct fdt_gpio fdt_gpio_designware;
+const struct fdt_gpio fdt_gpio_designware;
 
 #define pin_to_chip(__p) container_of((__p)->chip, struct dw_gpio_chip, chip);
 
@@ -132,8 +132,10 @@ static const struct fdt_match dw_gpio_match[] = {
 	{ },
 };
 
-struct fdt_gpio fdt_gpio_designware = {
-	.match_table = dw_gpio_match,
+const struct fdt_gpio fdt_gpio_designware = {
+	.driver = {
+		.match_table = dw_gpio_match,
+		.init = dw_gpio_init_bank,
+	},
 	.xlate = fdt_gpio_simple_xlate,
-	.init = dw_gpio_init_bank,
 };

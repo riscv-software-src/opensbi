@@ -1,3 +1,5 @@
 HEADER: sbi_utils/gpio/fdt_gpio.h
-TYPE: struct fdt_gpio
+TYPE: const struct fdt_gpio
 NAME: fdt_gpio_drivers
+MEMBER-NAME: driver
+MEMBER-TYPE: const struct fdt_driver

@@ -10,18 +10,17 @@
 #ifndef __FDT_GPIO_H__
 #define __FDT_GPIO_H__
 
+#include <sbi_utils/fdt/fdt_driver.h>
 #include <sbi_utils/gpio/gpio.h>
 
 struct fdt_phandle_args;
 
 /** FDT based GPIO driver */
 struct fdt_gpio {
-	const struct fdt_match *match_table;
+	struct fdt_driver driver;
 	int (*xlate)(struct gpio_chip *chip,
 		     const struct fdt_phandle_args *pargs,
 		     struct gpio_pin *out_pin);
-	int (*init)(const void *fdt, int nodeoff,
-		    const struct fdt_match *match);
 };
 
 /** Get a GPIO pin using "gpios" DT property of client DT node */
