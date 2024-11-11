@@ -69,6 +69,28 @@ static u32 fw_platform_calculate_heap_size(u32 hart_count)
 	return BIT_ALIGN(heap_size, HEAP_BASE_ALIGN);
 }
 
+static u32 fw_platform_get_heap_size(const void *fdt, u32 hart_count)
+{
+	int chosen_offset, config_offset, len;
+	const fdt32_t *val;
+
+	/* Get the heap size from device tree */
+	chosen_offset = fdt_path_offset(fdt, "/chosen");
+	if (chosen_offset < 0)
+		goto default_config;
+
+	config_offset = fdt_node_offset_by_compatible(fdt, chosen_offset, "opensbi,config");
+	if (config_offset < 0)
+		goto default_config;
+
+	val = (fdt32_t *)fdt_getprop(fdt, config_offset, "heap-size", &len);
+	if (len > 0 && val)
+		return BIT_ALIGN(fdt32_to_cpu(*val), HEAP_BASE_ALIGN);
+
+default_config:
+	return fw_platform_calculate_heap_size(hart_count);
+}
+
 extern struct sbi_platform platform;
 static bool platform_has_mlevel_imsic = false;
 static u32 generic_hart_index2id[SBI_HARTMASK_MAX_BITS] = { 0 };
@@ -76,9 +98,9 @@ static u32 generic_hart_index2id[SBI_HARTMASK_MAX_BITS] = { 0 };
 static DECLARE_BITMAP(generic_coldboot_harts, SBI_HARTMASK_MAX_BITS);
 
 /*
- * The fw_platform_coldboot_harts_init() function is called by fw_platform_init() 
+ * The fw_platform_coldboot_harts_init() function is called by fw_platform_init()
  * function to initialize the cold boot harts allowed by the generic platform
- * according to the DT property "cold-boot-harts" in "/chosen/opensbi-config" 
+ * according to the DT property "cold-boot-harts" in "/chosen/opensbi-config"
  * DT node. If there is no "cold-boot-harts" in DT, all harts will be allowed.
  */
 static void fw_platform_coldboot_harts_init(const void *fdt)
@@ -185,7 +207,7 @@ unsigned long fw_platform_init(unsigned long arg0, unsigned long arg1,
 	}
 
 	platform.hart_count = hart_count;
-	platform.heap_size = fw_platform_calculate_heap_size(hart_count);
+	platform.heap_size = fw_platform_get_heap_size(fdt, hart_count);
 	platform_has_mlevel_imsic = fdt_check_imsic_mlevel(fdt);
 
 	fw_platform_coldboot_harts_init(fdt);

@@ -23,6 +23,9 @@ The DT properties of a domain configuration DT node are as follows:
   set of harts is permitted to perform a cold boot. Otherwise, all
   harts are allowed to cold boot.
 
+* **heap-size** (Optional) - When present, the specified value is used
+  as the size of the heap in bytes.
+
 * **system-suspend-test** (Optional) - When present, enable a system
   suspend test implementation which simply waits five seconds and issues a WFI.
 
@@ -36,6 +39,7 @@ The OpenSBI Configuration Node will be deleted at the end of cold boot
         opensbi-config {
             compatible = "opensbi,config";
             cold-boot-harts = <&cpu1 &cpu2 &cpu3 &cpu4>;
+            heap-size = <0x400000>;
             system-suspend-test;
         };
     };
