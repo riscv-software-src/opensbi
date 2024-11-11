@@ -227,9 +227,14 @@ static const struct fdt_match pm_reset_match[] = {
 	{ },
 };
 
-static struct fdt_reset fdt_reset_pmic = {
+static const struct fdt_driver fdt_reset_pmic = {
 	.match_table = pm_reset_match,
 	.init = pm_reset_init,
+};
+
+static const struct fdt_driver *const starfive_jh7110_reset_drivers[] = {
+	&fdt_reset_pmic,
+	NULL
 };
 
 static int starfive_jh7110_inst_init(const void *fdt)
@@ -281,7 +286,7 @@ static int starfive_jh7110_final_init(bool cold_boot, void *fdt,
 				      const struct fdt_match *match)
 {
 	if (cold_boot) {
-		fdt_reset_driver_init(fdt, &fdt_reset_pmic);
+		fdt_driver_init_one(fdt, starfive_jh7110_reset_drivers);
 	}
 
 	return 0;

@@ -11,18 +11,9 @@
 #define __FDT_RESET_H__
 
 #include <sbi/sbi_types.h>
-
-struct fdt_reset {
-	const struct fdt_match *match_table;
-	int (*init)(const void *fdt, int nodeoff, const struct fdt_match *match);
-};
+#include <sbi_utils/fdt/fdt_driver.h>
 
 #ifdef CONFIG_FDT_RESET
-
-/**
- * fdt_reset_driver_init() - initialize reset driver based on the device-tree
- */
-int fdt_reset_driver_init(const void *fdt, struct fdt_reset *drv);
 
 /**
  * fdt_reset_init() - initialize reset drivers based on the device-tree
@@ -33,10 +24,6 @@ void fdt_reset_init(const void *fdt);
 
 #else
 
-static inline int fdt_reset_driver_init(const void *fdt, struct fdt_reset *drv)
-{
-	return 0;
-}
 static inline void fdt_reset_init(const void *fdt) { }
 
 #endif

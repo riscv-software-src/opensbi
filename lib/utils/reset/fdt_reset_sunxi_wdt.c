@@ -71,7 +71,7 @@ static const struct fdt_match sunxi_wdt_reset_match[] = {
 	{ },
 };
 
-struct fdt_reset fdt_reset_sunxi_wdt = {
+const struct fdt_driver fdt_reset_sunxi_wdt = {
 	.match_table = sunxi_wdt_reset_match,
 	.init = sunxi_wdt_reset_init,
 };

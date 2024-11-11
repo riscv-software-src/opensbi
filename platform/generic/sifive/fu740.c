@@ -209,9 +209,14 @@ static const struct fdt_match da9063_reset_match[] = {
 	{ },
 };
 
-struct fdt_reset fdt_reset_da9063 = {
+const struct fdt_driver fdt_reset_da9063 = {
 	.match_table = da9063_reset_match,
 	.init = da9063_reset_init,
+};
+
+static const struct fdt_driver *const sifive_fu740_reset_drivers[] = {
+	&fdt_reset_da9063,
+	NULL
 };
 
 static u64 sifive_fu740_tlbr_flush_limit(const struct fdt_match *match)
@@ -232,7 +237,7 @@ static int sifive_fu740_final_init(bool cold_boot, void *fdt,
 	int rc;
 
 	if (cold_boot) {
-		rc = fdt_reset_driver_init(fdt, &fdt_reset_da9063);
+		rc = fdt_driver_init_one(fdt, sifive_fu740_reset_drivers);
 		if (rc)
 			sbi_printf("%s: failed to find da9063 for reset\n",
 				   __func__);

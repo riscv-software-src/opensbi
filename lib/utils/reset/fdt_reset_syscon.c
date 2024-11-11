@@ -151,7 +151,7 @@ static const struct fdt_match syscon_poweroff_match[] = {
 	{ },
 };
 
-struct fdt_reset fdt_syscon_poweroff = {
+const struct fdt_driver fdt_syscon_poweroff = {
 	.match_table = syscon_poweroff_match,
 	.init = syscon_reset_init,
 };
@@ -161,7 +161,7 @@ static const struct fdt_match syscon_reboot_match[] = {
 	{ },
 };
 
-struct fdt_reset fdt_syscon_reboot = {
+const struct fdt_driver fdt_syscon_reboot = {
 	.match_table = syscon_reboot_match,
 	.init = syscon_reset_init,
 };

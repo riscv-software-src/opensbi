@@ -153,7 +153,7 @@ static const struct fdt_match gpio_poweroff_match[] = {
 	{ },
 };
 
-struct fdt_reset fdt_poweroff_gpio = {
+const struct fdt_driver fdt_poweroff_gpio = {
 	.match_table = gpio_poweroff_match,
 	.init = gpio_reset_init,
 };
@@ -163,7 +163,7 @@ static const struct fdt_match gpio_reset_match[] = {
 	{ },
 };
 
-struct fdt_reset fdt_reset_gpio = {
+const struct fdt_driver fdt_reset_gpio = {
 	.match_table = gpio_reset_match,
 	.init = gpio_reset_init,
 };

@@ -111,7 +111,7 @@ static const struct fdt_match atcwdt200_reset_match[] = {
 	{},
 };
 
-struct fdt_reset fdt_reset_atcwdt200 = {
+const struct fdt_driver fdt_reset_atcwdt200 = {
 	.match_table = atcwdt200_reset_match,
 	.init	     = atcwdt200_reset_init,
 };

@@ -32,7 +32,7 @@ static const struct fdt_match htif_reset_match[] = {
 	{ },
 };
 
-struct fdt_reset fdt_reset_htif = {
+const struct fdt_driver fdt_reset_htif = {
 	.match_table = htif_reset_match,
 	.init = htif_reset_init
 };
