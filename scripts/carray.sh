@@ -43,19 +43,19 @@ if [ ! -f "${CONFIG_FILE}" ]; then
 	usage
 fi
 
-TYPE_HEADER=`cat ${CONFIG_FILE} | awk '{ if ($1 == "HEADER:") { printf $2; exit 0; } }'`
+TYPE_HEADER=$(awk '{ if ($1 == "HEADER:") { printf $2; exit 0; } }' "${CONFIG_FILE}")
 if [ -z "${TYPE_HEADER}" ]; then
 	echo "Must specify HEADER: in input config file"
 	usage
 fi
 
-TYPE_NAME=`cat ${CONFIG_FILE} | awk '{ if ($1 == "TYPE:") { printf $2; for (i=3; i<=NF; i++) printf " %s", $i; exit 0; } }'`
+TYPE_NAME=$(awk '{ if ($1 == "TYPE:") { printf $2; for (i=3; i<=NF; i++) printf " %s", $i; exit 0; } }' "${CONFIG_FILE}")
 if [ -z "${TYPE_NAME}" ]; then
 	echo "Must specify TYPE: in input config file"
 	usage
 fi
 
-ARRAY_NAME=`cat ${CONFIG_FILE} | awk '{ if ($1 == "NAME:") { printf $2; exit 0; } }'`
+ARRAY_NAME=$(awk '{ if ($1 == "NAME:") { printf $2; exit 0; } }' "${CONFIG_FILE}")
 if [ -z "${ARRAY_NAME}" ]; then
 	echo "Must specify NAME: in input config file"
 	usage
