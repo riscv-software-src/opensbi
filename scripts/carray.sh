@@ -61,6 +61,13 @@ if [ -z "${ARRAY_NAME}" ]; then
 	usage
 fi
 
+MEMBER_NAME=$(awk '{ if ($1 == "MEMBER-NAME:") { printf $2; exit 0; } }' "${CONFIG_FILE}")
+MEMBER_TYPE=$(awk '{ if ($1 == "MEMBER-TYPE:") { printf $2; for (i=3; i<=NF; i++) printf " %s", $i; exit 0; } }' "${CONFIG_FILE}")
+if [ -n "${MEMBER_NAME}" ] && [ -z "${MEMBER_TYPE}" ]; then
+	echo "Must specify MEMBER-TYPE: when using MEMBER-NAME:"
+	usage
+fi
+
 printf "// Generated with $(basename $0) from $(basename ${CONFIG_FILE})\n"
 printf "#include <%s>\n\n" "${TYPE_HEADER}"
 
@@ -69,9 +76,9 @@ for VAR in ${VAR_LIST}; do
 done
 printf "\n"
 
-printf "%s *const %s[] = {\n" "${TYPE_NAME}" "${ARRAY_NAME}"
+printf "%s *const %s[] = {\n" "${MEMBER_TYPE:-${TYPE_NAME}}" "${ARRAY_NAME}"
 for VAR in ${VAR_LIST}; do
-	printf "\t&%s,\n" "${VAR}"
+	printf "\t&%s,\n" "${VAR}${MEMBER_NAME:+.}${MEMBER_NAME}"
 done
 	printf "\tNULL\n"
 printf "};\n"
