@@ -311,6 +311,18 @@ static int fwft_get_feature(enum sbi_fwft_feature_t feature,
 	return SBI_SUCCESS;
 }
 
+static void fwft_clear_config_lock(enum sbi_fwft_feature_t feature)
+{
+	int ret;
+	struct fwft_config *conf;
+
+	ret = fwft_get_feature(feature, &conf);
+	if (ret)
+		return;
+
+	conf->flags &= ~SBI_FWFT_SET_FLAG_LOCK;
+}
+
 int sbi_fwft_set(enum sbi_fwft_feature_t feature, unsigned long value,
 		 unsigned long flags)
 {
@@ -413,6 +425,9 @@ int sbi_fwft_init(struct sbi_scratch *scratch, bool cold_boot)
 
 		fwft_set_hart_state_ptr(scratch, fhs);
 	}
+
+	for (i = 0; i < array_size(features); i++)
+		fwft_clear_config_lock(features[i].id);
 
 	return 0;
 }
