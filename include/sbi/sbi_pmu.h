@@ -142,6 +142,8 @@ int sbi_pmu_ctr_start(unsigned long cidx_base, unsigned long cidx_mask,
 		      unsigned long flags, uint64_t ival);
 
 int sbi_pmu_ctr_get_info(uint32_t cidx, unsigned long *ctr_info);
+int sbi_pmu_event_get_info(unsigned long shmem_lo, unsigned long shmem_high,
+						   unsigned long num_events, unsigned long flags);
 
 unsigned long sbi_pmu_num_ctr(void);
 

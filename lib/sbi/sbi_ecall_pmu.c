@@ -73,6 +73,9 @@ static int sbi_ecall_pmu_handler(unsigned long extid, unsigned long funcid,
 	case SBI_EXT_PMU_COUNTER_STOP:
 		ret = sbi_pmu_ctr_stop(regs->a0, regs->a1, regs->a2);
 		break;
+	case SBI_EXT_PMU_EVENT_GET_INFO:
+		ret = sbi_pmu_event_get_info(regs->a0, regs->a1, regs->a2, regs->a3);
+		break;
 	case SBI_EXT_PMU_SNAPSHOT_SET_SHMEM:
 		/* fallthrough as OpenSBI doesn't support snapshot yet */
 	default:

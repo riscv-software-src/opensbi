@@ -10,6 +10,7 @@
 #include <sbi/riscv_asm.h>
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_console.h>
+#include <sbi/sbi_domain.h>
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_heap.h>
@@ -963,6 +964,81 @@ int sbi_pmu_ctr_get_info(uint32_t cidx, unsigned long *ctr_info)
 	}
 
 	*ctr_info = cinfo.value;
+
+	return 0;
+}
+
+int sbi_pmu_event_get_info(unsigned long shmem_phys_lo, unsigned long shmem_phys_hi,
+			   unsigned long num_events, unsigned long flags)
+{
+	unsigned long shmem_size = num_events * sizeof(struct sbi_pmu_event_info);
+	int i, j, event_type;
+	struct sbi_pmu_event_info *einfo;
+	struct sbi_pmu_hart_state *phs = pmu_thishart_state_ptr();
+	uint32_t event_idx;
+	struct sbi_pmu_hw_event *temp;
+	bool found = false;
+
+	if (flags != 0)
+		return SBI_ERR_INVALID_PARAM;
+
+	/** Check shared memory size and address aligned to 16 byte */
+	if (!num_events || (shmem_phys_lo & 0xF))
+		return SBI_ERR_INVALID_PARAM;
+
+	/*
+	 * On RV32, the M-mode can only access the first 4GB of
+	 * the physical address space because M-mode does not have
+	 * MMU to access full 34-bit physical address space.
+	 *
+	 * Based on above, we simply fail if the upper 32bits of
+	 * the physical address (i.e. a2 register) is non-zero on
+	 * RV32.
+	 */
+	if (shmem_phys_hi)
+		return SBI_EINVALID_ADDR;
+
+	if (!sbi_domain_check_addr_range(sbi_domain_thishart_ptr(),
+					 shmem_phys_lo, shmem_size, PRV_S,
+					 SBI_DOMAIN_READ | SBI_DOMAIN_WRITE))
+		return SBI_ERR_INVALID_ADDRESS;
+
+	sbi_hart_map_saddr(shmem_phys_lo, shmem_size);
+
+	einfo = (struct sbi_pmu_event_info *)(shmem_phys_lo);
+	for (i = 0; i < num_events; i++) {
+		event_idx = einfo[i].event_idx;
+		event_type = pmu_event_validate(phs, event_idx, einfo[i].event_data);
+		if (event_type < 0) {
+			einfo[i].output = 0;
+		} else {
+			for (j = 0; j < num_hw_events; j++) {
+				temp = &hw_event_map[j];
+				if (temp->start_idx <= event_idx && event_idx <= temp->end_idx) {
+					found = true;
+					break;
+				}
+				/* For raw events, event data is used as the select value */
+				if (event_idx == SBI_PMU_EVENT_RAW_IDX ||
+					event_idx == SBI_PMU_EVENT_RAW_V2_IDX) {
+					uint64_t select_mask = temp->select_mask;
+
+					/* just match the selector */
+					if (temp->select == (einfo[i].event_data & select_mask)) {
+						found = true;
+						break;
+					}
+				}
+			}
+			if (found)
+				einfo[i].output = 1;
+			else
+				einfo[i].output = 0;
+			found = false;
+		}
+	}
+
+	sbi_hart_unmap_saddr();
 
 	return 0;
 }
