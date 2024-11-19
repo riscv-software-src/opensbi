@@ -12,6 +12,8 @@
 
 /* clang-format off */
 
+#include <sbi/sbi_types.h>
+
 /* SBI Extension IDs */
 #define SBI_EXT_0_1_SET_TIMER			0x0
 #define SBI_EXT_0_1_CONSOLE_PUTCHAR		0x1
@@ -107,6 +109,7 @@
 #define SBI_EXT_PMU_COUNTER_FW_READ	0x5
 #define SBI_EXT_PMU_COUNTER_FW_READ_HI	0x6
 #define SBI_EXT_PMU_SNAPSHOT_SET_SHMEM	0x7
+#define SBI_EXT_PMU_EVENT_GET_INFO		0x8
 
 /* SBI function IDs for DBTR extension */
 #define SBI_EXT_DBTR_NUM_TRIGGERS	0x0
@@ -254,6 +257,12 @@ enum sbi_pmu_event_type_id {
 enum sbi_pmu_ctr_type {
 	SBI_PMU_CTR_TYPE_HW = 0,
 	SBI_PMU_CTR_TYPE_FW,
+};
+
+struct sbi_pmu_event_info {
+	uint32_t event_idx;
+	uint32_t output;
+	uint64_t event_data;
 };
 
 /* Helper macros to decode event idx */
