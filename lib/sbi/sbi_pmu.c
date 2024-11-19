@@ -795,11 +795,6 @@ static int pmu_ctr_find_fw(struct sbi_pmu_hart_state *phs,
 {
 	int i, cidx;
 
-	if ((event_code >= SBI_PMU_FW_MAX &&
-	    event_code <= SBI_PMU_FW_RESERVED_MAX) ||
-	    event_code > SBI_PMU_FW_PLATFORM)
-		return SBI_EINVAL;
-
 	for_each_set_bit(i, &cmask, BITS_PER_LONG) {
 		cidx = i + cbase;
 		if (cidx < num_hw_ctrs || total_ctrs <= cidx)
