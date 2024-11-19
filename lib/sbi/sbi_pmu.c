@@ -172,6 +172,7 @@ static int pmu_event_validate(struct sbi_pmu_hart_state *phs,
 			return SBI_EINVAL;
 		break;
 	case SBI_PMU_EVENT_TYPE_HW_RAW:
+	case SBI_PMU_EVENT_TYPE_HW_RAW_V2:
 		event_idx_code_max = 1; // event_idx.code should be zero
 		break;
 	default:
@@ -259,7 +260,8 @@ static int pmu_add_hw_event_map(u32 eidx_start, u32 eidx_end, u32 cmap,
 
 	/* Sanity check */
 	for (i = 0; i < num_hw_events; i++) {
-		if (eidx_start == SBI_PMU_EVENT_RAW_IDX)
+		if (eidx_start == SBI_PMU_EVENT_RAW_IDX ||
+			eidx_start == SBI_PMU_EVENT_RAW_V2_IDX)
 		/* All raw events have same event idx. Just do sanity check on select */
 			is_overlap = pmu_event_select_overlap(&hw_event_map[i],
 							      select, select_mask);
@@ -290,8 +292,8 @@ reset_event:
  */
 int sbi_pmu_add_hw_event_counter_map(u32 eidx_start, u32 eidx_end, u32 cmap)
 {
-	if ((eidx_start > eidx_end) || eidx_start == SBI_PMU_EVENT_RAW_IDX ||
-	     eidx_end == SBI_PMU_EVENT_RAW_IDX)
+	if ((eidx_start > eidx_end) || eidx_start >= SBI_PMU_EVENT_RAW_V2_IDX ||
+	     eidx_end >= SBI_PMU_EVENT_RAW_V2_IDX)
 		return SBI_EINVAL;
 
 	return pmu_add_hw_event_map(eidx_start, eidx_end, cmap, 0, 0);
@@ -300,7 +302,7 @@ int sbi_pmu_add_hw_event_counter_map(u32 eidx_start, u32 eidx_end, u32 cmap)
 int sbi_pmu_add_raw_event_counter_map(uint64_t select, uint64_t select_mask, u32 cmap)
 {
 	return pmu_add_hw_event_map(SBI_PMU_EVENT_RAW_IDX,
-				    SBI_PMU_EVENT_RAW_IDX, cmap, select, select_mask);
+				    SBI_PMU_EVENT_RAW_V2_IDX, cmap, select, select_mask);
 }
 
 void sbi_pmu_ovf_irq()
@@ -736,7 +738,8 @@ static int pmu_ctr_find_hw(struct sbi_pmu_hart_state *phs,
 			continue;
 
 		/* For raw events, event data is used as the select value */
-		if (event_idx == SBI_PMU_EVENT_RAW_IDX) {
+		if (event_idx == SBI_PMU_EVENT_RAW_IDX ||
+			event_idx == SBI_PMU_EVENT_RAW_V2_IDX) {
 			uint64_t select_mask = temp->select_mask;
 
 			/* The non-event map bits of data should match the selector */

@@ -392,7 +392,8 @@ static uint64_t generic_pmu_xlate_to_mhpmevent(uint32_t event_idx,
 	uint64_t evt_val = 0;
 
 	/* data is valid only for raw events and is equal to event selector */
-	if (event_idx == SBI_PMU_EVENT_RAW_IDX)
+	if (event_idx == SBI_PMU_EVENT_RAW_IDX ||
+		event_idx == SBI_PMU_EVENT_RAW_V2_IDX)
 		evt_val = data;
 	else {
 		/**
