@@ -509,8 +509,8 @@ static void sse_event_inject(struct sbi_sse_event *e,
 	csr_write(CSR_SEPC, regs->mepc);
 
 	/* Setup entry context */
-	regs->a6 = e->attrs.entry.arg;
-	regs->a7 = current_hartid();
+	regs->a6 = current_hartid();
+	regs->a7 = e->attrs.entry.arg;
 	regs->mepc = e->attrs.entry.pc;
 
 	/* Return to S-mode with virtualization disabled */
