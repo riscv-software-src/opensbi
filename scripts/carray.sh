@@ -2,12 +2,14 @@
 
 function usage()
 {
-	echo "Usage:"
-	echo " $0 [options]"
-	echo "Options:"
-	echo "     -h                   Display help or usage"
-	echo "     -i <input_config>    Input config file"
-	echo "     -l <variable_list>   List of variables in the array (Optional)"
+	cat <<EOF >&2
+Usage:  $0 [options]
+
+Options:
+     -h                   Display help or usage
+     -i <input_config>    Input config file
+     -l <variable_list>   List of variables in the array (Optional)
+EOF
 	exit 1;
 }
 
