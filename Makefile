@@ -507,7 +507,7 @@ compile_d2c = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 compile_carray = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " CARRAY    $(subst $(build_dir)/,,$(1))"; \
 	     $(eval CARRAY_VAR_LIST := $(carray-$(subst .carray.c,,$(shell basename $(1)))-y)) \
-	     $(src_dir)/scripts/carray.sh -i $(2) -l "$(CARRAY_VAR_LIST)" > $(1)
+	     $(src_dir)/scripts/carray.sh -i $(2) -l "$(CARRAY_VAR_LIST)" > $(1) || rm $(1)
 compile_gen_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
 	     echo " GEN-DEP   $(subst $(build_dir)/,,$(1))"; \
 	     echo "$(1:.dep=$(2)): $(3)" >> $(1)
