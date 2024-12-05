@@ -293,8 +293,8 @@ reset_event:
  */
 int sbi_pmu_add_hw_event_counter_map(u32 eidx_start, u32 eidx_end, u32 cmap)
 {
-	if ((eidx_start > eidx_end) || eidx_start >= SBI_PMU_EVENT_RAW_V2_IDX ||
-	     eidx_end >= SBI_PMU_EVENT_RAW_V2_IDX)
+	if ((eidx_start > eidx_end) || eidx_start >= SBI_PMU_EVENT_RAW_IDX ||
+	     eidx_end >= SBI_PMU_EVENT_RAW_IDX)
 		return SBI_EINVAL;
 
 	return pmu_add_hw_event_map(eidx_start, eidx_end, cmap, 0, 0);
