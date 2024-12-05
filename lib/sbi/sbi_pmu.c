@@ -1014,20 +1014,19 @@ int sbi_pmu_event_get_info(unsigned long shmem_phys_lo, unsigned long shmem_phys
 		} else {
 			for (j = 0; j < num_hw_events; j++) {
 				temp = &hw_event_map[j];
-				if (temp->start_idx <= event_idx && event_idx <= temp->end_idx) {
-					found = true;
-					break;
-				}
 				/* For raw events, event data is used as the select value */
 				if (event_idx == SBI_PMU_EVENT_RAW_IDX ||
 					event_idx == SBI_PMU_EVENT_RAW_V2_IDX) {
-					uint64_t select_mask = temp->select_mask;
-
 					/* just match the selector */
-					if (temp->select == (einfo[i].event_data & select_mask)) {
+					if (temp->select == (einfo[i].event_data &
+									temp->select_mask)) {
 						found = true;
 						break;
 					}
+				} else if (temp->start_idx <= event_idx &&
+					   event_idx <= temp->end_idx) {
+					found = true;
+					break;
 				}
 			}
 			if (found)
