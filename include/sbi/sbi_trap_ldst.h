@@ -30,4 +30,13 @@ int sbi_store_access_handler(struct sbi_trap_context *tcntx);
 
 int sbi_double_trap_handler(struct sbi_trap_context *tcntx);
 
+ulong sbi_misaligned_tinst_fixup(ulong orig_tinst, ulong new_tinst,
+				 ulong addr_offset);
+
+int sbi_misaligned_v_ld_emulator(int rlen, union sbi_ldst_data *out_val,
+				 struct sbi_trap_context *tcntx);
+
+int sbi_misaligned_v_st_emulator(int wlen, union sbi_ldst_data in_val,
+				 struct sbi_trap_context *tcntx);
+
 #endif

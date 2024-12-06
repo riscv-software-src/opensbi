@@ -32,7 +32,7 @@ typedef int (*sbi_trap_ld_emulator)(int rlen, union sbi_ldst_data *out_val,
 typedef int (*sbi_trap_st_emulator)(int wlen, union sbi_ldst_data in_val,
 				    struct sbi_trap_context *tcntx);
 
-static ulong sbi_misaligned_tinst_fixup(ulong orig_tinst, ulong new_tinst,
+ulong sbi_misaligned_tinst_fixup(ulong orig_tinst, ulong new_tinst,
 					ulong addr_offset)
 {
 	if (new_tinst == INSN_PSEUDO_VS_LOAD ||
@@ -52,7 +52,7 @@ static int sbi_trap_emulate_load(struct sbi_trap_context *tcntx,
 	ulong insn, insn_len;
 	union sbi_ldst_data val = { 0 };
 	struct sbi_trap_info uptrap;
-	int rc, fp = 0, shift = 0, len = 0;
+	int rc, fp = 0, shift = 0, len = 0, vector = 0;
 
 	if (orig_trap->tinst & 0x1) {
 		/*
@@ -144,6 +144,9 @@ static int sbi_trap_emulate_load(struct sbi_trap_context *tcntx,
 		len = 2;
 		shift = 8 * (sizeof(ulong) - len);
 		insn = RVC_RS2S(insn) << SH_RD;
+	} else if (IS_VECTOR_LOAD_STORE(insn)) {
+		vector = 1;
+		emu = sbi_misaligned_v_ld_emulator;
 	} else {
 		return sbi_trap_redirect(regs, orig_trap);
 	}
@@ -152,14 +155,16 @@ static int sbi_trap_emulate_load(struct sbi_trap_context *tcntx,
 	if (rc <= 0)
 		return rc;
 
-	if (!fp)
-		SET_RD(insn, regs, ((long)(val.data_ulong << shift)) >> shift);
+	if (!vector) {
+		if (!fp)
+			SET_RD(insn, regs, ((long)(val.data_ulong << shift)) >> shift);
 #ifdef __riscv_flen
-	else if (len == 8)
-		SET_F64_RD(insn, regs, val.data_u64);
-	else
-		SET_F32_RD(insn, regs, val.data_ulong);
+		else if (len == 8)
+			SET_F64_RD(insn, regs, val.data_u64);
+		else
+			SET_F32_RD(insn, regs, val.data_ulong);
 #endif
+	}
 
 	regs->mepc += insn_len;
 
@@ -248,6 +253,8 @@ static int sbi_trap_emulate_store(struct sbi_trap_context *tcntx,
 	} else if ((insn & INSN_MASK_C_SH) == INSN_MATCH_C_SH) {
 		len		= 2;
 		val.data_ulong = GET_RS2S(insn, regs);
+	} else if (IS_VECTOR_LOAD_STORE(insn)) {
+		emu = sbi_misaligned_v_st_emulator;
 	} else {
 		return sbi_trap_redirect(regs, orig_trap);
 	}
