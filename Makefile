@@ -190,7 +190,7 @@ CC_SUPPORT_STRICT_ALIGN := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) -nostdlib
 CC_SUPPORT_ZICSR_ZIFENCEI := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) -nostdlib -march=rv$(OPENSBI_CC_XLEN)imafd_zicsr_zifencei -x c /dev/null -o /dev/null 2>&1 | grep -e "zicsr" -e "zifencei" > /dev/null && echo n || echo y)
 
 # Check whether the assembler and the compiler support the Vector extension
-CC_SUPPORT_VECT := $(shell echo | $(CC) -dM -E -march=rv$(OPENSBI_CC_XLEN)gv - | grep -q riscv.*vector && echo y || echo n)
+CC_SUPPORT_VECTOR := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) -nostdlib -march=rv$(OPENSBI_CC_XLEN)gv -dM -E -x c /dev/null 2>&1 | grep -q riscv.*vector && echo y || echo n)
 
 ifneq ($(OPENSBI_LD_PIE),y)
 $(error Your linker does not support creating PIEs, opensbi requires this.)
@@ -298,9 +298,6 @@ endif
 ifndef PLATFORM_RISCV_ISA
   ifneq ($(PLATFORM_RISCV_TOOLCHAIN_DEFAULT), 1)
     PLATFORM_RISCV_ISA := rv$(PLATFORM_RISCV_XLEN)imafdc
-    ifeq ($(CC_SUPPORT_VECT), y)
-      PLATFORM_RISCV_ISA := $(PLATFORM_RISCV_ISA)v
-    endif
     ifeq ($(CC_SUPPORT_ZICSR_ZIFENCEI), y)
       PLATFORM_RISCV_ISA := $(PLATFORM_RISCV_ISA)_zicsr_zifencei
     endif
@@ -363,6 +360,9 @@ GENFLAGS	+=	$(firmware-genflags-y)
 CFLAGS		=	-g -Wall -Werror -ffreestanding -nostdlib -fno-stack-protector -fno-strict-aliasing -ffunction-sections -fdata-sections
 CFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
 # Optionally supported flags
+ifeq ($(CC_SUPPORT_VECTOR),y)
+CFLAGS		+=	-DOPENSBI_CC_SUPPORT_VECTOR
+endif
 ifeq ($(CC_SUPPORT_SAVE_RESTORE),y)
 CFLAGS		+=	-mno-save-restore
 endif

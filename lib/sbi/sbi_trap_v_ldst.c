@@ -17,7 +17,8 @@
 #include <sbi/sbi_unpriv.h>
 #include <sbi/sbi_trap.h>
 
-#ifdef __riscv_vector
+#ifdef OPENSBI_CC_SUPPORT_VECTOR
+
 #define VLEN_MAX 65536
 
 static inline void set_vreg(ulong vlenb, ulong which,
@@ -340,4 +341,4 @@ int sbi_misaligned_v_st_emulator(int wlen, union sbi_ldst_data in_val,
 {
 	return 0;
 }
-#endif /* __riscv_vector  */
+#endif /* OPENSBI_CC_SUPPORT_VECTOR */
