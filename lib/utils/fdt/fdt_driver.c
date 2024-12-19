@@ -30,6 +30,10 @@ int fdt_driver_init_by_offset(const void *fdt, int nodeoff,
 			if (!fdt_stringlist_contains(prop, len, match->compatible))
 				continue;
 
+			if (driver->experimental)
+				sbi_printf("WARNING: %s driver is experimental and may change\n",
+					   match->compatible);
+
 			rc = driver->init(fdt, nodeoff, match);
 			if (rc < 0) {
 				const char *name;

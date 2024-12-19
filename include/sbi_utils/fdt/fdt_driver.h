@@ -15,6 +15,7 @@ struct fdt_driver {
 	const struct fdt_match *match_table;
 	int (*init)(const void *fdt, int nodeoff,
 		    const struct fdt_match *match);
+	bool experimental;
 };
 
 /**

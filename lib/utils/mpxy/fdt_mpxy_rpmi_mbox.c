@@ -439,4 +439,5 @@ static const struct fdt_match mpxy_mbox_match[] = {
 struct fdt_driver fdt_mpxy_rpmi_mbox = {
 	.match_table = mpxy_mbox_match,
 	.init = mpxy_mbox_init,
+	.experimental = true,
 };

@@ -138,4 +138,5 @@ static const struct fdt_match rpmi_reset_match[] = {
 struct fdt_driver fdt_reset_rpmi = {
 	.match_table = rpmi_reset_match,
 	.init = rpmi_reset_init,
+	.experimental = true,
 };

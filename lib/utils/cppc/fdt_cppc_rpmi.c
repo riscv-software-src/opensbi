@@ -370,4 +370,5 @@ static const struct fdt_match rpmi_cppc_match[] = {
 struct fdt_driver fdt_cppc_rpmi = {
 	.match_table = rpmi_cppc_match,
 	.init = rpmi_cppc_cold_init,
+	.experimental = true,
 };
