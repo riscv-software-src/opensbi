@@ -250,17 +250,17 @@ static int generic_early_init(bool cold_boot)
 	int rc;
 
 	if (cold_boot) {
-		fdt_reset_init(fdt);
-		fdt_suspend_init(fdt);
-		fdt_hsm_init(fdt);
-		fdt_cppc_init(fdt);
-
 		if (semihosting_enabled())
 			rc = semihosting_init();
 		else
 			rc = fdt_serial_init(fdt);
 		if (rc)
 			return rc;
+
+		fdt_cppc_init(fdt);
+		fdt_hsm_init(fdt);
+		fdt_reset_init(fdt);
+		fdt_suspend_init(fdt);
 	}
 
 	if (!generic_plat || !generic_plat->early_init)
