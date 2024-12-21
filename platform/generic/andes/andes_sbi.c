@@ -33,7 +33,7 @@ static bool andes_iocp_disabled(void)
 
 static bool andes_apply_iocp_sw_workaround(void)
 {
-	return andes_cache_controllable() & andes_iocp_disabled();
+	return andes_cache_controllable() && andes_iocp_disabled();
 }
 
 int andes_sbi_vendor_ext_provider(long funcid,
