@@ -40,6 +40,7 @@ static int sbi_ecall_time_register_extensions(void)
 }
 
 struct sbi_ecall_extension ecall_time = {
+	.name			= "time",
 	.extid_start		= SBI_EXT_TIME,
 	.extid_end		= SBI_EXT_TIME,
 	.register_extensions	= sbi_ecall_time_register_extensions,

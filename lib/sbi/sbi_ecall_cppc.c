@@ -65,6 +65,7 @@ static int sbi_ecall_cppc_register_extensions(void)
 }
 
 struct sbi_ecall_extension ecall_cppc = {
+	.name			= "cppc",
 	.extid_start		= SBI_EXT_CPPC,
 	.extid_end		= SBI_EXT_CPPC,
 	.register_extensions	= sbi_ecall_cppc_register_extensions,

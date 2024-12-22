@@ -61,6 +61,7 @@ static int sbi_ecall_hsm_register_extensions(void)
 }
 
 struct sbi_ecall_extension ecall_hsm = {
+	.name			= "hsm",
 	.extid_start		= SBI_EXT_HSM,
 	.extid_end		= SBI_EXT_HSM,
 	.register_extensions	= sbi_ecall_hsm_register_extensions,

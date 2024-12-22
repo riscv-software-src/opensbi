@@ -36,6 +36,7 @@ static int sbi_ecall_ipi_register_extensions(void)
 }
 
 struct sbi_ecall_extension ecall_ipi = {
+	.name			= "ipi",
 	.extid_start		= SBI_EXT_IPI,
 	.extid_end		= SBI_EXT_IPI,
 	.register_extensions	= sbi_ecall_ipi_register_extensions,

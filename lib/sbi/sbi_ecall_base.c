@@ -79,6 +79,7 @@ static int sbi_ecall_base_register_extensions(void)
 }
 
 struct sbi_ecall_extension ecall_base = {
+	.name			= "base",
 	.extid_start		= SBI_EXT_BASE,
 	.extid_end		= SBI_EXT_BASE,
 	.register_extensions	= sbi_ecall_base_register_extensions,

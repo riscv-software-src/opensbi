@@ -42,8 +42,10 @@ static int sbi_ecall_fwft_register_extensions(void)
 }
 
 struct sbi_ecall_extension ecall_fwft = {
-	.extid_start = SBI_EXT_FWFT,
-	.extid_end = SBI_EXT_FWFT,
-	.register_extensions = sbi_ecall_fwft_register_extensions,
-	.handle = sbi_ecall_fwft_handler,
+	.name			= "fwft",
+	.extid_start		= SBI_EXT_FWFT,
+	.extid_end		= SBI_EXT_FWFT,
+	.experimental		= true,
+	.register_extensions	= sbi_ecall_fwft_register_extensions,
+	.handle			= sbi_ecall_fwft_handler,
 };

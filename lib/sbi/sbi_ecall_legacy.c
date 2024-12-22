@@ -131,6 +131,7 @@ static int sbi_ecall_legacy_register_extensions(void)
 }
 
 struct sbi_ecall_extension ecall_legacy = {
+	.name			= "legacy",
 	.extid_start		= SBI_EXT_0_1_SET_TIMER,
 	.extid_end		= SBI_EXT_0_1_SHUTDOWN,
 	.register_extensions	= sbi_ecall_legacy_register_extensions,

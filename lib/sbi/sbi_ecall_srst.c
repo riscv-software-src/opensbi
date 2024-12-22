@@ -75,6 +75,7 @@ static int sbi_ecall_srst_register_extensions(void)
 }
 
 struct sbi_ecall_extension ecall_srst = {
+	.name			= "srst",
 	.extid_start		= SBI_EXT_SRST,
 	.extid_end		= SBI_EXT_SRST,
 	.register_extensions	= sbi_ecall_srst_register_extensions,

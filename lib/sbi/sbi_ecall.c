@@ -11,6 +11,7 @@
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_string.h>
 #include <sbi/sbi_trap.h>
 
 extern struct sbi_ecall_extension *const sbi_ecall_exts[];
@@ -51,6 +52,29 @@ struct sbi_ecall_extension *sbi_ecall_find_extension(unsigned long extid)
 	}
 
 	return ret;
+}
+
+void sbi_ecall_get_extensions_str(char *exts_str, int exts_str_size, bool experimental)
+{
+	struct sbi_ecall_extension *t;
+	int offset = 0;
+
+	if (!exts_str || exts_str_size <= 0)
+		return;
+	sbi_memset(exts_str, 0, exts_str_size);
+
+	sbi_list_for_each_entry(t, &ecall_exts_list, head) {
+		if (experimental != t->experimental)
+			continue;
+		sbi_snprintf(exts_str + offset, exts_str_size - offset,
+			     "%s,", t->name);
+		offset = offset + sbi_strlen(t->name) + 1;
+	}
+
+	if (offset)
+		exts_str[offset - 1] = '\0';
+	else
+		sbi_strncpy(exts_str, "none", exts_str_size);
 }
 
 int sbi_ecall_register_extension(struct sbi_ecall_extension *ext)

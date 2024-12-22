@@ -93,6 +93,7 @@ static int sbi_ecall_pmu_register_extensions(void)
 }
 
 struct sbi_ecall_extension ecall_pmu = {
+	.name			= "pmu",
 	.extid_start		= SBI_EXT_PMU,
 	.extid_end		= SBI_EXT_PMU,
 	.register_extensions	= sbi_ecall_pmu_register_extensions,

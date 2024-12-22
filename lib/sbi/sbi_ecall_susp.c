@@ -49,6 +49,7 @@ static int sbi_ecall_susp_register_extensions(void)
 }
 
 struct sbi_ecall_extension ecall_susp = {
+	.name			= "susp",
 	.extid_start		= SBI_EXT_SUSP,
 	.extid_end		= SBI_EXT_SUSP,
 	.register_extensions	= sbi_ecall_susp_register_extensions,

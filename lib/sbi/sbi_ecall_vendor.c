@@ -46,6 +46,7 @@ static int sbi_ecall_vendor_register_extensions(void)
 }
 
 struct sbi_ecall_extension ecall_vendor = {
+	.name			= "vendor",
 	.extid_start		= SBI_EXT_VENDOR_START,
 	.extid_end		= SBI_EXT_VENDOR_END,
 	.register_extensions	= sbi_ecall_vendor_register_extensions,

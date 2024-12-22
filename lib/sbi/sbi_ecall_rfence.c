@@ -84,6 +84,7 @@ static int sbi_ecall_rfence_register_extensions(void)
 }
 
 struct sbi_ecall_extension ecall_rfence = {
+	.name			= "rfnc",
 	.extid_start		= SBI_EXT_RFENCE,
 	.extid_end		= SBI_EXT_RFENCE,
 	.register_extensions	= sbi_ecall_rfence_register_extensions,

@@ -139,8 +139,12 @@ static void sbi_boot_print_general(struct sbi_scratch *scratch)
 		   (u32)(SBI_SCRATCH_SIZE - sbi_scratch_used_space()));
 
 	/* SBI details */
-	sbi_printf("Runtime SBI Version       : %d.%d\n",
+	sbi_printf("Runtime SBI Version         : %d.%d\n",
 		   sbi_ecall_version_major(), sbi_ecall_version_minor());
+	sbi_ecall_get_extensions_str(str, sizeof(str), false);
+	sbi_printf("Standard SBI Extensions     : %s\n", str);
+	sbi_ecall_get_extensions_str(str, sizeof(str), true);
+	sbi_printf("Experimental SBI Extensions : %s\n", str);
 	sbi_printf("\n");
 }
 

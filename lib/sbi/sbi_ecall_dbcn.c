@@ -74,6 +74,7 @@ static int sbi_ecall_dbcn_register_extensions(void)
 }
 
 struct sbi_ecall_extension ecall_dbcn = {
+	.name			= "dbcn",
 	.extid_start		= SBI_EXT_DBCN,
 	.extid_end		= SBI_EXT_DBCN,
 	.register_extensions	= sbi_ecall_dbcn_register_extensions,
