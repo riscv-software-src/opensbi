@@ -15,7 +15,6 @@
 #include <sbi/sbi_domain.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_heap.h>
-#include <sbi/sbi_irqchip.h>
 #include <sbi/sbi_string.h>
 #include <sbi_utils/irqchip/plic.h>
 
@@ -221,10 +220,6 @@ static int plic_warm_irqchip_init(struct sbi_irqchip_device *dev)
 	return 0;
 }
 
-static struct sbi_irqchip_device plic_device = {
-	.warm_init	= plic_warm_irqchip_init,
-};
-
 int plic_cold_irqchip_init(struct plic_data *plic)
 {
 	int i, ret;
@@ -284,7 +279,8 @@ int plic_cold_irqchip_init(struct plic_data *plic)
 	}
 
 	/* Register irqchip device */
-	sbi_irqchip_add_device(&plic_device);
+	plic->irqchip.warm_init = plic_warm_irqchip_init;
+	sbi_irqchip_add_device(&plic->irqchip);
 
 	return 0;
 }

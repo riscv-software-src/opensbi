@@ -11,8 +11,12 @@
 #define __IRQCHIP_PLIC_H__
 
 #include <sbi/sbi_types.h>
+#include <sbi/sbi_irqchip.h>
 
 struct plic_data {
+	/* Private members */
+	struct sbi_irqchip_device irqchip;
+	/* Public members */
 	unsigned long addr;
 	unsigned long size;
 	unsigned long num_src;
