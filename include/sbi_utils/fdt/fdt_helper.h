@@ -59,7 +59,7 @@ int fdt_parse_max_enabled_hart_id(const void *fdt, u32 *max_hartid);
 
 int fdt_parse_timebase_frequency(const void *fdt, unsigned long *freq);
 
-int fdt_parse_isa_extensions(const void *fdt, unsigned int hard_id,
+int fdt_parse_isa_extensions(const void *fdt, unsigned int hartid,
 			     unsigned long *extensions);
 
 int fdt_parse_gaisler_uart_node(const void *fdt, int nodeoffset,
