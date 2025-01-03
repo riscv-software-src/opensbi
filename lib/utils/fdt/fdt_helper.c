@@ -630,14 +630,13 @@ int fdt_parse_aplic_node(const void *fdt, int nodeoff, struct aplic_data *aplic)
 	bool child_found;
 	const fdt32_t *val;
 	const fdt32_t *del;
-	struct imsic_data imsic;
+	struct imsic_data imsic = { 0 };
 	int i, j, d, dcnt, len, noff, rc;
 	uint64_t reg_addr, reg_size;
 	struct aplic_delegate_data *deleg;
 
 	if (nodeoff < 0 || !aplic || !fdt)
 		return SBI_ENODEV;
-	memset(aplic, 0, sizeof(*aplic));
 
 	rc = fdt_get_node_addr_size(fdt, nodeoff, 0, &reg_addr, &reg_size);
 	if (rc < 0 || !reg_addr || !reg_size)
