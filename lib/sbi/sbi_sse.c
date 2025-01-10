@@ -190,6 +190,31 @@ struct sse_event_info local_software_event = {
 static SBI_SLIST_HEAD(supported_events, sse_event_info) =
 				SBI_SLIST_HEAD_INIT(&local_software_event);
 
+/*
+ * This array is used to distinguish between standard event and platform
+ * events in order to return SBI_ERR_NOT_SUPPORTED for them.
+ */
+static const uint32_t standard_events[] = {
+	SBI_SSE_EVENT_LOCAL_RAS,
+	SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP,
+	SBI_SSE_EVENT_GLOBAL_RAS,
+	SBI_SSE_EVENT_LOCAL_PMU,
+	SBI_SSE_EVENT_LOCAL_SOFTWARE,
+	SBI_SSE_EVENT_GLOBAL_SOFTWARE,
+};
+
+static bool sse_is_standard_event(uint32_t event_id)
+{
+	int i;
+
+	for (i = 0; i < array_size(standard_events); i++) {
+		if (event_id == standard_events[i])
+			return true;
+	}
+
+	return false;
+}
+
 static struct sse_event_info *sse_event_info_get(uint32_t event_id)
 {
 	struct sse_event_info *info;
@@ -295,6 +320,11 @@ static int sse_event_get(uint32_t event_id, struct sbi_sse_event **eret)
 		}
 	}
 
+	/* Check if the event is a standard one but not supported */
+	if (sse_is_standard_event(event_id))
+		return SBI_ENOTSUPP;
+
+	/* If not supported nor a standard event, it is invalid */
 	return SBI_EINVAL;
 }
 
