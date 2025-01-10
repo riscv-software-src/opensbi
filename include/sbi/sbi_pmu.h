@@ -114,6 +114,9 @@ void sbi_pmu_exit(struct sbi_scratch *scratch);
 /** Return the pmu irq bit depending on extension existence */
 int sbi_pmu_irq_bit(void);
 
+/** Return the pmu irq mask or 0 if the pmu overflow irq is not supported */
+unsigned long sbi_pmu_irq_mask(void);
+
 /**
  * Add the hardware event to counter mapping information. This should be called
  * from the platform code to update the mapping table.

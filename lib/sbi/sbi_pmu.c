@@ -309,10 +309,10 @@ int sbi_pmu_add_raw_event_counter_map(uint64_t select, uint64_t select_mask, u32
 void sbi_pmu_ovf_irq()
 {
 	/*
-	 * We need to disable LCOFIP before returning to S-mode or we will loop
-	 * on LCOFIP being triggered
+	 * We need to disable the overflow irq before returning to S-mode or we will loop
+	 * on an irq being triggered
 	 */
-	csr_clear(CSR_MIE, MIP_LCOFIP);
+	csr_clear(CSR_MIE, sbi_pmu_irq_mask());
 	sbi_sse_inject_event(SBI_SSE_EVENT_LOCAL_PMU);
 }
 
@@ -344,7 +344,7 @@ static int pmu_ctr_enable_irq_hw(int ctr_idx)
 	 * Otherwise, there will be race conditions where we may clear the bit
 	 * the software is yet to handle the interrupt.
 	 */
-	if (!(mip_val & MIP_LCOFIP)) {
+	if (!(mip_val & sbi_pmu_irq_mask())) {
 		mhpmevent_curr &= of_mask;
 		csr_write_num(mhpmevent_csr, mhpmevent_curr);
 	}
@@ -405,11 +405,21 @@ int sbi_pmu_irq_bit(void)
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SSCOFPMF))
-		return MIP_LCOFIP;
+		return IRQ_PMU_OVF;
 	if (pmu_dev && pmu_dev->hw_counter_irq_bit)
 		return pmu_dev->hw_counter_irq_bit();
 
-	return 0;
+	return -1;
+}
+
+unsigned long sbi_pmu_irq_mask(void)
+{
+	int irq_bit = sbi_pmu_irq_bit();
+
+	if (irq_bit < 0)
+		return 0;
+
+	return BIT(irq_bit);
 }
 
 static int pmu_ctr_start_fw(struct sbi_pmu_hart_state *phs,
@@ -591,9 +601,9 @@ int sbi_pmu_ctr_stop(unsigned long cbase, unsigned long cmask,
 		}
 	}
 
-	/* Clear MIP_LCOFIP to avoid spurious interrupts */
+	/* Clear PMU overflow interrupt to avoid spurious ones */
 	if (phs->sse_enabled)
-		csr_clear(CSR_MIP, MIP_LCOFIP);
+		csr_clear(CSR_MIP, sbi_pmu_irq_mask());
 
 	return ret;
 }
@@ -1087,26 +1097,28 @@ void sbi_pmu_exit(struct sbi_scratch *scratch)
 static void pmu_sse_enable(uint32_t event_id)
 {
 	struct sbi_pmu_hart_state *phs = pmu_thishart_state_ptr();
+	unsigned long irq_mask = sbi_pmu_irq_mask();
 
 	phs->sse_enabled = true;
-	csr_clear(CSR_MIDELEG, sbi_pmu_irq_bit());
-	csr_clear(CSR_MIP, MIP_LCOFIP);
-	csr_set(CSR_MIE, MIP_LCOFIP);
+	csr_clear(CSR_MIDELEG, irq_mask);
+	csr_clear(CSR_MIP, irq_mask);
+	csr_set(CSR_MIE, irq_mask);
 }
 
 static void pmu_sse_disable(uint32_t event_id)
 {
 	struct sbi_pmu_hart_state *phs = pmu_thishart_state_ptr();
+	unsigned long irq_mask = sbi_pmu_irq_mask();
 
-	csr_clear(CSR_MIE, MIP_LCOFIP);
-	csr_clear(CSR_MIP, MIP_LCOFIP);
-	csr_set(CSR_MIDELEG, sbi_pmu_irq_bit());
+	csr_clear(CSR_MIE, irq_mask);
+	csr_clear(CSR_MIP, irq_mask);
+	csr_set(CSR_MIDELEG, irq_mask);
 	phs->sse_enabled = false;
 }
 
 static void pmu_sse_complete(uint32_t event_id)
 {
-	csr_set(CSR_MIE, MIP_LCOFIP);
+	csr_set(CSR_MIE, sbi_pmu_irq_mask());
 }
 
 static const struct sbi_sse_cb_ops pmu_sse_cb_ops = {

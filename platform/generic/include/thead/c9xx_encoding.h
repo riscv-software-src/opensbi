@@ -122,6 +122,5 @@
 
 /* T-HEAD C9xx MIP CSR extension */
 #define THEAD_C9XX_IRQ_PMU_OVF		17
-#define THEAD_C9XX_MIP_MOIP		(_UL(1) << THEAD_C9XX_IRQ_PMU_OVF)
 
 #endif
