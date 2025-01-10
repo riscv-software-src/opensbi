@@ -1165,7 +1165,8 @@ int sbi_pmu_init(struct sbi_scratch *scratch, bool cold_boot)
 
 		total_ctrs = num_hw_ctrs + SBI_PMU_FW_CTR_MAX;
 
-		sbi_sse_add_event(SBI_SSE_EVENT_LOCAL_PMU, &pmu_sse_cb_ops);
+		if (sbi_pmu_irq_bit() >= 0)
+			sbi_sse_add_event(SBI_SSE_EVENT_LOCAL_PMU, &pmu_sse_cb_ops);
 	}
 
 	phs = pmu_get_hart_state_ptr(scratch);
