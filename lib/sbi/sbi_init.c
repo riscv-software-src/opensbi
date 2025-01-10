@@ -13,6 +13,7 @@
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_cppc.h>
 #include <sbi/sbi_domain.h>
+#include <sbi/sbi_double_trap.h>
 #include <sbi/sbi_ecall.h>
 #include <sbi/sbi_fwft.h>
 #include <sbi/sbi_hart.h>
@@ -266,12 +267,6 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_sse_init(scratch, true);
-	if (rc) {
-		sbi_printf("%s: sse init failed (error %d)\n", __func__, rc);
-		sbi_hart_hang();
-	}
-
 	rc = sbi_pmu_init(scratch, true);
 	if (rc) {
 		sbi_printf("%s: pmu init failed (error %d)\n",
@@ -284,6 +279,8 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 		sbi_hart_hang();
 
 	sbi_boot_print_banner(scratch);
+
+	sbi_double_trap_init(scratch);
 
 	rc = sbi_irqchip_init(scratch, true);
 	if (rc) {
@@ -343,6 +340,16 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (rc) {
 		sbi_printf("%s: platform final init failed (error %d)\n",
 			   __func__, rc);
+		sbi_hart_hang();
+	}
+
+	/*
+	 * Note: SSE events callbacks can be registered by other drivers so
+	 * sbi_sse_init() needs to be called after all drivers have been probed.
+	 */
+	rc = sbi_sse_init(scratch, true);
+	if (rc) {
+		sbi_printf("%s: sse init failed (error %d)\n", __func__, rc);
 		sbi_hart_hang();
 	}
 
@@ -408,10 +415,6 @@ static void __noreturn init_warm_startup(struct sbi_scratch *scratch,
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_sse_init(scratch, false);
-	if (rc)
-		sbi_hart_hang();
-
 	rc = sbi_pmu_init(scratch, false);
 	if (rc)
 		sbi_hart_hang();
@@ -441,6 +444,10 @@ static void __noreturn init_warm_startup(struct sbi_scratch *scratch,
 		sbi_hart_hang();
 
 	rc = sbi_platform_final_init(plat, false);
+	if (rc)
+		sbi_hart_hang();
+
+	rc = sbi_sse_init(scratch, false);
 	if (rc)
 		sbi_hart_hang();
 

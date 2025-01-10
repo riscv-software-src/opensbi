@@ -54,12 +54,12 @@ struct sbi_sse_cb_ops {
 	void (*disable_cb)(uint32_t event_id);
 };
 
-/* Set the callback operations for an event
- * @param event_id Event identifier (SBI_SSE_EVENT_*)
- * @param cb_ops Callback operations
+/* Add a supported event with associated callback operations
+ * @param event_id Event identifier (SBI_SSE_EVENT_* or a custom platform one)
+ * @param cb_ops Callback operations (Can be NULL if any)
  * @return 0 on success, error otherwise
  */
-int sbi_sse_set_cb_ops(uint32_t event_id, const struct sbi_sse_cb_ops *cb_ops);
+int sbi_sse_add_event(uint32_t event_id, const struct sbi_sse_cb_ops *cb_ops);
 
 /* Inject an event to the current hard
  * @param event_id Event identifier (SBI_SSE_EVENT_*)
