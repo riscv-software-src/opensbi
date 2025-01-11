@@ -22,7 +22,7 @@
  */
 struct mpxy_rpmi_mbox {
 	struct mbox_chan *chan;
-	struct mpxy_rpmi_mbox_data *mbox_data;
+	const struct mpxy_rpmi_mbox_data *mbox_data;
 	struct mpxy_rpmi_channel_attrs msgprot_attrs;
 	struct sbi_mpxy_channel channel;
 };
@@ -31,11 +31,11 @@ struct mpxy_rpmi_mbox {
  * Discover the RPMI service data using message_id
  * MPXY message_id == RPMI service_id
  */
-static struct mpxy_rpmi_service_data *mpxy_find_rpmi_srvid(u32 message_id,
-					struct mpxy_rpmi_mbox_data *mbox_data)
+static const struct mpxy_rpmi_service_data *mpxy_find_rpmi_srvid(u32 message_id,
+					const struct mpxy_rpmi_mbox_data *mbox_data)
 {
 	int mid = 0;
-	struct mpxy_rpmi_service_data *srv = mbox_data->service_data;
+	const struct mpxy_rpmi_service_data *srv = mbox_data->service_data;
 
 	for (mid = 0; srv[mid].id < mbox_data->num_services; mid++) {
 		if (srv[mid].id == (u8)message_id)
@@ -146,8 +146,9 @@ static int __mpxy_mbox_send_message(struct sbi_mpxy_channel *channel,
 	struct rpmi_message_args args = {0};
 	struct mpxy_rpmi_mbox *rmb =
 		container_of(channel, struct mpxy_rpmi_mbox, channel);
-	struct mpxy_rpmi_service_data *srv =
-			mpxy_find_rpmi_srvid(message_id, rmb->mbox_data);
+	const struct mpxy_rpmi_service_data *srv =
+		mpxy_find_rpmi_srvid(message_id, rmb->mbox_data);
+
 	if (!srv)
 		return SBI_ENOTSUPP;
 
@@ -299,7 +300,7 @@ int mpxy_rpmi_mbox_init(const void *fdt, int nodeoff, const struct fdt_match *ma
 	rmb->msgprot_attrs.servicegrp_ver =
 			SBI_MPXY_MSGPROTO_VERSION(MPXY_RPMI_MAJOR_VER, MPXY_RPMI_MINOR_VER);
 
-	rmb->mbox_data = (struct mpxy_rpmi_mbox_data *)data;
+	rmb->mbox_data = data;
 	rmb->chan = chan;
 
 	/* Register RPXY service group */
