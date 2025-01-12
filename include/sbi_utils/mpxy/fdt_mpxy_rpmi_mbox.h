@@ -12,6 +12,7 @@
 
 #include <sbi/sbi_types.h>
 #include <sbi/sbi_mpxy.h>
+#include <sbi_utils/mailbox/fdt_mailbox.h>
 #include <sbi_utils/mailbox/rpmi_msgprot.h>
 #include <sbi_utils/mpxy/fdt_mpxy.h>
 
@@ -63,6 +64,17 @@ struct mpxy_rpmi_mbox_data {
 	u32 num_services;
 	u32 notifications_support;
 	struct mpxy_rpmi_service_data *service_data;
+
+	/** Transfer RPMI service group message */
+	int (*xfer_group)(void *context, struct mbox_chan *chan,
+			  struct mbox_xfer *xfer);
+
+	/** Setup RPMI service group context for MPXY */
+	int (*setup_group)(void **context, struct mbox_chan *chan,
+			   const struct mpxy_rpmi_mbox_data *data);
+
+	/** Cleanup RPMI service group context for MPXY */
+	void (*cleanup_group)(void *context);
 };
 
 /** Common probe function for MPXY RPMI drivers */

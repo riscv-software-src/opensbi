@@ -13,7 +13,6 @@
 #include <sbi/sbi_heap.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/mpxy/fdt_mpxy_rpmi_mbox.h>
-#include <sbi_utils/mailbox/fdt_mailbox.h>
 #include <sbi/sbi_console.h>
 
 /**
@@ -25,6 +24,7 @@ struct mpxy_rpmi_mbox {
 	const struct mpxy_rpmi_mbox_data *mbox_data;
 	struct mpxy_rpmi_channel_attrs msgprot_attrs;
 	struct sbi_mpxy_channel channel;
+	void *group_context;
 };
 
 /**
@@ -146,8 +146,9 @@ static int __mpxy_mbox_send_message(struct sbi_mpxy_channel *channel,
 	struct rpmi_message_args args = {0};
 	struct mpxy_rpmi_mbox *rmb =
 		container_of(channel, struct mpxy_rpmi_mbox, channel);
+	const struct mpxy_rpmi_mbox_data *data = rmb->mbox_data;
 	const struct mpxy_rpmi_service_data *srv =
-		mpxy_find_rpmi_srvid(message_id, rmb->mbox_data);
+		mpxy_find_rpmi_srvid(message_id, data);
 
 	if (!srv)
 		return SBI_ENOTSUPP;
@@ -183,7 +184,10 @@ static int __mpxy_mbox_send_message(struct sbi_mpxy_channel *channel,
 				  tx, tx_len, RPMI_DEF_TX_TIMEOUT);
 	}
 
-	ret = mbox_chan_xfer(rmb->chan, &xfer);
+	if (data->xfer_group)
+		ret = data->xfer_group(rmb->group_context, rmb->chan, &xfer);
+	else
+		ret = mbox_chan_xfer(rmb->chan, &xfer);
 	if (ret)
 		return ret;
 
@@ -303,9 +307,21 @@ int mpxy_rpmi_mbox_init(const void *fdt, int nodeoff, const struct fdt_match *ma
 	rmb->mbox_data = data;
 	rmb->chan = chan;
 
-	/* Register RPXY service group */
+	/* Setup RPMI service group context */
+	if (data->setup_group) {
+		rc = data->setup_group(&rmb->group_context, chan, data);
+		if (rc) {
+			mbox_controller_free_chan(chan);
+			sbi_free(rmb);
+			return rc;
+		}
+	}
+
+	/* Register RPMI service group */
 	rc = sbi_mpxy_register_channel(&rmb->channel);
 	if (rc) {
+		if (data->cleanup_group)
+			data->cleanup_group(rmb->group_context);
 		mbox_controller_free_chan(chan);
 		sbi_free(rmb);
 		return rc;
