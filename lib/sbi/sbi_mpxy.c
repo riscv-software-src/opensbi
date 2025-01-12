@@ -43,17 +43,17 @@ static SBI_LIST_HEAD(mpxy_channel_list);
 #define CAP_EVENTSSTATE_POS	2
 #define CAP_EVENTSSTATE_MASK	(1U << CAP_EVENTSSTATE_POS)
 
-/** Channel Capability - Get Notification function support */
-#define CAP_GET_NOTIFICATIONS_POS	3
-#define CAP_GET_NOTIFICATIONS_MASK	(1U << CAP_GET_NOTIFICATIONS_POS)
+/** Channel Capability - Send Message With Response function support */
+#define CAP_SEND_MSG_WITH_RESP_POS	3
+#define CAP_SEND_MSG_WITH_RESP_MASK	(1U << CAP_SEND_MSG_WITH_RESP_POS)
 
 /** Channel Capability - Send Message Without Response function support */
 #define CAP_SEND_MSG_WITHOUT_RESP_POS	4
 #define CAP_SEND_MSG_WITHOUT_RESP_MASK	(1U << CAP_SEND_MSG_WITHOUT_RESP_POS)
 
-/** Channel Capability - Send Message With Response function support */
-#define CAP_SEND_MSG_WITH_RESP_POS	5
-#define CAP_SEND_MSG_WITH_RESP_MASK	(1U << CAP_SEND_MSG_WITH_RESP_POS)
+/** Channel Capability - Get Notification function support */
+#define CAP_GET_NOTIFICATIONS_POS	5
+#define CAP_GET_NOTIFICATIONS_MASK	(1U << CAP_GET_NOTIFICATIONS_POS)
 
 /** Helpers to enable/disable channel capability bits
  * _c: capability variable
