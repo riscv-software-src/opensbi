@@ -213,13 +213,6 @@ static int mpxy_mbox_send_message_withoutresp(struct sbi_mpxy_channel *channel,
 				 NULL, 0, NULL);
 }
 
-static int mpxy_mbox_get_notifications(struct sbi_mpxy_channel *channel,
-				       void *eventsbuf, u32 bufsize,
-				       unsigned long *events_len)
-{
-	return SBI_ENOTSUPP;
-}
-
 int mpxy_rpmi_mbox_init(const void *fdt, int nodeoff, const struct fdt_match *match)
 {
 	int rc, len;
@@ -277,11 +270,6 @@ int mpxy_rpmi_mbox_init(const void *fdt, int nodeoff, const struct fdt_match *ma
 					mpxy_mbox_send_message_withresp;
 	rmb->channel.send_message_without_response =
 					mpxy_mbox_send_message_withoutresp;
-	/* Callback to get RPMI notifications */
-	rmb->channel.get_notification_events = mpxy_mbox_get_notifications;
-
-	/* No callback to switch events state data */
-	rmb->channel.switch_eventsstate = NULL;
 
 	/* RPMI Message Protocol ID */
 	rmb->channel.attrs.msg_proto_id = SBI_MPXY_MSGPROTO_RPMI_ID;

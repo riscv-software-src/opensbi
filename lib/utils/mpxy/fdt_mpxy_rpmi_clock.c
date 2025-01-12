@@ -72,7 +72,6 @@ static struct mpxy_rpmi_service_data clock_services[] = {
 static const struct mpxy_rpmi_mbox_data clock_data = {
 	.servicegrp_id = RPMI_SRVGRP_CLOCK,
 	.num_services = RPMI_CLOCK_SRV_MAX_COUNT,
-	.notifications_support = 1,
 	.service_data = clock_services,
 };
 

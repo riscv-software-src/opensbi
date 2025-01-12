@@ -62,7 +62,6 @@ struct mpxy_rpmi_service_data {
 struct mpxy_rpmi_mbox_data {
 	u32 servicegrp_id;
 	u32 num_services;
-	u32 notifications_support;
 	struct mpxy_rpmi_service_data *service_data;
 
 	/** Transfer RPMI service group message */
