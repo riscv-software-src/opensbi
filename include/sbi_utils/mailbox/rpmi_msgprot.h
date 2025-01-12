@@ -175,7 +175,7 @@ enum rpmi_error {
 	RPMI_ERR_VENDOR_START	= -128,
 };
 
-/** RPMI Message Arguments */
+/** RPMI Mailbox Message Arguments */
 struct rpmi_message_args {
 	u32 flags;
 #define RPMI_MSG_FLAGS_NO_TX		(1U << 0)
@@ -187,6 +187,17 @@ struct rpmi_message_args {
 	u32 rx_endian_words;
 	u16 rx_token;
 	u32 rx_data_len;
+};
+
+/** RPMI Mailbox Channel Attribute IDs */
+enum rpmi_channel_attribute_id {
+	RPMI_CHANNEL_ATTR_PROTOCOL_VERSION = 0,
+	RPMI_CHANNEL_ATTR_MAX_DATA_LEN,
+	RPMI_CHANNEL_ATTR_TX_TIMEOUT,
+	RPMI_CHANNEL_ATTR_RX_TIMEOUT,
+	RPMI_CHANNEL_ATTR_SERVICEGROUP_ID,
+	RPMI_CHANNEL_ATTR_SERVICEGROUP_VERSION,
+	RPMI_CHANNEL_ATTR_MAX,
 };
 
 /*

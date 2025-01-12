@@ -490,6 +490,40 @@ static int rpmi_shmem_mbox_xfer(struct mbox_chan *chan, struct mbox_xfer *xfer)
 	return 0;
 }
 
+static int rpmi_shmem_mbox_get_attribute(struct mbox_chan *chan,
+					 int attr_id, void *out_value)
+{
+	struct rpmi_shmem_mbox_controller *mctl =
+			container_of(chan->mbox,
+				     struct rpmi_shmem_mbox_controller,
+				     controller);
+	struct rpmi_srvgrp_chan *srvgrp_chan = to_srvgrp_chan(chan);
+
+	switch (attr_id) {
+	case RPMI_CHANNEL_ATTR_PROTOCOL_VERSION:
+		*((u32 *)out_value) = mctl->spec_version;
+		break;
+	case RPMI_CHANNEL_ATTR_MAX_DATA_LEN:
+		*((u32 *)out_value) = RPMI_MSG_DATA_SIZE(mctl->slot_size);
+		break;
+	case RPMI_CHANNEL_ATTR_TX_TIMEOUT:
+		*((u32 *)out_value) = RPMI_DEF_TX_TIMEOUT;
+		break;
+	case RPMI_CHANNEL_ATTR_RX_TIMEOUT:
+		*((u32 *)out_value) = RPMI_DEF_RX_TIMEOUT;
+		break;
+	case RPMI_CHANNEL_ATTR_SERVICEGROUP_ID:
+		*((u32 *)out_value) = srvgrp_chan->servicegroup_id;
+		break;
+	case RPMI_CHANNEL_ATTR_SERVICEGROUP_VERSION:
+		*((u32 *)out_value) = srvgrp_chan->servicegroup_version;
+		break;
+	default:
+		return SBI_ENOTSUPP;
+	}
+
+	return 0;
+}
 
 static struct mbox_chan *rpmi_shmem_mbox_request_chan(
 						struct mbox_controller *mbox,
@@ -665,6 +699,7 @@ static int rpmi_shmem_mbox_init(const void *fdt, int nodeoff,
 	mctl->controller.request_chan = rpmi_shmem_mbox_request_chan;
 	mctl->controller.free_chan = rpmi_shmem_mbox_free_chan;
 	mctl->controller.xfer = rpmi_shmem_mbox_xfer;
+	mctl->controller.get_attribute = rpmi_shmem_mbox_get_attribute;
 	ret = mbox_controller_add(&mctl->controller);
 	if (ret)
 		goto fail_free_controller;
