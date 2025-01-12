@@ -208,6 +208,7 @@ enum rpmi_channel_attribute_id {
 enum rpmi_servicegroup_id {
 	RPMI_SRVGRP_ID_MIN = 0,
 	RPMI_SRVGRP_BASE = 0x0001,
+	RPMI_SRVGRP_SYSTEM_MSI = 0x0002,
 	RPMI_SRVGRP_SYSTEM_RESET = 0x0003,
 	RPMI_SRVGRP_SYSTEM_SUSPEND = 0x0004,
 	RPMI_SRVGRP_HSM = 0x0005,
@@ -265,6 +266,93 @@ struct rpmi_base_get_platform_info_resp {
 	s32 status;
 	u32 plat_info_len;
 	char plat_info[];
+};
+
+/** RPMI System MSI ServiceGroup Service IDs */
+enum rpmi_sysmsi_service_id {
+	RPMI_SYSMSI_SRV_ENABLE_NOTIFICATION = 0x01,
+	RPMI_SYSMSI_SRV_GET_ATTRIBUTES = 0x2,
+	RPMI_SYSMSI_SRV_GET_MSI_ATTRIBUTES = 0x3,
+	RPMI_SYSMSI_SRV_SET_MSI_STATE = 0x4,
+	RPMI_SYSMSI_SRV_GET_MSI_STATE = 0x5,
+	RPMI_SYSMSI_SRV_SET_MSI_TARGET = 0x6,
+	RPMI_SYSMSI_SRV_GET_MSI_TARGET = 0x7,
+	RPMI_SYSMSI_SRV_ID_MAX_COUNT,
+};
+
+/** Response for system MSI service group attributes */
+struct rpmi_sysmsi_get_attributes_resp {
+	s32 status;
+	u32 sys_num_msi;
+	u32 p2a_db_index;
+	u32 flag0;
+	u32 flag1;
+};
+
+/** Request for system MSI attributes */
+struct rpmi_sysmsi_get_msi_attributes_req {
+	u32 sys_msi_index;
+};
+
+/** Response for system MSI attributes */
+struct rpmi_sysmsi_get_msi_attributes_resp {
+	s32 status;
+	u32 flag0;
+	u32 flag1;
+	u8 name[16];
+};
+
+#define RPMI_SYSMSI_MSI_ATTRIBUTES_FLAG0_PREF_PRIV	(1U << 0)
+
+/** Request for system MSI set state */
+struct rpmi_sysmsi_set_msi_state_req {
+	u32 sys_msi_index;
+	u32 sys_msi_state;
+};
+
+#define RPMI_SYSMSI_MSI_STATE_ENABLE			(1U << 0)
+#define RPMI_SYSMSI_MSI_STATE_PENDING			(1U << 1)
+
+/** Response for system MSI set state */
+struct rpmi_sysmsi_set_msi_state_resp {
+	s32 status;
+};
+
+/** Request for system MSI get state */
+struct rpmi_sysmsi_get_msi_state_req {
+	u32 sys_msi_index;
+};
+
+/** Response for system MSI get state */
+struct rpmi_sysmsi_get_msi_state_resp {
+	s32 status;
+	u32 sys_msi_state;
+};
+
+/** Request for system MSI set target */
+struct rpmi_sysmsi_set_msi_target_req {
+	u32 sys_msi_index;
+	u32 sys_msi_address_low;
+	u32 sys_msi_address_high;
+	u32 sys_msi_data;
+};
+
+/** Response for system MSI set target */
+struct rpmi_sysmsi_set_msi_target_resp {
+	s32 status;
+};
+
+/** Request for system MSI get target */
+struct rpmi_sysmsi_get_msi_target_req {
+	u32 sys_msi_index;
+};
+
+/** Response for system MSI get target */
+struct rpmi_sysmsi_get_msi_target_resp {
+	s32 status;
+	u32 sys_msi_address_low;
+	u32 sys_msi_address_high;
+	u32 sys_msi_data;
 };
 
 /** RPMI System Reset ServiceGroup Service IDs */

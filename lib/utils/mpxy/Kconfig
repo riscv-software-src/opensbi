@@ -18,6 +18,10 @@ config FDT_MPXY_RPMI_CLOCK
 	bool "MPXY driver for RPMI clock service group"
 	default n
 
+config FDT_MPXY_RPMI_SYSMSI
+	bool "MPXY driver for RPMI system MSI service group"
+	default n
+
 endif
 
 endmenu
