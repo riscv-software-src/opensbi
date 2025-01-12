@@ -212,14 +212,14 @@ static int mpxy_mbox_send_message_withoutresp(struct sbi_mpxy_channel *channel,
 
 int mpxy_rpmi_mbox_init(const void *fdt, int nodeoff, const struct fdt_match *match)
 {
+	u32 channel_id, servicegrp_ver, pro_ver, max_data_len, tx_tout, rx_tout;
 	const struct mpxy_rpmi_mbox_data *data = match->data;
 	struct mpxy_rpmi_mbox *rmb;
 	struct mbox_chan *chan;
 	const fdt32_t *val;
-	u32 channel_id;
 	int rc, len;
 
-	/* Allocate context for RPXY mbox client */
+	/* Allocate context for MPXY mbox client */
 	rmb = sbi_zalloc(sizeof(*rmb));
 	if (!rmb)
 		return SBI_ENOMEM;
@@ -230,16 +230,45 @@ int mpxy_rpmi_mbox_init(const void *fdt, int nodeoff, const struct fdt_match *ma
 	 */
 	rc = fdt_mailbox_request_chan(fdt, nodeoff, 0, &chan);
 	if (rc) {
-		sbi_free(rmb);
-		return SBI_ENODEV;
+		rc = SBI_ENODEV;
+		goto fail_free_client;
 	}
 
 	/* Match channel service group id */
 	if (data->servicegrp_id != chan->chan_args[0]) {
-		mbox_controller_free_chan(chan);
-		sbi_free(rmb);
-		return SBI_EINVAL;
+		rc = SBI_EINVAL;
+		goto fail_free_chan;
 	}
+
+	/* Get channel protocol version */
+	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_PROTOCOL_VERSION,
+				     &pro_ver);
+	if (rc)
+		goto fail_free_chan;
+
+	/* Get channel maximum data length */
+	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_MAX_DATA_LEN,
+				     &max_data_len);
+	if (rc)
+		goto fail_free_chan;
+
+	/* Get channel Tx timeout */
+	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_TX_TIMEOUT,
+				     &tx_tout);
+	if (rc)
+		goto fail_free_chan;
+
+	/* Get channel Rx timeout */
+	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_RX_TIMEOUT,
+				     &rx_tout);
+	if (rc)
+		goto fail_free_chan;
+
+	/* Get channel service group version */
+	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_SERVICEGROUP_VERSION,
+				     &servicegrp_ver);
+	if (rc)
+		goto fail_free_chan;
 
 	/*
 	 * The "riscv,sbi-mpxy-channel-id" DT property is mandatory
@@ -247,12 +276,11 @@ int mpxy_rpmi_mbox_init(const void *fdt, int nodeoff, const struct fdt_match *ma
 	 * present then try other drivers.
 	 */
 	val = fdt_getprop(fdt, nodeoff, "riscv,sbi-mpxy-channel-id", &len);
-	if (len > 0 && val)
+	if (len > 0 && val) {
 		channel_id = fdt32_to_cpu(*val);
-	else {
-		mbox_controller_free_chan(chan);
-		sbi_free(rmb);
-		return SBI_ENODEV;
+	} else {
+		rc = SBI_ENODEV;
+		goto fail_free_chan;
 	}
 
 	/* Setup MPXY mbox client */
@@ -271,23 +299,23 @@ int mpxy_rpmi_mbox_init(const void *fdt, int nodeoff, const struct fdt_match *ma
 	/* RPMI Message Protocol ID */
 	rmb->channel.attrs.msg_proto_id = SBI_MPXY_MSGPROTO_RPMI_ID;
 	/* RPMI Message Protocol Version */
-	rmb->channel.attrs.msg_proto_version =
-		SBI_MPXY_MSGPROTO_VERSION(MPXY_RPMI_MAJOR_VER, MPXY_RPMI_MINOR_VER);
+	rmb->channel.attrs.msg_proto_version = pro_ver;
 
-	/* RPMI supported max message data length(bytes), same for
-	 * all service groups */
-	rmb->channel.attrs.msg_data_maxlen =
-					RPMI_MSG_DATA_SIZE(RPMI_SLOT_SIZE_MIN);
-	/* RPMI message send timeout(milliseconds)
-	 * same for all service groups */
-	rmb->channel.attrs.msg_send_timeout = RPMI_DEF_TX_TIMEOUT;
-	rmb->channel.attrs.msg_completion_timeout =
-				RPMI_DEF_TX_TIMEOUT + RPMI_DEF_RX_TIMEOUT;
+	/*
+	 * RPMI supported max message data length(bytes), same for
+	 * all service groups
+	 */
+	rmb->channel.attrs.msg_data_maxlen = max_data_len;
+	/*
+	 * RPMI message send timeout(milliseconds)
+	 * same for all service groups
+	 */
+	rmb->channel.attrs.msg_send_timeout = tx_tout;
+	rmb->channel.attrs.msg_completion_timeout = tx_tout + rx_tout;
 
-	/* RPMI message protocol attributes */
+	/* RPMI service group attributes */
 	rmb->msgprot_attrs.servicegrp_id = data->servicegrp_id;
-	rmb->msgprot_attrs.servicegrp_ver =
-			SBI_MPXY_MSGPROTO_VERSION(MPXY_RPMI_MAJOR_VER, MPXY_RPMI_MINOR_VER);
+	rmb->msgprot_attrs.servicegrp_ver = servicegrp_ver;
 
 	rmb->mbox_data = data;
 	rmb->chan = chan;
@@ -295,11 +323,8 @@ int mpxy_rpmi_mbox_init(const void *fdt, int nodeoff, const struct fdt_match *ma
 	/* Setup RPMI service group context */
 	if (data->setup_group) {
 		rc = data->setup_group(&rmb->group_context, chan, data);
-		if (rc) {
-			mbox_controller_free_chan(chan);
-			sbi_free(rmb);
-			return rc;
-		}
+		if (rc)
+			goto fail_free_chan;
 	}
 
 	/* Register RPMI service group */
@@ -307,10 +332,14 @@ int mpxy_rpmi_mbox_init(const void *fdt, int nodeoff, const struct fdt_match *ma
 	if (rc) {
 		if (data->cleanup_group)
 			data->cleanup_group(rmb->group_context);
-		mbox_controller_free_chan(chan);
-		sbi_free(rmb);
-		return rc;
+		goto fail_free_chan;
 	}
 
 	return SBI_OK;
+
+fail_free_chan:
+	mbox_controller_free_chan(chan);
+fail_free_client:
+	sbi_free(rmb);
+	return rc;
 }

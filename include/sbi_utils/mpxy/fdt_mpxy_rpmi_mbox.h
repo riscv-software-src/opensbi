@@ -16,9 +16,6 @@
 #include <sbi_utils/mailbox/rpmi_msgprot.h>
 #include <sbi_utils/mpxy/fdt_mpxy.h>
 
-#define MPXY_RPMI_MAJOR_VER		(1)
-#define MPXY_RPMI_MINOR_VER		(0)
-
 /** Convert the mpxy attribute ID to attribute array index */
 #define attr_id2index(attr_id)	(attr_id - SBI_MPXY_ATTR_MSGPROTO_ATTR_START)
 
