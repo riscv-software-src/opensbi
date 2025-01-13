@@ -11,6 +11,7 @@
 #define __RPMI_MAILBOX_H__
 
 #include <sbi/sbi_error.h>
+#include <sbi_utils/mailbox/mailbox.h>
 #include <sbi_utils/mailbox/rpmi_msgprot.h>
 
 #define rpmi_u32_count(__var)	(sizeof(__var) / sizeof(u32))
