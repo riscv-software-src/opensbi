@@ -52,29 +52,6 @@ const struct fdt_match *fdt_match_node(const void *fdt, int nodeoff,
 	return NULL;
 }
 
-int fdt_find_match(const void *fdt, int startoff,
-		   const struct fdt_match *match_table,
-		   const struct fdt_match **out_match)
-{
-	int nodeoff;
-
-	if (!fdt || !match_table)
-		return SBI_ENODEV;
-
-	while (match_table->compatible) {
-		nodeoff = fdt_node_offset_by_compatible(fdt, startoff,
-						match_table->compatible);
-		if (nodeoff >= 0) {
-			if (out_match)
-				*out_match = match_table;
-			return nodeoff;
-		}
-		match_table++;
-	}
-
-	return SBI_ENODEV;
-}
-
 int fdt_parse_phandle_with_args(const void *fdt, int nodeoff,
 				const char *prop, const char *cells_prop,
 				int index, struct fdt_phandle_args *out_args)
