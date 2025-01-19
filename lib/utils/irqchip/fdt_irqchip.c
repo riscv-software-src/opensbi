@@ -7,39 +7,12 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
-#include <sbi/sbi_error.h>
-#include <sbi/sbi_scratch.h>
-#include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/irqchip/fdt_irqchip.h>
 
 /* List of FDT irqchip drivers generated at compile time */
-extern struct fdt_irqchip *const fdt_irqchip_drivers[];
+extern const struct fdt_driver *const fdt_irqchip_drivers[];
 
 int fdt_irqchip_init(void)
 {
-	int pos, noff, rc;
-	struct fdt_irqchip *drv;
-	const struct fdt_match *match;
-	const void *fdt = fdt_get_address();
-
-	for (pos = 0; fdt_irqchip_drivers[pos]; pos++) {
-		drv = fdt_irqchip_drivers[pos];
-
-		noff = -1;
-		while ((noff = fdt_find_match(fdt, noff,
-					drv->match_table, &match)) >= 0) {
-			if (!fdt_node_is_enabled(fdt,noff))
-				continue;
-
-			if (drv->cold_init) {
-				rc = drv->cold_init(fdt, noff, match);
-				if (rc == SBI_ENODEV)
-					continue;
-				if (rc)
-					return rc;
-			}
-		}
-	}
-
-	return 0;
+	return fdt_driver_init_all(fdt_get_address(), fdt_irqchip_drivers);
 }

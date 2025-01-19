@@ -105,7 +105,7 @@ static const struct fdt_match irqchip_plic_match[] = {
 	{ /* sentinel */ }
 };
 
-struct fdt_irqchip fdt_irqchip_plic = {
+const struct fdt_driver fdt_irqchip_plic = {
 	.match_table = irqchip_plic_match,
-	.cold_init = irqchip_plic_cold_init,
+	.init = irqchip_plic_cold_init,
 };

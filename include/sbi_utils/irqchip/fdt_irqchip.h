@@ -11,13 +11,9 @@
 #define __FDT_IRQCHIP_H__
 
 #include <sbi/sbi_types.h>
+#include <sbi_utils/fdt/fdt_driver.h>
 
 #ifdef CONFIG_FDT_IRQCHIP
-
-struct fdt_irqchip {
-	const struct fdt_match *match_table;
-	int (*cold_init)(const void *fdt, int nodeoff, const struct fdt_match *match);
-};
 
 int fdt_irqchip_init(void);
 
