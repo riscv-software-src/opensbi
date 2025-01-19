@@ -9,8 +9,8 @@
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_system.h>
+#include <sbi_utils/fdt/fdt_driver.h>
 #include <sbi_utils/fdt/fdt_helper.h>
-#include <sbi_utils/reset/fdt_reset.h>
 
 #define WDT_KEY_VAL			0x16aa0000
 

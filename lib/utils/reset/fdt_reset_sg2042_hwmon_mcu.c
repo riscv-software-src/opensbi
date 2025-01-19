@@ -10,8 +10,8 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_console.h>
+#include <sbi_utils/fdt/fdt_driver.h>
 #include <sbi_utils/fdt/fdt_helper.h>
-#include <sbi_utils/reset/fdt_reset.h>
 #include <sbi_utils/i2c/fdt_i2c.h>
 
 #define MANGO_BOARD_TYPE_MASK		0x80

@@ -12,9 +12,9 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_system.h>
+#include <sbi_utils/fdt/fdt_driver.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/regmap/fdt_regmap.h>
-#include <sbi_utils/reset/fdt_reset.h>
 
 struct syscon_reset {
 	struct regmap *rmap;

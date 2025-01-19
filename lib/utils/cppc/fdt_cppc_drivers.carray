@@ -1,3 +1,0 @@
-HEADER: sbi_utils/cppc/fdt_cppc.h
-TYPE: const struct fdt_driver
-NAME: fdt_cppc_drivers

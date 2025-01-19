@@ -7,8 +7,5 @@
 #   Anup Patel <apatel@ventanamicro.com>
 #
 
-libsbiutils-objs-$(CONFIG_FDT_HSM) += hsm/fdt_hsm.o
-libsbiutils-objs-$(CONFIG_FDT_HSM) += hsm/fdt_hsm_drivers.carray.o
-
-carray-fdt_hsm_drivers-$(CONFIG_FDT_HSM_RPMI) += fdt_hsm_rpmi
+carray-fdt_early_drivers-$(CONFIG_FDT_HSM_RPMI) += fdt_hsm_rpmi
 libsbiutils-objs-$(CONFIG_FDT_HSM_RPMI) += hsm/fdt_hsm_rpmi.o

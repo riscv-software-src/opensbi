@@ -7,8 +7,5 @@
 #   Anup Patel <apatel@ventanamicro.com>
 #
 
-libsbiutils-objs-$(CONFIG_FDT_SUSPEND) += suspend/fdt_suspend.o
-libsbiutils-objs-$(CONFIG_FDT_SUSPEND) += suspend/fdt_suspend_drivers.carray.o
-
-carray-fdt_suspend_drivers-$(CONFIG_FDT_SUSPEND_RPMI) += fdt_suspend_rpmi
+carray-fdt_early_drivers-$(CONFIG_FDT_SUSPEND_RPMI) += fdt_suspend_rpmi
 libsbiutils-objs-$(CONFIG_FDT_SUSPEND_RPMI) += suspend/fdt_suspend_rpmi.o

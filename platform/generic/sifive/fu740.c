@@ -15,9 +15,9 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_console.h>
-#include <sbi_utils/fdt/fdt_helper.h>
+#include <sbi_utils/fdt/fdt_driver.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
-#include <sbi_utils/reset/fdt_reset.h>
+#include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/i2c/fdt_i2c.h>
 
 #define DA9063_REG_PAGE_CON		0x00

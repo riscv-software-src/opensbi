@@ -14,8 +14,8 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_system.h>
+#include <sbi_utils/fdt/fdt_driver.h>
 #include <sbi_utils/fdt/fdt_helper.h>
-#include <sbi_utils/reset/fdt_reset.h>
 #include <sbi_utils/sys/atcsmu.h>
 
 #define ATCWDT200_WP_NUM 0x5aa5

@@ -15,9 +15,9 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_timer.h>
+#include <sbi_utils/fdt/fdt_driver.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/gpio/fdt_gpio.h>
-#include <sbi_utils/reset/fdt_reset.h>
 
 struct gpio_reset {
 	struct gpio_pin pin;

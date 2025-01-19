@@ -16,8 +16,8 @@
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_timer.h>
 #include <sbi/riscv_io.h>
+#include <sbi_utils/fdt/fdt_driver.h>
 #include <sbi_utils/fdt/fdt_helper.h>
-#include <sbi_utils/reset/fdt_reset.h>
 #include <sbi_utils/i2c/fdt_i2c.h>
 
 struct pmic {

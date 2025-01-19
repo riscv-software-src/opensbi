@@ -12,7 +12,7 @@
 #include <sbi/sbi_cppc.h>
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_scratch.h>
-#include <sbi_utils/cppc/fdt_cppc.h>
+#include <sbi_utils/fdt/fdt_driver.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/mailbox/fdt_mailbox.h>
 #include <sbi_utils/mailbox/rpmi_mailbox.h>

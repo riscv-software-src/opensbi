@@ -7,7 +7,7 @@
  *   Anup Patel <anup.patel@wdc.com>
  */
 
-#include <sbi_utils/reset/fdt_reset.h>
+#include <sbi_utils/fdt/fdt_driver.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/sys/htif.h>
 
