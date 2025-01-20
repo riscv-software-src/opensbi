@@ -292,7 +292,7 @@ _fdt_reloc_done:
 	REG_S	t0, 0(t1)
 	j	_start_warm
 
-	/* waiting for boot hart to be done (_boot_status == 2) */
+	/* waiting for boot hart to be done (_boot_status == BOOT_STATUS_BOOT_HART_DONE) */
 _wait_for_boot_hart:
 	li	t0, BOOT_STATUS_BOOT_HART_DONE
 	lla	t1, _boot_status
