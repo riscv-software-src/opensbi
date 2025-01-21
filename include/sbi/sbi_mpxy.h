@@ -153,11 +153,13 @@ int sbi_mpxy_init(struct sbi_scratch *scratch);
 /** Check if some Message proxy channel is available */
 bool sbi_mpxy_channel_available(void);
 
-/** Set Message proxy shared memory on the calling HART */
-int sbi_mpxy_set_shmem(unsigned long shmem_size,
-			unsigned long shmem_phys_lo,
-			unsigned long shmem_phys_hi,
-			unsigned long flags);
+/** Get message proxy shared memory size */
+unsigned long sbi_mpxy_get_shmem_size(void);
+
+/** Set message proxy shared memory on the calling HART */
+int sbi_mpxy_set_shmem(unsigned long shmem_phys_lo,
+		       unsigned long shmem_phys_hi,
+		       unsigned long flags);
 
 /** Get channel IDs list */
 int sbi_mpxy_get_channel_ids(u32 start_index);

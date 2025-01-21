@@ -20,8 +20,11 @@ static int sbi_ecall_mpxy_handler(unsigned long extid, unsigned long funcid,
 	int ret = 0;
 
 	switch (funcid) {
+	case SBI_EXT_MPXY_GET_SHMEM_SIZE:
+		out->value = sbi_mpxy_get_shmem_size();
+		break;
 	case SBI_EXT_MPXY_SET_SHMEM:
-		ret = sbi_mpxy_set_shmem(regs->a0, regs->a1, regs->a2, regs->a3);
+		ret = sbi_mpxy_set_shmem(regs->a0, regs->a1, regs->a2);
 		break;
 	case SBI_EXT_MPXY_GET_CHANNEL_IDS:
 		ret = sbi_mpxy_get_channel_ids(regs->a0);
@@ -36,7 +39,7 @@ static int sbi_ecall_mpxy_handler(unsigned long extid, unsigned long funcid,
 		ret = sbi_mpxy_send_message(regs->a0, regs->a1,
 					    regs->a2, &out->value);
 		break;
-	case SBI_EXT_MPXY_SEND_MSG_NO_RESP:
+	case SBI_EXT_MPXY_SEND_MSG_WITHOUT_RESP:
 		ret = sbi_mpxy_send_message(regs->a0, regs->a1, regs->a2,
 					    NULL);
 		break;
