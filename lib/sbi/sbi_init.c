@@ -161,7 +161,7 @@ static void sbi_boot_print_domains(struct sbi_scratch *scratch)
 static void sbi_boot_print_hart(struct sbi_scratch *scratch, u32 hartid)
 {
 	int xlen;
-	char str[128];
+	char str[256];
 	const struct sbi_domain *dom = sbi_domain_thishart_ptr();
 
 	if (scratch->options & SBI_SCRATCH_NO_BOOT_PRINTS)
