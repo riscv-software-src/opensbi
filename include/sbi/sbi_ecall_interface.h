@@ -456,8 +456,9 @@ enum sbi_sse_state {
 #define SBI_ERR_BAD_RANGE			-11
 #define SBI_ERR_TIMEOUT				-12
 #define SBI_ERR_IO				-13
+#define SBI_ERR_DENIED_LOCKED			-14
 
-#define SBI_LAST_ERR				SBI_ERR_BAD_RANGE
+#define SBI_LAST_ERR				SBI_ERR_DENIED_LOCKED
 
 /* clang-format on */
 
