@@ -337,7 +337,7 @@ int sbi_fwft_set(enum sbi_fwft_feature_t feature, unsigned long value,
 		return SBI_EINVAL;
 
 	if (conf->flags & SBI_FWFT_SET_FLAG_LOCK)
-		return SBI_EDENIED;
+		return SBI_EDENIED_LOCKED;
 
 	ret = conf->feature->set(conf, value);
 	if (ret)
