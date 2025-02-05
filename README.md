@@ -115,9 +115,6 @@ address with appropriate alignment. Bare-metal GNU toolchains (e.g.
 *riscv64-unknown-elf-gcc*) cannot be used. *Clang/LLVM* can still generate PIE
 images if a bare-metal triple is used (e.g. *-target riscv64-unknown-elf*).
 
-Please note that only a 64-bit version of the toolchain is available in
-the Bootlin toolchain repository for now.
-
 In addition to a toolchain, OpenSBI also requires the following packages on
 the host:
 
