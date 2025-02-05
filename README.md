@@ -99,7 +99,7 @@ capable enough to bring up all other non-booting harts using HSM extension.
 Required Toolchain and Packages
 -------------------------------
 
-OpenSBI can be compiled natively or cross-compiled on a x86 host. For
+OpenSBI can be compiled natively or cross-compiled on a host machine. For
 cross-compilation, you can build your own toolchain, download a prebuilt one
 from the [Bootlin toolchain repository] or install a distribution-provided
 toolchain; if you opt to use LLVM/Clang, most distribution toolchains will
