@@ -112,10 +112,13 @@
 /** Size (in bytes) of sbi_trap_info */
 #define SBI_TRAP_INFO_SIZE SBI_TRAP_INFO_OFFSET(last)
 
+#define STACK_BOUNDARY 16
+#define ALIGN_TO_BOUNDARY(x, a) (((x) + (a) - 1) & ~((a) - 1))
+
 /** Size (in bytes) of sbi_trap_context */
-#define SBI_TRAP_CONTEXT_SIZE (SBI_TRAP_REGS_SIZE + \
+#define SBI_TRAP_CONTEXT_SIZE ALIGN_TO_BOUNDARY((SBI_TRAP_REGS_SIZE + \
 			       SBI_TRAP_INFO_SIZE + \
-			       __SIZEOF_POINTER__)
+			       __SIZEOF_POINTER__), STACK_BOUNDARY)
 
 #ifndef __ASSEMBLER__
 
