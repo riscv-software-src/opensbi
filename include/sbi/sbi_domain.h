@@ -307,8 +307,11 @@ int sbi_domain_register(struct sbi_domain *dom,
 int sbi_domain_root_add_memrange(unsigned long addr, unsigned long size,
 			   unsigned long align, unsigned long region_flags);
 
-/** Finalize domain tables and startup non-root domains */
-int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid);
+/** Startup non-root domains */
+int sbi_domain_startup(struct sbi_scratch *scratch, u32 cold_hartid);
+
+/** Finalize domain tables */
+int sbi_domain_finalize(struct sbi_scratch *scratch);
 
 /** Initialize domains */
 int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid);

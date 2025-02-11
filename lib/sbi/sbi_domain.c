@@ -685,20 +685,15 @@ int sbi_domain_root_add_memrange(unsigned long addr, unsigned long size,
 	return 0;
 }
 
-int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
+int sbi_domain_startup(struct sbi_scratch *scratch, u32 cold_hartid)
 {
 	int rc;
 	u32 dhart;
 	struct sbi_domain *dom;
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
-	/* Initialize and populate domains for the platform */
-	rc = sbi_platform_domains_init(plat);
-	if (rc) {
-		sbi_printf("%s: platform domains_init() failed (error %d)\n",
-			   __func__, rc);
-		return rc;
-	}
+	/* Sanity checks */
+	if (!domain_finalized)
+		return SBI_EINVAL;
 
 	/* Startup boot HART of domains */
 	sbi_domain_for_each(dom) {
@@ -742,6 +737,26 @@ int sbi_domain_finalize(struct sbi_scratch *scratch, u32 cold_hartid)
 				return rc;
 			}
 		}
+	}
+
+	return 0;
+}
+
+int sbi_domain_finalize(struct sbi_scratch *scratch)
+{
+	int rc;
+	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+
+	/* Sanity checks */
+	if (domain_finalized)
+		return SBI_EINVAL;
+
+	/* Initialize and populate domains for the platform */
+	rc = sbi_platform_domains_init(plat);
+	if (rc) {
+		sbi_printf("%s: platform domains_init() failed (error %d)\n",
+			   __func__, rc);
+		return rc;
 	}
 
 	/*
