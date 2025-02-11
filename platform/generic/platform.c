@@ -200,8 +200,8 @@ unsigned long fw_platform_init(unsigned long arg0, unsigned long arg1,
 		if (rc)
 			continue;
 
-		if (SBI_HARTMASK_MAX_BITS <= hartid)
-			continue;
+		if (SBI_HARTMASK_MAX_BITS <= hart_count)
+			break;
 
 		if (!fdt_node_is_enabled(fdt, cpu_offset))
 			continue;
