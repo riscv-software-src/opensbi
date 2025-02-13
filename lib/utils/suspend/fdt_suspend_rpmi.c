@@ -132,7 +132,7 @@ static const struct fdt_match rpmi_suspend_match[] = {
 	{},
 };
 
-struct fdt_driver fdt_suspend_rpmi = {
+const struct fdt_driver fdt_suspend_rpmi = {
 	.match_table = rpmi_suspend_match,
 	.init = rpmi_suspend_init,
 	.experimental = true,
