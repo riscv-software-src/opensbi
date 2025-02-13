@@ -882,7 +882,7 @@ int sbi_sse_hart_mask(void)
 		return SBI_EFAIL;
 
 	if (state->masked)
-		return SBI_EALREADY_STARTED;
+		return SBI_EALREADY_STOPPED;
 
 	state->masked = true;
 
@@ -897,7 +897,7 @@ int sbi_sse_hart_unmask(void)
 		return SBI_EFAIL;
 
 	if (!state->masked)
-		return SBI_EALREADY_STOPPED;
+		return SBI_EALREADY_STARTED;
 
 	state->masked = false;
 
