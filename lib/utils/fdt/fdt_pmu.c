@@ -74,7 +74,7 @@ int fdt_pmu_setup(const void *fdt)
 
 	event_ctr_map = fdt_getprop(fdt, pmu_offset,
 				    "riscv,event-to-mhpmcounters", &len);
-	if (event_ctr_map && len >= 8) {
+	if (event_ctr_map) {
 		len = len / (sizeof(u32) * 3);
 		for (i = 0; i < len; i++) {
 			event_idx_start = fdt32_to_cpu(event_ctr_map[3 * i]);
@@ -89,7 +89,7 @@ int fdt_pmu_setup(const void *fdt)
 
 	event_val = fdt_getprop(fdt, pmu_offset,
 				"riscv,event-to-mhpmevent", &len);
-	if (event_val && len >= 8) {
+	if (event_val) {
 		len = len / (sizeof(u32) * 3);
 		for (i = 0; i < len; i++) {
 			event = &fdt_pmu_evt_select[hw_event_count];
@@ -103,7 +103,7 @@ int fdt_pmu_setup(const void *fdt)
 
 	event_val = fdt_getprop(fdt, pmu_offset,
 				"riscv,raw-event-to-mhpmcounters", &len);
-	if (event_val && len >= 20) {
+	if (event_val) {
 		len = len / (sizeof(u32) * 5);
 		for (i = 0; i < len; i++) {
 			raw_selector = fdt32_to_cpu(event_val[5 * i]);
