@@ -62,11 +62,6 @@ int fdt_pmu_setup(const void *fdt);
  */
 uint64_t fdt_pmu_get_select_value(uint32_t event_idx);
 
-/** The event index to selector value table instance */
-extern struct fdt_pmu_hw_event_select_map fdt_pmu_evt_select[];
-/** The number of valid entries in fdt_pmu_evt_select[] */
-extern uint32_t hw_event_count;
-
 #else
 
 static inline void fdt_pmu_fixup(void *fdt) { }
