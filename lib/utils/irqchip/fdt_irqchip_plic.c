@@ -98,10 +98,16 @@ fail_free_data:
 
 static const struct fdt_match irqchip_plic_match[] = {
 	{ .compatible = "andestech,nceplic100" },
-	{ .compatible = "riscv,plic0" },
 	{ .compatible = "sifive,plic-1.0.0" },
 	{ .compatible = "thead,c900-plic",
 	  .data = (void *)(PLIC_FLAG_THEAD_DELEGATION | PLIC_FLAG_ENABLE_PM) },
+
+	/*
+	 * We keep the generic RISC-V PLIC at the end.
+	 * This ensures we match against more specific options first.
+	 * (This is important if the PLIC has quirks, like the T-HEAD PLIC.)
+	 */
+	{ .compatible = "riscv,plic0" },
 	{ /* sentinel */ }
 };
 
