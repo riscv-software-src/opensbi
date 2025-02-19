@@ -15,39 +15,43 @@ int fdt_driver_init_by_offset(const void *fdt, int nodeoff,
 {
 	const struct fdt_driver *driver;
 	const struct fdt_match *match;
-	const void *prop;
-	int len, rc;
+	int compat_len, prop_len, rc;
+	const char *compat_str;
 
 	if (!fdt_node_is_enabled(fdt, nodeoff))
 		return SBI_ENODEV;
 
-	prop = fdt_getprop(fdt, nodeoff, "compatible", &len);
-	if (!prop)
+	compat_str = fdt_getprop(fdt, nodeoff, "compatible", &prop_len);
+	if (!compat_str)
 		return SBI_ENODEV;
 
-	while ((driver = *drivers++)) {
-		for (match = driver->match_table; match->compatible; match++) {
-			if (!fdt_stringlist_contains(prop, len, match->compatible))
-				continue;
+	while ((compat_len = strnlen(compat_str, prop_len) + 1) <= prop_len) {
+		for (int i = 0; (driver = drivers[i]); i++)
+			for (match = driver->match_table; match->compatible; match++)
+				if (!memcmp(match->compatible, compat_str, compat_len))
+					goto found;
 
-			if (driver->experimental)
-				sbi_printf("WARNING: %s driver is experimental and may change\n",
-					   match->compatible);
-
-			rc = driver->init(fdt, nodeoff, match);
-			if (rc < 0) {
-				const char *name;
-
-				name = fdt_get_name(fdt, nodeoff, NULL);
-				sbi_printf("%s: %s (%s) init failed: %d\n",
-					   __func__, name, match->compatible, rc);
-			}
-
-			return rc;
-		}
+		compat_str += compat_len;
+		prop_len -= compat_len;
 	}
 
 	return SBI_ENODEV;
+
+found:
+	if (driver->experimental)
+		sbi_printf("WARNING: %s driver is experimental and may change\n",
+			   match->compatible);
+
+	rc = driver->init(fdt, nodeoff, match);
+	if (rc < 0) {
+		const char *name;
+
+		name = fdt_get_name(fdt, nodeoff, NULL);
+		sbi_printf("%s: %s (%s) init failed: %d\n",
+			   __func__, name, match->compatible, rc);
+	}
+
+	return rc;
 }
 
 static int fdt_driver_init_scan(const void *fdt,
