@@ -226,7 +226,7 @@ extern u32 hartindex_to_hartid_table[];
 /** Get sbi_scratch from HART index */
 #define sbi_hartindex_to_hartid(__hartindex)		\
 ({							\
-	((__hartindex) <= sbi_scratch_last_hartindex()) ?\
+	((__hartindex) < SBI_HARTMASK_MAX_BITS) ?	\
 	hartindex_to_hartid_table[__hartindex] : -1U;	\
 })
 
@@ -236,8 +236,8 @@ extern struct sbi_scratch *hartindex_to_scratch_table[];
 /** Get sbi_scratch from HART index */
 #define sbi_hartindex_to_scratch(__hartindex)		\
 ({							\
-	((__hartindex) <= sbi_scratch_last_hartindex()) ?\
-	hartindex_to_scratch_table[__hartindex] : NULL;\
+	((__hartindex) < SBI_HARTMASK_MAX_BITS) ?	\
+	hartindex_to_scratch_table[__hartindex] : NULL;	\
 })
 
 /**
