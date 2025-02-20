@@ -112,11 +112,12 @@ build_opensbi() {
 	esac
 
 	# Ensure output directory is present
-	mkdir -p "${BUILD_OUTPUT_PATH}/${BUILD_NAME}"
+	mkdir -p "${BUILD_OUTPUT_PATH}"
 
 	# Build and install generic library
 	echo "Build and install generic library XLEN=${BUILD_RISCV_XLEN}"
 	echo ""
+	rm -rf "${BUILD_OUTPUT_PATH}/${BUILD_NAME}"
 	make -C "${BUILD_OPENSBI_SOURCE_PATH}" O="${BUILD_OUTPUT_PATH}/${BUILD_NAME}" I="${BUILD_OUTPUT_PATH}/${BUILD_ARCHIVE_NAME}" PLATFORM_RISCV_XLEN="${BUILD_RISCV_XLEN}" install_libsbi -j "${BUILD_NUM_THREADS}"
 	echo ""
 
@@ -125,6 +126,7 @@ build_opensbi() {
 	do
 		echo "Build and install PLATFORM=${BUILD_PLATFORM_SUBDIR[${INDEX}]} XLEN=${BUILD_RISCV_XLEN}"
 		echo ""
+		rm -rf "${BUILD_OUTPUT_PATH}/${BUILD_NAME}"
 		make -C "${BUILD_OPENSBI_SOURCE_PATH}" O="${BUILD_OUTPUT_PATH}/${BUILD_NAME}" I="${BUILD_OUTPUT_PATH}/${BUILD_ARCHIVE_NAME}" PLATFORM="${BUILD_PLATFORM_SUBDIR[${INDEX}]}" PLATFORM_RISCV_XLEN="${BUILD_RISCV_XLEN}" install_libplatsbi install_firmwares -j "${BUILD_NUM_THREADS}"
 		echo ""
 	done
@@ -133,6 +135,7 @@ build_opensbi() {
 	if [ "${BUILD_DOCS}" == "yes" ]; then
 		echo "Build and install docs"
 		echo ""
+		rm -rf "${BUILD_OUTPUT_PATH}/${BUILD_NAME}"
 		make -C "${BUILD_OPENSBI_SOURCE_PATH}" O="${BUILD_OUTPUT_PATH}/${BUILD_NAME}" I="${BUILD_OUTPUT_PATH}/${BUILD_ARCHIVE_NAME}" install_docs
 		echo ""
 	fi
