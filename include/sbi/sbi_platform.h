@@ -169,7 +169,7 @@ struct sbi_platform {
 	char name[64];
 	/** Supported features */
 	u64 features;
-	/** Total number of HARTs */
+	/** Total number of HARTs (at most SBI_HARTMASK_MAX_BITS) */
 	u32 hart_count;
 	/** Per-HART stack size for exception/interrupt handling */
 	u32 hart_stack_size;
@@ -184,17 +184,12 @@ struct sbi_platform {
 	/**
 	 * HART index to HART id table
 	 *
-	 * For used HART index <abc>:
+	 * If hart_index2id != NULL then the table must contain a mapping
+	 * for each HART index 0 <= <abc> < hart_count:
 	 *     hart_index2id[<abc>] = some HART id
-	 * For unused HART index <abc>:
-	 *     hart_index2id[<abc>] = -1U
 	 *
 	 * If hart_index2id == NULL then we assume identity mapping
 	 *     hart_index2id[<abc>] = <abc>
-	 *
-	 * We have only two restrictions:
-	 * 1. HART index < sbi_platform hart_count
-	 * 2. HART id < SBI_HARTMASK_MAX_BITS
 	 */
 	const u32 *hart_index2id;
 };
