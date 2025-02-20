@@ -67,7 +67,7 @@ bool semihosting_enabled(void)
 		"	mret\n"
 		"_semihost_test_vector_next:\n"
 
-		"	la %[tmp], _semihost_test_vector\n"
+		"	lla %[tmp], _semihost_test_vector\n"
 		"	csrrw %[tmp], mtvec, %[tmp]\n"
 		"	.align 4\n"
 		"	slli zero, zero, 0x1f\n"
