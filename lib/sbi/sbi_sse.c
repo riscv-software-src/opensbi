@@ -926,7 +926,7 @@ int sbi_sse_add_event(uint32_t event_id, const struct sbi_sse_cb_ops *cb_ops)
 	/* Do not allow adding an event twice */
 	info = sse_event_info_get(event_id);
 	if (info)
-		return SBI_EINVAL;
+		return SBI_EALREADY;
 
 	if (cb_ops && cb_ops->set_hartid_cb && !EVENT_IS_GLOBAL(event_id))
 		return SBI_EINVAL;
