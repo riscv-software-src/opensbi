@@ -12,7 +12,6 @@
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>
-#include <sbi/sbi_platform.h>
 #include <sbi/sbi_system.h>
 #include <sbi_utils/fdt/fdt_driver.h>
 #include <sbi_utils/fdt/fdt_helper.h>
@@ -59,9 +58,7 @@ static int ae350_system_reset_check(u32 type, u32 reason)
 
 static void ae350_system_reset(u32 type, u32 reason)
 {
-	const struct sbi_platform *plat = sbi_platform_thishart_ptr();
-
-	for (int i = 0; i < sbi_platform_hart_count(plat); i++)
+	sbi_for_each_hartindex(i)
 		if (smu_set_reset_vector(&smu, FLASH_BASE, i))
 			goto fail;
 

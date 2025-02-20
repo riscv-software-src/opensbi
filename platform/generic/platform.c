@@ -367,7 +367,7 @@ static u32 generic_tlb_num_entries(void)
 {
 	if (generic_plat && generic_plat->tlb_num_entries)
 		return generic_plat->tlb_num_entries(generic_plat_match);
-	return sbi_scratch_last_hartindex() + 1;
+	return sbi_hart_count();
 }
 
 static int generic_pmu_init(void)

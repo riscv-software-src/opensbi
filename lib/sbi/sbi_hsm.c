@@ -238,7 +238,6 @@ static void hsm_device_hart_resume(void)
 
 int sbi_hsm_init(struct sbi_scratch *scratch, bool cold_boot)
 {
-	u32 i;
 	struct sbi_scratch *rscratch;
 	struct sbi_hsm_data *hdata;
 
@@ -248,7 +247,7 @@ int sbi_hsm_init(struct sbi_scratch *scratch, bool cold_boot)
 			return SBI_ENOMEM;
 
 		/* Initialize hart state data for every hart */
-		for (i = 0; i <= sbi_scratch_last_hartindex(); i++) {
+		sbi_for_each_hartindex(i) {
 			rscratch = sbi_hartindex_to_scratch(i);
 			if (!rscratch)
 				continue;

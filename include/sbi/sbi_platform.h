@@ -326,7 +326,7 @@ static inline u32 sbi_platform_tlb_fifo_num_entries(const struct sbi_platform *p
 {
 	if (plat && sbi_platform_ops(plat)->get_tlb_num_entries)
 		return sbi_platform_ops(plat)->get_tlb_num_entries();
-	return sbi_scratch_last_hartindex() + 1;
+	return sbi_hart_count();
 }
 
 /**

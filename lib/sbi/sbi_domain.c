@@ -770,11 +770,9 @@ int sbi_domain_finalize(struct sbi_scratch *scratch)
 
 int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 {
-	u32 i;
 	int rc;
 	struct sbi_hartmask *root_hmask;
 	struct sbi_domain_memregion *root_memregs;
-	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	SBI_INIT_LIST_HEAD(&domain_list);
 
@@ -855,7 +853,7 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 	root.next_mode = scratch->next_mode;
 
 	/* Root domain possible and assigned HARTs */
-	for (i = 0; i < plat->hart_count; i++)
+	sbi_for_each_hartindex(i)
 		sbi_hartmask_set_hartindex(i, root_hmask);
 
 	/* Finally register the root domain */

@@ -135,7 +135,7 @@ void plic_suspend(void)
 	if (!data_word)
 		return;
 
-	for (u32 h = 0; h <= sbi_scratch_last_hartindex(); h++) {
+	sbi_for_each_hartindex(h) {
 		u32 context_id = plic->context_map[h][PLIC_S_CONTEXT];
 
 		if (context_id < 0)
@@ -166,7 +166,7 @@ void plic_resume(void)
 	if (!data_word)
 		return;
 
-	for (u32 h = 0; h <= sbi_scratch_last_hartindex(); h++) {
+	sbi_for_each_hartindex(h) {
 		u32 context_id = plic->context_map[h][PLIC_S_CONTEXT];
 
 		if (context_id < 0)
@@ -236,7 +236,7 @@ int plic_cold_irqchip_init(struct plic_data *plic)
 	if (plic->flags & PLIC_FLAG_ENABLE_PM) {
 		unsigned long data_size = 0;
 
-		for (u32 i = 0; i <= sbi_scratch_last_hartindex(); i++) {
+		sbi_for_each_hartindex(i) {
 			if (plic->context_map[i][PLIC_S_CONTEXT] < 0)
 				continue;
 
@@ -270,7 +270,7 @@ int plic_cold_irqchip_init(struct plic_data *plic)
 	if (ret)
 		return ret;
 
-	for (u32 i = 0; i <= sbi_scratch_last_hartindex(); i++) {
+	sbi_for_each_hartindex(i) {
 		if (plic->context_map[i][PLIC_M_CONTEXT] < 0 &&
 		    plic->context_map[i][PLIC_S_CONTEXT] < 0)
 			continue;

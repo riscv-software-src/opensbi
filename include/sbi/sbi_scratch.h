@@ -220,9 +220,6 @@ extern u32 sbi_scratch_hart_count;
 #define sbi_for_each_hartindex(__var) \
 	for (u32 __var = 0; __var < sbi_hart_count(); ++__var)
 
-/** Get last HART index having a sbi_scratch pointer */
-#define sbi_scratch_last_hartindex() (sbi_hart_count() - 1)
-
 /** Check whether a particular HART index is valid or not */
 #define sbi_hartindex_valid(__hartindex) ((__hartindex) < sbi_hart_count())
 

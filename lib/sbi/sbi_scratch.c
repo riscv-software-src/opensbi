@@ -54,7 +54,6 @@ int sbi_scratch_init(struct sbi_scratch *scratch)
 
 unsigned long sbi_scratch_alloc_offset(unsigned long size)
 {
-	u32 i;
 	void *ptr;
 	unsigned long ret = 0;
 	struct sbi_scratch *rscratch;
@@ -86,7 +85,7 @@ done:
 	spin_unlock(&extra_lock);
 
 	if (ret) {
-		for (i = 0; i <= sbi_scratch_last_hartindex(); i++) {
+		sbi_for_each_hartindex(i) {
 			rscratch = sbi_hartindex_to_scratch(i);
 			if (!rscratch)
 				continue;
