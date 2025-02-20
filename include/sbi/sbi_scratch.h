@@ -210,15 +210,21 @@ do {									\
 #define current_hartindex() \
 	(sbi_scratch_thishart_ptr()->hartindex)
 
-/** Last HART index having a sbi_scratch pointer */
-extern u32 last_hartindex_having_scratch;
+/** Number of harts managed by this OpenSBI instance */
+extern u32 sbi_scratch_hart_count;
+
+/** Get the number of harts managed by this OpenSBI instance */
+#define sbi_hart_count() sbi_scratch_hart_count
+
+/** Iterate over the harts managed by this OpenSBI instance */
+#define sbi_for_each_hartindex(__var) \
+	for (u32 __var = 0; __var < sbi_hart_count(); ++__var)
 
 /** Get last HART index having a sbi_scratch pointer */
-#define sbi_scratch_last_hartindex()	last_hartindex_having_scratch
+#define sbi_scratch_last_hartindex() (sbi_hart_count() - 1)
 
 /** Check whether a particular HART index is valid or not */
-#define sbi_hartindex_valid(__hartindex) \
-(((__hartindex) <= sbi_scratch_last_hartindex()) ? true : false)
+#define sbi_hartindex_valid(__hartindex) ((__hartindex) < sbi_hart_count())
 
 /** HART index to HART id table */
 extern u32 hartindex_to_hartid_table[];

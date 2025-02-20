@@ -14,7 +14,7 @@
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_string.h>
 
-u32 last_hartindex_having_scratch = 0;
+u32 sbi_scratch_hart_count;
 u32 hartindex_to_hartid_table[SBI_HARTMASK_MAX_BITS] = { [0 ... SBI_HARTMASK_MAX_BITS-1] = -1U };
 struct sbi_scratch *hartindex_to_scratch_table[SBI_HARTMASK_MAX_BITS];
 
@@ -23,9 +23,7 @@ static unsigned long extra_offset = SBI_SCRATCH_EXTRA_SPACE_OFFSET;
 
 u32 sbi_hartid_to_hartindex(u32 hartid)
 {
-	u32 i;
-
-	for (i = 0; i <= last_hartindex_having_scratch; i++)
+	sbi_for_each_hartindex(i)
 		if (hartindex_to_hartid_table[i] == hartid)
 			return i;
 
@@ -36,21 +34,20 @@ typedef struct sbi_scratch *(*hartid2scratch)(ulong hartid, ulong hartindex);
 
 int sbi_scratch_init(struct sbi_scratch *scratch)
 {
-	u32 i, h, hart_count;
+	u32 h, hart_count;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 
 	hart_count = plat->hart_count;
 	if (hart_count > SBI_HARTMASK_MAX_BITS)
 		hart_count = SBI_HARTMASK_MAX_BITS;
+	sbi_scratch_hart_count = hart_count;
 
-	for (i = 0; i < hart_count; i++) {
+	sbi_for_each_hartindex(i) {
 		h = (plat->hart_index2id) ? plat->hart_index2id[i] : i;
 		hartindex_to_hartid_table[i] = h;
 		hartindex_to_scratch_table[i] =
 			((hartid2scratch)scratch->hartid_to_scratch)(h, i);
 	}
-
-	last_hartindex_having_scratch = hart_count - 1;
 
 	return 0;
 }
