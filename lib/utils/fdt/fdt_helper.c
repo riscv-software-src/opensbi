@@ -962,7 +962,7 @@ int fdt_parse_aclint_node(const void *fdt, int nodeoffset,
 {
 	const fdt32_t *val;
 	int i, rc, count, cpu_offset, cpu_intc_offset;
-	u32 phandle, hwirq, hartid, first_hartid, last_hartid, hart_count;
+	u32 phandle, hwirq, hartid, first_hartid, last_hartid;
 	u32 match_hwirq = (for_timer) ? IRQ_M_TIMER : IRQ_M_SOFT;
 
 	if (nodeoffset < 0 || !fdt ||
@@ -991,7 +991,7 @@ int fdt_parse_aclint_node(const void *fdt, int nodeoffset,
 	count = count / sizeof(fdt32_t);
 
 	first_hartid = -1U;
-	hart_count = last_hartid = 0;
+	last_hartid = 0;
 	for (i = 0; i < (count / 2); i++) {
 		phandle = fdt32_to_cpu(val[2 * i]);
 		hwirq = fdt32_to_cpu(val[(2 * i) + 1]);
@@ -1016,16 +1016,13 @@ int fdt_parse_aclint_node(const void *fdt, int nodeoffset,
 				first_hartid = hartid;
 			if (hartid > last_hartid)
 				last_hartid = hartid;
-			hart_count++;
 		}
 	}
 
 	if ((last_hartid >= first_hartid) && first_hartid != -1U) {
 		*out_first_hartid = first_hartid;
-		count = last_hartid - first_hartid + 1;
-		*out_hart_count = (hart_count < count) ? hart_count : count;
+		*out_hart_count = last_hartid - first_hartid + 1;
 	}
-
 	return 0;
 }
 
