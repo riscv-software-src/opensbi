@@ -19,6 +19,10 @@ Base Platform Requirements
 The base RISC-V platform requirements for OpenSBI are as follows:
 
 1. At least rv32ima_zicsr or rv64ima_zicsr required on all HARTs
+
+     * Users may restrict the usage of atomic instructions to lr/sc
+       via rv32im_zalrsc_zicsr or rv64im_zalrsc_zicsr if preferred
+
 2. At least one HART should have S-mode support because:
 
      * SBI calls are meant for RISC-V S-mode (Supervisor mode)

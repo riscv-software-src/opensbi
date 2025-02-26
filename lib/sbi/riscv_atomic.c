@@ -12,7 +12,7 @@
 #include <sbi/riscv_atomic.h>
 #include <sbi/riscv_barrier.h>
 
-#ifndef __riscv_atomic
+#if !defined(__riscv_atomic) && !defined(__riscv_zalrsc)
 #error "opensbi strongly relies on the A extension of RISC-V"
 #endif
 
@@ -31,6 +31,7 @@ void atomic_write(atomic_t *atom, long value)
 
 long atomic_add_return(atomic_t *atom, long value)
 {
+#ifdef __riscv_atomic
 	long ret;
 #if __SIZEOF_LONG__ == 4
 	__asm__ __volatile__("	amoadd.w.aqrl  %1, %2, %0"
@@ -43,6 +44,29 @@ long atomic_add_return(atomic_t *atom, long value)
 			     : "r"(value)
 			     : "memory");
 #endif
+#elif __riscv_zalrsc
+	long ret, temp;
+#if __SIZEOF_LONG__ == 4
+	__asm__ __volatile__("1:lr.w.aqrl	%1,%0\n"
+			     "  addw	%2,%1,%3\n"
+			     "  sc.w.aqrl	%2,%2,%0\n"
+			     "  bnez	%2,1b"
+			     : "+A"(atom->counter), "=&r"(ret), "=&r"(temp)
+			     : "r"(value)
+			     : "memory");
+#elif __SIZEOF_LONG__ == 8
+	__asm__ __volatile__("1:lr.d.aqrl	%1,%0\n"
+			     "  add	%2,%1,%3\n"
+			     "  sc.d.aqrl	%2,%2,%0\n"
+			     "  bnez	%2,1b"
+			     : "+A"(atom->counter), "=&r"(ret), "=&r"(temp)
+			     : "r"(value)
+			     : "memory");
+#endif
+#else
+#error "need a or zalrsc"
+#endif
+
 	return ret + value;
 }
 
@@ -51,6 +75,7 @@ long atomic_sub_return(atomic_t *atom, long value)
 	return atomic_add_return(atom, -value);
 }
 
+#ifdef __riscv_atomic
 #define __axchg(ptr, new, size)							\
 	({									\
 		__typeof__(ptr) __ptr = (ptr);					\
@@ -76,6 +101,39 @@ long atomic_sub_return(atomic_t *atom, long value)
 		}								\
 		__ret;								\
 	})
+#elif __riscv_zalrsc
+#define __axchg(ptr, new, size)							\
+	({									\
+		__typeof__(ptr) __ptr = (ptr);					\
+		__typeof__(new) __new = (new);					\
+		__typeof__(*(ptr)) __ret, __temp;					\
+		switch (size) {							\
+		case 4:								\
+			__asm__ __volatile__ (					\
+				"1:	lr.w.aqrl %0, %1\n"			\
+				"	sc.w.aqrl %2, %3, %1\n"			\
+				"	bnez	  %2, 1b\n"			\
+				: "=&r" (__ret), "+A" (*__ptr), "=&r" (__temp)	\
+				: "r" (__new)					\
+				: "memory");					\
+			break;							\
+		case 8:								\
+			__asm__ __volatile__ (					\
+				"1:	lr.d.aqrl %0, %1\n"			\
+				"	sc.d.aqrl %2, %3, %1\n"			\
+				"	bnez	  %2, 1b\n"			\
+				: "=&r" (__ret), "+A" (*__ptr), "=&r" (__temp)	\
+				: "r" (__new)					\
+				: "memory");					\
+			break;							\
+		default:							\
+			break;							\
+		}								\
+		__ret;								\
+	})
+#else
+#error "need a or zalrsc"
+#endif
 
 #define axchg(ptr, x)								\
 	({									\

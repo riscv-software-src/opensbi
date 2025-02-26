@@ -30,7 +30,18 @@ _start:
 	/* Pick one hart to run the main boot sequence */
 	lla	a3, _hart_lottery
 	li	a2, 1
+#ifdef __riscv_atomic
 	amoadd.w a3, a2, (a3)
+#elif __riscv_zalrsc
+_sc_fail:
+	lr.w	t0, (a3)
+	addw	t1, t0, a2
+	sc.w	t1, t1, (a3)
+	bnez	t1, _sc_fail
+	move	a3, t0
+#else
+#error "need a or zalrsc"
+#endif
 	bnez	a3, _start_hang
 
 	/* Save a0 and a1 */
