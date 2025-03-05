@@ -169,7 +169,7 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 		csr_write(CSR_VSCAUSE, trap->cause);
 
 		/* Set MEPC to VS-mode exception vector base */
-		regs->mepc = csr_read(CSR_VSTVEC);
+		regs->mepc = csr_read(CSR_VSTVEC) & ~MTVEC_MODE;
 
 		/* Set MPP to VS-mode */
 		regs->mstatus &= ~MSTATUS_MPP;
@@ -204,7 +204,7 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 		csr_write(CSR_SCAUSE, trap->cause);
 
 		/* Set MEPC to S-mode exception vector base */
-		regs->mepc = csr_read(CSR_STVEC);
+		regs->mepc = csr_read(CSR_STVEC) & ~MTVEC_MODE;
 
 		/* Set MPP to S-mode */
 		regs->mstatus &= ~MSTATUS_MPP;
