@@ -75,6 +75,10 @@ enum sbi_hart_extensions {
 	SBI_HART_EXT_ZICFISS,
 	/** Hart has Ssdbltrp extension */
 	SBI_HART_EXT_SSDBLTRP,
+	/** HART has CTR M-mode CSRs */
+	SBI_HART_EXT_SMCTR,
+	/** HART has CTR S-mode CSRs */
+	SBI_HART_EXT_SSCTR,
 
 	/** Maximum index of Hart extension */
 	SBI_HART_EXT_MAX,
