@@ -94,11 +94,11 @@ OPENSBI_VERSION_MINOR=`grep "define OPENSBI_VERSION_MINOR" $(include_dir)/sbi/sb
 OPENSBI_VERSION_GIT=
 
 # Detect 'git' presence before issuing 'git' commands
-GIT_AVAIL=$(shell command -v git 2> /dev/null)
+GIT_AVAIL := $(shell command -v git 2> /dev/null)
 ifneq ($(GIT_AVAIL),)
-GIT_DIR=$(shell git rev-parse --git-dir 2> /dev/null)
+GIT_DIR := $(shell git rev-parse --git-dir 2> /dev/null)
 ifneq ($(GIT_DIR),)
-OPENSBI_VERSION_GIT=$(shell if [ -d $(GIT_DIR) ]; then git describe 2> /dev/null; fi)
+OPENSBI_VERSION_GIT := $(shell if [ -d $(GIT_DIR) ]; then git describe 2> /dev/null; fi)
 endif
 endif
 
@@ -202,16 +202,18 @@ endif
 BUILD_INFO ?= n
 ifeq ($(BUILD_INFO),y)
 OPENSBI_BUILD_DATE_FMT = +%Y-%m-%d %H:%M:%S %z
+ifndef OPENSBI_BUILD_TIME_STAMP
 ifdef SOURCE_DATE_EPOCH
-	OPENSBI_BUILD_TIME_STAMP ?= $(shell date -u -d "@$(SOURCE_DATE_EPOCH)" \
+	OPENSBI_BUILD_TIME_STAMP := $(shell date -u -d "@$(SOURCE_DATE_EPOCH)" \
 		"$(OPENSBI_BUILD_DATE_FMT)" 2>/dev/null || \
 		date -u -r "$(SOURCE_DATE_EPOCH)" \
 		"$(OPENSBI_BUILD_DATE_FMT)" 2>/dev/null || \
 		date -u "$(OPENSBI_BUILD_DATE_FMT)")
 else
-	OPENSBI_BUILD_TIME_STAMP ?= $(shell date "$(OPENSBI_BUILD_DATE_FMT)")
+	OPENSBI_BUILD_TIME_STAMP := $(shell date "$(OPENSBI_BUILD_DATE_FMT)")
 endif
-OPENSBI_BUILD_COMPILER_VERSION=$(shell $(CC) -v 2>&1 | grep ' version ' | \
+endif
+OPENSBI_BUILD_COMPILER_VERSION := $(shell $(CC) -v 2>&1 | grep ' version ' | \
 	sed 's/[[:space:]]*$$//')
 endif
 
