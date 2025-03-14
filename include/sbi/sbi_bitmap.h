@@ -130,4 +130,17 @@ static inline void bitmap_xor(unsigned long *dst, const unsigned long *src1,
 		__bitmap_xor(dst, src1, src2, nbits);
 }
 
+static inline int bitmap_weight(const unsigned long *src, int nbits)
+{
+	int i, res = 0;
+
+	for (i = 0; i < nbits / BITS_PER_LONG; i++)
+		res += sbi_popcount(src[i]);
+
+	if (nbits % BITS_PER_LONG)
+		res += sbi_popcount(src[i] & BITMAP_LAST_WORD_MASK(nbits));
+
+	return res;
+}
+
 #endif

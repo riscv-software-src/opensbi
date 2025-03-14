@@ -125,14 +125,22 @@ static inline unsigned long sbi_fls(unsigned long word)
  */
 static inline unsigned long sbi_popcount(unsigned long word)
 {
-	unsigned long count = 0;
+	unsigned long count;
 
-	while (word) {
-		word &= word - 1;
-		count++;
-	}
-
-	return count;
+#if BITS_PER_LONG == 64
+	count = word - ((word >> 1) & 0x5555555555555555ul);
+	count = (count & 0x3333333333333333ul) + ((count >> 2) & 0x3333333333333333ul);
+	count = (count + (count >> 4)) & 0x0F0F0F0F0F0F0F0Ful;
+	count = count + (count >> 8);
+	count = count + (count >> 16);
+	return (count + (count >> 32)) & 0x00000000000000FFul;
+#else
+	count = word - ((word >> 1) & 0x55555555);
+	count = (count & 0x33333333) + ((count >> 2) & 0x33333333);
+	count = (count + (count >> 4)) & 0x0F0F0F0F;
+	count = count + (count >> 8);
+	return (count + (count >> 16)) & 0x000000FF;
+#endif
 }
 
 #define for_each_set_bit(bit, addr, size) \

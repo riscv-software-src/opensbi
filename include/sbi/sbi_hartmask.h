@@ -182,6 +182,17 @@ static inline void sbi_hartmask_xor(struct sbi_hartmask *dstp,
 }
 
 /**
+ * Count of bits in *srcp
+ * @param srcp the hartmask to count bits in
+ *
+ * Return: count of bits set in *srcp
+ */
+static inline int sbi_hartmask_weight(const struct sbi_hartmask *srcp)
+{
+	return bitmap_weight(sbi_hartmask_bits(srcp), SBI_HARTMASK_MAX_BITS);
+}
+
+/**
  * Iterate over each HART index in hartmask
  * __i hart index
  * __m hartmask
