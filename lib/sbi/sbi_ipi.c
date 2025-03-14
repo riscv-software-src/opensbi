@@ -116,6 +116,11 @@ int sbi_ipi_send_many(ulong hmask, ulong hbase, u32 event, void *data)
 	struct sbi_domain *dom = sbi_domain_thishart_ptr();
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
+	if (hmask == 0 && hbase != -1UL) {
+		/* Nothing to do, but it's not an error either. */
+		return 0;
+	}
+
 	/* Find the target harts */
 	rc = sbi_hsm_hart_interruptible_mask(dom, &target_mask);
 	if (rc)
@@ -123,6 +128,7 @@ int sbi_ipi_send_many(ulong hmask, ulong hbase, u32 event, void *data)
 
 	if (hbase != -1UL) {
 		struct sbi_hartmask tmp_mask = { 0 };
+		int count = sbi_popcount(hmask);
 
 		for (i = hbase; hmask; i++, hmask >>= 1) {
 			if (hmask & 1UL)
@@ -130,6 +136,9 @@ int sbi_ipi_send_many(ulong hmask, ulong hbase, u32 event, void *data)
 		}
 
 		sbi_hartmask_and(&target_mask, &target_mask, &tmp_mask);
+
+		if (sbi_hartmask_weight(&target_mask) != count)
+			return SBI_EINVAL;
 	}
 
 	/* Send IPIs */
