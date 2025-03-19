@@ -66,13 +66,7 @@ static SBI_LIST_HEAD(mpxy_channel_list);
 #define CAP_DISABLE(_c, _m)	INSERT_FIELD(_c, _m, 0)
 #define CAP_GET(_c, _m)		EXTRACT_FIELD(_c, _m)
 
-#if __riscv_xlen == 64
 #define SHMEM_PHYS_ADDR(_hi, _lo) (_lo)
-#elif __riscv_xlen == 32
-#define SHMEM_PHYS_ADDR(_hi, _lo) (((u64)(_hi) << 32) | (_lo))
-#else
-#error "Undefined XLEN"
-#endif
 
 /** Per hart shared memory */
 struct mpxy_shmem {
