@@ -415,7 +415,6 @@ int fdt_register_general_fixup(struct fdt_general_fixup *fixup)
 			return SBI_EALREADY;
 	}
 
-	SBI_INIT_LIST_HEAD(&fixup->head);
 	sbi_list_add_tail(&fixup->head, &fixup_list);
 
 	return 0;

@@ -244,7 +244,6 @@ int sbi_heap_init_new(struct sbi_heap_control *hpctrl, unsigned long base,
 	/* Prepare free node list */
 	for (i = 0; i < (hpctrl->hksize / sizeof(*n)); i++) {
 		n = (struct heap_node *)(hpctrl->hkbase + (sizeof(*n) * i));
-		SBI_INIT_LIST_HEAD(&n->head);
 		n->addr = n->size = 0;
 		sbi_list_add_tail(&n->head, &hpctrl->free_node_list);
 	}

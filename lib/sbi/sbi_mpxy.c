@@ -228,7 +228,6 @@ int sbi_mpxy_register_channel(struct sbi_mpxy_channel *channel)
 		mpxy_shmem_size = (mpxy_shmem_size + (PAGE_SIZE - 1)) / PAGE_SIZE;
 	}
 
-	SBI_INIT_LIST_HEAD(&channel->head);
 	sbi_list_add_tail(&channel->head, &mpxy_channel_list);
 
 	return SBI_OK;

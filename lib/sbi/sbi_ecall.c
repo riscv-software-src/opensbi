@@ -93,7 +93,6 @@ int sbi_ecall_register_extension(struct sbi_ecall_extension *ext)
 			return SBI_EINVAL;
 	}
 
-	SBI_INIT_LIST_HEAD(&ext->head);
 	sbi_list_add_tail(&ext->head, &ecall_exts_list);
 
 	return 0;

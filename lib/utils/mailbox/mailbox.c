@@ -34,7 +34,6 @@ int mbox_controller_add(struct mbox_controller *mbox)
 	if (mbox_controller_find(mbox->id))
 		return SBI_EALREADY;
 
-	SBI_INIT_LIST_HEAD(&mbox->node);
 	ATOMIC_INIT(&mbox->xfer_next_seq, 0);
 	SBI_INIT_LIST_HEAD(&mbox->chan_list);
 	sbi_list_add(&mbox->node, &mbox_list);
@@ -80,7 +79,6 @@ struct mbox_chan *mbox_controller_request_chan(struct mbox_controller *mbox,
 	if (!ret)
 		return NULL;
 
-	SBI_INIT_LIST_HEAD(&ret->node);
 	ret->mbox = mbox;
 	sbi_memcpy(ret->chan_args, chan_args, sizeof(ret->chan_args));
 	sbi_list_add(&ret->node, &mbox->chan_list);
