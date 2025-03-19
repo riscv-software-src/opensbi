@@ -287,6 +287,20 @@ int sbi_mpxy_set_shmem(unsigned long shmem_phys_lo,
 	if (shmem_phys_lo & ~PAGE_MASK)
 		return SBI_ERR_INVALID_PARAM;
 
+	/*
+	* On RV32, the M-mode can only access the first 4GB of
+	* the physical address space because M-mode does not have
+	* MMU to access full 34-bit physical address space.
+	* So fail if the upper 32 bits of the physical address
+	* is non-zero on RV32.
+	*
+	* On RV64, kernel sets upper 64bit address part to zero.
+	* So fail if the upper 64bit of the physical address
+	* is non-zero on RV64.
+	*/
+	if (shmem_phys_hi)
+		return SBI_ERR_INVALID_ADDRESS;
+
 	if (!sbi_domain_check_addr_range(sbi_domain_thishart_ptr(),
 				SHMEM_PHYS_ADDR(shmem_phys_hi, shmem_phys_lo),
 				mpxy_shmem_size, PRV_S,
