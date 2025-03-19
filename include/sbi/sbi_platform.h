@@ -198,51 +198,17 @@ struct sbi_platform {
  * Prevent modification of struct sbi_platform from affecting
  * SBI_PLATFORM_xxx_OFFSET
  */
-_Static_assert(
-	offsetof(struct sbi_platform, opensbi_version)
-		== SBI_PLATFORM_OPENSBI_VERSION_OFFSET,
-	"struct sbi_platform definition has changed, please redefine "
-	"SBI_PLATFORM_OPENSBI_VERSION_OFFSET");
-_Static_assert(
-	offsetof(struct sbi_platform, platform_version)
-		== SBI_PLATFORM_VERSION_OFFSET,
-	"struct sbi_platform definition has changed, please redefine "
-	"SBI_PLATFORM_VERSION_OFFSET");
-_Static_assert(
-	offsetof(struct sbi_platform, name)
-		== SBI_PLATFORM_NAME_OFFSET,
-	"struct sbi_platform definition has changed, please redefine "
-	"SBI_PLATFORM_NAME_OFFSET");
-_Static_assert(
-	offsetof(struct sbi_platform, features)
-		== SBI_PLATFORM_FEATURES_OFFSET,
-	"struct sbi_platform definition has changed, please redefine "
-	"SBI_PLATFORM_FEATURES_OFFSET");
-_Static_assert(
-	offsetof(struct sbi_platform, hart_count)
-		== SBI_PLATFORM_HART_COUNT_OFFSET,
-	"struct sbi_platform definition has changed, please redefine "
-	"SBI_PLATFORM_HART_COUNT_OFFSET");
-_Static_assert(
-	offsetof(struct sbi_platform, hart_stack_size)
-		== SBI_PLATFORM_HART_STACK_SIZE_OFFSET,
-	"struct sbi_platform definition has changed, please redefine "
-	"SBI_PLATFORM_HART_STACK_SIZE_OFFSET");
-_Static_assert(
-	offsetof(struct sbi_platform, platform_ops_addr)
-		== SBI_PLATFORM_OPS_OFFSET,
-	"struct sbi_platform definition has changed, please redefine "
-	"SBI_PLATFORM_OPS_OFFSET");
-_Static_assert(
-	offsetof(struct sbi_platform, firmware_context)
-		== SBI_PLATFORM_FIRMWARE_CONTEXT_OFFSET,
-	"struct sbi_platform definition has changed, please redefine "
-	"SBI_PLATFORM_FIRMWARE_CONTEXT_OFFSET");
-_Static_assert(
-	offsetof(struct sbi_platform, hart_index2id)
-		== SBI_PLATFORM_HART_INDEX2ID_OFFSET,
-	"struct sbi_platform definition has changed, please redefine "
-	"SBI_PLATFORM_HART_INDEX2ID_OFFSET");
+assert_member_offset(struct sbi_platform, opensbi_version, SBI_PLATFORM_OPENSBI_VERSION_OFFSET);
+assert_member_offset(struct sbi_platform, platform_version, SBI_PLATFORM_VERSION_OFFSET);
+assert_member_offset(struct sbi_platform, name, SBI_PLATFORM_NAME_OFFSET);
+assert_member_offset(struct sbi_platform, features, SBI_PLATFORM_FEATURES_OFFSET);
+assert_member_offset(struct sbi_platform, hart_count, SBI_PLATFORM_HART_COUNT_OFFSET);
+assert_member_offset(struct sbi_platform, hart_stack_size, SBI_PLATFORM_HART_STACK_SIZE_OFFSET);
+assert_member_offset(struct sbi_platform, heap_size, SBI_PLATFORM_HEAP_SIZE_OFFSET);
+assert_member_offset(struct sbi_platform, reserved, SBI_PLATFORM_RESERVED_OFFSET);
+assert_member_offset(struct sbi_platform, platform_ops_addr, SBI_PLATFORM_OPS_OFFSET);
+assert_member_offset(struct sbi_platform, firmware_context, SBI_PLATFORM_FIRMWARE_CONTEXT_OFFSET);
+assert_member_offset(struct sbi_platform, hart_index2id, SBI_PLATFORM_HART_INDEX2ID_OFFSET);
 
 /** Get pointer to sbi_platform for sbi_scratch pointer */
 #define sbi_platform_ptr(__s) \

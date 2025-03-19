@@ -96,6 +96,13 @@ typedef uint64_t		be64_t;
 	const typeof(((type *)0)->member) * __mptr = (ptr);	\
 	(type *)((char *)__mptr - offsetof(type, member)); })
 
+
+#define assert_member_offset(type, member, offset)			\
+	_Static_assert(							\
+		(offsetof(type, member)) == (offset ),			\
+		"The offset " #offset " of " #member " in " #type	\
+		"is not correct, please redefine it.")
+
 #define array_size(x) 	(sizeof(x) / sizeof((x)[0]))
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
