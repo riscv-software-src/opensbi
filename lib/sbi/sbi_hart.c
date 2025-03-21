@@ -721,6 +721,10 @@ void sbi_hart_get_extensions_str(struct sbi_scratch *scratch,
 	sbi_memset(extensions_str, 0, nestr);
 
 	for_each_set_bit(ext, hfeatures->extensions, SBI_HART_EXT_MAX) {
+		if (offset + sbi_strlen(sbi_hart_ext[ext].name) + 1 > nestr) {
+			sbi_printf("%s:extension name is longer than buffer (error)\n", __func__);
+			break;
+		}
 		sbi_snprintf(extensions_str + offset,
 				 nestr - offset,
 				 "%s,", sbi_hart_ext[ext].name);
