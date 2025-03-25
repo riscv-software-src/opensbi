@@ -33,25 +33,6 @@
 #define DEFAULT_SHAKTI_UART_FREQ		50000000
 #define DEFAULT_SHAKTI_UART_BAUD		115200
 
-const struct fdt_match *fdt_match_node(const void *fdt, int nodeoff,
-				       const struct fdt_match *match_table)
-{
-	int ret;
-
-	if (!fdt || nodeoff < 0 || !match_table)
-		return NULL;
-
-	while (match_table->compatible) {
-		ret = fdt_node_check_compatible(fdt, nodeoff,
-						match_table->compatible);
-		if (!ret)
-			return match_table;
-		match_table++;
-	}
-
-	return NULL;
-}
-
 int fdt_parse_phandle_with_args(const void *fdt, int nodeoff,
 				const char *prop, const char *cells_prop,
 				int index, struct fdt_phandle_args *out_args)

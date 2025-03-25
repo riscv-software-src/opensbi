@@ -34,9 +34,6 @@ struct platform_uart_data {
 	unsigned long reg_offset;
 };
 
-const struct fdt_match *fdt_match_node(const void *fdt, int nodeoff,
-				       const struct fdt_match *match_table);
-
 int fdt_parse_phandle_with_args(const void *fdt, int nodeoff,
 				const char *prop, const char *cells_prop,
 				int index, struct fdt_phandle_args *out_args);
