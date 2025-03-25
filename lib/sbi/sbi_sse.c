@@ -1267,11 +1267,8 @@ void sbi_sse_exit(struct sbi_scratch *scratch)
 		if (e->attrs.hartid != current_hartid())
 			goto skip;
 
-		if (sse_event_state(e) > SBI_SSE_STATE_REGISTERED) {
-			sbi_printf("Event %d in invalid state at exit",
-				   info->event_id);
+		if (sse_event_state(e) > SBI_SSE_STATE_REGISTERED)
 			sse_event_set_state(e, SBI_SSE_STATE_UNUSED);
-		}
 
 skip:
 		sse_event_put(e);
