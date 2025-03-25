@@ -240,11 +240,6 @@ int generic_final_init(bool cold_boot)
 	return 0;
 }
 
-static bool generic_vendor_ext_check(void)
-{
-	return !!generic_platform_ops.vendor_ext_provider;
-}
-
 int generic_extensions_init(struct sbi_hart_features *hfeatures)
 {
 	/* Parse the ISA string from FDT and enable the listed extensions */
@@ -340,7 +335,6 @@ struct sbi_platform_operations generic_platform_ops = {
 	.get_tlb_num_entries	= generic_tlb_num_entries,
 	.timer_init		= fdt_timer_init,
 	.mpxy_init		= generic_mpxy_init,
-	.vendor_ext_check	= generic_vendor_ext_check,
 };
 
 struct sbi_platform platform = {

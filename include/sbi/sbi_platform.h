@@ -129,8 +129,6 @@ struct sbi_platform_operations {
 	/** Initialize the platform Message Proxy(MPXY) driver */
 	int (*mpxy_init)(void);
 
-	/** Check if SBI vendor extension is implemented or not */
-	bool (*vendor_ext_check)(void);
 	/** platform specific SBI extension implementation provider */
 	int (*vendor_ext_provider)(long funcid,
 				   struct sbi_trap_regs *regs,
@@ -570,10 +568,7 @@ static inline int sbi_platform_mpxy_init(const struct sbi_platform *plat)
 static inline bool sbi_platform_vendor_ext_check(
 					const struct sbi_platform *plat)
 {
-	if (plat && sbi_platform_ops(plat)->vendor_ext_check)
-		return sbi_platform_ops(plat)->vendor_ext_check();
-
-	return false;
+	return plat && sbi_platform_ops(plat)->vendor_ext_provider;
 }
 
 /**
