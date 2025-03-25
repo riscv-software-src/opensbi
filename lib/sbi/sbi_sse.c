@@ -518,9 +518,9 @@ static unsigned long sse_interrupted_flags(unsigned long mstatus)
 {
 	unsigned long hstatus, flags = 0;
 
-	if (mstatus & (MSTATUS_SPIE))
+	if (mstatus & MSTATUS_SPIE)
 		flags |= SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPIE;
-	if (mstatus & (MSTATUS_SPP))
+	if (mstatus & MSTATUS_SPP)
 		flags |= SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPP;
 
 	if (misa_extension('H')) {
