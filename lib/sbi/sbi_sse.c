@@ -427,8 +427,8 @@ static int sse_event_set_attr_check(struct sbi_sse_event *e, uint32_t attr_id,
 
 		return sse_event_set_hart_id_check(e, val);
 	case SBI_SSE_ATTR_INTERRUPTED_FLAGS:
-		if (val & ~(SBI_SSE_ATTR_INTERRUPTED_FLAGS_STATUS_SPP |
-			    SBI_SSE_ATTR_INTERRUPTED_FLAGS_STATUS_SPIE |
+		if (val & ~(SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPP |
+			    SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPIE |
 			    SBI_SSE_ATTR_INTERRUPTED_FLAGS_HSTATUS_SPV |
 			    SBI_SSE_ATTR_INTERRUPTED_FLAGS_HSTATUS_SPVP))
 			return SBI_EINVAL;
@@ -519,9 +519,9 @@ static unsigned long sse_interrupted_flags(unsigned long mstatus)
 	unsigned long hstatus, flags = 0;
 
 	if (mstatus & (MSTATUS_SPIE))
-		flags |= SBI_SSE_ATTR_INTERRUPTED_FLAGS_STATUS_SPIE;
+		flags |= SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPIE;
 	if (mstatus & (MSTATUS_SPP))
-		flags |= SBI_SSE_ATTR_INTERRUPTED_FLAGS_STATUS_SPP;
+		flags |= SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPP;
 
 	if (misa_extension('H')) {
 		hstatus = csr_read(CSR_HSTATUS);
@@ -632,11 +632,11 @@ static void sse_event_resume(struct sbi_sse_event *e,
 		regs->mstatus |= MSTATUS_SIE;
 
 	regs->mstatus &= ~MSTATUS_SPIE;
-	if (i_ctx->flags & SBI_SSE_ATTR_INTERRUPTED_FLAGS_STATUS_SPIE)
+	if (i_ctx->flags & SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPIE)
 		regs->mstatus |= MSTATUS_SPIE;
 
 	regs->mstatus &= ~MSTATUS_SPP;
-	if (i_ctx->flags & SBI_SSE_ATTR_INTERRUPTED_FLAGS_STATUS_SPP)
+	if (i_ctx->flags & SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPP)
 		regs->mstatus |= MSTATUS_SPP;
 
 	regs->a7 = i_ctx->a7;
