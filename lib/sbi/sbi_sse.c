@@ -388,7 +388,7 @@ static int sse_event_set_hart_id_check(struct sbi_sse_event *e,
 	struct sbi_domain *hd = sbi_domain_thishart_ptr();
 
 	if (!sse_event_is_global(e))
-		return SBI_EBAD_RANGE;
+		return SBI_EDENIED;
 
 	if (!sbi_domain_is_assigned_hart(hd, sbi_hartid_to_hartindex(hartid)))
 		return SBI_EINVAL;
@@ -444,7 +444,13 @@ static int sse_event_set_attr_check(struct sbi_sse_event *e, uint32_t attr_id,
 
 		return SBI_OK;
 	default:
-		return SBI_EBAD_RANGE;
+		/*
+		 * Attribute range validity was already checked by
+		 * sbi_sse_attr_check(). If we end up here, attribute was not
+		 * handled by the above 'case' statements and thus it is
+		 * read-only.
+		 */
+		return SBI_EDENIED;
 	}
 }
 
