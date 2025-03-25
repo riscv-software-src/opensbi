@@ -33,31 +33,6 @@
 /* List of platform override modules generated at compile time */
 extern const struct fdt_driver *const platform_override_modules[];
 
-static void fw_platform_lookup_special(const void *fdt, int root_offset)
-{
-	const struct fdt_driver *plat;
-	const struct fdt_match *match;
-	int pos, rc;
-
-	for (pos = 0; platform_override_modules[pos]; pos++) {
-		plat = platform_override_modules[pos];
-		if (!plat->match_table)
-			continue;
-
-		match = fdt_match_node(fdt, root_offset, plat->match_table);
-		if (!match)
-			continue;
-
-		if (plat->init) {
-			rc = plat->init(fdt, root_offset, match);
-			if (rc)
-				continue;
-		}
-
-		break;
-	}
-}
-
 static u32 fw_platform_calculate_heap_size(u32 hart_count)
 {
 	u32 heap_size;
@@ -177,7 +152,7 @@ unsigned long fw_platform_init(unsigned long arg0, unsigned long arg1,
 	if (root_offset < 0)
 		goto fail;
 
-	fw_platform_lookup_special(fdt, root_offset);
+	fdt_driver_init_by_offset(fdt, root_offset, platform_override_modules);
 
 	model = fdt_getprop(fdt, root_offset, "model", &len);
 	if (model)
