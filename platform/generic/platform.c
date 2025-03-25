@@ -223,7 +223,7 @@ fail:
 		wfi();
 }
 
-static bool generic_cold_boot_allowed(u32 hartid)
+bool generic_cold_boot_allowed(u32 hartid)
 {
 	if (generic_plat && generic_plat->cold_boot_allowed)
 		return generic_plat->cold_boot_allowed(
@@ -237,14 +237,14 @@ static bool generic_cold_boot_allowed(u32 hartid)
 	return false;
 }
 
-static int generic_nascent_init(void)
+int generic_nascent_init(void)
 {
 	if (platform_has_mlevel_imsic)
 		imsic_local_irqchip_init();
 	return 0;
 }
 
-static int generic_early_init(bool cold_boot)
+int generic_early_init(bool cold_boot)
 {
 	const void *fdt = fdt_get_address();
 	int rc;
@@ -266,7 +266,7 @@ static int generic_early_init(bool cold_boot)
 	return generic_plat->early_init(cold_boot, fdt, generic_plat_match);
 }
 
-static int generic_final_init(bool cold_boot)
+int generic_final_init(bool cold_boot)
 {
 	void *fdt = fdt_get_address_rw();
 	int rc;
@@ -293,18 +293,22 @@ static int generic_final_init(bool cold_boot)
 	return 0;
 }
 
-static bool generic_vendor_ext_check(void)
-{
-	return (generic_plat && generic_plat->vendor_ext_provider) ?
-		true : false;
-}
-
 static int generic_vendor_ext_provider(long funcid,
 				       struct sbi_trap_regs *regs,
 				       struct sbi_ecall_return *out)
 {
 	return generic_plat->vendor_ext_provider(funcid, regs, out,
 						 generic_plat_match);
+}
+
+static bool generic_vendor_ext_check(void)
+{
+	if (generic_plat && generic_plat->vendor_ext_provider)
+		return true;
+	if (generic_platform_ops.vendor_ext_provider != generic_vendor_ext_provider)
+		return true;
+
+	return false;
 }
 
 static void generic_early_exit(void)
@@ -319,7 +323,7 @@ static void generic_final_exit(void)
 		generic_plat->final_exit(generic_plat_match);
 }
 
-static int generic_extensions_init(struct sbi_hart_features *hfeatures)
+int generic_extensions_init(struct sbi_hart_features *hfeatures)
 {
 	int rc;
 
@@ -337,7 +341,7 @@ static int generic_extensions_init(struct sbi_hart_features *hfeatures)
 	return 0;
 }
 
-static int generic_domains_init(void)
+int generic_domains_init(void)
 {
 	const void *fdt = fdt_get_address();
 	int offset, ret;
@@ -359,21 +363,21 @@ static int generic_domains_init(void)
 	return 0;
 }
 
-static u64 generic_tlbr_flush_limit(void)
+u64 generic_tlbr_flush_limit(void)
 {
 	if (generic_plat && generic_plat->tlbr_flush_limit)
 		return generic_plat->tlbr_flush_limit(generic_plat_match);
 	return SBI_PLATFORM_TLB_RANGE_FLUSH_LIMIT_DEFAULT;
 }
 
-static u32 generic_tlb_num_entries(void)
+u32 generic_tlb_num_entries(void)
 {
 	if (generic_plat && generic_plat->tlb_num_entries)
 		return generic_plat->tlb_num_entries(generic_plat_match);
 	return sbi_hart_count();
 }
 
-static int generic_pmu_init(void)
+int generic_pmu_init(void)
 {
 	int rc;
 
@@ -390,8 +394,7 @@ static int generic_pmu_init(void)
 	return 0;
 }
 
-static uint64_t generic_pmu_xlate_to_mhpmevent(uint32_t event_idx,
-					       uint64_t data)
+uint64_t generic_pmu_xlate_to_mhpmevent(uint32_t event_idx, uint64_t data)
 {
 	uint64_t evt_val = 0;
 
@@ -413,7 +416,7 @@ static uint64_t generic_pmu_xlate_to_mhpmevent(uint32_t event_idx,
 	return evt_val;
 }
 
-static int generic_mpxy_init(void)
+int generic_mpxy_init(void)
 {
 	const void *fdt = fdt_get_address();
 
@@ -421,7 +424,7 @@ static int generic_mpxy_init(void)
 	return 0;
 }
 
-const struct sbi_platform_operations platform_ops = {
+struct sbi_platform_operations generic_platform_ops = {
 	.cold_boot_allowed	= generic_cold_boot_allowed,
 	.nascent_init		= generic_nascent_init,
 	.early_init		= generic_early_init,
@@ -453,5 +456,5 @@ struct sbi_platform platform = {
 	.hart_index2id		= generic_hart_index2id,
 	.hart_stack_size	= SBI_PLATFORM_DEFAULT_HART_STACK_SIZE,
 	.heap_size		= SBI_PLATFORM_DEFAULT_HEAP_SIZE(0),
-	.platform_ops_addr	= (unsigned long)&platform_ops
+	.platform_ops_addr	= (unsigned long)&generic_platform_ops
 };
