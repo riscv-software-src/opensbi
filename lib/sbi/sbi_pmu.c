@@ -313,7 +313,7 @@ void sbi_pmu_ovf_irq()
 	 * on an irq being triggered
 	 */
 	csr_clear(CSR_MIE, sbi_pmu_irq_mask());
-	sbi_sse_inject_event(SBI_SSE_EVENT_LOCAL_PMU);
+	sbi_sse_inject_event(SBI_SSE_EVENT_LOCAL_PMU_OVERFLOW);
 }
 
 static int pmu_ctr_enable_irq_hw(int ctr_idx)
@@ -1166,7 +1166,7 @@ int sbi_pmu_init(struct sbi_scratch *scratch, bool cold_boot)
 		total_ctrs = num_hw_ctrs + SBI_PMU_FW_CTR_MAX;
 
 		if (sbi_pmu_irq_bit() >= 0)
-			sbi_sse_add_event(SBI_SSE_EVENT_LOCAL_PMU, &pmu_sse_cb_ops);
+			sbi_sse_add_event(SBI_SSE_EVENT_LOCAL_PMU_OVERFLOW, &pmu_sse_cb_ops);
 	}
 
 	phs = pmu_get_hart_state_ptr(scratch);
