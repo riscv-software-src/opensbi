@@ -430,7 +430,8 @@ static int sse_event_set_attr_check(struct sbi_sse_event *e, uint32_t attr_id,
 		if (val & ~(SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPP |
 			    SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPIE |
 			    SBI_SSE_ATTR_INTERRUPTED_FLAGS_HSTATUS_SPV |
-			    SBI_SSE_ATTR_INTERRUPTED_FLAGS_HSTATUS_SPVP))
+			    SBI_SSE_ATTR_INTERRUPTED_FLAGS_HSTATUS_SPVP |
+			    SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPELP))
 			return SBI_EINVAL;
 		__attribute__((__fallthrough__));
 	case SBI_SSE_ATTR_INTERRUPTED_SEPC:
@@ -522,6 +523,8 @@ static unsigned long sse_interrupted_flags(unsigned long mstatus)
 		flags |= SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPIE;
 	if (mstatus & MSTATUS_SPP)
 		flags |= SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPP;
+	if (mstatus & MSTATUS_SPELP)
+		flags |= SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPELP;
 
 	if (misa_extension('H')) {
 		hstatus = csr_read(CSR_HSTATUS);
@@ -579,8 +582,11 @@ static void sse_event_inject(struct sbi_sse_event *e,
 	regs->a7 = e->attrs.entry.arg;
 	regs->mepc = e->attrs.entry.pc;
 
-	/* Return to S-mode with virtualization disabled */
-	regs->mstatus &= ~(MSTATUS_MPP | MSTATUS_SIE);
+	/*
+	 * Return to S-mode with virtualization disabled, not expected landing
+	 * pad.
+	 */
+	regs->mstatus &= ~(MSTATUS_MPP | MSTATUS_SIE | MSTATUS_SPELP);
 	regs->mstatus |= (PRV_S << MSTATUS_MPP_SHIFT);
 
 #if __riscv_xlen == 64
@@ -638,6 +644,10 @@ static void sse_event_resume(struct sbi_sse_event *e,
 	regs->mstatus &= ~MSTATUS_SPP;
 	if (i_ctx->flags & SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPP)
 		regs->mstatus |= MSTATUS_SPP;
+
+	regs->mstatus &= ~MSTATUS_SPELP;
+	if (i_ctx->flags & SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPELP)
+		regs->mstatus |= MSTATUS_SPELP;
 
 	regs->a7 = i_ctx->a7;
 	regs->a6 = i_ctx->a6;
