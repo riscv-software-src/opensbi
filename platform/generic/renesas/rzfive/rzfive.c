@@ -27,8 +27,16 @@ static const struct andes_pma_region renesas_rzfive_pma_regions[] = {
 static int renesas_rzfive_final_init(bool cold_boot, void *fdt,
 				     const struct fdt_match *match)
 {
-	return andes_pma_setup_regions(fdt, renesas_rzfive_pma_regions,
-				       array_size(renesas_rzfive_pma_regions));
+	int rc;
+
+	if (cold_boot) {
+		rc = andes_pma_setup_regions(fdt, renesas_rzfive_pma_regions,
+					     array_size(renesas_rzfive_pma_regions));
+		if (rc)
+			return rc;
+	}
+
+	return 0;
 }
 
 static int renesas_rzfive_early_init(bool cold_boot, const void *fdt,
