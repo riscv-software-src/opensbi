@@ -81,7 +81,7 @@ static const struct fdt_match renesas_rzfive_match[] = {
 	{ /* sentinel */ }
 };
 
-const struct platform_override renesas_rzfive = {
+const struct fdt_driver renesas_rzfive = {
 	.match_table = renesas_rzfive_match,
 	.init = renesas_rzfive_platform_init,
 };

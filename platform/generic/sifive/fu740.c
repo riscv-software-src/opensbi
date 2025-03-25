@@ -262,7 +262,7 @@ static const struct fdt_match sifive_fu740_match[] = {
 	{ },
 };
 
-const struct platform_override sifive_fu740 = {
+const struct fdt_driver sifive_fu740 = {
 	.match_table = sifive_fu740_match,
 	.init = sifive_fu740_platform_init,
 };

@@ -74,7 +74,7 @@ static const struct fdt_match sophgo_sg2042_match[] = {
 	{ },
 };
 
-const struct platform_override sophgo_sg2042 = {
+const struct fdt_driver sophgo_sg2042 = {
 	.match_table		= sophgo_sg2042_match,
 	.init			= sophgo_sg2042_platform_init,
 };

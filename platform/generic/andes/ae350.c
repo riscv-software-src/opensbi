@@ -128,7 +128,7 @@ static const struct fdt_match andes_ae350_match[] = {
 	{ },
 };
 
-const struct platform_override andes_ae350 = {
+const struct fdt_driver andes_ae350 = {
 	.match_table = andes_ae350_match,
 	.init = ae350_platform_init,
 };

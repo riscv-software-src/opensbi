@@ -229,7 +229,7 @@ static const struct fdt_match sun20i_d1_match[] = {
 	{ },
 };
 
-const struct platform_override sun20i_d1 = {
+const struct fdt_driver sun20i_d1 = {
 	.match_table	= sun20i_d1_match,
 	.init		= sun20i_d1_platform_init,
 };

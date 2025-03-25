@@ -325,7 +325,7 @@ static const struct fdt_match starfive_jh7110_match[] = {
 	{ },
 };
 
-const struct platform_override starfive_jh7110 = {
+const struct fdt_driver starfive_jh7110 = {
 	.match_table = starfive_jh7110_match,
 	.init = starfive_jh7110_platform_init,
 };

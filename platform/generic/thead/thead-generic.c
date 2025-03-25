@@ -71,7 +71,7 @@ static const struct fdt_match thead_generic_match[] = {
 	{ },
 };
 
-const struct platform_override thead_generic = {
+const struct fdt_driver thead_generic = {
 	.match_table		= thead_generic_match,
 	.init			= thead_generic_platform_init,
 };
