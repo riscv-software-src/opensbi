@@ -40,7 +40,7 @@ static void fw_platform_lookup_special(const void *fdt, int root_offset)
 {
 	const struct platform_override *plat;
 	const struct fdt_match *match;
-	int pos;
+	int pos, rc;
 
 	for (pos = 0; platform_override_modules[pos]; pos++) {
 		plat = platform_override_modules[pos];
@@ -50,6 +50,12 @@ static void fw_platform_lookup_special(const void *fdt, int root_offset)
 		match = fdt_match_node(fdt, root_offset, plat->match_table);
 		if (!match)
 			continue;
+
+		if (plat->init) {
+			rc = plat->init(fdt, root_offset, match);
+			if (rc)
+				continue;
+		}
 
 		generic_plat = plat;
 		generic_plat_match = match;
@@ -177,9 +183,6 @@ unsigned long fw_platform_init(unsigned long arg0, unsigned long arg1,
 		goto fail;
 
 	fw_platform_lookup_special(fdt, root_offset);
-
-	if (generic_plat && generic_plat->fw_init)
-		generic_plat->fw_init(fdt, generic_plat_match);
 
 	model = fdt_getprop(fdt, root_offset, "model", &len);
 	if (model)
