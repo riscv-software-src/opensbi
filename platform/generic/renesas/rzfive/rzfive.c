@@ -24,24 +24,30 @@ static const struct andes_pma_region renesas_rzfive_pma_regions[] = {
 	},
 };
 
-static int renesas_rzfive_final_init(bool cold_boot, void *fdt,
-				     const struct fdt_match *match)
+static int renesas_rzfive_final_init(bool cold_boot)
 {
 	int rc;
 
 	if (cold_boot) {
+		void *fdt = fdt_get_address_rw();
+
 		rc = andes_pma_setup_regions(fdt, renesas_rzfive_pma_regions,
 					     array_size(renesas_rzfive_pma_regions));
 		if (rc)
 			return rc;
 	}
 
-	return 0;
+	return generic_final_init(cold_boot);
 }
 
-static int renesas_rzfive_early_init(bool cold_boot, const void *fdt,
-				     const struct fdt_match *match)
+static int renesas_rzfive_early_init(bool cold_boot)
 {
+	int rc;
+
+	rc = generic_early_init(cold_boot);
+	if (rc)
+		return rc;
+
 	/*
 	 * Renesas RZ/Five RISC-V SoC has Instruction local memory and
 	 * Data local memory (ILM & DLM) mapped between region 0x30000
@@ -58,6 +64,18 @@ static int renesas_rzfive_early_init(bool cold_boot, const void *fdt,
 					    SBI_DOMAIN_MEMREGION_M_RWX);
 }
 
+static int renesas_rzfive_platform_init(const void *fdt, int nodeoff,
+					const struct fdt_match *match)
+{
+	generic_platform_ops.early_init = renesas_rzfive_early_init;
+	generic_platform_ops.final_init = renesas_rzfive_final_init;
+	generic_platform_ops.extensions_init = andes_pmu_extensions_init;
+	generic_platform_ops.pmu_init = andes_pmu_init;
+	generic_platform_ops.vendor_ext_provider = andes_sbi_vendor_ext_provider;
+
+	return 0;
+}
+
 static const struct fdt_match renesas_rzfive_match[] = {
 	{ .compatible = "renesas,r9a07g043f01" },
 	{ /* sentinel */ }
@@ -65,9 +83,5 @@ static const struct fdt_match renesas_rzfive_match[] = {
 
 const struct platform_override renesas_rzfive = {
 	.match_table = renesas_rzfive_match,
-	.early_init = renesas_rzfive_early_init,
-	.final_init = renesas_rzfive_final_init,
-	.vendor_ext_provider = andes_sbi_vendor_ext_provider,
-	.extensions_init = andes_pmu_extensions_init,
-	.pmu_init = andes_pmu_init,
+	.init = renesas_rzfive_platform_init,
 };

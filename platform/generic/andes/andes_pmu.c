@@ -11,6 +11,7 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_pmu.h>
 #include <libfdt.h>
+#include <platform_override.h>
 
 static void andes_hw_counter_enable_irq(uint32_t ctr_idx)
 {
@@ -57,10 +58,14 @@ static struct sbi_pmu_device andes_pmu = {
 	.hw_counter_filter_mode = andes_hw_counter_filter_mode
 };
 
-int andes_pmu_extensions_init(const struct fdt_match *match,
-			      struct sbi_hart_features *hfeatures)
+int andes_pmu_extensions_init(struct sbi_hart_features *hfeatures)
 {
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	int rc;
+
+	rc = generic_extensions_init(hfeatures);
+	if (rc)
+		return rc;
 
 	if (!has_andes_pmu())
 		return 0;
@@ -82,12 +87,12 @@ int andes_pmu_extensions_init(const struct fdt_match *match,
 	return 0;
 }
 
-int andes_pmu_init(const struct fdt_match *match)
+int andes_pmu_init(void)
 {
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_XANDESPMU))
 		sbi_pmu_set_device(&andes_pmu);
 
-	return 0;
+	return generic_pmu_init();
 }

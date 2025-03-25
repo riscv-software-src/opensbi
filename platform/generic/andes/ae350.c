@@ -102,11 +102,23 @@ static void ae350_hsm_device_init(const void *fdt)
 	}
 }
 
-static int ae350_final_init(bool cold_boot, void *fdt,
-			    const struct fdt_match *match)
+static int ae350_final_init(bool cold_boot)
 {
-	if (cold_boot)
+	if (cold_boot) {
+		const void *fdt = fdt_get_address();
+
 		ae350_hsm_device_init(fdt);
+	}
+
+	return generic_final_init(cold_boot);
+}
+
+static int ae350_platform_init(const void *fdt, int nodeoff, const struct fdt_match *match)
+{
+	generic_platform_ops.final_init = ae350_final_init;
+	generic_platform_ops.extensions_init = andes_pmu_extensions_init;
+	generic_platform_ops.pmu_init = andes_pmu_init;
+	generic_platform_ops.vendor_ext_provider = andes_sbi_vendor_ext_provider;
 
 	return 0;
 }
@@ -118,8 +130,5 @@ static const struct fdt_match andes_ae350_match[] = {
 
 const struct platform_override andes_ae350 = {
 	.match_table = andes_ae350_match,
-	.final_init  = ae350_final_init,
-	.extensions_init = andes_pmu_extensions_init,
-	.pmu_init = andes_pmu_init,
-	.vendor_ext_provider = andes_sbi_vendor_ext_provider,
+	.init = ae350_platform_init,
 };

@@ -219,7 +219,7 @@ static const struct fdt_driver *const sifive_fu740_reset_drivers[] = {
 	NULL
 };
 
-static u64 sifive_fu740_tlbr_flush_limit(const struct fdt_match *match)
+static u64 sifive_fu740_tlbr_flush_limit(void)
 {
 	/*
 	 * Needed to address CIP-1200 errata on SiFive FU740
@@ -231,17 +231,26 @@ static u64 sifive_fu740_tlbr_flush_limit(const struct fdt_match *match)
 	return 0;
 }
 
-static int sifive_fu740_final_init(bool cold_boot, void *fdt,
-				   const struct fdt_match *match)
+static int sifive_fu740_final_init(bool cold_boot)
 {
 	int rc;
 
 	if (cold_boot) {
+		const void *fdt = fdt_get_address();
+
 		rc = fdt_driver_init_one(fdt, sifive_fu740_reset_drivers);
 		if (rc)
 			sbi_printf("%s: failed to find da9063 for reset\n",
 				   __func__);
 	}
+
+	return generic_final_init(cold_boot);
+}
+
+static int sifive_fu740_platform_init(const void *fdt, int nodeoff, const struct fdt_match *match)
+{
+	generic_platform_ops.final_init = sifive_fu740_final_init;
+	generic_platform_ops.get_tlbr_flush_limit = sifive_fu740_tlbr_flush_limit;
 
 	return 0;
 }
@@ -255,6 +264,5 @@ static const struct fdt_match sifive_fu740_match[] = {
 
 const struct platform_override sifive_fu740 = {
 	.match_table = sifive_fu740_match,
-	.tlbr_flush_limit = sifive_fu740_tlbr_flush_limit,
-	.final_init = sifive_fu740_final_init,
+	.init = sifive_fu740_platform_init,
 };

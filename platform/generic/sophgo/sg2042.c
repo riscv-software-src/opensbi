@@ -21,9 +21,14 @@
 #define SOPHGO_SG2042_TIMER_SIZE	0x10000UL
 #define SOPHGO_SG2042_TIMER_NUM		16
 
-static int sophgo_sg2042_early_init(bool cold_boot, const void *fdt,
-				    const struct fdt_match *match)
+static int sophgo_sg2042_early_init(bool cold_boot)
 {
+	int rc;
+
+	rc = generic_early_init(cold_boot);
+	if (rc)
+		return rc;
+
 	thead_register_tlb_flush_trap_handler();
 
 	/*
@@ -44,10 +49,23 @@ static int sophgo_sg2042_early_init(bool cold_boot, const void *fdt,
 	return 0;
 }
 
-static int sophgo_sg2042_extensions_init(const struct fdt_match *match,
-					 struct sbi_hart_features *hfeatures)
+static int sophgo_sg2042_extensions_init(struct sbi_hart_features *hfeatures)
 {
+	int rc;
+
+	rc = generic_extensions_init(hfeatures);
+	if (rc)
+		return rc;
+
 	thead_c9xx_register_pmu_device();
+	return 0;
+}
+
+static int sophgo_sg2042_platform_init(const void *fdt, int nodeoff, const struct fdt_match *match)
+{
+	generic_platform_ops.early_init = sophgo_sg2042_early_init;
+	generic_platform_ops.extensions_init = sophgo_sg2042_extensions_init;
+
 	return 0;
 }
 
@@ -58,6 +76,5 @@ static const struct fdt_match sophgo_sg2042_match[] = {
 
 const struct platform_override sophgo_sg2042 = {
 	.match_table		= sophgo_sg2042_match,
-	.early_init		= sophgo_sg2042_early_init,
-	.extensions_init	= sophgo_sg2042_extensions_init,
+	.init			= sophgo_sg2042_platform_init,
 };

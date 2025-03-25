@@ -13,6 +13,7 @@
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hsm.h>
+#include <sbi/sbi_platform.h>
 #include <sbi/sbi_pmu.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
@@ -165,17 +166,6 @@ static const struct sbi_hsm_device sun20i_d1_ppu = {
 	.hart_resume	= sun20i_d1_hart_resume,
 };
 
-static int sun20i_d1_final_init(bool cold_boot, void *fdt,
-				const struct fdt_match *match)
-{
-	if (cold_boot) {
-		sun20i_d1_riscv_cfg_init();
-		sbi_hsm_set_device(&sun20i_d1_ppu);
-	}
-
-	return 0;
-}
-
 static const struct sbi_cpu_idle_state sun20i_d1_cpu_idle_states[] = {
 	{
 		.name			= "cpu-nonretentive",
@@ -189,20 +179,47 @@ static const struct sbi_cpu_idle_state sun20i_d1_cpu_idle_states[] = {
 	{ }
 };
 
-static int sun20i_d1_fdt_fixup(void *fdt, const struct fdt_match *match)
+static int sun20i_d1_final_init(bool cold_boot)
 {
-	return fdt_add_cpu_idle_states(fdt, sun20i_d1_cpu_idle_states);
+	int rc;
+
+	if (cold_boot) {
+		void *fdt = fdt_get_address_rw();
+
+		sun20i_d1_riscv_cfg_init();
+		sbi_hsm_set_device(&sun20i_d1_ppu);
+
+		rc = fdt_add_cpu_idle_states(fdt, sun20i_d1_cpu_idle_states);
+		if (rc)
+			return rc;
+	}
+
+	return generic_final_init(cold_boot);
 }
 
-static int sun20i_d1_extensions_init(const struct fdt_match *match,
-				     struct sbi_hart_features *hfeatures)
+static int sun20i_d1_extensions_init(struct sbi_hart_features *hfeatures)
 {
+	int rc;
+
+	rc = generic_extensions_init(hfeatures);
+	if (rc)
+		return rc;
+
 	thead_c9xx_register_pmu_device();
 
 	/* auto-detection doesn't work on t-head c9xx cores */
 	/* D1 has 29 mhpmevent csrs, but only 3-9,13-17 have valid value */
 	hfeatures->mhpm_mask = 0x0003e3f8;
 	hfeatures->mhpm_bits = 64;
+
+	return 0;
+}
+
+static int sun20i_d1_platform_init(const void *fdt, int nodeoff,
+				   const struct fdt_match *match)
+{
+	generic_platform_ops.final_init = sun20i_d1_final_init;
+	generic_platform_ops.extensions_init = sun20i_d1_extensions_init;
 
 	return 0;
 }
@@ -214,7 +231,5 @@ static const struct fdt_match sun20i_d1_match[] = {
 
 const struct platform_override sun20i_d1 = {
 	.match_table	= sun20i_d1_match,
-	.final_init	= sun20i_d1_final_init,
-	.fdt_fixup	= sun20i_d1_fdt_fixup,
-	.extensions_init = sun20i_d1_extensions_init,
+	.init		= sun20i_d1_platform_init,
 };

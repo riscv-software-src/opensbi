@@ -38,8 +38,7 @@ static bool andes_apply_iocp_sw_workaround(void)
 
 int andes_sbi_vendor_ext_provider(long funcid,
 				  struct sbi_trap_regs *regs,
-				  struct sbi_ecall_return *out,
-				  const struct fdt_match *match)
+				  struct sbi_ecall_return *out)
 {
 	int ret = 0;
 

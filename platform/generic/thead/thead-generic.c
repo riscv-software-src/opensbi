@@ -19,24 +19,35 @@ struct thead_generic_quirks {
 	u64	errata;
 };
 
-static int thead_generic_early_init(bool cold_boot, const void *fdt,
-				    const struct fdt_match *match)
+static int thead_tlb_flush_early_init(bool cold_boot)
 {
-	const struct thead_generic_quirks *quirks = match->data;
+	thead_register_tlb_flush_trap_handler();
 
-	if (quirks->errata & THEAD_QUIRK_ERRATA_TLB_FLUSH)
-		thead_register_tlb_flush_trap_handler();
+	return generic_early_init(cold_boot);
+}
+
+static int thead_pmu_extensions_init(struct sbi_hart_features *hfeatures)
+{
+	int rc;
+
+	rc = generic_extensions_init(hfeatures);
+	if (rc)
+		return rc;
+
+	thead_c9xx_register_pmu_device();
 
 	return 0;
 }
 
-static int thead_generic_extensions_init(const struct fdt_match *match,
-					 struct sbi_hart_features *hfeatures)
+static int thead_generic_platform_init(const void *fdt, int nodeoff,
+				       const struct fdt_match *match)
 {
 	const struct thead_generic_quirks *quirks = match->data;
 
+	if (quirks->errata & THEAD_QUIRK_ERRATA_TLB_FLUSH)
+		generic_platform_ops.early_init = thead_tlb_flush_early_init;
 	if (quirks->errata & THEAD_QUIRK_ERRATA_THEAD_PMU)
-		thead_c9xx_register_pmu_device();
+		generic_platform_ops.extensions_init = thead_pmu_extensions_init;
 
 	return 0;
 }
@@ -62,6 +73,5 @@ static const struct fdt_match thead_generic_match[] = {
 
 const struct platform_override thead_generic = {
 	.match_table		= thead_generic_match,
-	.early_init		= thead_generic_early_init,
-	.extensions_init	= thead_generic_extensions_init,
+	.init			= thead_generic_platform_init,
 };

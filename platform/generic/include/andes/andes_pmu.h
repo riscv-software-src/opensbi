@@ -8,11 +8,8 @@
 #define _RISCV_ANDES_PMU_H
 
 #include <sbi/sbi_hart.h>
-#include <sbi_utils/fdt/fdt_helper.h>
-#include <sbi_utils/fdt/fdt_pmu.h>
 
-int andes_pmu_init(const struct fdt_match *match);
-int andes_pmu_extensions_init(const struct fdt_match *match,
-			      struct sbi_hart_features *hfeatures);
+int andes_pmu_init(void);
+int andes_pmu_extensions_init(struct sbi_hart_features *hfeatures);
 
 #endif /* _RISCV_ANDES_PMU_H */
