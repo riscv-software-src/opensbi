@@ -22,7 +22,7 @@ struct thead_generic_quirks {
 static int thead_generic_early_init(bool cold_boot, const void *fdt,
 				    const struct fdt_match *match)
 {
-	struct thead_generic_quirks *quirks = (void *)match->data;
+	const struct thead_generic_quirks *quirks = match->data;
 
 	if (quirks->errata & THEAD_QUIRK_ERRATA_TLB_FLUSH)
 		thead_register_tlb_flush_trap_handler();
@@ -33,7 +33,7 @@ static int thead_generic_early_init(bool cold_boot, const void *fdt,
 static int thead_generic_extensions_init(const struct fdt_match *match,
 					 struct sbi_hart_features *hfeatures)
 {
-	struct thead_generic_quirks *quirks = (void *)match->data;
+	const struct thead_generic_quirks *quirks = match->data;
 
 	if (quirks->errata & THEAD_QUIRK_ERRATA_THEAD_PMU)
 		thead_c9xx_register_pmu_device();
@@ -41,11 +41,11 @@ static int thead_generic_extensions_init(const struct fdt_match *match,
 	return 0;
 }
 
-static struct thead_generic_quirks thead_th1520_quirks = {
+static const struct thead_generic_quirks thead_th1520_quirks = {
 	.errata = THEAD_QUIRK_ERRATA_TLB_FLUSH | THEAD_QUIRK_ERRATA_THEAD_PMU,
 };
 
-static struct thead_generic_quirks thead_pmu_quirks = {
+static const struct thead_generic_quirks thead_pmu_quirks = {
 	.errata = THEAD_QUIRK_ERRATA_THEAD_PMU,
 };
 
