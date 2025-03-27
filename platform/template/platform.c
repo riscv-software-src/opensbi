@@ -75,7 +75,7 @@ static int platform_early_init(bool cold_boot)
 
 	/* Example if the generic UART8250 driver is used */
 	return uart8250_init(PLATFORM_UART_ADDR, PLATFORM_UART_INPUT_FREQ,
-			     PLATFORM_UART_BAUDRATE, 0, 1, 0);
+			     PLATFORM_UART_BAUDRATE, 0, 1, 0, 0);
 }
 
 /*

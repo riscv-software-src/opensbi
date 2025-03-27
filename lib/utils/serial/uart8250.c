@@ -39,6 +39,12 @@
 #define UART_LSR_DR		0x01	/* Receiver data ready */
 #define UART_LSR_BRK_ERROR_BITS	0x1E	/* BI, FE, PE, OE bits */
 
+/* The XScale PXA UARTs define these bits */
+#define UART_IER_DMAE		0x80	/* DMA Requests Enable */
+#define UART_IER_UUE		0x40	/* UART Unit Enable */
+#define UART_IER_NRZE		0x20	/* NRZ coding Enable */
+#define UART_IER_RTOIE		0x10	/* Receiver Time Out Interrupt Enable */
+
 /* clang-format on */
 
 static volatile char *uart8250_base;
@@ -93,7 +99,7 @@ static struct sbi_console_device uart8250_console = {
 };
 
 int uart8250_init(unsigned long base, u32 in_freq, u32 baudrate, u32 reg_shift,
-		  u32 reg_width, u32 reg_offset)
+		  u32 reg_width, u32 reg_offset, u32 caps)
 {
 	u16 bdiv = 0;
 
@@ -109,7 +115,8 @@ int uart8250_init(unsigned long base, u32 in_freq, u32 baudrate, u32 reg_shift,
 	}
 
 	/* Disable all interrupts */
-	set_reg(UART_IER_OFFSET, 0x00);
+	set_reg(UART_IER_OFFSET, (caps & UART_CAP_UUE) ?
+				 UART_IER_UUE : 0x00);
 	/* Enable DLAB */
 	set_reg(UART_LCR_OFFSET, 0x80);
 

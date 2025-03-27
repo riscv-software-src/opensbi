@@ -23,6 +23,7 @@
 #define ARIANE_UART_REG_SHIFT			2
 #define ARIANE_UART_REG_WIDTH			4
 #define ARIANE_UART_REG_OFFSET			0
+#define ARIANE_UART_CAPS			0
 #define ARIANE_PLIC_ADDR			0xc000000
 #define ARIANE_PLIC_SIZE			(0x200000 + \
 						 (ARIANE_HART_COUNT * 0x1000))
@@ -78,7 +79,8 @@ static int ariane_early_init(bool cold_boot)
 			     ARIANE_UART_BAUDRATE,
 			     ARIANE_UART_REG_SHIFT,
 			     ARIANE_UART_REG_WIDTH,
-			     ARIANE_UART_REG_OFFSET);
+			     ARIANE_UART_REG_OFFSET,
+			     ARIANE_UART_CAPS);
 }
 
 /*
