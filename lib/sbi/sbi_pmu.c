@@ -732,12 +732,13 @@ static int pmu_ctr_find_hw(struct sbi_pmu_hart_state *phs,
 		return SBI_EINVAL;
 
 	/**
-	 * If Sscof is present try to find the programmable counter for
-	 * cycle/instret as well.
+	 * If Sscofpmf or Andes PMU is present, try to find
+	 * the programmable counter for cycle/instret as well.
 	 */
 	fixed_ctr = pmu_ctr_find_fixed_hw(event_idx);
 	if (fixed_ctr >= 0 &&
-	    !sbi_hart_has_extension(scratch, SBI_HART_EXT_SSCOFPMF))
+	    !sbi_hart_has_extension(scratch, SBI_HART_EXT_SSCOFPMF) &&
+	    !sbi_hart_has_extension(scratch, SBI_HART_EXT_XANDESPMU))
 		return pmu_fixed_ctr_update_inhibit_bits(fixed_ctr, flags);
 
 	if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_11)
