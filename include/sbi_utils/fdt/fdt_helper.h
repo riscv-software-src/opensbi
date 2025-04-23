@@ -50,6 +50,8 @@ int fdt_parse_hart_id(const void *fdt, int cpu_offset, u32 *hartid);
 
 int fdt_parse_max_enabled_hart_id(const void *fdt, u32 *max_hartid);
 
+int fdt_parse_cbom_block_size(const void *fdt, int cpu_offset, unsigned long  *cbom_block_size);
+
 int fdt_parse_timebase_frequency(const void *fdt, unsigned long *freq);
 
 int fdt_parse_isa_extensions(const void *fdt, unsigned int hartid,

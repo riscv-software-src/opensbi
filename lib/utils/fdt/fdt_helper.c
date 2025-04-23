@@ -246,6 +246,30 @@ int fdt_parse_hart_id(const void *fdt, int cpu_offset, u32 *hartid)
 	return 0;
 }
 
+int fdt_parse_cbom_block_size(const void *fdt, int cpu_offset, unsigned long *cbom_block_size)
+{
+	int len;
+	const void *prop;
+	const fdt32_t *val;
+
+	if (!fdt || cpu_offset < 0)
+		return SBI_EINVAL;
+
+	prop = fdt_getprop(fdt, cpu_offset, "device_type", &len);
+	if (!prop || !len)
+		return SBI_EINVAL;
+	if (strncmp (prop, "cpu", strlen ("cpu")))
+		return SBI_EINVAL;
+
+	val = fdt_getprop(fdt, cpu_offset, "riscv,cbom-block-size", &len);
+	if (!val || len < sizeof(fdt32_t))
+		return SBI_EINVAL;
+
+	if (cbom_block_size)
+		*cbom_block_size = fdt32_to_cpu(*val);
+	return 0;
+}
+
 int fdt_parse_max_enabled_hart_id(const void *fdt, u32 *max_hartid)
 {
 	u32 hartid;

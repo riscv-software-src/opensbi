@@ -147,6 +147,8 @@ unsigned long fw_platform_init(unsigned long arg0, unsigned long arg1,
 	const void *fdt = (void *)arg1;
 	u32 hartid, hart_count = 0;
 	int rc, root_offset, cpus_offset, cpu_offset, len;
+	unsigned long cbom_block_size = 0;
+	unsigned long tmp = 0;
 
 	root_offset = fdt_path_offset(fdt, "/");
 	if (root_offset < 0)
@@ -174,11 +176,17 @@ unsigned long fw_platform_init(unsigned long arg0, unsigned long arg1,
 			continue;
 
 		generic_hart_index2id[hart_count++] = hartid;
+
+		rc = fdt_parse_cbom_block_size(fdt, cpu_offset, &tmp);
+		if (rc)
+			continue;
+		cbom_block_size = MAX(tmp, cbom_block_size);
 	}
 
 	platform.hart_count = hart_count;
 	platform.heap_size = fw_platform_get_heap_size(fdt, hart_count);
 	platform_has_mlevel_imsic = fdt_check_imsic_mlevel(fdt);
+	platform.cbom_block_size = cbom_block_size;
 
 	fw_platform_coldboot_harts_init(fdt);
 

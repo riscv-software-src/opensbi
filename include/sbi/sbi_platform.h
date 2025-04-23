@@ -39,6 +39,8 @@
 #define SBI_PLATFORM_FIRMWARE_CONTEXT_OFFSET (0x60 + __SIZEOF_POINTER__)
 /** Offset of hart_index2id in struct sbi_platform */
 #define SBI_PLATFORM_HART_INDEX2ID_OFFSET (0x60 + (__SIZEOF_POINTER__ * 2))
+/** Offset of cbom_block_size in struct sbi_platform */
+#define SBI_PLATFORM_CBOM_BLOCK_SIZE_OFFSET (0x60 + (__SIZEOF_POINTER__ * 3))
 
 #define SBI_PLATFORM_TLB_RANGE_FLUSH_LIMIT_DEFAULT		(1UL << 12)
 
@@ -190,6 +192,8 @@ struct sbi_platform {
 	 *     hart_index2id[<abc>] = <abc>
 	 */
 	const u32 *hart_index2id;
+	/** Allocation alignment for Scratch */
+	unsigned long cbom_block_size;
 };
 
 /**
@@ -207,6 +211,7 @@ assert_member_offset(struct sbi_platform, reserved, SBI_PLATFORM_RESERVED_OFFSET
 assert_member_offset(struct sbi_platform, platform_ops_addr, SBI_PLATFORM_OPS_OFFSET);
 assert_member_offset(struct sbi_platform, firmware_context, SBI_PLATFORM_FIRMWARE_CONTEXT_OFFSET);
 assert_member_offset(struct sbi_platform, hart_index2id, SBI_PLATFORM_HART_INDEX2ID_OFFSET);
+assert_member_offset(struct sbi_platform, cbom_block_size, SBI_PLATFORM_CBOM_BLOCK_SIZE_OFFSET);
 
 /** Get pointer to sbi_platform for sbi_scratch pointer */
 #define sbi_platform_ptr(__s) \
