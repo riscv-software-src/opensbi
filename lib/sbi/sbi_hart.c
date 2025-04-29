@@ -111,6 +111,12 @@ static void mstatus_init(struct sbi_scratch *scratch)
 			mstateen_val &= ~SMSTATEEN0_CTR;
 
 		csr_write64(CSR_MSTATEEN0, mstateen_val);
+
+		if (misa_extension('S'))
+			csr_write(CSR_SSTATEEN0, 0);
+
+		if (misa_extension('H'))
+			csr_write64(CSR_HSTATEEN0, (uint64_t)0);
 	}
 
 	if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_12) {
