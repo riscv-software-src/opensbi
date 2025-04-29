@@ -114,12 +114,21 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		csr_write64(CSR_MSTATEEN1, SMSTATEEN_STATEN);
 		csr_write64(CSR_MSTATEEN2, SMSTATEEN_STATEN);
 		csr_write64(CSR_MSTATEEN3, SMSTATEEN_STATEN);
+	}
 
-		if (misa_extension('S'))
+	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SSSTATEEN)) {
+		if (misa_extension('S')) {
 			csr_write(CSR_SSTATEEN0, 0);
-
-		if (misa_extension('H'))
+			csr_write(CSR_SSTATEEN1, 0);
+			csr_write(CSR_SSTATEEN2, 0);
+			csr_write(CSR_SSTATEEN3, 0);
+		}
+		if (misa_extension('H')) {
 			csr_write64(CSR_HSTATEEN0, (uint64_t)0);
+			csr_write64(CSR_HSTATEEN1, (uint64_t)0);
+			csr_write64(CSR_HSTATEEN2, (uint64_t)0);
+			csr_write64(CSR_HSTATEEN3, (uint64_t)0);
+		}
 	}
 
 	if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_12) {
