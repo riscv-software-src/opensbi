@@ -31,7 +31,7 @@ enum sbi_hart_extensions {
 	SBI_HART_EXT_SMAIA = 0,
 	/** HART has Smepmp */
 	SBI_HART_EXT_SMEPMP,
-	/** HART has Smstateen CSR **/
+	/** HART has Smstateen extension **/
 	SBI_HART_EXT_SMSTATEEN,
 	/** Hart has Sscofpmt extension */
 	SBI_HART_EXT_SSCOFPMF,
@@ -79,6 +79,8 @@ enum sbi_hart_extensions {
 	SBI_HART_EXT_SMCTR,
 	/** HART has CTR S-mode CSRs */
 	SBI_HART_EXT_SSCTR,
+	/** HART has Ssstateen extension **/
+	SBI_HART_EXT_SSSTATEEN,
 
 	/** Maximum index of Hart extension */
 	SBI_HART_EXT_MAX,
