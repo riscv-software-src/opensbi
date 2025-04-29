@@ -111,6 +111,9 @@ static void mstatus_init(struct sbi_scratch *scratch)
 			mstateen_val &= ~SMSTATEEN0_CTR;
 
 		csr_write64(CSR_MSTATEEN0, mstateen_val);
+		csr_write64(CSR_MSTATEEN1, SMSTATEEN_STATEN);
+		csr_write64(CSR_MSTATEEN2, SMSTATEEN_STATEN);
+		csr_write64(CSR_MSTATEEN3, SMSTATEEN_STATEN);
 
 		if (misa_extension('S'))
 			csr_write(CSR_SSTATEEN0, 0);
