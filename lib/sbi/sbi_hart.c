@@ -86,10 +86,7 @@ static void mstatus_init(struct sbi_scratch *scratch)
 	}
 
 	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SMSTATEEN)) {
-		mstateen_val = csr_read(CSR_MSTATEEN0);
-#if __riscv_xlen == 32
-		mstateen_val |= ((uint64_t)csr_read(CSR_MSTATEEN0H)) << 32;
-#endif
+		mstateen_val = csr_read64(CSR_MSTATEEN0);
 		mstateen_val |= SMSTATEEN_STATEN;
 		mstateen_val |= SMSTATEEN0_CONTEXT;
 		mstateen_val |= SMSTATEEN0_HSENVCFG;
@@ -110,17 +107,11 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		else
 			mstateen_val &= ~SMSTATEEN0_CTR;
 
-		csr_write(CSR_MSTATEEN0, mstateen_val);
-#if __riscv_xlen == 32
-		csr_write(CSR_MSTATEEN0H, mstateen_val >> 32);
-#endif
+		csr_write64(CSR_MSTATEEN0, mstateen_val);
 	}
 
 	if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_12) {
-		menvcfg_val = csr_read(CSR_MENVCFG);
-#if __riscv_xlen == 32
-		menvcfg_val |= ((uint64_t)csr_read(CSR_MENVCFGH)) << 32;
-#endif
+		menvcfg_val = csr_read64(CSR_MENVCFG);
 
 		/* Disable double trap by default */
 		menvcfg_val &= ~ENVCFG_DTE;
@@ -156,10 +147,7 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SVADE))
 			menvcfg_val &= ~ENVCFG_ADUE;
 
-		csr_write(CSR_MENVCFG, menvcfg_val);
-#if __riscv_xlen == 32
-		csr_write(CSR_MENVCFGH, menvcfg_val >> 32);
-#endif
+		csr_write64(CSR_MENVCFG, menvcfg_val);
 
 		/* Enable S-mode access to seed CSR */
 		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_ZKR)) {

@@ -139,12 +139,7 @@ void sbi_timer_event_start(u64 next_event)
 	 * the older software to leverage sstc extension on newer hardware.
 	 */
 	if (sbi_hart_has_extension(sbi_scratch_thishart_ptr(), SBI_HART_EXT_SSTC)) {
-#if __riscv_xlen == 32
-		csr_write(CSR_STIMECMP, next_event & 0xFFFFFFFF);
-		csr_write(CSR_STIMECMPH, next_event >> 32);
-#else
-		csr_write(CSR_STIMECMP, next_event);
-#endif
+		csr_write64(CSR_STIMECMP, next_event);
 	} else if (timer_dev && timer_dev->timer_event_start) {
 		timer_dev->timer_event_start(next_event);
 		csr_clear(CSR_MIP, MIP_STIP);
