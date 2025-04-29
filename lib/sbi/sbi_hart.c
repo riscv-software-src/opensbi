@@ -89,7 +89,7 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		csr_write(CSR_HSTATUS, 0);
 
 	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SMSTATEEN)) {
-		mstateen_val = csr_read64(CSR_MSTATEEN0);
+		mstateen_val = 0;
 		mstateen_val |= SMSTATEEN_STATEN;
 		mstateen_val |= SMSTATEEN0_CONTEXT;
 		mstateen_val |= SMSTATEEN0_HSENVCFG;
