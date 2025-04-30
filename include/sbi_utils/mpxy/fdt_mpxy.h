@@ -15,11 +15,11 @@
 
 #ifdef CONFIG_FDT_MPXY
 
-void fdt_mpxy_init(const void *fdt);
+int fdt_mpxy_init(const void *fdt);
 
 #else
 
-static inline void fdt_mpxy_init(const void *fdt) { }
+static inline int fdt_mpxy_init(const void *fdt) { return 0; }
 
 #endif
 

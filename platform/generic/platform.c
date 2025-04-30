@@ -324,8 +324,7 @@ int generic_mpxy_init(void)
 {
 	const void *fdt = fdt_get_address();
 
-	fdt_mpxy_init(fdt);
-	return 0;
+	return fdt_mpxy_init(fdt);
 }
 
 struct sbi_platform_operations generic_platform_ops = {

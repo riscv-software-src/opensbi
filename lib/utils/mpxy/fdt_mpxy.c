@@ -12,11 +12,7 @@
 /* List of FDT MPXY drivers generated at compile time */
 extern const struct fdt_driver *const fdt_mpxy_drivers[];
 
-void fdt_mpxy_init(const void *fdt)
+int fdt_mpxy_init(const void *fdt)
 {
-	/*
-	 * Platforms might have multiple MPXY devices or might not
-	 * have any MPXY devices so don't fail.
-	 */
-	fdt_driver_init_all(fdt, fdt_mpxy_drivers);
+	return fdt_driver_init_all(fdt, fdt_mpxy_drivers);
 }
