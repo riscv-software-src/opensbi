@@ -252,6 +252,18 @@ option with:
 make LLVM=1
 ```
 
+To build with a specific version of LLVM, a path to a directory containing the
+LLVM tools can be provided:
+```
+make LLVM=/path/to/llvm/
+```
+
+If you have versioned llvm tools you would like to use, such as `clang-17`, the LLVM variable can
+be set as:
+```
+make LLVM=-17
+```
+
 When using Clang, *CROSS_COMPILE* often does not need to be defined unless
 using GNU binutils with prefixed binary names. *PLATFORM_RISCV_XLEN* will be
 used to infer a default triple to pass to Clang, so if *PLATFORM_RISCV_XLEN*

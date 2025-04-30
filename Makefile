@@ -104,10 +104,16 @@ endif
 
 # Setup compilation commands
 ifneq ($(LLVM),)
-CC		=	clang
-AR		=	llvm-ar
-LD		=	ld.lld
-OBJCOPY		=	llvm-objcopy
+ifneq ($(filter %/,$(LLVM)),)
+LLVM_PREFIX := $(LLVM)
+else ifneq ($(filter -%,$(LLVM)),)
+LLVM_SUFFIX := $(LLVM)
+endif
+
+CC		=	$(LLVM_PREFIX)clang$(LLVM_SUFFIX)
+AR		=	$(LLVM_PREFIX)llvm-ar$(LLVM_SUFFIX)
+LD		=	$(LLVM_PREFIX)ld.lld$(LLVM_SUFFIX)
+OBJCOPY		=	$(LLVM_PREFIX)llvm-objcopy$(LLVM_SUFFIX)
 else
 ifdef CROSS_COMPILE
 CC		=	$(CROSS_COMPILE)gcc
