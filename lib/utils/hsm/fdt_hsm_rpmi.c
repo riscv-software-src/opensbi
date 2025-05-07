@@ -330,7 +330,7 @@ skip_suspend_states:
 
 	/* Register HSM fixup callback */
 	rc = fdt_register_general_fixup(&rpmi_hsm_fixup);
-	if (rc)
+	if (rc && rc != SBI_EALREADY)
 		goto fail_free_susp_state_names;
 
 	/* Register HSM device */
