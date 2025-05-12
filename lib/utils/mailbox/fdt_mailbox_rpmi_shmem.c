@@ -133,6 +133,7 @@ struct rpmi_shmem_mbox_controller {
 	/* Driver specific members */
 	u32 slot_size;
 	u32 queue_count;
+	u32 p2a_doorbell_sysmsi_index;
 	struct rpmi_mb_regs *mb_regs;
 	struct smq_queue_ctx queue_ctx_tbl[RPMI_QUEUE_IDX_MAX_COUNT];
 	/* Mailbox framework related members */
@@ -505,6 +506,9 @@ static int rpmi_shmem_mbox_get_attribute(struct mbox_chan *chan,
 	case RPMI_CHANNEL_ATTR_MAX_DATA_LEN:
 		*((u32 *)out_value) = RPMI_MSG_DATA_SIZE(mctl->slot_size);
 		break;
+	case RPMI_CHANNEL_ATTR_P2A_DOORBELL_SYSMSI_INDEX:
+		*((u32 *)out_value) = mctl->p2a_doorbell_sysmsi_index;
+		break;
 	case RPMI_CHANNEL_ATTR_TX_TIMEOUT:
 		*((u32 *)out_value) = RPMI_DEF_TX_TIMEOUT;
 		break;
@@ -574,9 +578,9 @@ static int rpmi_shmem_transport_init(struct rpmi_shmem_mbox_controller *mctl,
 				     const void *fdt, int nodeoff)
 {
 	const char *name;
+	const fdt32_t *prop;
 	int count, len, ret, qid;
 	uint64_t reg_addr, reg_size;
-	const fdt32_t *prop_slotsz;
 	struct smq_queue_ctx *qctx;
 
 	ret = fdt_node_check_compatible(fdt, nodeoff,
@@ -585,16 +589,20 @@ static int rpmi_shmem_transport_init(struct rpmi_shmem_mbox_controller *mctl,
 		return ret;
 
 	/* get queue slot size in bytes */
-	prop_slotsz = fdt_getprop(fdt, nodeoff, "riscv,slot-size", &len);
-	if (!prop_slotsz)
+	prop = fdt_getprop(fdt, nodeoff, "riscv,slot-size", &len);
+	if (!prop)
 		return SBI_ENOENT;
 
-	mctl->slot_size = fdt32_to_cpu(*prop_slotsz);
+	mctl->slot_size = fdt32_to_cpu(*prop);
 	if (mctl->slot_size < RPMI_SLOT_SIZE_MIN) {
 		sbi_printf("%s: slot_size < mimnum required message size\n",
 			   __func__);
 		mctl->slot_size = RPMI_SLOT_SIZE_MIN;
 	}
+
+	/* get p2a doorbell system MSI index */
+	prop = fdt_getprop(fdt, nodeoff, "riscv,p2a-doorbell-sysmsi-index", &len);
+	mctl->p2a_doorbell_sysmsi_index = prop ? fdt32_to_cpu(*prop) : -1U;
 
 	/*
 	 * queue names count is taken as the number of queues
