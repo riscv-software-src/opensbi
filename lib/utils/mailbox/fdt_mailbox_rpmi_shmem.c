@@ -651,7 +651,7 @@ static int rpmi_shmem_transport_init(struct rpmi_shmem_mbox_controller *mctl,
 		SPIN_LOCK_INIT(qctx->queue_lock);
 	}
 
-	/* get the db-reg property name */
+	/* get the a2p-doorbell property name */
 	name = fdt_stringlist_get(fdt, nodeoff, "reg-names", qid, &len);
 	if (!name || (name && len < 0))
 		return len;
@@ -659,7 +659,7 @@ static int rpmi_shmem_transport_init(struct rpmi_shmem_mbox_controller *mctl,
 	/* fetch doorbell register address*/
 	ret = fdt_get_node_addr_size(fdt, nodeoff, qid, &reg_addr,
 				       &reg_size);
-	if (!ret && !(strncmp(name, "db-reg", strlen("db-reg")))) {
+	if (!ret && !(strncmp(name, "a2p-doorbell", strlen("a2p-doorbell")))) {
 		mctl->mb_regs = (void *)(unsigned long)reg_addr;
 		ret = sbi_domain_root_add_memrange(reg_addr, reg_size, reg_size,
 						   (SBI_DOMAIN_MEMREGION_MMIO |
