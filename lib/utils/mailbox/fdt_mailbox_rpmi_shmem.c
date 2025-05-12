@@ -134,6 +134,7 @@ struct rpmi_shmem_mbox_controller {
 	u32 slot_size;
 	u32 queue_count;
 	u32 p2a_doorbell_sysmsi_index;
+	u32 a2p_doorbell_value;
 	struct rpmi_mb_regs *mb_regs;
 	struct smq_queue_ctx queue_ctx_tbl[RPMI_QUEUE_IDX_MAX_COUNT];
 	/* Mailbox framework related members */
@@ -248,7 +249,8 @@ static int __smq_rx(struct smq_queue_ctx *qctx, u32 slot_size,
 }
 
 static int __smq_tx(struct smq_queue_ctx *qctx, struct rpmi_mb_regs *mb_regs,
-		    u32 slot_size, u32 service_group_id, struct mbox_xfer *xfer)
+		    u32 a2p_doorbell_value, u32 slot_size, u32 service_group_id,
+		    struct mbox_xfer *xfer)
 {
 	u32 i, tailidx;
 	void *dst, *src;
@@ -300,7 +302,7 @@ static int __smq_tx(struct smq_queue_ctx *qctx, struct rpmi_mb_regs *mb_regs,
 
 	/* Ring the RPMI doorbell if present */
 	if (mb_regs)
-		writel(cpu_to_le32(1), &mb_regs->db_reg);
+		writel(a2p_doorbell_value, &mb_regs->db_reg);
 
 	return SBI_OK;
 }
@@ -364,8 +366,8 @@ static int smq_tx(struct rpmi_shmem_mbox_controller *mctl,
 	 */
 	do {
 		spin_lock(&qctx->queue_lock);
-		ret = __smq_tx(qctx, mctl->mb_regs, mctl->slot_size,
-				service_group_id, xfer);
+		ret = __smq_tx(qctx, mctl->mb_regs, mctl->a2p_doorbell_value,
+				mctl->slot_size, service_group_id, xfer);
 		spin_unlock(&qctx->queue_lock);
 		if (!ret)
 			return 0;
@@ -603,6 +605,10 @@ static int rpmi_shmem_transport_init(struct rpmi_shmem_mbox_controller *mctl,
 	/* get p2a doorbell system MSI index */
 	prop = fdt_getprop(fdt, nodeoff, "riscv,p2a-doorbell-sysmsi-index", &len);
 	mctl->p2a_doorbell_sysmsi_index = prop ? fdt32_to_cpu(*prop) : -1U;
+
+	/* get a2p doorbell value */
+	prop = fdt_getprop(fdt, nodeoff, "riscv,a2p-doorbell-value", &len);
+	mctl->a2p_doorbell_value = prop ? fdt32_to_cpu(*prop) : 1;
 
 	/*
 	 * queue names count is taken as the number of queues
