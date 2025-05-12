@@ -285,7 +285,6 @@ enum rpmi_sysmsi_service_id {
 struct rpmi_sysmsi_get_attributes_resp {
 	s32 status;
 	u32 sys_num_msi;
-	u32 p2a_db_index;
 	u32 flag0;
 	u32 flag1;
 };

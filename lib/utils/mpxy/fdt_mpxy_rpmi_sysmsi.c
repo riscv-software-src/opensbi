@@ -32,10 +32,9 @@ static int mpxy_rpmi_sysmis_xfer(void *context, struct mbox_chan *chan,
 	case RPMI_SYSMSI_SRV_GET_ATTRIBUTES:
 		((u32 *)xfer->rx)[0] = cpu_to_le32(RPMI_SUCCESS);
 		((u32 *)xfer->rx)[1] = cpu_to_le32(smg->sys_num_msi);
-		((u32 *)xfer->rx)[2] = -1U;
+		((u32 *)xfer->rx)[2] = 0;
 		((u32 *)xfer->rx)[3] = 0;
-		((u32 *)xfer->rx)[4] = 0;
-		args->rx_data_len = 5 * sizeof(u32);
+		args->rx_data_len = 4 * sizeof(u32);
 		break;
 	case RPMI_SYSMSI_SRV_GET_MSI_ATTRIBUTES:
 	case RPMI_SYSMSI_SRV_SET_MSI_STATE:
@@ -90,7 +89,13 @@ static int mpxy_rpmi_sysmsi_setup(void **context, struct mbox_chan *chan,
 	struct rpmi_sysmsi_get_msi_attributes_req gmareq;
 	struct rpmi_sysmsi_get_attributes_resp garesp;
 	struct mpxy_rpmi_sysmsi *smg;
+	u32 p2a_db_index;
 	int rc, i;
+
+	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_P2A_DOORBELL_SYSMSI_INDEX,
+				     &p2a_db_index);
+	if (rc)
+		return rc;
 
 	rc = rpmi_normal_request_with_status(chan, RPMI_SYSMSI_SRV_GET_ATTRIBUTES,
 					     NULL, 0, 0, &garesp, rpmi_u32_count(garesp),
@@ -122,7 +127,7 @@ static int mpxy_rpmi_sysmsi_setup(void **context, struct mbox_chan *chan,
 			return rc;
 		}
 
-		if (garesp.p2a_db_index == i ||
+		if (p2a_db_index == i ||
 		    (gmaresp.flag0 & RPMI_SYSMSI_MSI_ATTRIBUTES_FLAG0_PREF_PRIV))
 			bitmap_set(smg->sys_msi_denied_bmap, i, 1);
 	}
