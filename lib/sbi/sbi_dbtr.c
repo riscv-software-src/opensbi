@@ -523,16 +523,17 @@ int sbi_dbtr_read_trig(unsigned long smode,
 
 	shmem_base = hart_shmem_base(hs);
 
+	sbi_hart_map_saddr((unsigned long)shmem_base,
+			   trig_count * sizeof(*entry));
 	for_each_trig_entry(shmem_base, trig_count, typeof(*entry), entry) {
-		sbi_hart_map_saddr((unsigned long)entry, sizeof(*entry));
 		xmit = &entry->data;
 		trig = INDEX_TO_TRIGGER((_idx + trig_idx_base));
 		xmit->tstate = cpu_to_lle(trig->state);
 		xmit->tdata1 = cpu_to_lle(trig->tdata1);
 		xmit->tdata2 = cpu_to_lle(trig->tdata2);
 		xmit->tdata3 = cpu_to_lle(trig->tdata3);
-		sbi_hart_unmap_saddr();
 	}
+	sbi_hart_unmap_saddr();
 
 	return SBI_SUCCESS;
 }
@@ -556,10 +557,11 @@ int sbi_dbtr_install_trig(unsigned long smode,
 		return SBI_ERR_NO_SHMEM;
 
 	shmem_base = hart_shmem_base(hs);
+	sbi_hart_map_saddr((unsigned long)shmem_base,
+			   trig_count * sizeof(*entry));
 
 	/* Check requested triggers configuration */
 	for_each_trig_entry(shmem_base, trig_count, typeof(*entry), entry) {
-		sbi_hart_map_saddr((unsigned long)entry, sizeof(*entry));
 		recv = (struct sbi_dbtr_data_msg *)(&entry->data);
 		ctrl = recv->tdata1;
 
@@ -574,11 +576,11 @@ int sbi_dbtr_install_trig(unsigned long smode,
 			sbi_hart_unmap_saddr();
 			return SBI_ERR_FAILED;
 		}
-		sbi_hart_unmap_saddr();
 	}
 
 	if (hs->available_trigs < trig_count) {
 		*out = hs->available_trigs;
+		sbi_hart_unmap_saddr();
 		return SBI_ERR_FAILED;
 	}
 
@@ -590,16 +592,15 @@ int sbi_dbtr_install_trig(unsigned long smode,
 		 */
 		trig = sbi_alloc_trigger();
 
-		sbi_hart_map_saddr((unsigned long)entry, sizeof(*entry));
-
 		recv = (struct sbi_dbtr_data_msg *)(&entry->data);
 		xmit = (struct sbi_dbtr_id_msg *)(&entry->id);
 
 		dbtr_trigger_setup(trig,  recv);
 		dbtr_trigger_enable(trig);
 		xmit->idx = cpu_to_lle(trig->index);
-		sbi_hart_unmap_saddr();
+
 	}
+	sbi_hart_unmap_saddr();
 
 	return SBI_SUCCESS;
 }
