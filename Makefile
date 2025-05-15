@@ -180,6 +180,11 @@ else
 USE_LD_FLAG	=	-fuse-ld=bfd
 endif
 
+REPRODUCIBLE ?= n
+ifeq ($(REPRODUCIBLE),y)
+REPRODUCIBLE_FLAGS		+=	-ffile-prefix-map=$(src_dir)=
+endif
+
 # Check whether the linker supports creating PIEs
 OPENSBI_LD_PIE := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) $(USE_LD_FLAG) -fPIE -nostdlib -Wl,-pie -x c /dev/null -o /dev/null >/dev/null 2>&1 && echo y || echo n)
 
@@ -369,6 +374,7 @@ GENFLAGS	+=	$(firmware-genflags-y)
 CFLAGS		=	-g -Wall -Werror -ffreestanding -nostdlib -fno-stack-protector -fno-strict-aliasing -ffunction-sections -fdata-sections
 CFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
 CFLAGS		+=	-fno-asynchronous-unwind-tables -fno-unwind-tables
+CFLAGS		+=	$(REPRODUCIBLE_FLAGS)
 # Optionally supported flags
 ifeq ($(CC_SUPPORT_VECTOR),y)
 CFLAGS		+=	-DOPENSBI_CC_SUPPORT_VECTOR
@@ -394,6 +400,7 @@ CPPFLAGS	+=	$(firmware-cppflags-y)
 ASFLAGS		=	-g -Wall -nostdlib
 ASFLAGS		+=	-fno-omit-frame-pointer -fno-optimize-sibling-calls
 ASFLAGS		+=	-fPIE
+ASFLAGS		+=	$(REPRODUCIBLE_FLAGS)
 # Optionally supported flags
 ifeq ($(CC_SUPPORT_SAVE_RESTORE),y)
 ASFLAGS		+=	-mno-save-restore
