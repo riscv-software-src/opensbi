@@ -93,6 +93,14 @@ struct sbi_hart_ext_data {
 
 extern const struct sbi_hart_ext_data sbi_hart_ext[];
 
+/** CSRs should be detected by access and trapping */
+enum sbi_hart_csrs {
+	SBI_HART_CSR_CYCLE = 0,
+	SBI_HART_CSR_TIME,
+	SBI_HART_CSR_INSTRET,
+	SBI_HART_CSR_MAX,
+};
+
 /*
  * Smepmp enforces access boundaries between M-mode and
  * S/U-mode. When it is enabled, the PMPs are programmed
@@ -112,6 +120,7 @@ struct sbi_hart_features {
 	bool detected;
 	int priv_version;
 	unsigned long extensions[BITS_TO_LONGS(SBI_HART_EXT_MAX)];
+	unsigned long csrs[BITS_TO_LONGS(SBI_HART_CSR_MAX)];
 	unsigned int pmp_count;
 	unsigned int pmp_addr_bits;
 	unsigned int pmp_log2gran;
@@ -150,6 +159,7 @@ bool sbi_hart_has_extension(struct sbi_scratch *scratch,
 			    enum sbi_hart_extensions ext);
 void sbi_hart_get_extensions_str(struct sbi_scratch *scratch,
 				 char *extension_str, int nestr);
+bool sbi_hart_has_csr(struct sbi_scratch *scratch, enum sbi_hart_csrs csr);
 
 void __attribute__((noreturn)) sbi_hart_hang(void);
 
