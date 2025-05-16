@@ -69,7 +69,6 @@ struct sbi_ecall_extension ecall_dbtr = {
 	.name			= "dbtr",
 	.extid_start		= SBI_EXT_DBTR,
 	.extid_end		= SBI_EXT_DBTR,
-	.experimental		= true,
 	.handle			= sbi_ecall_dbtr_handler,
 	.register_extensions	= sbi_ecall_dbtr_register_extensions,
 };

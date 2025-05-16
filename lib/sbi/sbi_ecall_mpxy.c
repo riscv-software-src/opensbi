@@ -67,7 +67,6 @@ struct sbi_ecall_extension ecall_mpxy = {
 	.name			= "mpxy",
 	.extid_start		= SBI_EXT_MPXY,
 	.extid_end		= SBI_EXT_MPXY,
-	.experimental		= true,
 	.register_extensions	= sbi_ecall_mpxy_register_extensions,
 	.handle			= sbi_ecall_mpxy_handler,
 };

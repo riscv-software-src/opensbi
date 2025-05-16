@@ -45,7 +45,6 @@ struct sbi_ecall_extension ecall_fwft = {
 	.name			= "fwft",
 	.extid_start		= SBI_EXT_FWFT,
 	.extid_end		= SBI_EXT_FWFT,
-	.experimental		= true,
 	.register_extensions	= sbi_ecall_fwft_register_extensions,
 	.handle			= sbi_ecall_fwft_handler,
 };
