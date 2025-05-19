@@ -1104,7 +1104,6 @@ static void pmu_sse_enable(uint32_t event_id)
 {
 	unsigned long irq_mask = sbi_pmu_irq_mask();
 
-	csr_clear(CSR_MIP, irq_mask);
 	csr_set(CSR_MIE, irq_mask);
 }
 
