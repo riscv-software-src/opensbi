@@ -13,15 +13,14 @@
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_emulate_csr.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_illegal_atomic.h>
 #include <sbi/sbi_illegal_insn.h>
 #include <sbi/sbi_pmu.h>
 #include <sbi/sbi_trap.h>
 #include <sbi/sbi_unpriv.h>
 #include <sbi/sbi_console.h>
 
-typedef int (*illegal_insn_func)(ulong insn, struct sbi_trap_regs *regs);
-
-static int truly_illegal_insn(ulong insn, struct sbi_trap_regs *regs)
+int truly_illegal_insn(ulong insn, struct sbi_trap_regs *regs)
 {
 	struct sbi_trap_info trap;
 
@@ -123,7 +122,7 @@ static const illegal_insn_func illegal_insn_table[32] = {
 	truly_illegal_insn, /* 8 */
 	truly_illegal_insn, /* 9 */
 	truly_illegal_insn, /* 10 */
-	truly_illegal_insn, /* 11 */
+	sbi_illegal_atomic, /* 11 */
 	truly_illegal_insn, /* 12 */
 	truly_illegal_insn, /* 13 */
 	truly_illegal_insn, /* 14 */

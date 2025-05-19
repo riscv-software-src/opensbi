@@ -986,13 +986,14 @@
 #define INSN_MATCH_VS4RV		0x62800027
 #define INSN_MATCH_VS8RV		0xe2800027
 
-#define INSN_MASK_VECTOR_LOAD_STORE	0x7f
-#define INSN_MATCH_VECTOR_LOAD		0x07
-#define INSN_MATCH_VECTOR_STORE		0x27
+#define INSN_OPCODE_MASK		0x7f
+#define INSN_OPCODE_VECTOR_LOAD		0x07
+#define INSN_OPCODE_VECTOR_STORE	0x27
+#define INSN_OPCODE_AMO			0x2f
 
 #define IS_VECTOR_LOAD_STORE(insn) \
-	((((insn) & INSN_MASK_VECTOR_LOAD_STORE) == INSN_MATCH_VECTOR_LOAD) || \
-	(((insn) & INSN_MASK_VECTOR_LOAD_STORE) == INSN_MATCH_VECTOR_STORE))
+	((((insn) & INSN_OPCODE_MASK) == INSN_OPCODE_VECTOR_LOAD) || \
+	(((insn) & INSN_OPCODE_MASK) == INSN_OPCODE_VECTOR_STORE))
 
 #define IS_VECTOR_INSN_MATCH(insn, match, mask) \
 	(((insn) & (mask)) == ((match) & (mask)))
@@ -1286,6 +1287,17 @@
 #error "Unexpected __riscv_xlen"
 #endif
 
+#define MASK_FUNCT3			0x7000
+#define SHIFT_FUNCT3			12
+
+#define MASK_RS1			0xf8000
+
+#define MASK_CSR			0xfff00000
+#define SHIFT_CSR			20
+
+#define MASK_AQRL			0x06000000
+#define SHIFT_AQRL			25
+
 #define VM_MASK				0x1
 #define VIEW_MASK				0x3
 #define VSEW_MASK				0x3
@@ -1353,10 +1365,11 @@
 #define REG_PTR(insn, pos, regs)	\
 	(ulong *)((ulong)(regs) + REG_OFFSET(insn, pos))
 
-#define GET_RM(insn)			((insn & MASK_FUNCT3) >> SHIFT_FUNCT3)
-
+#define GET_FUNC3(insn)			((insn & MASK_FUNCT3) >> SHIFT_FUNCT3)
+#define GET_RM(insn)			GET_FUNC3(insn)
 #define GET_RS1_NUM(insn)		((insn & MASK_RS1) >> 15)
 #define GET_CSR_NUM(insn)		((insn & MASK_CSR) >> SHIFT_CSR)
+#define GET_AQRL(insn)			((insn & MASK_AQRL) >> SHIFT_AQRL)
 
 #define GET_RS1(insn, regs)		(*REG_PTR(insn, SH_RS1, regs))
 #define GET_RS2(insn, regs)		(*REG_PTR(insn, SH_RS2, regs))
@@ -1380,13 +1393,6 @@
 #define GET_NF(insn)			(1 + ((insn >> 29) & 7))
 #define GET_VEMUL(vlmul, view, vsew)	((vlmul + view - vsew) & 7)
 #define GET_EMUL(vemul)		(1UL << ((vemul) >= 4 ? 0 : (vemul)))
-
-#define MASK_FUNCT3			0x7000
-#define MASK_RS1			0xf8000
-#define MASK_CSR			0xfff00000
-
-#define SHIFT_FUNCT3			12
-#define SHIFT_CSR			20
 
 #define CSRRW 1
 #define CSRRS 2
