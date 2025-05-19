@@ -1102,24 +1102,18 @@ void sbi_pmu_exit(struct sbi_scratch *scratch)
 
 static void pmu_sse_enable(uint32_t event_id)
 {
-	struct sbi_pmu_hart_state *phs = pmu_thishart_state_ptr();
 	unsigned long irq_mask = sbi_pmu_irq_mask();
 
-	phs->sse_enabled = true;
-	csr_clear(CSR_MIDELEG, irq_mask);
 	csr_clear(CSR_MIP, irq_mask);
 	csr_set(CSR_MIE, irq_mask);
 }
 
 static void pmu_sse_disable(uint32_t event_id)
 {
-	struct sbi_pmu_hart_state *phs = pmu_thishart_state_ptr();
 	unsigned long irq_mask = sbi_pmu_irq_mask();
 
 	csr_clear(CSR_MIE, irq_mask);
 	csr_clear(CSR_MIP, irq_mask);
-	csr_set(CSR_MIDELEG, irq_mask);
-	phs->sse_enabled = false;
 }
 
 static void pmu_sse_complete(uint32_t event_id)
@@ -1127,7 +1121,25 @@ static void pmu_sse_complete(uint32_t event_id)
 	csr_set(CSR_MIE, sbi_pmu_irq_mask());
 }
 
+static void pmu_sse_register(uint32_t event_id)
+{
+	struct sbi_pmu_hart_state *phs = pmu_thishart_state_ptr();
+
+	phs->sse_enabled = true;
+	csr_clear(CSR_MIDELEG, sbi_pmu_irq_mask());
+}
+
+static void pmu_sse_unregister(uint32_t event_id)
+{
+	struct sbi_pmu_hart_state *phs = pmu_thishart_state_ptr();
+
+	phs->sse_enabled = false;
+	csr_set(CSR_MIDELEG, sbi_pmu_irq_mask());
+}
+
 static const struct sbi_sse_cb_ops pmu_sse_cb_ops = {
+	.register_cb = pmu_sse_register,
+	.unregister_cb = pmu_sse_unregister,
 	.enable_cb = pmu_sse_enable,
 	.disable_cb = pmu_sse_disable,
 	.complete_cb = pmu_sse_complete,
