@@ -223,32 +223,32 @@ static int fwft_pmlen_supported(struct fwft_config *conf)
 	return SBI_OK;
 }
 
-static bool fwft_try_to_set_pmm(unsigned long pmm)
-{
-	csr_set(CSR_MENVCFG, pmm);
-	return (csr_read(CSR_MENVCFG) & ENVCFG_PMM) == pmm;
-}
-
 static int fwft_set_pmlen(struct fwft_config *conf, unsigned long value)
 {
-	unsigned long prev;
+	unsigned long pmm, prev;
 
-	if (value > 16)
+	switch (value) {
+	case 0:
+		pmm = ENVCFG_PMM_PMLEN_0;
+		break;
+	case 7:
+		pmm = ENVCFG_PMM_PMLEN_7;
+		break;
+	case 16:
+		pmm = ENVCFG_PMM_PMLEN_16;
+		break;
+	default:
 		return SBI_EINVAL;
+	}
 
 	prev = csr_read_clear(CSR_MENVCFG, ENVCFG_PMM);
-	if (value == 0)
-		return SBI_OK;
-	if (value <= 7) {
-		if (fwft_try_to_set_pmm(ENVCFG_PMM_PMLEN_7))
-			return SBI_OK;
-		csr_clear(CSR_MENVCFG, ENVCFG_PMM);
+	csr_set(CSR_MENVCFG, pmm);
+	if ((csr_read(CSR_MENVCFG) & ENVCFG_PMM) != pmm) {
+		csr_write(CSR_MENVCFG, prev);
+		return SBI_EINVAL;
 	}
-	if (fwft_try_to_set_pmm(ENVCFG_PMM_PMLEN_16))
-		return SBI_OK;
-	csr_write(CSR_MENVCFG, prev);
 
-	return SBI_EINVAL;
+	return SBI_OK;
 }
 
 static int fwft_get_pmlen(struct fwft_config *conf, unsigned long *value)
