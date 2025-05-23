@@ -607,13 +607,59 @@ int fdt_parse_xlnx_uartlite_node(const void *fdt, int nodeoffset,
 	return fdt_parse_uart_node_common(fdt, nodeoffset, uart, 0, 0);
 }
 
+static int fdt_aplic_find_imsic_node(const void *fdt, int nodeoff,
+				     struct imsic_data *imsic, bool mmode)
+{
+	const fdt32_t *val;
+	int i, len, noff, rc;
+
+	val = fdt_getprop(fdt, nodeoff, "msi-parent", &len);
+	if (val && len >= sizeof(fdt32_t)) {
+		noff = fdt_node_offset_by_phandle(fdt, fdt32_to_cpu(*val));
+		if (noff < 0)
+			return noff;
+
+		rc = fdt_parse_imsic_node(fdt, noff, imsic);
+		if (rc)
+			return rc;
+
+		rc = imsic_data_check(imsic);
+		if (rc)
+			return rc;
+
+		if (imsic->targets_mmode == mmode) {
+			return 0;
+		}
+	} else {
+		return SBI_ENODEV;
+	}
+
+	val = fdt_getprop(fdt, nodeoff, "riscv,children", &len);
+	if (!val || len < sizeof(fdt32_t))
+		return SBI_ENODEV;
+
+	len /= sizeof(fdt32_t);
+
+	for (i = 0; i < len; i++) {
+		noff = fdt_node_offset_by_phandle(fdt, fdt32_to_cpu(val[i]));
+		if (noff < 0)
+			return noff;
+
+		rc = fdt_aplic_find_imsic_node(fdt, noff, imsic, mmode);
+		if (!rc)
+			break;
+	}
+
+	return rc;
+}
+
 int fdt_parse_aplic_node(const void *fdt, int nodeoff, struct aplic_data *aplic)
 {
 	bool child_found;
 	const fdt32_t *val;
 	const fdt32_t *del;
 	struct imsic_data imsic = { 0 };
-	int i, j, d, dcnt, len, noff, rc;
+	int i, j, d, dcnt, len, rc;
 	uint64_t reg_addr, reg_size;
 	struct aplic_delegate_data *deleg;
 
@@ -640,78 +686,34 @@ int fdt_parse_aplic_node(const void *fdt, int nodeoff, struct aplic_data *aplic)
 			}
 		}
 		aplic->num_idc = len / 2;
-		goto aplic_msi_parent_done;
 	}
 
-	val = fdt_getprop(fdt, nodeoff, "msi-parent", &len);
-	if (val && len >= sizeof(fdt32_t)) {
-		noff = fdt_node_offset_by_phandle(fdt, fdt32_to_cpu(*val));
-		if (noff < 0)
-			return noff;
-
-		rc = fdt_parse_imsic_node(fdt, noff, &imsic);
-		if (rc)
-			return rc;
-
-		rc = imsic_data_check(&imsic);
-		if (rc)
-			return rc;
-
-		aplic->targets_mmode = imsic.targets_mmode;
-
-		if (imsic.targets_mmode) {
-			aplic->has_msicfg_mmode = true;
-			aplic->msicfg_mmode.lhxs = imsic.guest_index_bits;
-			aplic->msicfg_mmode.lhxw = imsic.hart_index_bits;
-			aplic->msicfg_mmode.hhxw = imsic.group_index_bits;
-			aplic->msicfg_mmode.hhxs = imsic.group_index_shift;
-			if (aplic->msicfg_mmode.hhxs <
-					(2 * IMSIC_MMIO_PAGE_SHIFT))
-				return SBI_EINVAL;
-			aplic->msicfg_mmode.hhxs -= 24;
-			aplic->msicfg_mmode.base_addr = imsic.regs[0].addr;
-		} else {
-			goto aplic_msi_parent_done;
-		}
-
-		val = fdt_getprop(fdt, nodeoff, "riscv,children", &len);
-		if (!val || len < sizeof(fdt32_t))
-			goto aplic_msi_parent_done;
-
-		noff = fdt_node_offset_by_phandle(fdt, fdt32_to_cpu(*val));
-		if (noff < 0)
-			return noff;
-
-		val = fdt_getprop(fdt, noff, "msi-parent", &len);
-		if (!val || len < sizeof(fdt32_t))
-			goto aplic_msi_parent_done;
-
-		noff = fdt_node_offset_by_phandle(fdt, fdt32_to_cpu(*val));
-		if (noff < 0)
-			return noff;
-
-		rc = fdt_parse_imsic_node(fdt, noff, &imsic);
-		if (rc)
-			return rc;
-
-		rc = imsic_data_check(&imsic);
-		if (rc)
-			return rc;
-
-		if (!imsic.targets_mmode) {
-			aplic->has_msicfg_smode = true;
-			aplic->msicfg_smode.lhxs = imsic.guest_index_bits;
-			aplic->msicfg_smode.lhxw = imsic.hart_index_bits;
-			aplic->msicfg_smode.hhxw = imsic.group_index_bits;
-			aplic->msicfg_smode.hhxs = imsic.group_index_shift;
-			if (aplic->msicfg_smode.hhxs <
-					(2 * IMSIC_MMIO_PAGE_SHIFT))
-				return SBI_EINVAL;
-			aplic->msicfg_smode.hhxs -= 24;
-			aplic->msicfg_smode.base_addr = imsic.regs[0].addr;
-		}
+	rc = fdt_aplic_find_imsic_node(fdt, nodeoff, &imsic, true);
+	if (!rc) {
+		aplic->targets_mmode = true;
+		aplic->has_msicfg_mmode = true;
+		aplic->msicfg_mmode.lhxs = imsic.guest_index_bits;
+		aplic->msicfg_mmode.lhxw = imsic.hart_index_bits;
+		aplic->msicfg_mmode.hhxw = imsic.group_index_bits;
+		aplic->msicfg_mmode.hhxs = imsic.group_index_shift;
+		if (aplic->msicfg_mmode.hhxs < (2 * IMSIC_MMIO_PAGE_SHIFT))
+			return SBI_EINVAL;
+		aplic->msicfg_mmode.hhxs -= 24;
+		aplic->msicfg_mmode.base_addr = imsic.regs[0].addr;
 	}
-aplic_msi_parent_done:
+
+	rc = fdt_aplic_find_imsic_node(fdt, nodeoff, &imsic, false);
+	if (!rc) {
+		aplic->has_msicfg_smode = true;
+		aplic->msicfg_smode.lhxs = imsic.guest_index_bits;
+		aplic->msicfg_smode.lhxw = imsic.hart_index_bits;
+		aplic->msicfg_smode.hhxw = imsic.group_index_bits;
+		aplic->msicfg_smode.hhxs = imsic.group_index_shift;
+		if (aplic->msicfg_smode.hhxs < (2 * IMSIC_MMIO_PAGE_SHIFT))
+			return SBI_EINVAL;
+		aplic->msicfg_smode.hhxs -= 24;
+		aplic->msicfg_smode.base_addr = imsic.regs[0].addr;
+	}
 
 	for (d = 0; d < APLIC_MAX_DELEGATE; d++) {
 		deleg = &aplic->delegate[d];
