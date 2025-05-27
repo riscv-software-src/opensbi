@@ -579,6 +579,19 @@ void __noreturn sbi_init(struct sbi_scratch *scratch)
 		init_warmboot(scratch, hartid);
 }
 
+void sbi_revert_entry_count(struct sbi_scratch *scratch)
+{
+	unsigned long *entry_count, *init_count;
+
+	if (!entry_count_offset || !init_count_offset)
+		sbi_hart_hang();
+
+	entry_count = sbi_scratch_offset_ptr(scratch, entry_count_offset);
+	init_count = sbi_scratch_offset_ptr(scratch, init_count_offset);
+
+	*entry_count = *init_count;
+}
+
 unsigned long sbi_entry_count(u32 hartindex)
 {
 	struct sbi_scratch *scratch;

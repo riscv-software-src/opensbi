@@ -176,8 +176,10 @@ static void sbi_hsm_hart_wait(struct sbi_scratch *scratch)
 		 * If the hsm_dev is ready and it support the hotplug, we can
 		 * use the hsm stop for more power saving
 		 */
-		if (hsm_device_has_hart_hotplug())
+		if (hsm_device_has_hart_hotplug()) {
+			sbi_revert_entry_count(scratch);
 			hsm_device_hart_stop();
+		}
 
 		wfi();
 	}
