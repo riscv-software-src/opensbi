@@ -43,7 +43,7 @@ static int sbi_ecall_dbtr_handler(unsigned long extid, unsigned long funcid,
 		ret = sbi_dbtr_enable_trig(regs->a0, regs->a1);
 		break;
 	case SBI_EXT_DBTR_TRIGGER_UPDATE:
-		ret = sbi_dbtr_update_trig(smode, regs->a0, regs->a1);
+		ret = sbi_dbtr_update_trig(smode, regs->a0);
 		break;
 	case SBI_EXT_DBTR_TRIGGER_DISABLE:
 		ret = sbi_dbtr_disable_trig(regs->a0, regs->a1);

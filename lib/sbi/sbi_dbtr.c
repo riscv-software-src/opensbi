@@ -652,13 +652,9 @@ int sbi_dbtr_enable_trig(unsigned long trig_idx_base,
 }
 
 int sbi_dbtr_update_trig(unsigned long smode,
-			 unsigned long trig_idx_base,
-			 unsigned long trig_idx_mask)
+			 unsigned long trig_count)
 {
-	unsigned long trig_mask = trig_idx_mask << trig_idx_base;
-	unsigned long idx = trig_idx_base;
-	struct sbi_dbtr_data_msg *recv;
-	unsigned long uidx = 0;
+	unsigned long trig_idx;
 	struct sbi_dbtr_trigger *trig;
 	union sbi_dbtr_shmem_entry *entry;
 	void *shmem_base = NULL;
@@ -673,18 +669,28 @@ int sbi_dbtr_update_trig(unsigned long smode,
 
 	shmem_base = hart_shmem_base(hs);
 
-	for_each_set_bit_from(idx, &trig_mask, hs->total_trigs) {
-		trig = INDEX_TO_TRIGGER(idx);
+	if (trig_count >= hs->total_trigs)
+		return SBI_ERR_BAD_RANGE;
 
-		if (!(trig->state & RV_DBTR_BIT_MASK(TS, MAPPED)))
+	for_each_trig_entry(shmem_base, trig_count, typeof(*entry), entry) {
+		sbi_hart_map_saddr((unsigned long)entry, sizeof(*entry));
+		trig_idx = entry->id.idx;
+
+		if (trig_idx >= hs->total_trigs) {
+			sbi_hart_unmap_saddr();
 			return SBI_ERR_INVALID_PARAM;
+		}
 
-		entry = (shmem_base + uidx * sizeof(*entry));
-		recv = &entry->data;
+		trig = INDEX_TO_TRIGGER(trig_idx);
 
-		trig->tdata2 = lle_to_cpu(recv->tdata2);
+		if (!(trig->state & RV_DBTR_BIT_MASK(TS, MAPPED))) {
+			sbi_hart_unmap_saddr();
+			return SBI_ERR_FAILED;
+		}
+
+		dbtr_trigger_setup(trig, &entry->data);
+		sbi_hart_unmap_saddr();
 		dbtr_trigger_enable(trig);
-		uidx++;
 	}
 
 	return SBI_SUCCESS;
