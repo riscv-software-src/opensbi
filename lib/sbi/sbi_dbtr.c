@@ -506,7 +506,7 @@ int sbi_dbtr_read_trig(unsigned long smode,
 {
 	struct sbi_dbtr_data_msg *xmit;
 	struct sbi_dbtr_trigger *trig;
-	struct sbi_dbtr_shmem_entry *entry;
+	union sbi_dbtr_shmem_entry *entry;
 	void *shmem_base = NULL;
 	struct sbi_dbtr_hart_triggers_state *hs = NULL;
 
@@ -541,7 +541,7 @@ int sbi_dbtr_install_trig(unsigned long smode,
 			  unsigned long trig_count, unsigned long *out)
 {
 	void *shmem_base = NULL;
-	struct sbi_dbtr_shmem_entry *entry;
+	union sbi_dbtr_shmem_entry *entry;
 	struct sbi_dbtr_data_msg *recv;
 	struct sbi_dbtr_id_msg *xmit;
 	unsigned long ctrl;
@@ -659,7 +659,7 @@ int sbi_dbtr_update_trig(unsigned long smode,
 	struct sbi_dbtr_data_msg *recv;
 	unsigned long uidx = 0;
 	struct sbi_dbtr_trigger *trig;
-	struct sbi_dbtr_shmem_entry *entry;
+	union sbi_dbtr_shmem_entry *entry;
 	void *shmem_base = NULL;
 	struct sbi_dbtr_hart_triggers_state *hs = NULL;
 

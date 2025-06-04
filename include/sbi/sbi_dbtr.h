@@ -90,7 +90,7 @@ struct sbi_dbtr_hart_triggers_state {
 	}while (0);
 
 /** SBI shared mem messages layout */
-struct sbi_dbtr_shmem_entry {
+union sbi_dbtr_shmem_entry {
 	struct sbi_dbtr_data_msg data;
 	struct sbi_dbtr_id_msg id;
 };
