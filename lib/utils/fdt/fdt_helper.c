@@ -1015,9 +1015,6 @@ int fdt_parse_aclint_node(const void *fdt, int nodeoffset,
 		if (rc)
 			continue;
 
-		if (SBI_HARTMASK_MAX_BITS <= sbi_hartid_to_hartindex(hartid))
-			continue;
-
 		if (match_hwirq == hwirq) {
 			if (hartid < first_hartid)
 				first_hartid = hartid;
