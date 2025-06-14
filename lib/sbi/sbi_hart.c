@@ -375,6 +375,9 @@ static void sbi_hart_smepmp_set(struct sbi_scratch *scratch,
 	unsigned long pmp_addr = reg->base >> PMP_SHIFT;
 
 	if (pmp_log2gran <= reg->order && pmp_addr < pmp_addr_max) {
+		sbi_platform_pmp_set(sbi_platform_ptr(scratch),
+				     pmp_idx, reg->flags, pmp_flags,
+				     reg->base, reg->order);
 		pmp_set(pmp_idx, pmp_flags, reg->base, reg->order);
 	} else {
 		sbi_printf("Can not configure pmp for domain %s because"
@@ -492,6 +495,9 @@ static int sbi_hart_oldpmp_configure(struct sbi_scratch *scratch,
 
 		pmp_addr = reg->base >> PMP_SHIFT;
 		if (pmp_log2gran <= reg->order && pmp_addr < pmp_addr_max) {
+			sbi_platform_pmp_set(sbi_platform_ptr(scratch),
+					     pmp_idx, reg->flags, pmp_flags,
+					     reg->base, reg->order);
 			pmp_set(pmp_idx++, pmp_flags, reg->base, reg->order);
 		} else {
 			sbi_printf("Can not configure pmp for domain %s because"
@@ -532,6 +538,9 @@ int sbi_hart_map_saddr(unsigned long addr, unsigned long size)
 		}
 	}
 
+	sbi_platform_pmp_set(sbi_platform_ptr(scratch), SBI_SMEPMP_RESV_ENTRY,
+			     SBI_DOMAIN_MEMREGION_SHARED_SURW_MRW,
+			     pmp_flags, base, order);
 	pmp_set(SBI_SMEPMP_RESV_ENTRY, pmp_flags, base, order);
 
 	return SBI_OK;
@@ -544,6 +553,7 @@ int sbi_hart_unmap_saddr(void)
 	if (!sbi_hart_has_extension(scratch, SBI_HART_EXT_SMEPMP))
 		return SBI_OK;
 
+	sbi_platform_pmp_disable(sbi_platform_ptr(scratch), SBI_SMEPMP_RESV_ENTRY);
 	return pmp_disable(SBI_SMEPMP_RESV_ENTRY);
 }
 

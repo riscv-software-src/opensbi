@@ -142,6 +142,13 @@ struct sbi_platform_operations {
 	/** platform specific handler to fixup store fault */
 	int (*emulate_store)(int wlen, unsigned long addr,
 			     union sbi_ldst_data in_val);
+
+	/** platform specific pmp setup on current HART */
+	void (*pmp_set)(unsigned int n, unsigned long flags,
+			unsigned long prot, unsigned long addr,
+			unsigned long log2len);
+	/** platform specific pmp disable on current HART */
+	void (*pmp_disable)(unsigned int n);
 };
 
 /** Platform default per-HART stack size for exception/interrupt handling */
@@ -642,6 +649,38 @@ static inline int sbi_platform_emulate_store(const struct sbi_platform *plat,
 							     in_val);
 	}
 	return SBI_ENOTSUPP;
+}
+
+/**
+ * Platform specific PMP setup on current HART
+ *
+ * @param plat pointer to struct sbi_platform
+ * @param n index of the pmp entry
+ * @param flags domain memregion flags
+ * @param prot attribute of the pmp entry
+ * @param addr address of the pmp entry
+ * @param log2len size of the pmp entry as power-of-2
+ */
+static inline void sbi_platform_pmp_set(const struct sbi_platform *plat,
+					unsigned int n, unsigned long flags,
+					unsigned long prot, unsigned long addr,
+					unsigned long log2len)
+{
+	if (plat && sbi_platform_ops(plat)->pmp_set)
+		sbi_platform_ops(plat)->pmp_set(n, flags, prot, addr, log2len);
+}
+
+/**
+ * Platform specific PMP disable on current HART
+ *
+ * @param plat pointer to struct sbi_platform
+ * @param n index of the pmp entry
+ */
+static inline void sbi_platform_pmp_disable(const struct sbi_platform *plat,
+					    unsigned int n)
+{
+	if (plat && sbi_platform_ops(plat)->pmp_disable)
+		sbi_platform_ops(plat)->pmp_disable(n);
 }
 
 #endif

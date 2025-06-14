@@ -15,6 +15,7 @@
 #include <sbi/sbi_string.h>
 #include <sbi/sbi_domain.h>
 #include <sbi/sbi_domain_context.h>
+#include <sbi/sbi_platform.h>
 #include <sbi/sbi_trap.h>
 
 /** Context representation for a hart within a domain */
@@ -115,6 +116,7 @@ static void switch_to_next_domain_context(struct hart_context *ctx,
 
 	/* Reconfigure PMP settings for the new domain */
 	for (int i = 0; i < pmp_count; i++) {
+		sbi_platform_pmp_disable(sbi_platform_thishart_ptr(), i);
 		pmp_disable(i);
 	}
 	sbi_hart_pmp_configure(scratch);

@@ -16,6 +16,98 @@
 #include <mips/p8700.h>
 #include <mips/mips-cm.h>
 
+static unsigned long mips_csr_read_num(int csr_num)
+{
+#define switchcase_csr_read(__csr_num, __val)		\
+	case __csr_num:					\
+		__val = csr_read(__csr_num);		\
+		break;
+#define switchcase_csr_read_2(__csr_num, __val)		\
+	switchcase_csr_read(__csr_num + 0, __val)	\
+	switchcase_csr_read(__csr_num + 1, __val)
+#define switchcase_csr_read_4(__csr_num, __val)		\
+	switchcase_csr_read_2(__csr_num + 0, __val)	\
+	switchcase_csr_read_2(__csr_num + 2, __val)
+#define switchcase_csr_read_8(__csr_num, __val)		\
+	switchcase_csr_read_4(__csr_num + 0, __val)	\
+	switchcase_csr_read_4(__csr_num + 4, __val)
+#define switchcase_csr_read_16(__csr_num, __val)	\
+	switchcase_csr_read_8(__csr_num + 0, __val)	\
+	switchcase_csr_read_8(__csr_num + 8, __val)
+
+	unsigned long ret = 0;
+
+	switch(csr_num) {
+	switchcase_csr_read_16(CSR_MIPSPMACFG0, ret)
+
+	default:
+		sbi_panic("%s: Unknown CSR %#x", __func__, csr_num);
+		break;
+	}
+
+	return ret;
+
+#undef switchcase_csr_read_16
+#undef switchcase_csr_read_8
+#undef switchcase_csr_read_4
+#undef switchcase_csr_read_2
+#undef switchcase_csr_read
+}
+
+static void mips_csr_write_num(int csr_num, unsigned long val)
+{
+#define switchcase_csr_write(__csr_num, __val)		\
+	case __csr_num:					\
+		csr_write(__csr_num, __val);		\
+		break;
+#define switchcase_csr_write_2(__csr_num, __val)	\
+	switchcase_csr_write(__csr_num + 0, __val)	\
+	switchcase_csr_write(__csr_num + 1, __val)
+#define switchcase_csr_write_4(__csr_num, __val)	\
+	switchcase_csr_write_2(__csr_num + 0, __val)	\
+	switchcase_csr_write_2(__csr_num + 2, __val)
+#define switchcase_csr_write_8(__csr_num, __val)	\
+	switchcase_csr_write_4(__csr_num + 0, __val)	\
+	switchcase_csr_write_4(__csr_num + 4, __val)
+#define switchcase_csr_write_16(__csr_num, __val)	\
+	switchcase_csr_write_8(__csr_num + 0, __val)	\
+	switchcase_csr_write_8(__csr_num + 8, __val)
+
+	switch(csr_num) {
+	switchcase_csr_write_16(CSR_MIPSPMACFG0, val)
+
+	default:
+		sbi_panic("%s: Unknown CSR %#x", __func__, csr_num);
+		break;
+	}
+
+#undef switchcase_csr_write_16
+#undef switchcase_csr_write_8
+#undef switchcase_csr_write_4
+#undef switchcase_csr_write_2
+#undef switchcase_csr_write
+}
+
+static void mips_p8700_pmp_set(unsigned int n, unsigned long flags,
+			       unsigned long prot, unsigned long addr,
+			       unsigned long log2len)
+{
+	int pmacfg_csr, pmacfg_shift;
+	unsigned long cfgmask;
+	unsigned long pmacfg, cca;
+
+	pmacfg_csr = (CSR_MIPSPMACFG0 + (n >> 2)) & ~1;
+	pmacfg_shift = (n & 7) << 3;
+	cfgmask = ~(0xffUL << pmacfg_shift);
+
+	/* Read pmacfg to change cacheability */
+	pmacfg = (mips_csr_read_num(pmacfg_csr) & cfgmask);
+	cca = (flags & SBI_DOMAIN_MEMREGION_MMIO) ? CCA_CACHE_DISABLE :
+				  CCA_CACHE_ENABLE | PMA_SPECULATION;
+	pmacfg |= ((cca << pmacfg_shift) & ~cfgmask);
+	mips_csr_write_num(pmacfg_csr, pmacfg);
+}
+
 #if CLUSTERS_IN_PLATFORM > 1
 static void power_up_other_cluster(u32 hartid)
 {
@@ -255,6 +347,7 @@ static int mips_p8700_platform_init(const void *fdt, int nodeoff, const struct f
 	generic_platform_ops.early_init = mips_p8700_early_init;
 	generic_platform_ops.final_init = mips_p8700_final_init;
 	generic_platform_ops.nascent_init = mips_p8700_nascent_init;
+	generic_platform_ops.pmp_set = mips_p8700_pmp_set;
 
 	return 0;
 }
