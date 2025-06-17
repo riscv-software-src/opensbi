@@ -173,4 +173,15 @@ static inline void sbi_list_del_init(struct sbi_dlist *entry)
 	     &pos->member != (head);	\
 	     pos = n, n = sbi_list_entry(pos->member.next, typeof(*pos), member))
 
+/**
+ * Iterate over list of given type in reverse order
+ * @param pos the type * to use as a loop cursor.
+ * @param head the head for your list.
+ * @param member the name of the list_struct within the struct.
+ */
+#define sbi_list_for_each_entry_reverse(pos, head, member) \
+	for (pos = sbi_list_entry((head)->prev, typeof(*pos), member); \
+	     &pos->member != (head); \
+	     pos = sbi_list_entry(pos->member.prev, typeof(*pos), member))
+
 #endif
