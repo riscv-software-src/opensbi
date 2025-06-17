@@ -73,7 +73,7 @@ static void *alloc_with_align(struct sbi_heap_control *hpctrl,
 			      size_t align, size_t size)
 {
 	void *ret = NULL;
-	struct heap_node *n, *np, *rem;
+	struct heap_node *n, *np;
 	unsigned long lowest_aligned;
 	size_t pad;
 
@@ -107,39 +107,29 @@ static void *alloc_with_align(struct sbi_heap_control *hpctrl,
 					 struct heap_node, head);
 		sbi_list_del(&n->head);
 
-		if (size + pad < np->size) {
-			rem = sbi_list_first_entry(&hpctrl->free_node_list,
-						   struct heap_node, head);
-			sbi_list_del(&rem->head);
-			rem->addr = np->addr + (size + pad);
-			rem->size = np->size - (size + pad);
-			sbi_list_add_tail(&rem->head,
-					  &hpctrl->free_space_list);
-		}
+		n->addr = np->addr;
+		n->size = pad;
+		sbi_list_add_tail(&n->head, &np->head);
 
-		n->addr = lowest_aligned;
-		n->size = size;
-		sbi_list_add_tail(&n->head, &hpctrl->used_space_list);
-
-		np->size = pad;
-		ret = (void *)n->addr;
-	} else {
-		if (size < np->size) {
-			n = sbi_list_first_entry(&hpctrl->free_node_list,
-						 struct heap_node, head);
-			sbi_list_del(&n->head);
-			n->addr = np->addr;
-			n->size = size;
-			np->addr += size;
-			np->size -= size;
-			sbi_list_add_tail(&n->head, &hpctrl->used_space_list);
-			ret = (void *)n->addr;
-		} else {
-			sbi_list_del(&np->head);
-			sbi_list_add_tail(&np->head, &hpctrl->used_space_list);
-			ret = (void *)np->addr;
-		}
+		np->addr += pad;
+		np->size -= pad;
 	}
+
+	if (size < np->size) {
+		n = sbi_list_first_entry(&hpctrl->free_node_list,
+					 struct heap_node, head);
+		sbi_list_del(&n->head);
+
+		n->addr = np->addr + size;
+		n->size = np->size - size;
+		sbi_list_add(&n->head, &np->head);
+
+		np->size = size;
+	}
+
+	sbi_list_del(&np->head);
+	sbi_list_add_tail(&np->head, &hpctrl->used_space_list);
+	ret = (void *)np->addr;
 
 out:
 	spin_unlock(&hpctrl->lock);
