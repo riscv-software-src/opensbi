@@ -16,7 +16,9 @@
 
 /* Minimum size and alignment of heap allocations */
 #define HEAP_ALLOC_ALIGN		64
-#define HEAP_HOUSEKEEPING_FACTOR	16
+
+/* Number of heap nodes to allocate at once */
+#define HEAP_NODE_BATCH_SIZE		8
 
 struct heap_node {
 	struct sbi_dlist head;
@@ -28,14 +30,44 @@ struct sbi_heap_control {
 	spinlock_t lock;
 	unsigned long base;
 	unsigned long size;
-	unsigned long hkbase;
-	unsigned long hksize;
+	unsigned long resv;
 	struct sbi_dlist free_node_list;
 	struct sbi_dlist free_space_list;
 	struct sbi_dlist used_space_list;
+	struct heap_node init_free_space_node;
 };
 
 struct sbi_heap_control global_hpctrl;
+
+static bool alloc_nodes(struct sbi_heap_control *hpctrl)
+{
+	size_t size = HEAP_NODE_BATCH_SIZE * sizeof(struct heap_node);
+	struct heap_node *n, *new = NULL;
+
+	/* alloc_with_align() requires at most two free nodes */
+	if (hpctrl->free_node_list.next != hpctrl->free_node_list.prev)
+		return true;
+
+	sbi_list_for_each_entry_reverse(n, &hpctrl->free_space_list, head) {
+		if (n->size >= size) {
+			n->size -= size;
+			if (!n->size) {
+				sbi_list_del(&n->head);
+				sbi_list_add_tail(&n->head, &hpctrl->free_node_list);
+			}
+			new = (void *)(n->addr + n->size);
+			break;
+		}
+	}
+	if (!new)
+		return false;
+
+	for (size_t i = 0; i < HEAP_NODE_BATCH_SIZE; i++)
+		sbi_list_add_tail(&new[i].head, &hpctrl->free_node_list);
+	hpctrl->resv += size;
+
+	return true;
+}
 
 static void *alloc_with_align(struct sbi_heap_control *hpctrl,
 			      size_t align, size_t size)
@@ -53,6 +85,10 @@ static void *alloc_with_align(struct sbi_heap_control *hpctrl,
 
 	spin_lock(&hpctrl->lock);
 
+	/* Ensure at least two free nodes are available for use below */
+	if (!alloc_nodes(hpctrl))
+		goto out;
+
 	np = NULL;
 	sbi_list_for_each_entry(n, &hpctrl->free_space_list, head) {
 		lowest_aligned = ROUNDUP(n->addr, align);
@@ -67,16 +103,11 @@ static void *alloc_with_align(struct sbi_heap_control *hpctrl,
 		goto out;
 
 	if (pad) {
-		if (sbi_list_empty(&hpctrl->free_node_list)) {
-			goto out;
-		}
-
 		n = sbi_list_first_entry(&hpctrl->free_node_list,
 					 struct heap_node, head);
 		sbi_list_del(&n->head);
 
-		if ((size + pad < np->size) &&
-		    !sbi_list_empty(&hpctrl->free_node_list)) {
+		if (size + pad < np->size) {
 			rem = sbi_list_first_entry(&hpctrl->free_node_list,
 						   struct heap_node, head);
 			sbi_list_del(&rem->head);
@@ -84,11 +115,6 @@ static void *alloc_with_align(struct sbi_heap_control *hpctrl,
 			rem->size = np->size - (size + pad);
 			sbi_list_add_tail(&rem->head,
 					  &hpctrl->free_space_list);
-		} else if (size + pad != np->size) {
-			/* Can't allocate, return n */
-			sbi_list_add(&n->head, &hpctrl->free_node_list);
-			ret = NULL;
-			goto out;
 		}
 
 		n->addr = lowest_aligned;
@@ -98,8 +124,7 @@ static void *alloc_with_align(struct sbi_heap_control *hpctrl,
 		np->size = pad;
 		ret = (void *)n->addr;
 	} else {
-		if ((size < np->size) &&
-		    !sbi_list_empty(&hpctrl->free_node_list)) {
+		if (size < np->size) {
 			n = sbi_list_first_entry(&hpctrl->free_node_list,
 						 struct heap_node, head);
 			sbi_list_del(&n->head);
@@ -109,7 +134,7 @@ static void *alloc_with_align(struct sbi_heap_control *hpctrl,
 			np->size -= size;
 			sbi_list_add_tail(&n->head, &hpctrl->used_space_list);
 			ret = (void *)n->addr;
-		} else if (size == np->size) {
+		} else {
 			sbi_list_del(&np->head);
 			sbi_list_add_tail(&np->head, &hpctrl->used_space_list);
 			ret = (void *)np->addr;
@@ -216,44 +241,32 @@ unsigned long sbi_heap_free_space_from(struct sbi_heap_control *hpctrl)
 
 unsigned long sbi_heap_used_space_from(struct sbi_heap_control *hpctrl)
 {
-	return hpctrl->size - hpctrl->hksize - sbi_heap_free_space();
+	return hpctrl->size - hpctrl->resv - sbi_heap_free_space();
 }
 
 unsigned long sbi_heap_reserved_space_from(struct sbi_heap_control *hpctrl)
 {
-	return hpctrl->hksize;
+	return hpctrl->resv;
 }
 
 int sbi_heap_init_new(struct sbi_heap_control *hpctrl, unsigned long base,
 		       unsigned long size)
 {
-	unsigned long i;
 	struct heap_node *n;
 
 	/* Initialize heap control */
 	SPIN_LOCK_INIT(hpctrl->lock);
 	hpctrl->base = base;
 	hpctrl->size = size;
-	hpctrl->hkbase = hpctrl->base;
-	hpctrl->hksize = hpctrl->size / HEAP_HOUSEKEEPING_FACTOR;
-	hpctrl->hksize &= ~((unsigned long)HEAP_BASE_ALIGN - 1);
+	hpctrl->resv = 0;
 	SBI_INIT_LIST_HEAD(&hpctrl->free_node_list);
 	SBI_INIT_LIST_HEAD(&hpctrl->free_space_list);
 	SBI_INIT_LIST_HEAD(&hpctrl->used_space_list);
 
-	/* Prepare free node list */
-	for (i = 0; i < (hpctrl->hksize / sizeof(*n)); i++) {
-		n = (struct heap_node *)(hpctrl->hkbase + (sizeof(*n) * i));
-		n->addr = n->size = 0;
-		sbi_list_add_tail(&n->head, &hpctrl->free_node_list);
-	}
-
 	/* Prepare free space list */
-	n = sbi_list_first_entry(&hpctrl->free_node_list,
-				 struct heap_node, head);
-	sbi_list_del(&n->head);
-	n->addr = hpctrl->hkbase + hpctrl->hksize;
-	n->size = hpctrl->size - hpctrl->hksize;
+	n = &hpctrl->init_free_space_node;
+	n->addr = base;
+	n->size = size;
 	sbi_list_add_tail(&n->head, &hpctrl->free_space_list);
 
 	return 0;
