@@ -523,6 +523,12 @@ static int rpmi_shmem_mbox_get_attribute(struct mbox_chan *chan,
 	case RPMI_CHANNEL_ATTR_SERVICEGROUP_VERSION:
 		*((u32 *)out_value) = srvgrp_chan->servicegroup_version;
 		break;
+	case RPMI_CHANNEL_ATTR_IMPL_ID:
+		*((u32 *)out_value) = mctl->impl_id;
+		break;
+	case RPMI_CHANNEL_ATTR_IMPL_VERSION:
+		*((u32 *)out_value) = mctl->impl_version;
+		break;
 	default:
 		return SBI_ENOTSUPP;
 	}

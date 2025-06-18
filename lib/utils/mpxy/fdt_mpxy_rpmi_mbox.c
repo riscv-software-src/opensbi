@@ -213,6 +213,7 @@ static int mpxy_mbox_send_message_withoutresp(struct sbi_mpxy_channel *channel,
 int mpxy_rpmi_mbox_init(const void *fdt, int nodeoff, const struct fdt_match *match)
 {
 	u32 channel_id, servicegrp_ver, pro_ver, max_data_len, tx_tout, rx_tout;
+	u32 impl_id, impl_ver;
 	const struct mpxy_rpmi_mbox_data *data = match->data;
 	struct mpxy_rpmi_mbox *rmb;
 	struct mbox_chan *chan;
@@ -270,6 +271,18 @@ int mpxy_rpmi_mbox_init(const void *fdt, int nodeoff, const struct fdt_match *ma
 	if (rc)
 		goto fail_free_chan;
 
+	/* Get channel implementation id */
+	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_IMPL_ID,
+				     &impl_id);
+	if (rc)
+		goto fail_free_chan;
+
+	/* Get channel implementation version */
+	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_IMPL_VERSION,
+				     &impl_ver);
+	if (rc)
+		goto fail_free_chan;
+
 	/*
 	 * The "riscv,sbi-mpxy-channel-id" DT property is mandatory
 	 * for MPXY RPMI mailbox client driver so if this is not
@@ -316,6 +329,8 @@ int mpxy_rpmi_mbox_init(const void *fdt, int nodeoff, const struct fdt_match *ma
 	/* RPMI service group attributes */
 	rmb->msgprot_attrs.servicegrp_id = data->servicegrp_id;
 	rmb->msgprot_attrs.servicegrp_ver = servicegrp_ver;
+	rmb->msgprot_attrs.impl_id = impl_id;
+	rmb->msgprot_attrs.impl_ver = impl_ver;
 
 	rmb->mbox_data = data;
 	rmb->chan = chan;

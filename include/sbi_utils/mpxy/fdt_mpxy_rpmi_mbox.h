@@ -22,7 +22,9 @@
 enum mpxy_msgprot_rpmi_attr_id {
 	MPXY_MSGPROT_RPMI_ATTR_SERVICEGROUP_ID = SBI_MPXY_ATTR_MSGPROTO_ATTR_START,
 	MPXY_MSGPROT_RPMI_ATTR_SERVICEGROUP_VERSION,
-	MPXY_MSGPROT_RPMI_ATTR_MAX_ID,
+	MPXY_MSGPROT_RPMI_ATTR_IMPL_ID,
+	MPXY_MSGPROT_RPMI_ATTR_IMPL_VERSION,
+	MPXY_MSGPROT_RPMI_ATTR_MAX_ID
 };
 
 /**
@@ -33,6 +35,8 @@ enum mpxy_msgprot_rpmi_attr_id {
 struct mpxy_rpmi_channel_attrs {
 	u32 servicegrp_id;
 	u32 servicegrp_ver;
+	u32 impl_id;
+	u32 impl_ver;
 };
 
 /** Make sure all attributes are packed for direct memcpy */
@@ -45,6 +49,8 @@ struct mpxy_rpmi_channel_attrs {
 
 assert_field_offset(servicegrp_id, MPXY_MSGPROT_RPMI_ATTR_SERVICEGROUP_ID);
 assert_field_offset(servicegrp_ver, MPXY_MSGPROT_RPMI_ATTR_SERVICEGROUP_VERSION);
+assert_field_offset(impl_id, MPXY_MSGPROT_RPMI_ATTR_IMPL_ID);
+assert_field_offset(impl_ver, MPXY_MSGPROT_RPMI_ATTR_IMPL_VERSION);
 
 /** MPXY RPMI service data for each service group */
 struct mpxy_rpmi_service_data {
