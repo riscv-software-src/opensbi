@@ -205,5 +205,4 @@ static const struct fdt_match sysmsi_match[] = {
 const struct fdt_driver fdt_mpxy_rpmi_sysmsi = {
 	.match_table = sysmsi_match,
 	.init = mpxy_rpmi_mbox_init,
-	.experimental = true,
 };

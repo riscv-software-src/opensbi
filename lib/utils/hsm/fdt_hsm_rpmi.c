@@ -359,5 +359,4 @@ static const struct fdt_match rpmi_hsm_match[] = {
 const struct fdt_driver fdt_hsm_rpmi = {
 	.match_table = rpmi_hsm_match,
 	.init = rpmi_hsm_cold_init,
-	.experimental = true,
 };

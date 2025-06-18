@@ -83,5 +83,4 @@ static const struct fdt_match clock_match[] = {
 const struct fdt_driver fdt_mpxy_rpmi_clock = {
 	.match_table = clock_match,
 	.init = mpxy_rpmi_mbox_init,
-	.experimental = true,
 };

@@ -819,7 +819,6 @@ struct fdt_mailbox fdt_mailbox_rpmi_shmem = {
 	.driver = {
 		.match_table = rpmi_shmem_mbox_match,
 		.init = rpmi_shmem_mbox_init,
-		.experimental = true,
 	},
 	.xlate = fdt_mailbox_simple_xlate,
 };
