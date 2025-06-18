@@ -160,4 +160,17 @@ static inline void sbi_list_del_init(struct sbi_dlist *entry)
 	     &pos->member != (head); 	\
 	     pos = sbi_list_entry(pos->member.next, typeof(*pos), member))
 
+/**
+ * Iterate over list of given type safe against removal of list entry
+ * @param pos the type * to use as a loop cursor.
+ * @param n another type * to use as temporary storage.
+ * @param head the head for your list.
+ * @param member the name of the list_struct within the struct.
+ */
+#define sbi_list_for_each_entry_safe(pos, n, head, member) \
+	for (pos = sbi_list_entry((head)->next, typeof(*pos), member),	\
+	     n = sbi_list_entry(pos->member.next, typeof(*pos), member);	\
+	     &pos->member != (head);	\
+	     pos = n, n = sbi_list_entry(pos->member.next, typeof(*pos), member))
+
 #endif
