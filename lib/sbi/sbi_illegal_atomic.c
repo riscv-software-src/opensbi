@@ -30,7 +30,7 @@ int sbi_illegal_atomic(ulong insn, struct sbi_trap_regs *regs)
 	{									\
 		register ulong tinfo asm("a3");					\
 		register ulong mstatus = 0;					\
-		register ulong mtvec = sbi_hart_expected_trap_addr();		\
+		register ulong mtvec = (ulong)sbi_hart_expected_trap;		\
 		type ret = 0;							\
 		trap->cause = 0;						\
 		asm volatile(							\
@@ -57,7 +57,7 @@ int sbi_illegal_atomic(ulong insn, struct sbi_trap_regs *regs)
 	{									\
 		register ulong tinfo asm("a3");					\
 		register ulong mstatus = 0;					\
-		register ulong mtvec = sbi_hart_expected_trap_addr();		\
+		register ulong mtvec = (ulong)sbi_hart_expected_trap;		\
 		type ret = 0;							\
 		trap->cause = 0;						\
 		asm volatile(							\
