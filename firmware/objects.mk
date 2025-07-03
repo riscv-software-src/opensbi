@@ -66,3 +66,12 @@ endif
 ifdef FW_OPTIONS
 firmware-genflags-y += -DFW_OPTIONS=$(FW_OPTIONS)
 endif
+
+ifeq ($(CONFIG_STACK_PROTECTOR),y)
+stack-protector-cflags-$(CONFIG_STACK_PROTECTOR) := -fstack-protector
+stack-protector-cflags-$(CONFIG_STACK_PROTECTOR_STRONG) := -fstack-protector-strong
+stack-protector-cflags-$(CONFIG_STACK_PROTECTOR_ALL) := -fstack-protector-all
+else
+stack-protector-cflags-y := -fno-stack-protector
+endif
+firmware-cflags-y += $(stack-protector-cflags-y)

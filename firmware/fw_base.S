@@ -736,6 +736,27 @@ _reset_regs:
 
 	ret
 
+	.section .rodata
+.Lstack_corrupt_msg:
+	.string "stack smashing detected\n"
+
+	/* This will be called when the stack corruption is detected */
+	.section .text
+	.align 3
+	.globl __stack_chk_fail
+	.type __stack_chk_fail, %function
+__stack_chk_fail:
+	la	a0, .Lstack_corrupt_msg
+	call	sbi_panic
+
+	/* Initial value of the stack guard variable */
+	.section .data
+	.align 3
+	.globl __stack_chk_guard
+	.type __stack_chk_guard, %object
+__stack_chk_guard:
+	RISCV_PTR	0x95B5FF5A
+
 #ifdef FW_FDT_PATH
 	.section .rodata
 	.align 4

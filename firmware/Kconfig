@@ -1,1 +1,28 @@
 # SPDX-License-Identifier: BSD-2-Clause
+
+menu "Stack Protector Support"
+
+config STACK_PROTECTOR
+	bool "Stack Protector buffer overflow detection"
+	default n
+	help
+	  This option turns on the "stack-protector" compiler feature.
+
+config STACK_PROTECTOR_STRONG
+	bool "Strong Stack Protector"
+	depends on STACK_PROTECTOR
+	default n
+	help
+	  Turn on the "stack-protector" with "-fstack-protector-strong" option.
+	  Like -fstack-protector but includes additional functions to be
+	  protected.
+
+config STACK_PROTECTOR_ALL
+	bool "Almighty Stack Protector"
+	depends on STACK_PROTECTOR
+	default n
+	help
+	  Turn on the "stack-protector" with "-fstack-protector-all" option.
+	  Like -fstack-protector except that all functions are protected.
+
+endmenu
