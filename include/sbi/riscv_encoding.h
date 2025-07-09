@@ -1317,13 +1317,6 @@
 
 #define INSN_LEN(insn)			(INSN_IS_16BIT(insn) ? 2 : 4)
 
-#if __riscv_xlen == 64
-#define LOG_REGBYTES			3
-#else
-#define LOG_REGBYTES			2
-#endif
-#define REGBYTES			(1 << LOG_REGBYTES)
-
 #define SH_VSEW			3
 #define SH_VIEW			12
 #define SH_VD				7
