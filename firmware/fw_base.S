@@ -80,17 +80,17 @@ _sc_fail:
 	lla	t1, __rela_dyn_end
 	beq	t0, t1, _relocate_done
 2:
-	REG_L	t5, REGBYTES(t0)	/* t5 <-- relocation info:type */
+	REG_L	t5, __SIZEOF_LONG__(t0)	/* t5 <-- relocation info:type */
 	li	t3, R_RISCV_RELATIVE	/* reloc type R_RISCV_RELATIVE */
 	bne	t5, t3, 3f
 	REG_L	t3, 0(t0)
-	REG_L	t5, (REGBYTES * 2)(t0)	/* t5 <-- addend */
+	REG_L	t5, (__SIZEOF_LONG__ * 2)(t0)	/* t5 <-- addend */
 	add	t5, t5, t2
 	add	t3, t3, t2
 	REG_S	t5, 0(t3)		/* store runtime address to the GOT entry */
 
 3:
-	addi	t0, t0, (REGBYTES * 3)
+	addi	t0, t0, (__SIZEOF_LONG__ * 3)
 	blt	t0, t1, 2b
 _relocate_done:
 	/* At this point we are running from link address */
