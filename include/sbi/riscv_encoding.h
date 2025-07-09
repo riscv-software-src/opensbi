@@ -1291,6 +1291,8 @@
 #define SHIFT_FUNCT3			12
 
 #define MASK_RS1			0xf8000
+#define MASK_RS2			0x1f00000
+#define MASK_RD				0xf80
 
 #define MASK_CSR			0xfff00000
 #define SHIFT_CSR			20
@@ -1356,28 +1358,17 @@
 #define SHIFT_RIGHT(x, y)		\
 	((y) < 0 ? ((x) << -(y)) : ((x) >> (y)))
 
-#define REG_MASK			\
-	((1 << (5 + LOG_REGBYTES)) - (1 << LOG_REGBYTES))
-
-#define REG_OFFSET(insn, pos)		\
-	(SHIFT_RIGHT((insn), (pos) - LOG_REGBYTES) & REG_MASK)
-
-#define REG_PTR(insn, pos, regs)	\
-	(ulong *)((ulong)(regs) + REG_OFFSET(insn, pos))
-
 #define GET_FUNC3(insn)			((insn & MASK_FUNCT3) >> SHIFT_FUNCT3)
 #define GET_RM(insn)			GET_FUNC3(insn)
-#define GET_RS1_NUM(insn)		((insn & MASK_RS1) >> 15)
+#define GET_RS1_NUM(insn)		((insn & MASK_RS1) >> SH_RS1)
+#define GET_RS2_NUM(insn)		((insn & MASK_RS2) >> SH_RS2)
+#define GET_RS1S_NUM(insn)		RVC_RS1S(insn)
+#define GET_RS2S_NUM(insn)		RVC_RS2S(insn)
+#define GET_RS2C_NUM(insn)		RVC_RS2(insn)
+#define GET_RD_NUM(insn)		((insn & MASK_RD) >> SH_RD)
 #define GET_CSR_NUM(insn)		((insn & MASK_CSR) >> SHIFT_CSR)
 #define GET_AQRL(insn)			((insn & MASK_AQRL) >> SHIFT_AQRL)
 
-#define GET_RS1(insn, regs)		(*REG_PTR(insn, SH_RS1, regs))
-#define GET_RS2(insn, regs)		(*REG_PTR(insn, SH_RS2, regs))
-#define GET_RS1S(insn, regs)		(*REG_PTR(RVC_RS1S(insn), 0, regs))
-#define GET_RS2S(insn, regs)		(*REG_PTR(RVC_RS2S(insn), 0, regs))
-#define GET_RS2C(insn, regs)		(*REG_PTR(insn, SH_RS2C, regs))
-#define GET_SP(regs)			(*REG_PTR(2, 0, regs))
-#define SET_RD(insn, regs, val)		(*REG_PTR(insn, SH_RD, regs) = (val))
 #define IMM_I(insn)			((s32)(insn) >> 20)
 #define IMM_S(insn)			(((s32)(insn) >> 25 << 5) | \
 					 (s32)(((insn) >> 7) & 0x1f))

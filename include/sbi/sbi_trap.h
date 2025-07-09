@@ -127,70 +127,75 @@
 
 /** Representation of register state at time of trap/interrupt */
 struct sbi_trap_regs {
-	/** zero register state */
-	unsigned long zero;
-	/** ra register state */
-	unsigned long ra;
-	/** sp register state */
-	unsigned long sp;
-	/** gp register state */
-	unsigned long gp;
-	/** tp register state */
-	unsigned long tp;
-	/** t0 register state */
-	unsigned long t0;
-	/** t1 register state */
-	unsigned long t1;
-	/** t2 register state */
-	unsigned long t2;
-	/** s0 register state */
-	unsigned long s0;
-	/** s1 register state */
-	unsigned long s1;
-	/** a0 register state */
-	unsigned long a0;
-	/** a1 register state */
-	unsigned long a1;
-	/** a2 register state */
-	unsigned long a2;
-	/** a3 register state */
-	unsigned long a3;
-	/** a4 register state */
-	unsigned long a4;
-	/** a5 register state */
-	unsigned long a5;
-	/** a6 register state */
-	unsigned long a6;
-	/** a7 register state */
-	unsigned long a7;
-	/** s2 register state */
-	unsigned long s2;
-	/** s3 register state */
-	unsigned long s3;
-	/** s4 register state */
-	unsigned long s4;
-	/** s5 register state */
-	unsigned long s5;
-	/** s6 register state */
-	unsigned long s6;
-	/** s7 register state */
-	unsigned long s7;
-	/** s8 register state */
-	unsigned long s8;
-	/** s9 register state */
-	unsigned long s9;
-	/** s10 register state */
-	unsigned long s10;
-	/** s11 register state */
-	unsigned long s11;
-	/** t3 register state */
-	unsigned long t3;
-	/** t4 register state */
-	unsigned long t4;
-	/** t5 register state */
-	unsigned long t5;
-	/** t6 register state */
-	unsigned long t6;
+	union {
+		unsigned long gprs[32];
+		struct {
+			/** zero register state */
+			unsigned long zero;
+			/** ra register state */
+			unsigned long ra;
+			/** sp register state */
+			unsigned long sp;
+			/** gp register state */
+			unsigned long gp;
+			/** tp register state */
+			unsigned long tp;
+			/** t0 register state */
+			unsigned long t0;
+			/** t1 register state */
+			unsigned long t1;
+			/** t2 register state */
+			unsigned long t2;
+			/** s0 register state */
+			unsigned long s0;
+			/** s1 register state */
+			unsigned long s1;
+			/** a0 register state */
+			unsigned long a0;
+			/** a1 register state */
+			unsigned long a1;
+			/** a2 register state */
+			unsigned long a2;
+			/** a3 register state */
+			unsigned long a3;
+			/** a4 register state */
+			unsigned long a4;
+			/** a5 register state */
+			unsigned long a5;
+			/** a6 register state */
+			unsigned long a6;
+			/** a7 register state */
+			unsigned long a7;
+			/** s2 register state */
+			unsigned long s2;
+			/** s3 register state */
+			unsigned long s3;
+			/** s4 register state */
+			unsigned long s4;
+			/** s5 register state */
+			unsigned long s5;
+			/** s6 register state */
+			unsigned long s6;
+			/** s7 register state */
+			unsigned long s7;
+			/** s8 register state */
+			unsigned long s8;
+			/** s9 register state */
+			unsigned long s9;
+			/** s10 register state */
+			unsigned long s10;
+			/** s11 register state */
+			unsigned long s11;
+			/** t3 register state */
+			unsigned long t3;
+			/** t4 register state */
+			unsigned long t4;
+			/** t5 register state */
+			unsigned long t5;
+			/** t6 register state */
+			unsigned long t6;
+		};
+	};
 	/** mepc register state */
 	unsigned long mepc;
 	/** mstatus register state */
@@ -198,6 +203,21 @@ struct sbi_trap_regs {
 	/** mstatusH register state (only for 32-bit) */
 	unsigned long mstatusH;
 };
+
+_Static_assert(
+	sizeof(((struct sbi_trap_regs *)0)->gprs) ==
+	offsetof(struct sbi_trap_regs, t6) +
+	sizeof(((struct sbi_trap_regs *)0)->t6),
+	"struct sbi_trap_regs's layout differs between gprs and named members");
+
+#define REG_VAL(idx, regs)		((regs)->gprs[(idx)])
+
+#define GET_RS1(insn, regs)		REG_VAL(GET_RS1_NUM(insn), regs)
+#define GET_RS2(insn, regs)		REG_VAL(GET_RS2_NUM(insn), regs)
+#define GET_RS1S(insn, regs)		REG_VAL(GET_RS1S_NUM(insn), regs)
+#define GET_RS2S(insn, regs)		REG_VAL(GET_RS2S_NUM(insn), regs)
+#define GET_RS2C(insn, regs)		REG_VAL(GET_RS2C_NUM(insn), regs)
+#define SET_RD(insn, regs, val)		(REG_VAL(GET_RD_NUM(insn), regs) = (val))
 
 /** Representation of trap details */
 struct sbi_trap_info {
