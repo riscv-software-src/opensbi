@@ -84,23 +84,27 @@ static int fdt_translate_address(const void *fdt, uint64_t reg, int parent,
 				 uint64_t *addr)
 {
 	int i, rlen;
-	int cell_addr, cell_size;
+	int cell_parent_addr, cell_child_addr, cell_size;
 	const fdt32_t *ranges;
 	uint64_t offset, caddr = 0, paddr = 0, rsize = 0;
 
-	cell_addr = fdt_address_cells(fdt, parent);
-	if (cell_addr < 1)
-		return SBI_ENODEV;
-
-	cell_size = fdt_size_cells(fdt, parent);
-	if (cell_size < 0)
-		return SBI_ENODEV;
-
 	ranges = fdt_getprop(fdt, parent, "ranges", &rlen);
 	if (ranges && rlen > 0) {
-		for (i = 0; i < cell_addr; i++)
+		cell_child_addr = fdt_address_cells(fdt, parent);
+		if (cell_child_addr < 1)
+			return SBI_ENODEV;
+
+		cell_parent_addr = fdt_address_cells(fdt, fdt_parent_offset(fdt, parent));
+		if (cell_parent_addr < 1)
+			return SBI_ENODEV;
+
+		cell_size = fdt_size_cells(fdt, parent);
+		if (cell_size < 0)
+			return SBI_ENODEV;
+
+		for (i = 0; i < cell_child_addr; i++)
 			caddr = (caddr << 32) | fdt32_to_cpu(*ranges++);
-		for (i = 0; i < cell_addr; i++)
+		for (i = 0; i < cell_parent_addr; i++)
 			paddr = (paddr << 32) | fdt32_to_cpu(*ranges++);
 		for (i = 0; i < cell_size; i++)
 			rsize = (rsize << 32) | fdt32_to_cpu(*ranges++);
