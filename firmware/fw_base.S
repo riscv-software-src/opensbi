@@ -76,8 +76,8 @@ _sc_fail:
 	li	t0, FW_TEXT_START	/* link start */
 	lla	t1, _fw_start		/* load start */
 	sub	t2, t1, t0		/* load offset */
-	lla	t0, __rel_dyn_start
-	lla	t1, __rel_dyn_end
+	lla	t0, __rela_dyn_start
+	lla	t1, __rela_dyn_end
 	beq	t0, t1, _relocate_done
 2:
 	REG_L	t5, REGBYTES(t0)	/* t5 <-- relocation info:type */

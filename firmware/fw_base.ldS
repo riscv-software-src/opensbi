@@ -47,9 +47,9 @@
 	. = ALIGN(0x1000); /* Ensure next section is page aligned */
 
 	.rela.dyn : {
-		PROVIDE(__rel_dyn_start = .);
+		PROVIDE(__rela_dyn_start = .);
 		*(.rela*)
-		PROVIDE(__rel_dyn_end = .);
+		PROVIDE(__rela_dyn_end = .);
 	}
 
 	PROVIDE(_rodata_end = .);
