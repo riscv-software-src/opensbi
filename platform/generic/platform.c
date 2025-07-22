@@ -245,6 +245,8 @@ int generic_final_init(bool cold_boot)
 	fdt_fixups(fdt);
 	fdt_domain_fixup(fdt);
 
+	fdt_pack(fdt);
+
 	return 0;
 }
 
