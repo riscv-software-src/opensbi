@@ -16,6 +16,8 @@
 #include <mips/p8700.h>
 #include <mips/mips-cm.h>
 
+extern void mips_warm_boot(void);
+
 static unsigned long mips_csr_read_num(int csr_num)
 {
 #define switchcase_csr_read(__csr_num, __val)		\
@@ -149,6 +151,9 @@ static int mips_hart_start(u32 hartid, ulong saddr)
 	/* Hart 0 is the boot hart, and we don't use the CPC cmd to start.  */
 	if (hartid == 0)
 		return SBI_ENOTSUPP;
+
+	/* Change reset base to mips_warm_boot */
+	write_gcr_co_reset_base(hartid, (unsigned long)mips_warm_boot, local_p);
 
 	if (cpu_hart(hartid) == 0) {
 		/* Ensure its coherency is disabled */
