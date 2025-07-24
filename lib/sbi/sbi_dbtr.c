@@ -336,6 +336,19 @@ static void dbtr_trigger_setup(struct sbi_dbtr_trigger *trig,
 		if (__test_bit(RV_DBTR_BIT(MC6, VS), &tdata1))
 			__set_bit(RV_DBTR_BIT(TS, VS), &trig->state);
 		break;
+	case RISCV_DBTR_TRIG_ICOUNT:
+		if (__test_bit(RV_DBTR_BIT(ICOUNT, U), &tdata1))
+			__set_bit(RV_DBTR_BIT(TS, U), &trig->state);
+
+		if (__test_bit(RV_DBTR_BIT(ICOUNT, S), &tdata1))
+			__set_bit(RV_DBTR_BIT(TS, S), &trig->state);
+
+		if (__test_bit(RV_DBTR_BIT(ICOUNT, VU), &tdata1))
+			__set_bit(RV_DBTR_BIT(TS, VU), &trig->state);
+
+		if (__test_bit(RV_DBTR_BIT(ICOUNT, VS), &tdata1))
+			__set_bit(RV_DBTR_BIT(TS, VS), &trig->state);
+		break;
 	default:
 		sbi_dprintf("%s: Unknown type (tdata1: 0x%lx Type: %ld)\n",
 			    __func__, tdata1, TDATA1_GET_TYPE(tdata1));
@@ -379,6 +392,16 @@ static void dbtr_trigger_enable(struct sbi_dbtr_trigger *trig)
 		update_bit(state & RV_DBTR_BIT_MASK(TS, S),
 			   RV_DBTR_BIT(MC6, S), &trig->tdata1);
 		break;
+	case RISCV_DBTR_TRIG_ICOUNT:
+		update_bit(state & RV_DBTR_BIT_MASK(TS, VU),
+			   RV_DBTR_BIT(ICOUNT, VU), &trig->tdata1);
+		update_bit(state & RV_DBTR_BIT_MASK(TS, VS),
+			   RV_DBTR_BIT(ICOUNT, VS), &trig->tdata1);
+		update_bit(state & RV_DBTR_BIT_MASK(TS, U),
+			   RV_DBTR_BIT(ICOUNT, U), &trig->tdata1);
+		update_bit(state & RV_DBTR_BIT_MASK(TS, S),
+			   RV_DBTR_BIT(ICOUNT, S), &trig->tdata1);
+		break;
 	default:
 		break;
 	}
@@ -418,6 +441,12 @@ static void dbtr_trigger_disable(struct sbi_dbtr_trigger *trig)
 		__clear_bit(RV_DBTR_BIT(MC6, U), &trig->tdata1);
 		__clear_bit(RV_DBTR_BIT(MC6, S), &trig->tdata1);
 		break;
+	case RISCV_DBTR_TRIG_ICOUNT:
+		__clear_bit(RV_DBTR_BIT(ICOUNT, VU), &trig->tdata1);
+		__clear_bit(RV_DBTR_BIT(ICOUNT, VS), &trig->tdata1);
+		__clear_bit(RV_DBTR_BIT(ICOUNT, U), &trig->tdata1);
+		__clear_bit(RV_DBTR_BIT(ICOUNT, S), &trig->tdata1);
+		break;
 	default:
 		break;
 	}
@@ -441,6 +470,7 @@ static int dbtr_trigger_supported(unsigned long type)
 	switch (type) {
 	case RISCV_DBTR_TRIG_MCONTROL:
 	case RISCV_DBTR_TRIG_MCONTROL6:
+	case RISCV_DBTR_TRIG_ICOUNT:
 		return 1;
 	default:
 		break;
@@ -460,6 +490,11 @@ static int dbtr_trigger_valid(unsigned long type, unsigned long tdata)
 	case RISCV_DBTR_TRIG_MCONTROL6:
 		if (!(tdata & RV_DBTR_BIT_MASK(MC6, DMODE)) &&
 		    !(tdata & RV_DBTR_BIT_MASK(MC6, M)))
+			return 1;
+		break;
+	case RISCV_DBTR_TRIG_ICOUNT:
+		if (!(tdata & RV_DBTR_BIT_MASK(ICOUNT, DMODE)) &&
+		    !(tdata & RV_DBTR_BIT_MASK(ICOUNT, M)))
 			return 1;
 		break;
 	default:
