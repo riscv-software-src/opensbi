@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: BSD-2-Clause
 /*
  * Copyright (C) 2023 Renesas Electronics Corp.
  * Copyright (c) 2024 Andes Technology Corporation
