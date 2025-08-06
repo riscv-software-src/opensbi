@@ -121,10 +121,6 @@ static void aplic_writel_msicfg(struct aplic_msicfg_data *msicfg,
 	u32 val;
 	unsigned long base_ppn;
 
-	/* Check if MSI config is already locked */
-	if (readl(msicfgaddrH) & APLIC_xMSICFGADDRH_L)
-		return;
-
 	/* Compute the MSI base PPN */
 	base_ppn = msicfg->base_addr >> APLIC_xMSICFGADDR_PPN_SHIFT;
 	base_ppn &= ~APLIC_xMSICFGADDR_PPN_HART(msicfg->lhxs);
@@ -167,7 +163,7 @@ static int aplic_check_msicfg(struct aplic_msicfg_data *msicfg)
 
 int aplic_cold_irqchip_init(struct aplic_data *aplic)
 {
-	int rc;
+	int rc, locked;
 	u32 i, j, tmp;
 	struct aplic_delegate_data *deleg;
 	u32 first_deleg_irq, last_deleg_irq;
@@ -247,12 +243,13 @@ int aplic_cold_irqchip_init(struct aplic_data *aplic)
 	}
 
 	/* MSI configuration */
-	if (aplic->targets_mmode && aplic->has_msicfg_mmode) {
+	locked = readl((void *)(aplic->addr + APLIC_MMSICFGADDRH)) & APLIC_xMSICFGADDRH_L;
+	if (aplic->targets_mmode && aplic->has_msicfg_mmode && !locked) {
 		aplic_writel_msicfg(&aplic->msicfg_mmode,
 				(void *)(aplic->addr + APLIC_MMSICFGADDR),
 				(void *)(aplic->addr + APLIC_MMSICFGADDRH));
 	}
-	if (aplic->targets_mmode && aplic->has_msicfg_smode) {
+	if (aplic->targets_mmode && aplic->has_msicfg_smode && !locked) {
 		aplic_writel_msicfg(&aplic->msicfg_smode,
 				(void *)(aplic->addr + APLIC_SMSICFGADDR),
 				(void *)(aplic->addr + APLIC_SMSICFGADDRH));
