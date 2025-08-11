@@ -563,6 +563,10 @@ int sbi_dbtr_read_trig(unsigned long smode,
 	for_each_trig_entry(shmem_base, trig_count, typeof(*entry), entry) {
 		xmit = &entry->data;
 		trig = INDEX_TO_TRIGGER((_idx + trig_idx_base));
+		csr_write(CSR_TSELECT, trig->index);
+		trig->tdata1 = csr_read(CSR_TDATA1);
+		trig->tdata2 = csr_read(CSR_TDATA2);
+		trig->tdata3 = csr_read(CSR_TDATA3);
 		xmit->tstate = cpu_to_lle(trig->state);
 		xmit->tdata1 = cpu_to_lle(trig->tdata1);
 		xmit->tdata2 = cpu_to_lle(trig->tdata2);
