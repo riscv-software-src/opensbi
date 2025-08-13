@@ -31,10 +31,6 @@ OpenSBI currently supports the following virtual and hardware platforms:
 * **Spike**: Platform support for the Spike emulator. More
   details on this platform can be found in the file *[spike.md]*.
 
-* **OpenPiton FPGA SoC**: Platform support OpenPiton research platform based
-  on ariane core. More details on this platform can be found in the file
-  *[fpga-openpiton.md]*.
-
 * **Shakti C-class SoC Platform**: Platform support for Shakti C-class
   processor based SOCs. More details on this platform can be found in the
   file *[shakti_cclass.md]*.
@@ -56,6 +52,5 @@ comments to facilitate the implementation.
 [andes-ae350.md]: andes-ae350.md
 [thead-c910.md]: thead-c910.md
 [spike.md]: spike.md
-[fpga-openpiton.md]: fpga-openpiton.md
 [shakti_cclass.md]: shakti_cclass.md
 [renesas-rzfive.md]: renesas-rzfive.md

@@ -47,6 +47,7 @@ RISC-V Platforms Using Generic Platform
 * **SiFive HiFive Unleashed** (*[sifive_fu540.md]*)
 * **Spike** (*[spike.md]*)
 * **T-HEAD C9xx series Processors** (*[thead-c9xx.md]*)
+* **OpenPiton FPGA SoC** (*[fpga-openpiton.md]*)
 
 [andes-ae350.md]: andes-ae350.md
 [qemu_virt.md]: qemu_virt.md
@@ -55,3 +56,4 @@ RISC-V Platforms Using Generic Platform
 [sifive_fu540.md]: sifive_fu540.md
 [spike.md]: spike.md
 [thead-c9xx.md]: thead-c9xx.md
+[fpga-openpiton.md]: fpga-openpiton.md

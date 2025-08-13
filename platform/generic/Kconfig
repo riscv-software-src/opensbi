@@ -36,6 +36,10 @@ config PLATFORM_ANDES_AE350
 	select ANDES_PMA
 	default n
 
+config PLATFORM_OPENHWGROUP_OPENPITON
+	bool "OpenHWGroup Openpiton support"
+	default n
+
 config PLATFORM_RENESAS_RZFIVE
 	bool "Renesas RZ/Five support"
 	select ANDES_PMA

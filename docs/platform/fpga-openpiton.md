@@ -7,8 +7,8 @@ processor from ETH Zurich. To this end, Ariane has been equipped with a
 different L1 cache subsystem that follows a write-through protocol and that has
 support for cache invalidations and atomics.
 
-To build platform specific library and firmwares, provide the
-*PLATFORM=fpga/openpiton* parameter to the top level `make` command.
+To build platform specific library and firmwares, provide the *PLATFORM=generic*
+parameter to the top level `make` command.
 
 Platform Options
 ----------------
@@ -21,7 +21,7 @@ Building Ariane FPGA Platform
 **Linux Kernel Payload**
 
 ```
-make PLATFORM=fpga/openpiton FW_PAYLOAD_PATH=<linux_build_directory>/arch/riscv/boot/Image
+make PLATFORM=generic FW_PAYLOAD_PATH=<linux_build_directory>/arch/riscv/boot/Image
 ```
 
 Booting Ariane FPGA Platform
