@@ -92,17 +92,23 @@ static void hart_context_set(struct sbi_domain *dom, u32 hartindex,
  *
  * @param ctx pointer to the current HART context
  * @param dom_ctx pointer to the target domain context
+ *
+ * @return 0 on success and negative error code on failure
  */
-static void switch_to_next_domain_context(struct hart_context *ctx,
+static int switch_to_next_domain_context(struct hart_context *ctx,
 					  struct hart_context *dom_ctx)
 {
 	u32 hartindex = current_hartindex();
 	struct sbi_trap_context *trap_ctx;
-	struct sbi_domain *current_dom = ctx->dom;
-	struct sbi_domain *target_dom = dom_ctx->dom;
+	struct sbi_domain *current_dom, *target_dom;
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	unsigned int pmp_count = sbi_hart_pmp_count(scratch);
 
+	if (!ctx || !dom_ctx || ctx == dom_ctx)
+		return SBI_EINVAL;
+
+	current_dom = ctx->dom;
+	target_dom = dom_ctx->dom;
 	/* Assign current hart to target domain */
 	spin_lock(&current_dom->assigned_harts_lock);
 	sbi_hartmask_clear_hartindex(hartindex, &current_dom->assigned_harts);
@@ -156,6 +162,7 @@ static void switch_to_next_domain_context(struct hart_context *ctx,
 		else
 			sbi_hsm_hart_stop(scratch, true);
 	}
+	return 0;
 }
 
 int sbi_domain_context_enter(struct sbi_domain *dom)
@@ -170,9 +177,7 @@ int sbi_domain_context_enter(struct sbi_domain *dom)
 	/* Update target context's previous context to indicate the caller */
 	dom_ctx->prev_ctx = ctx;
 
-	switch_to_next_domain_context(ctx, dom_ctx);
-
-	return 0;
+	return switch_to_next_domain_context(ctx, dom_ctx);
 }
 
 int sbi_domain_context_exit(void)
@@ -226,9 +231,7 @@ int sbi_domain_context_exit(void)
 	if (!dom_ctx)
 		dom_ctx = hart_context_get(&root, hartindex);
 
-	switch_to_next_domain_context(ctx, dom_ctx);
-
-	return 0;
+	return switch_to_next_domain_context(ctx, dom_ctx);
 }
 
 int sbi_domain_context_init(void)
