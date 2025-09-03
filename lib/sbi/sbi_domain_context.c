@@ -165,11 +165,50 @@ static int switch_to_next_domain_context(struct hart_context *ctx,
 	return 0;
 }
 
+static int hart_context_init(u32 hartindex)
+{
+	struct hart_context *ctx;
+	struct sbi_domain *dom;
+
+	sbi_domain_for_each(dom) {
+		if (!sbi_hartmask_test_hartindex(hartindex,
+						 dom->possible_harts))
+			continue;
+
+		ctx = sbi_zalloc(sizeof(struct hart_context));
+		if (!ctx)
+			return SBI_ENOMEM;
+
+		/* Bind context and domain */
+		ctx->dom = dom;
+		hart_context_set(dom, hartindex, ctx);
+	}
+
+	return 0;
+}
+
 int sbi_domain_context_enter(struct sbi_domain *dom)
 {
+	int rc;
+	struct hart_context *dom_ctx;
 	struct hart_context *ctx = hart_context_thishart_get();
-	struct hart_context *dom_ctx = hart_context_get(dom, current_hartindex());
 
+	/*
+	 * If it's first time to call `enter` on the current hart, no
+	 * context allocated before. Allocate context for each valid
+	 * domain on the current hart.
+	 */
+	if (!ctx) {
+		rc = hart_context_init(current_hartindex());
+		if (rc)
+			return rc;
+
+		ctx = hart_context_thishart_get();
+		if (!ctx)
+			return SBI_EINVAL;
+	}
+
+	dom_ctx = hart_context_get(dom, current_hartindex());
 	/* Validate the domain context existence */
 	if (!dom_ctx)
 		return SBI_EINVAL;
@@ -182,6 +221,7 @@ int sbi_domain_context_enter(struct sbi_domain *dom)
 
 int sbi_domain_context_exit(void)
 {
+	int rc;
 	u32 hartindex = current_hartindex();
 	struct sbi_domain *dom;
 	struct hart_context *ctx = hart_context_thishart_get();
@@ -193,21 +233,13 @@ int sbi_domain_context_exit(void)
 	 * its context on the current hart if valid.
 	 */
 	if (!ctx) {
-		sbi_domain_for_each(dom) {
-			if (!sbi_hartmask_test_hartindex(hartindex,
-							 dom->possible_harts))
-				continue;
-
-			dom_ctx = sbi_zalloc(sizeof(struct hart_context));
-			if (!dom_ctx)
-				return SBI_ENOMEM;
-
-			/* Bind context and domain */
-			dom_ctx->dom = dom;
-			hart_context_set(dom, hartindex, dom_ctx);
-		}
+		rc = hart_context_init(current_hartindex());
+		if (rc)
+			return rc;
 
 		ctx = hart_context_thishart_get();
+		if (!ctx)
+			return SBI_EINVAL;
 	}
 
 	dom_ctx = ctx->prev_ctx;
