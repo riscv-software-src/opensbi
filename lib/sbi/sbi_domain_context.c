@@ -193,6 +193,10 @@ int sbi_domain_context_enter(struct sbi_domain *dom)
 	struct hart_context *dom_ctx;
 	struct hart_context *ctx = hart_context_thishart_get();
 
+	/* Target domain must not be same as the current domain */
+	if (!dom || dom == sbi_domain_thishart_ptr())
+		return SBI_EINVAL;
+
 	/*
 	 * If it's first time to call `enter` on the current hart, no
 	 * context allocated before. Allocate context for each valid
