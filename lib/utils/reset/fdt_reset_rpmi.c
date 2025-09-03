@@ -7,6 +7,7 @@
  *   Rahul Pathak <rpathak@ventanamicro.com>
  */
 
+#include <sbi/sbi_hart.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_console.h>
@@ -56,6 +57,8 @@ static void rpmi_do_system_reset(u32 reset_type)
 	if (ret)
 		sbi_printf("system reset failed [type: %d]: ret: %d\n",
 			   reset_type, ret);
+
+	sbi_hart_hang();
 }
 
 /**
