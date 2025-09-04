@@ -112,13 +112,19 @@ static struct sbi_system_reset_device k210_reset = {
 
 static int k210_early_init(bool cold_boot)
 {
+	int rc;
+
 	if (!cold_boot)
 		return 0;
 
 	sbi_system_reset_add_device(&k210_reset);
 
-	return sifive_uart_init(K210_UART_BASE_ADDR, k210_get_clk_freq(),
-				K210_UART_BAUDRATE);
+	rc = sifive_uart_init(K210_UART_BASE_ADDR, k210_get_clk_freq(),
+			      K210_UART_BAUDRATE);
+	if (rc)
+		return rc;
+
+	return aclint_mswi_cold_init(&mswi);
 }
 
 static int k210_final_init(bool cold_boot)
@@ -141,11 +147,6 @@ static int k210_irqchip_init(void)
 	return plic_cold_irqchip_init(&plic);
 }
 
-static int k210_ipi_init(void)
-{
-	return aclint_mswi_cold_init(&mswi);
-}
-
 static int k210_timer_init(void)
 {
 	return aclint_mtimer_cold_init(&mtimer, NULL);
@@ -157,8 +158,6 @@ const struct sbi_platform_operations platform_ops = {
 	.final_init	= k210_final_init,
 
 	.irqchip_init = k210_irqchip_init,
-
-	.ipi_init  = k210_ipi_init,
 
 	.timer_init	   = k210_timer_init,
 };

@@ -104,11 +104,15 @@ static int openpiton_early_init(bool cold_boot)
 				    ACLINT_DEFAULT_MTIMECMP_OFFSET;
 	}
 
-	return uart8250_init(uart.addr, uart.freq, uart.baud,
-			     OPENPITON_DEFAULT_UART_REG_SHIFT,
-			     OPENPITON_DEFAULT_UART_REG_WIDTH,
-			     OPENPITON_DEFAULT_UART_REG_OFFSET,
-			     OPENPITON_DEFAULT_UART_CAPS);
+	rc = uart8250_init(uart.addr, uart.freq, uart.baud,
+			   OPENPITON_DEFAULT_UART_REG_SHIFT,
+			   OPENPITON_DEFAULT_UART_REG_WIDTH,
+			   OPENPITON_DEFAULT_UART_REG_OFFSET,
+			   OPENPITON_DEFAULT_UART_CAPS);
+	if (rc)
+		return rc;
+
+	return aclint_mswi_cold_init(&mswi);
 }
 
 /*
@@ -136,14 +140,6 @@ static int openpiton_irqchip_init(void)
 }
 
 /*
- * Initialize IPI during cold boot.
- */
-static int openpiton_ipi_init(void)
-{
-	return aclint_mswi_cold_init(&mswi);
-}
-
-/*
  * Initialize openpiton timer during cold boot.
  */
 static int openpiton_timer_init(void)
@@ -155,7 +151,6 @@ static int openhwgroup_openpiton_platform_init(const void *fdt, int nodeoff, con
 {
 	generic_platform_ops.early_init = openpiton_early_init;
 	generic_platform_ops.timer_init = openpiton_timer_init;
-	generic_platform_ops.ipi_init = openpiton_ipi_init;
 	generic_platform_ops.irqchip_init = openpiton_irqchip_init;
 	generic_platform_ops.final_init = openpiton_final_init;
 

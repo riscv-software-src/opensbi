@@ -71,16 +71,22 @@ static struct aclint_mtimer_data mtimer = {
  */
 static int ariane_early_init(bool cold_boot)
 {
+	int rc;
+
 	if (!cold_boot)
 		return 0;
 
-	return uart8250_init(ARIANE_UART_ADDR,
-			     ARIANE_UART_FREQ,
-			     ARIANE_UART_BAUDRATE,
-			     ARIANE_UART_REG_SHIFT,
-			     ARIANE_UART_REG_WIDTH,
-			     ARIANE_UART_REG_OFFSET,
-			     ARIANE_UART_CAPS);
+	rc = uart8250_init(ARIANE_UART_ADDR,
+			   ARIANE_UART_FREQ,
+			   ARIANE_UART_BAUDRATE,
+			   ARIANE_UART_REG_SHIFT,
+			   ARIANE_UART_REG_WIDTH,
+			   ARIANE_UART_REG_OFFSET,
+			   ARIANE_UART_CAPS);
+	if (rc)
+		return rc;
+
+	return aclint_mswi_cold_init(&mswi);
 }
 
 /*
@@ -108,14 +114,6 @@ static int ariane_irqchip_init(void)
 }
 
 /*
- * Initialize IPI during cold boot.
- */
-static int ariane_ipi_init(void)
-{
-	return aclint_mswi_cold_init(&mswi);
-}
-
-/*
  * Initialize ariane timer during cold boot.
  */
 static int ariane_timer_init(void)
@@ -130,7 +128,6 @@ const struct sbi_platform_operations platform_ops = {
 	.early_init = ariane_early_init,
 	.final_init = ariane_final_init,
 	.irqchip_init = ariane_irqchip_init,
-	.ipi_init = ariane_ipi_init,
 	.timer_init = ariane_timer_init,
 };
 

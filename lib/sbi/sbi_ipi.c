@@ -357,11 +357,6 @@ int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
 		if (ret < 0)
 			return ret;
 		ipi_halt_event = ret;
-
-		/* Initialize platform IPI support */
-		ret = sbi_platform_ipi_init(sbi_platform_ptr(scratch));
-		if (ret)
-			return ret;
 	} else {
 		if (!ipi_data_off)
 			return SBI_ENOMEM;

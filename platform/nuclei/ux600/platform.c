@@ -151,6 +151,7 @@ static struct sbi_system_reset_device ux600_reset = {
 static int ux600_early_init(bool cold_boot)
 {
 	u32 regval;
+	int rc;
 
 	if (!cold_boot)
 		return 0;
@@ -168,8 +169,12 @@ static int ux600_early_init(bool cold_boot)
 		UX600_GPIO_IOF_UART0_MASK;
 	writel(regval, (void *)(UX600_GPIO_ADDR + UX600_GPIO_IOF_EN_OFS));
 
-	return sifive_uart_init(UX600_DEBUG_UART, ux600_clk_freq,
-				UX600_UART_BAUDRATE);
+	rc = sifive_uart_init(UX600_DEBUG_UART, ux600_clk_freq,
+			      UX600_UART_BAUDRATE);
+	if (rc)
+		return rc;
+
+	return aclint_mswi_cold_init(&mswi);
 }
 
 static void ux600_modify_dt(void *fdt)
@@ -195,11 +200,6 @@ static int ux600_irqchip_init(void)
 	return plic_cold_irqchip_init(&plic);
 }
 
-static int ux600_ipi_init(void)
-{
-	return aclint_mswi_cold_init(&mswi);
-}
-
 static int ux600_timer_init(void)
 {
 	return aclint_mtimer_cold_init(&mtimer, NULL);
@@ -209,7 +209,6 @@ const struct sbi_platform_operations platform_ops = {
 	.early_init		= ux600_early_init,
 	.final_init		= ux600_final_init,
 	.irqchip_init		= ux600_irqchip_init,
-	.ipi_init		= ux600_ipi_init,
 	.timer_init		= ux600_timer_init,
 };
 

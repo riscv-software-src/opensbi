@@ -116,9 +116,6 @@ struct sbi_platform_operations {
 	/** Initialize the platform interrupt controller during cold boot */
 	int (*irqchip_init)(void);
 
-	/** Initialize IPI during cold boot */
-	int (*ipi_init)(void);
-
 	/** Get tlb flush limit value **/
 	u64 (*get_tlbr_flush_limit)(void);
 
@@ -525,20 +522,6 @@ static inline int sbi_platform_irqchip_init(const struct sbi_platform *plat)
 {
 	if (plat && sbi_platform_ops(plat)->irqchip_init)
 		return sbi_platform_ops(plat)->irqchip_init();
-	return 0;
-}
-
-/**
- * Initialize the platform IPI support during cold boot
- *
- * @param plat pointer to struct sbi_platform
- *
- * @return 0 on success and negative error code on failure
- */
-static inline int sbi_platform_ipi_init(const struct sbi_platform *plat)
-{
-	if (plat && sbi_platform_ops(plat)->ipi_init)
-		return sbi_platform_ops(plat)->ipi_init();
 	return 0;
 }
 
