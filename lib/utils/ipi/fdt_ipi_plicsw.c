@@ -11,8 +11,8 @@
  */
 
 #include <sbi/riscv_io.h>
+#include <sbi_utils/fdt/fdt_driver.h>
 #include <sbi_utils/fdt/fdt_helper.h>
-#include <sbi_utils/ipi/fdt_ipi.h>
 #include <sbi_utils/ipi/andes_plicsw.h>
 
 extern struct plicsw_data plicsw;
