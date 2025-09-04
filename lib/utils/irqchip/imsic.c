@@ -199,6 +199,7 @@ static void imsic_ipi_send(u32 hart_index)
 
 static struct sbi_ipi_device imsic_ipi_device = {
 	.name		= "aia-imsic",
+	.rating		= 300,
 	.ipi_send	= imsic_ipi_send
 };
 
@@ -393,7 +394,7 @@ int imsic_cold_irqchip_init(struct imsic_data *imsic)
 	sbi_irqchip_add_device(&imsic_device);
 
 	/* Register IPI device */
-	sbi_ipi_set_device(&imsic_ipi_device);
+	sbi_ipi_add_device(&imsic_ipi_device);
 
 	return 0;
 }

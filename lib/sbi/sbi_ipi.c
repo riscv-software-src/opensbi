@@ -15,9 +15,11 @@
 #include <sbi/sbi_domain.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_heap.h>
 #include <sbi/sbi_hsm.h>
 #include <sbi/sbi_init.h>
 #include <sbi/sbi_ipi.h>
+#include <sbi/sbi_list.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_pmu.h>
 #include <sbi/sbi_string.h>
@@ -32,8 +34,14 @@ _Static_assert(
 	"type of sbi_ipi_data.ipi_type has changed, please redefine SBI_IPI_EVENT_MAX"
 	);
 
+struct sbi_ipi_device_node {
+	struct sbi_dlist head;
+	const struct sbi_ipi_device *dev;
+};
+
 static unsigned long ipi_data_off;
 static const struct sbi_ipi_device *ipi_dev = NULL;
+static SBI_LIST_HEAD(ipi_dev_node_list);
 static const struct sbi_ipi_event_ops *ipi_ops_array[SBI_IPI_EVENT_MAX];
 
 static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartindex,
@@ -248,7 +256,7 @@ void sbi_ipi_process(void)
 			sbi_scratch_offset_ptr(scratch, ipi_data_off);
 
 	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_IPI_RECVD);
-	sbi_ipi_raw_clear();
+	sbi_ipi_raw_clear(false);
 
 	ipi_type = atomic_raw_xchg_ulong(&ipi_data->ipi_type, 0);
 	ipi_event = 0;
@@ -283,10 +291,19 @@ int sbi_ipi_raw_send(u32 hartindex)
 	return 0;
 }
 
-void sbi_ipi_raw_clear(void)
+void sbi_ipi_raw_clear(bool all_devices)
 {
-	if (ipi_dev && ipi_dev->ipi_clear)
-		ipi_dev->ipi_clear();
+	struct sbi_ipi_device_node *entry;
+
+	if (all_devices) {
+		sbi_list_for_each_entry(entry, &ipi_dev_node_list, head) {
+			if (entry->dev->ipi_clear)
+				entry->dev->ipi_clear();
+		}
+	} else {
+		if (ipi_dev && ipi_dev->ipi_clear)
+			ipi_dev->ipi_clear();
+	}
 
 	/*
 	 * Ensure that memory or MMIO writes after this
@@ -305,12 +322,22 @@ const struct sbi_ipi_device *sbi_ipi_get_device(void)
 	return ipi_dev;
 }
 
-void sbi_ipi_set_device(const struct sbi_ipi_device *dev)
+void sbi_ipi_add_device(const struct sbi_ipi_device *dev)
 {
-	if (!dev || ipi_dev)
+	struct sbi_ipi_device_node *entry;
+
+	if (!dev)
 		return;
 
-	ipi_dev = dev;
+	entry = sbi_zalloc(sizeof(*entry));
+	if (!entry)
+		return;
+	SBI_INIT_LIST_HEAD(&entry->head);
+	entry->dev = dev;
+	sbi_list_add_tail(&entry->head, &ipi_dev_node_list);
+
+	if (!ipi_dev || ipi_dev->rating < dev->rating)
+		ipi_dev = dev;
 }
 
 int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
@@ -347,7 +374,7 @@ int sbi_ipi_init(struct sbi_scratch *scratch, bool cold_boot)
 	ipi_data->ipi_type = 0x00;
 
 	/* Clear any pending IPIs for the current hart */
-	sbi_ipi_raw_clear();
+	sbi_ipi_raw_clear(true);
 
 	/* Enable software interrupts */
 	csr_set(CSR_MIE, MIP_MSIP);

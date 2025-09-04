@@ -62,6 +62,7 @@ static void mswi_ipi_clear(void)
 
 static struct sbi_ipi_device aclint_mswi = {
 	.name = "aclint-mswi",
+	.rating = 100,
 	.ipi_send = mswi_ipi_send,
 	.ipi_clear = mswi_ipi_clear
 };
@@ -106,7 +107,7 @@ int aclint_mswi_cold_init(struct aclint_mswi_data *mswi)
 	if (rc)
 		return rc;
 
-	sbi_ipi_set_device(&aclint_mswi);
+	sbi_ipi_add_device(&aclint_mswi);
 
 	return 0;
 }
