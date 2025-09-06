@@ -322,6 +322,7 @@ static int starfive_jh7110_platform_init(const void *fdt, int nodeoff,
 
 static const struct fdt_match starfive_jh7110_match[] = {
 	{ .compatible = "starfive,jh7110" },
+	{ .compatible = "starfive,jh7110s" },
 	{ },
 };
 
