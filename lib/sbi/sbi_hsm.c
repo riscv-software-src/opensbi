@@ -47,6 +47,7 @@ struct sbi_hsm_data {
 	unsigned long saved_mie;
 	unsigned long saved_mip;
 	unsigned long saved_medeleg;
+	unsigned long saved_mideleg;
 	unsigned long saved_menvcfg;
 #if __riscv_xlen == 32
 	unsigned long saved_menvcfgh;
@@ -429,6 +430,7 @@ void __sbi_hsm_suspend_non_ret_save(struct sbi_scratch *scratch)
 	hdata->saved_mie = csr_read(CSR_MIE);
 	hdata->saved_mip = csr_read(CSR_MIP) & (MIP_SSIP | MIP_STIP);
 	hdata->saved_medeleg = csr_read(CSR_MEDELEG);
+	hdata->saved_mideleg = csr_read(CSR_MIDELEG);
 	if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_12) {
 #if __riscv_xlen == 32
 		hdata->saved_menvcfgh = csr_read(CSR_MENVCFGH);
@@ -448,6 +450,7 @@ static void __sbi_hsm_suspend_non_ret_restore(struct sbi_scratch *scratch)
 		csr_write(CSR_MENVCFGH, hdata->saved_menvcfgh);
 #endif
 	}
+	csr_write(CSR_MIDELEG, hdata->saved_mideleg);
 	csr_write(CSR_MEDELEG, hdata->saved_medeleg);
 	csr_write(CSR_MIE, hdata->saved_mie);
 	csr_set(CSR_MIP, (hdata->saved_mip & (MIP_SSIP | MIP_STIP)));
