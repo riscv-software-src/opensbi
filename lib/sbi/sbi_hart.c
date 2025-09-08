@@ -1037,10 +1037,6 @@ int sbi_hart_reinit(struct sbi_scratch *scratch)
 	if (rc)
 		return rc;
 
-	rc = delegate_traps(scratch);
-	if (rc)
-		return rc;
-
 	return 0;
 }
 
@@ -1065,6 +1061,10 @@ int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot)
 	}
 
 	rc = hart_detect_features(scratch);
+	if (rc)
+		return rc;
+
+	rc = delegate_traps(scratch);
 	if (rc)
 		return rc;
 
