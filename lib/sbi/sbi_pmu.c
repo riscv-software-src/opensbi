@@ -830,7 +830,7 @@ static int pmu_ctr_find_fw(struct sbi_pmu_hart_state *phs,
 		cidx = i + cbase;
 		if (cidx < num_hw_ctrs || total_ctrs <= cidx)
 			continue;
-		if (phs->active_events[i] != SBI_PMU_EVENT_IDX_INVALID)
+		if (phs->active_events[cidx] != SBI_PMU_EVENT_IDX_INVALID)
 			continue;
 		if (SBI_PMU_FW_PLATFORM == event_code &&
 		    pmu_dev && pmu_dev->fw_counter_match_encoding) {
@@ -840,7 +840,7 @@ static int pmu_ctr_find_fw(struct sbi_pmu_hart_state *phs,
 				continue;
 		}
 
-		return i;
+		return cidx;
 	}
 
 	return SBI_ENOTSUPP;
@@ -886,13 +886,14 @@ int sbi_pmu_ctr_cfg_match(unsigned long cidx_base, unsigned long cidx_mask,
 		/* Any firmware counter can be used track any firmware event */
 		ctr_idx = pmu_ctr_find_fw(phs, cidx_base, cidx_mask,
 					  event_code, event_data);
-		if (event_code == SBI_PMU_FW_PLATFORM)
+		if ((event_code == SBI_PMU_FW_PLATFORM) && (ctr_idx >= num_hw_ctrs))
 			phs->fw_counters_data[ctr_idx - num_hw_ctrs] =
 								event_data;
 	} else {
 		ctr_idx = pmu_ctr_find_hw(phs, cidx_base, cidx_mask, flags,
 					  event_idx, event_data);
-		phs->hw_counters_data[ctr_idx] = event_data;
+		if (ctr_idx >= 0)
+			phs->hw_counters_data[ctr_idx] = event_data;
 	}
 
 	if (ctr_idx < 0)
