@@ -448,7 +448,7 @@ static int pmu_ctr_start_fw(struct sbi_pmu_hart_state *phs,
 		    !pmu_dev->fw_counter_write_value ||
 		    !pmu_dev->fw_counter_start) {
 			return SBI_EINVAL;
-		    }
+		}
 
 		if (ival_update)
 			pmu_dev->fw_counter_write_value(phs->hartid,
