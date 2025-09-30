@@ -17,78 +17,6 @@
 #include <sbi/sbi_error.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 
-static unsigned long andes_pma_read_num(unsigned int csr_num)
-{
-#define switchcase_csr_read(__csr_num, __val)		\
-	case __csr_num:					\
-		__val = csr_read(__csr_num);		\
-		break;
-#define switchcase_csr_read_2(__csr_num, __val)		\
-	switchcase_csr_read(__csr_num + 0, __val)	\
-	switchcase_csr_read(__csr_num + 1, __val)
-#define switchcase_csr_read_4(__csr_num, __val)		\
-	switchcase_csr_read_2(__csr_num + 0, __val)	\
-	switchcase_csr_read_2(__csr_num + 2, __val)
-#define switchcase_csr_read_8(__csr_num, __val)		\
-	switchcase_csr_read_4(__csr_num + 0, __val)	\
-	switchcase_csr_read_4(__csr_num + 4, __val)
-#define switchcase_csr_read_16(__csr_num, __val)	\
-	switchcase_csr_read_8(__csr_num + 0, __val)	\
-	switchcase_csr_read_8(__csr_num + 8, __val)
-
-	unsigned long ret = 0;
-
-	switch (csr_num) {
-	switchcase_csr_read_4(CSR_PMACFG0, ret)
-	switchcase_csr_read_16(CSR_PMAADDR0, ret)
-	default:
-		sbi_panic("%s: Unknown Andes PMA CSR %#x", __func__, csr_num);
-		break;
-	}
-
-	return ret;
-
-#undef switchcase_csr_read_16
-#undef switchcase_csr_read_8
-#undef switchcase_csr_read_4
-#undef switchcase_csr_read_2
-#undef switchcase_csr_read
-}
-
-static void andes_pma_write_num(unsigned int csr_num, unsigned long val)
-{
-#define switchcase_csr_write(__csr_num, __val)		\
-	case __csr_num:					\
-		csr_write(__csr_num, __val);		\
-		break;
-#define switchcase_csr_write_2(__csr_num, __val)	\
-	switchcase_csr_write(__csr_num + 0, __val)	\
-	switchcase_csr_write(__csr_num + 1, __val)
-#define switchcase_csr_write_4(__csr_num, __val)	\
-	switchcase_csr_write_2(__csr_num + 0, __val)	\
-	switchcase_csr_write_2(__csr_num + 2, __val)
-#define switchcase_csr_write_8(__csr_num, __val)	\
-	switchcase_csr_write_4(__csr_num + 0, __val)	\
-	switchcase_csr_write_4(__csr_num + 4, __val)
-#define switchcase_csr_write_16(__csr_num, __val)	\
-	switchcase_csr_write_8(__csr_num + 0, __val)	\
-	switchcase_csr_write_8(__csr_num + 8, __val)
-
-	switch (csr_num) {
-	switchcase_csr_write_4(CSR_PMACFG0, val)
-	switchcase_csr_write_16(CSR_PMAADDR0, val)
-	default:
-		sbi_panic("%s: Unknown Andes PMA CSR %#x", __func__, csr_num);
-		break;
-	}
-
-#undef switchcase_csr_write_16
-#undef switchcase_csr_write_8
-#undef switchcase_csr_write_4
-#undef switchcase_csr_write_2
-#undef switchcase_csr_write
-}
-
 static inline bool not_napot(unsigned long addr, unsigned long size)
 {
 	return ((size & (size - 1)) || (addr & (size - 1)));
@@ -108,11 +36,11 @@ static char get_pmaxcfg(int entry_id)
 
 #if __riscv_xlen == 64
 	pmacfg_addr = CSR_PMACFG0 + ((entry_id / 8) ? 2 : 0);
-	pmacfg_val = andes_pma_read_num(pmacfg_addr);
+	pmacfg_val = csr_read_num(pmacfg_addr);
 	pmaxcfg = (char *)&pmacfg_val + (entry_id % 8);
 #elif __riscv_xlen == 32
 	pmacfg_addr = CSR_PMACFG0 + (entry_id / 4);
-	pmacfg_val = andes_pma_read_num(pmacfg_addr);
+	pmacfg_val = csr_read_num(pmacfg_addr);
 	pmaxcfg = (char *)&pmacfg_val + (entry_id % 4);
 #else
 #error "Unexpected __riscv_xlen"
@@ -128,17 +56,17 @@ static void set_pmaxcfg(int entry_id, char flags)
 
 #if __riscv_xlen == 64
 	pmacfg_addr = CSR_PMACFG0 + ((entry_id / 8) ? 2 : 0);
-	pmacfg_val = andes_pma_read_num(pmacfg_addr);
+	pmacfg_val = csr_read_num(pmacfg_addr);
 	pmaxcfg = (char *)&pmacfg_val + (entry_id % 8);
 #elif __riscv_xlen == 32
 	pmacfg_addr = CSR_PMACFG0 + (entry_id / 4);
-	pmacfg_val = andes_pma_read_num(pmacfg_addr);
+	pmacfg_val = csr_read_num(pmacfg_addr);
 	pmaxcfg = (char *)&pmacfg_val + (entry_id % 4);
 #else
 #error "Unexpected __riscv_xlen"
 #endif
 	*pmaxcfg = flags;
-	andes_pma_write_num(pmacfg_addr, pmacfg_val);
+	csr_write_num(pmacfg_addr, pmacfg_val);
 }
 
 static void decode_pmaaddrx(int entry_id, unsigned long *start,
@@ -152,7 +80,7 @@ static void decode_pmaaddrx(int entry_id, unsigned long *start,
 	 * size = 2 ^ (k + 3)
 	 * start = 4 * ($pmaaddr - (size / 8) + 1)
 	 */
-	pmaaddr = andes_pma_read_num(CSR_PMAADDR0 + entry_id);
+	pmaaddr = csr_read_num(CSR_PMAADDR0 + entry_id);
 	k = sbi_ffz(pmaaddr);
 	*size = 1 << (k + 3);
 	*start = (pmaaddr - (1 << k) + 1) << 2;
@@ -199,9 +127,9 @@ static unsigned long andes_pma_setup(const struct andes_pma_region *pma_region,
 
 	pmaaddr = (addr >> 2) + (size >> 3) - 1;
 
-	andes_pma_write_num(CSR_PMAADDR0 + entry_id, pmaaddr);
+	csr_write_num(CSR_PMAADDR0 + entry_id, pmaaddr);
 
-	return andes_pma_read_num(CSR_PMAADDR0 + entry_id) == pmaaddr ?
+	return csr_read_num(CSR_PMAADDR0 + entry_id) == pmaaddr ?
 	       pmaaddr : SBI_EINVAL;
 }
 
@@ -429,7 +357,7 @@ int andes_sbi_free_pma(unsigned long pa)
 			continue;
 
 		set_pmaxcfg(i, ANDES_PMACFG_ETYP_OFF);
-		andes_pma_write_num(CSR_PMAADDR0 + i, 0);
+		csr_write_num(CSR_PMAADDR0 + i, 0);
 
 		return SBI_SUCCESS;
 	}
