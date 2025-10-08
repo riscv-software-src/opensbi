@@ -126,7 +126,17 @@ unsigned int sbi_domain_get_smepmp_flags(struct sbi_domain_memregion *reg)
 {
 	unsigned int pmp_flags = 0;
 
-	if (SBI_DOMAIN_MEMREGION_IS_SHARED(reg->flags)) {
+	if ((reg->flags & SBI_DOMAIN_MEMREGION_ACCESS_MASK) == 0) {
+		/*
+		 * Region is inaccessible in all privilege modes.
+		 *
+		 * SmePMP allows two encodings for an inaccessible region:
+		 *   - pmpcfg.LRWX = 0000 (Inaccessible region)
+		 *   - pmpcfg.LRWX = 1000 (Locked inaccessible region)
+		 * We use the first encoding here.
+		 */
+		return 0;
+	} else if (SBI_DOMAIN_MEMREGION_IS_SHARED(reg->flags)) {
 		/* Read only for both M and SU modes */
 		if (SBI_DOMAIN_MEMREGION_IS_SUR_MR(reg->flags))
 			pmp_flags = (PMP_L | PMP_R | PMP_W | PMP_X);

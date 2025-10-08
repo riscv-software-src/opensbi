@@ -358,8 +358,6 @@ static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch,
 		}
 
 		pmp_flags = sbi_domain_get_smepmp_flags(reg);
-		if (!pmp_flags)
-			return 0;
 
 		sbi_hart_smepmp_set(scratch, dom, reg, pmp_idx++, pmp_flags,
 				    pmp_log2gran, pmp_addr_max);
@@ -384,8 +382,6 @@ static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch,
 		}
 
 		pmp_flags = sbi_domain_get_smepmp_flags(reg);
-		if (!pmp_flags)
-			return 0;
 
 		sbi_hart_smepmp_set(scratch, dom, reg, pmp_idx++, pmp_flags,
 				    pmp_log2gran, pmp_addr_max);
