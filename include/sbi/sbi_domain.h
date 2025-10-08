@@ -157,6 +157,7 @@ struct sbi_domain_memregion {
 				 SBI_DOMAIN_MEMREGION_M_EXECUTABLE)
 
 #define SBI_DOMAIN_MEMREGION_MMIO		(1UL << 31)
+#define SBI_DOMAIN_MEMREGION_FW			(1UL << 30)
 	unsigned long flags;
 };
 

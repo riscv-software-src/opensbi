@@ -538,6 +538,8 @@ void sbi_domain_dump(const struct sbi_domain *dom, const char *suffix)
 		sbi_printf("M: ");
 		if (reg->flags & SBI_DOMAIN_MEMREGION_MMIO)
 			sbi_printf("%cI", (k++) ? ',' : '(');
+		if (reg->flags & SBI_DOMAIN_MEMREGION_FW)
+			sbi_printf("%cF", (k++) ? ',' : '(');
 		if (reg->flags & SBI_DOMAIN_MEMREGION_M_READABLE)
 			sbi_printf("%cR", (k++) ? ',' : '(');
 		if (reg->flags & SBI_DOMAIN_MEMREGION_M_WRITABLE)
@@ -891,13 +893,15 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 	/* Root domain firmware memory region */
 	sbi_domain_memregion_init(scratch->fw_start, scratch->fw_rw_offset,
 				  (SBI_DOMAIN_MEMREGION_M_READABLE |
-				   SBI_DOMAIN_MEMREGION_M_EXECUTABLE),
+				   SBI_DOMAIN_MEMREGION_M_EXECUTABLE |
+				   SBI_DOMAIN_MEMREGION_FW),
 				  &root_memregs[root_memregs_count++]);
 
 	sbi_domain_memregion_init((scratch->fw_start + scratch->fw_rw_offset),
 				  (scratch->fw_size - scratch->fw_rw_offset),
 				  (SBI_DOMAIN_MEMREGION_M_READABLE |
-				   SBI_DOMAIN_MEMREGION_M_WRITABLE),
+				   SBI_DOMAIN_MEMREGION_M_WRITABLE |
+				   SBI_DOMAIN_MEMREGION_FW),
 				  &root_memregs[root_memregs_count++]);
 
 	root.fw_region_inited = true;
