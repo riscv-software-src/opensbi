@@ -125,6 +125,7 @@ void sbi_domain_memregion_init(unsigned long addr,
 unsigned int sbi_domain_get_smepmp_flags(struct sbi_domain_memregion *reg)
 {
 	unsigned int pmp_flags = 0;
+	unsigned long rstart, rend;
 
 	if ((reg->flags & SBI_DOMAIN_MEMREGION_ACCESS_MASK) == 0) {
 		/*
@@ -185,6 +186,11 @@ unsigned int sbi_domain_get_smepmp_flags(struct sbi_domain_memregion *reg)
 			pmp_flags |= PMP_W;
 		if (reg->flags & SBI_DOMAIN_MEMREGION_SU_EXECUTABLE)
 			pmp_flags |= PMP_X;
+	} else {
+		rstart = reg->base;
+		rend = (reg->order < __riscv_xlen) ? rstart + ((1UL << reg->order) - 1) : -1UL;
+		sbi_printf("%s: Unsupported Smepmp permissions on region 0x%"PRILX"-0x%"PRILX"\n",
+			   __func__, rstart, rend);
 	}
 
 	return pmp_flags;
