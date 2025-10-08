@@ -324,6 +324,15 @@ static void sbi_hart_smepmp_set(struct sbi_scratch *scratch,
 	}
 }
 
+static bool is_valid_pmp_idx(unsigned int pmp_count, unsigned int pmp_idx)
+{
+	if (pmp_count > pmp_idx)
+		return true;
+
+	sbi_printf("error: insufficient PMP entries\n");
+	return false;
+}
+
 static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch,
 				     unsigned int pmp_count,
 				     unsigned int pmp_log2gran,
@@ -348,8 +357,8 @@ static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch,
 		/* Skip reserved entry */
 		if (pmp_idx == SBI_SMEPMP_RESV_ENTRY)
 			pmp_idx++;
-		if (pmp_count <= pmp_idx)
-			break;
+		if (!is_valid_pmp_idx(pmp_count, pmp_idx))
+			return SBI_EFAIL;
 
 		/* Skip shared and SU-only regions */
 		if (!SBI_DOMAIN_MEMREGION_M_ONLY_ACCESS(reg->flags)) {
@@ -372,8 +381,8 @@ static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch,
 		/* Skip reserved entry */
 		if (pmp_idx == SBI_SMEPMP_RESV_ENTRY)
 			pmp_idx++;
-		if (pmp_count <= pmp_idx)
-			break;
+		if (!is_valid_pmp_idx(pmp_count, pmp_idx))
+			return SBI_EFAIL;
 
 		/* Skip M-only regions */
 		if (SBI_DOMAIN_MEMREGION_M_ONLY_ACCESS(reg->flags)) {
@@ -407,8 +416,8 @@ static int sbi_hart_oldpmp_configure(struct sbi_scratch *scratch,
 	unsigned long pmp_addr;
 
 	sbi_domain_for_each_memregion(dom, reg) {
-		if (pmp_count <= pmp_idx)
-			break;
+		if (!is_valid_pmp_idx(pmp_count, pmp_idx))
+			return SBI_EFAIL;
 
 		pmp_flags = 0;
 
