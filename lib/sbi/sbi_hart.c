@@ -30,6 +30,8 @@ extern void __sbi_expected_trap_hext(void);
 void (*sbi_hart_expected_trap)(void) = &__sbi_expected_trap;
 
 static unsigned long hart_features_offset;
+static DECLARE_BITMAP(fw_smepmp_ids, PMP_COUNT);
+static bool fw_smepmp_ids_inited;
 
 static void mstatus_init(struct sbi_scratch *scratch)
 {
@@ -301,6 +303,14 @@ unsigned int sbi_hart_mhpm_bits(struct sbi_scratch *scratch)
 	return hfeatures->mhpm_bits;
 }
 
+bool sbi_hart_smepmp_is_fw_region(unsigned int pmp_idx)
+{
+	if (!fw_smepmp_ids_inited)
+		return false;
+
+	return bitmap_test(fw_smepmp_ids, pmp_idx) ? true : false;
+}
+
 static void sbi_hart_smepmp_set(struct sbi_scratch *scratch,
 				struct sbi_domain *dom,
 				struct sbi_domain_memregion *reg,
@@ -366,11 +376,30 @@ static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch,
 			continue;
 		}
 
+		/*
+		 * Track firmware PMP entries to preserve them during
+		 * domain switches. Under SmePMP, M-mode requires
+		 * explicit PMP entries to access firmware code/data.
+		 * These entries must remain enabled across domain
+		 * context switches to prevent M-mode access faults.
+		 */
+		if (SBI_DOMAIN_MEMREGION_IS_FIRMWARE(reg->flags)) {
+			if (fw_smepmp_ids_inited) {
+				/* Check inconsistent firmware region */
+				if (!sbi_hart_smepmp_is_fw_region(pmp_idx))
+					return SBI_EINVAL;
+			} else {
+				bitmap_set(fw_smepmp_ids, pmp_idx, 1);
+			}
+		}
+
 		pmp_flags = sbi_domain_get_smepmp_flags(reg);
 
 		sbi_hart_smepmp_set(scratch, dom, reg, pmp_idx++, pmp_flags,
 				    pmp_log2gran, pmp_addr_max);
 	}
+
+	fw_smepmp_ids_inited = true;
 
 	/* Set the MML to enforce new encoding */
 	csr_set(CSR_MSECCFG, MSECCFG_MML);
