@@ -292,6 +292,19 @@ static bool is_region_compatible(const struct sbi_domain_memregion *regA,
 static bool is_region_before(const struct sbi_domain_memregion *regA,
 			     const struct sbi_domain_memregion *regB)
 {
+	/*
+	 * Enforce firmware region ordering for memory access
+	 * under SmePMP.
+	 * Place firmware regions first to ensure consistent
+	 * PMP entries during domain context switches.
+	 */
+	if (SBI_DOMAIN_MEMREGION_IS_FIRMWARE(regA->flags) &&
+	   !SBI_DOMAIN_MEMREGION_IS_FIRMWARE(regB->flags))
+		return true;
+	if (!SBI_DOMAIN_MEMREGION_IS_FIRMWARE(regA->flags) &&
+	    SBI_DOMAIN_MEMREGION_IS_FIRMWARE(regB->flags))
+		return false;
+
 	if (regA->order < regB->order)
 		return true;
 

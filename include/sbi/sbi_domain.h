@@ -121,6 +121,9 @@ struct sbi_domain_memregion {
 		((__flags & SBI_DOMAIN_MEMREGION_SU_ACCESS_MASK)  &&	\
 		 !(__flags & SBI_DOMAIN_MEMREGION_M_ACCESS_MASK))
 
+#define SBI_DOMAIN_MEMREGION_IS_FIRMWARE(__flags)			\
+		((__flags & SBI_DOMAIN_MEMREGION_FW) ? true : false)	\
+
 /** Bit to control if permissions are enforced on all modes */
 #define SBI_DOMAIN_MEMREGION_ENF_PERMISSIONS	(1UL << 6)
 
