@@ -26,6 +26,10 @@ config FDT_MPXY_RPMI_VOLTAGE
 	bool "MPXY driver for RPMI voltage service group"
 	default n
 
+config FDT_MPXY_RPMI_DEVICE_POWER
+	bool "MPXY driver for RPMI device power service group"
+	default n
+
 endif
 
 endmenu

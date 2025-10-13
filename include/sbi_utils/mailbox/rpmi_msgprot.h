@@ -218,6 +218,7 @@ enum rpmi_servicegroup_id {
 	RPMI_SRVGRP_CPPC = 0x0006,
 	RPMI_SRVGRP_VOLTAGE = 0x00007,
 	RPMI_SRVGRP_CLOCK = 0x0008,
+	RPMI_SRVGRP_DEVICE_POWER = 0x0009,
 	RPMI_SRVGRP_ID_MAX_COUNT,
 
 	/* Reserved range for service groups */
@@ -782,6 +783,50 @@ struct rpmi_clock_get_rate_resp {
 	s32 status;
 	u32 clock_rate_low;
 	u32 clock_rate_high;
+};
+
+/** RPMI Device Power ServiceGroup Service IDs */
+enum rpmi_dpwr_service_id {
+	RPMI_DPWR_SRV_ENABLE_NOTIFICATION = 0x01,
+	RPMI_DPWR_SRV_GET_NUM_DOMAINS = 0x02,
+	RPMI_DPWR_SRV_GET_ATTRIBUTES = 0x03,
+	RPMI_DPWR_SRV_SET_STATE = 0x04,
+	RPMI_DPWR_SRV_GET_STATE = 0x05,
+	RPMI_DPWR_SRV_MAX_COUNT,
+};
+
+struct rpmi_dpwr_get_num_domain_resp {
+	s32 status;
+	u32 num_domain;
+};
+
+struct rpmi_dpwr_get_attrs_req {
+	u32 domain_id;
+};
+
+struct rpmi_dpwr_get_attrs_resp {
+	s32 status;
+	u32 flags;
+	u32 transition_latency;
+	u8 name[16];
+};
+
+struct rpmi_dpwr_set_state_req {
+	u32 domain_id;
+	u32 state;
+};
+
+struct rpmi_dpwr_set_state_resp {
+	s32 status;
+};
+
+struct rpmi_dpwr_get_state_req {
+	u32 domain_id;
+};
+
+struct rpmi_dpwr_get_state_resp {
+	s32 status;
+	u32 state;
 };
 
 #endif /* !__RPMI_MSGPROT_H__ */
