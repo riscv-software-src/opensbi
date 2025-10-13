@@ -216,6 +216,7 @@ enum rpmi_servicegroup_id {
 	RPMI_SRVGRP_SYSTEM_SUSPEND = 0x0004,
 	RPMI_SRVGRP_HSM = 0x0005,
 	RPMI_SRVGRP_CPPC = 0x0006,
+	RPMI_SRVGRP_VOLTAGE = 0x00007,
 	RPMI_SRVGRP_CLOCK = 0x0008,
 	RPMI_SRVGRP_ID_MAX_COUNT,
 
@@ -609,6 +610,86 @@ struct rpmi_cppc_hart_list_resp {
 	u32 returned;
 	/* remaining space need to be adjusted for the above 3 u32's */
 	u32 hartid[(RPMI_MSG_DATA_SIZE(RPMI_SLOT_SIZE_MIN) - (sizeof(u32) * 3)) / sizeof(u32)];
+};
+
+/** RPMI Voltage ServiceGroup Service IDs */
+enum rpmi_voltage_service_id {
+	RPMI_VOLTAGE_SRV_ENABLE_NOTIFICATION = 0x01,
+	RPMI_VOLTAGE_SRV_GET_NUM_DOMAINS = 0x02,
+	RPMI_VOLTAGE_SRV_GET_ATTRIBUTES = 0x03,
+	RPMI_VOLTAGE_SRV_GET_SUPPORTED_LEVELS = 0x04,
+	RPMI_VOLTAGE_SRV_SET_CONFIG = 0x05,
+	RPMI_VOLTAGE_SRV_GET_CONFIG = 0x06,
+	RPMI_VOLTAGE_SRV_SET_LEVEL = 0x07,
+	RPMI_VOLTAGE_SRV_GET_LEVEL = 0x08,
+	RPMI_VOLTAGE_SRV_MAX_COUNT,
+};
+
+struct rpmi_voltage_get_num_domains_resp {
+       s32 status;
+       u32 num_domains;
+};
+
+struct rpmi_voltage_get_attributes_req {
+        u32 domain_id;
+};
+
+struct rpmi_voltage_get_attributes_resp {
+        s32 status;
+        u32 flags;
+        u32 num_levels;
+        u32 transition_latency;
+        u8 name[16];
+};
+
+struct rpmi_voltage_get_supported_rate_req {
+        u32 domain_id;
+        u32 index;
+};
+
+struct rpmi_voltage_get_supported_rate_resp {
+        s32 status;
+        u32 flags;
+        u32 remaining;
+        u32 returned;
+	u32 level[0];
+};
+
+struct rpmi_voltage_set_config_req {
+        u32 domain_id;
+#define RPMI_CLOCK_CONFIG_ENABLE                (1U << 0)
+        u32 config;
+};
+
+struct rpmi_voltage_set_config_resp {
+        s32 status;
+};
+
+struct rpmi_voltage_get_config_req {
+        u32 domain_id;
+};
+
+struct rpmi_voltage_get_config_resp {
+        s32 status;
+        u32 config;
+};
+
+struct rpmi_voltage_set_level_req {
+        u32 domain_id;
+        s32 level;
+};
+
+struct rpmi_voltage_set_level_resp {
+        s32 status;
+};
+
+struct rpmi_voltage_get_level_req {
+        u32 domain_id;
+};
+
+struct rpmi_voltage_get_level_resp {
+        s32 status;
+        s32 level;
 };
 
 /** RPMI Clock ServiceGroup Service IDs */
