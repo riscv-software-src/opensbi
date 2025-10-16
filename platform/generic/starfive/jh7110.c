@@ -62,7 +62,7 @@ static u32 selected_hartid = -1;
 #define SYSTOP_CPU_PD_MASK		0x3
 
 #define TIMEOUT_COUNT			100000
-#define AXP15060_POWER_REG		0x32
+#define AXP15060_POWER_REG		0x24
 #define AXP15060_POWER_OFF_BIT		BIT(7)
 #define AXP15060_RESET_BIT		BIT(6)
 
