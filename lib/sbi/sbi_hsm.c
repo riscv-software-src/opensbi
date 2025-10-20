@@ -364,7 +364,7 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 	   (hsm_device_has_hart_secondary_boot() && !init_count)) {
 		rc = hsm_device_hart_start(hartid, scratch->warmboot_addr);
 	} else {
-		rc = sbi_ipi_raw_send(hartindex);
+		rc = sbi_ipi_raw_send(hartindex, true);
 	}
 
 	if (!rc)

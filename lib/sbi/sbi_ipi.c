@@ -88,7 +88,7 @@ static int sbi_ipi_send(struct sbi_scratch *scratch, u32 remote_hartindex,
 	 */
 	if (!__atomic_fetch_or(&ipi_data->ipi_type,
 				BIT(event), __ATOMIC_RELAXED))
-		ret = sbi_ipi_raw_send(remote_hartindex);
+		ret = sbi_ipi_raw_send(remote_hartindex, false);
 
 	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_IPI_SENT);
 
@@ -271,8 +271,10 @@ void sbi_ipi_process(void)
 	}
 }
 
-int sbi_ipi_raw_send(u32 hartindex)
+int sbi_ipi_raw_send(u32 hartindex, bool all_devices)
 {
+	struct sbi_ipi_device_node *entry;
+
 	if (!ipi_dev || !ipi_dev->ipi_send)
 		return SBI_EINVAL;
 
@@ -287,7 +289,15 @@ int sbi_ipi_raw_send(u32 hartindex)
 	 */
 	wmb();
 
-	ipi_dev->ipi_send(hartindex);
+	if (all_devices) {
+		sbi_list_for_each_entry(entry, &ipi_dev_node_list, head) {
+			if (entry->dev->ipi_send)
+				entry->dev->ipi_send(hartindex);
+		}
+	} else {
+		ipi_dev->ipi_send(hartindex);
+	}
+
 	return 0;
 }
 

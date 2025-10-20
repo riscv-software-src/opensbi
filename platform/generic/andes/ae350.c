@@ -35,7 +35,7 @@ static int ae350_hart_start(u32 hartid, ulong saddr)
 	 * 2) the target hart is non-sleepable 25-series hart0
 	 */
 	if (!sbi_init_count(hartindex) || (is_andes(25) && hartid == 0))
-		return sbi_ipi_raw_send(hartindex);
+		return sbi_ipi_raw_send(hartindex, false);
 
 	/* Write wakeup command to the sleep hart */
 	smu_set_command(&smu, WAKEUP_CMD, hartid);

@@ -88,7 +88,7 @@ int sbi_ipi_send_halt(ulong hmask, ulong hbase);
 
 void sbi_ipi_process(void);
 
-int sbi_ipi_raw_send(u32 hartindex);
+int sbi_ipi_raw_send(u32 hartindex, bool all_devices);
 
 void sbi_ipi_raw_clear(bool all_devices);
 
