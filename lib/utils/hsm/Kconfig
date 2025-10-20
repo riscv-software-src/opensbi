@@ -14,6 +14,11 @@ config FDT_HSM_RPMI
 	depends on FDT_MAILBOX && RPMI_MAILBOX
 	default n
 
+config FDT_HSM_SIFIVE_TMC0
+	bool "FDT SiFive TMC v0 driver"
+	depends on FDT_CACHE
+	default n
+
 config FDT_HSM_SPACEMIT
 	bool "FDT SPACEMIT HSM driver"
 	default n
