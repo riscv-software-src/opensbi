@@ -87,6 +87,7 @@ void __noreturn sbi_system_reset(u32 reset_type, u32 reset_reason)
 }
 
 static const struct sbi_system_suspend_device *suspend_dev = NULL;
+static bool system_suspended;
 
 const struct sbi_system_suspend_device *sbi_system_suspend_get_device(void)
 {
@@ -135,6 +136,19 @@ bool sbi_system_suspend_supported(u32 sleep_type)
 {
 	return suspend_dev && suspend_dev->system_suspend_check &&
 	       suspend_dev->system_suspend_check(sleep_type) == 0;
+}
+
+bool sbi_system_is_suspended(void)
+{
+	return system_suspended;
+}
+
+void sbi_system_resume(void)
+{
+	if (suspend_dev && suspend_dev->system_resume)
+		suspend_dev->system_resume();
+
+	system_suspended = false;
 }
 
 int sbi_system_suspend(u32 sleep_type, ulong resume_addr, ulong opaque)
@@ -189,11 +203,14 @@ int sbi_system_suspend(u32 sleep_type, ulong resume_addr, ulong opaque)
 	__sbi_hsm_suspend_non_ret_save(scratch);
 
 	/* Suspend */
+	system_suspended = true;
 	ret = suspend_dev->system_suspend(sleep_type, scratch->warmboot_addr);
 	if (ret != SBI_OK) {
 		if (!sbi_hsm_hart_change_state(scratch, SBI_HSM_STATE_SUSPENDED,
 					       SBI_HSM_STATE_STARTED))
 			sbi_hart_hang();
+
+		system_suspended = false;
 		return ret;
 	}
 

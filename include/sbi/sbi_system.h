@@ -69,11 +69,18 @@ struct sbi_system_suspend_device {
 	 *     return from system_suspend() may ignore this parameter.
 	 */
 	int (*system_suspend)(u32 sleep_type, unsigned long mmode_resume_addr);
+
+	/**
+	 * Resume the system from system suspend
+	 */
+	void (*system_resume)(void);
 };
 
 const struct sbi_system_suspend_device *sbi_system_suspend_get_device(void);
 void sbi_system_suspend_set_device(struct sbi_system_suspend_device *dev);
 void sbi_system_suspend_test_enable(void);
+void sbi_system_resume(void);
+bool sbi_system_is_suspended(void);
 bool sbi_system_suspend_supported(u32 sleep_type);
 int sbi_system_suspend(u32 sleep_type, ulong resume_addr, ulong opaque);
 

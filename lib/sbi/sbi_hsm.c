@@ -455,7 +455,10 @@ void sbi_hsm_hart_resume_start(struct sbi_scratch *scratch)
 					 SBI_HSM_STATE_RESUME_PENDING))
 		sbi_hart_hang();
 
-	hsm_device_hart_resume();
+	if (sbi_system_is_suspended())
+		sbi_system_resume();
+	else
+		hsm_device_hart_resume();
 }
 
 void __noreturn sbi_hsm_hart_resume_finish(struct sbi_scratch *scratch,
