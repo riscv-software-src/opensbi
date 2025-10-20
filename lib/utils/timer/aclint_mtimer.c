@@ -109,10 +109,34 @@ static struct sbi_timer_device mtimer = {
 	.timer_event_stop = mtimer_event_stop
 };
 
-void aclint_mtimer_sync(struct aclint_mtimer_data *mt)
+struct aclint_mtimer_data *aclint_get_mtimer_data(void)
+{
+	return mtimer_get_hart_data_ptr(sbi_scratch_thishart_ptr());
+}
+
+void aclint_mtimer_update(struct aclint_mtimer_data *mt,
+			  struct aclint_mtimer_data *ref)
 {
 	u64 v1, v2, mv, delta;
 	u64 *mt_time_val, *ref_time_val;
+
+	if (!mt || !ref || !mt->time_rd || !mt->time_wr || !ref->time_rd)
+		return;
+
+	mt_time_val = (void *)mt->mtime_addr;
+	ref_time_val = (void *)ref->mtime_addr;
+	if (!atomic_raw_xchg_ulong(&mt->time_delta_computed, 1)) {
+		v1 = mt->time_rd(mt_time_val);
+		mv = ref->time_rd(ref_time_val);
+		v2 = mt->time_rd(mt_time_val);
+		delta = mv - ((v1 / 2) + (v2 / 2));
+		mt->time_wr(false, mt->time_rd(mt_time_val) + delta,
+			    mt_time_val);
+	}
+}
+
+void aclint_mtimer_sync(struct aclint_mtimer_data *mt)
+{
 	struct aclint_mtimer_data *reference;
 
 	/* Sync-up non-shared MTIME if reference is available */
@@ -120,17 +144,7 @@ void aclint_mtimer_sync(struct aclint_mtimer_data *mt)
 		return;
 
 	reference = mt->time_delta_reference;
-	mt_time_val = (void *)mt->mtime_addr;
-	ref_time_val = (void *)reference->mtime_addr;
-	if (!atomic_raw_xchg_ulong(&mt->time_delta_computed, 1)) {
-		v1 = mt->time_rd(mt_time_val);
-		mv = reference->time_rd(ref_time_val);
-		v2 = mt->time_rd(mt_time_val);
-		delta = mv - ((v1 / 2) + (v2 / 2));
-		mt->time_wr(false, mt->time_rd(mt_time_val) + delta,
-			    mt_time_val);
-	}
-
+	aclint_mtimer_update(mt, reference);
 }
 
 void aclint_mtimer_set_reference(struct aclint_mtimer_data *mt,
