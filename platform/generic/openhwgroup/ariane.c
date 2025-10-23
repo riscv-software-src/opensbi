@@ -4,12 +4,7 @@
  *				Panagiotis Peristerakis <perister@ics.forth.gr>
  */
 
-#include <sbi/riscv_asm.h>
-#include <sbi/riscv_encoding.h>
-#include <sbi/riscv_io.h>
-#include <sbi/sbi_const.h>
-#include <sbi/sbi_hart.h>
-#include <sbi/sbi_platform.h>
+#include <platform_override.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
 #include <sbi_utils/ipi/aclint_mswi.h>
@@ -121,23 +116,22 @@ static int ariane_timer_init(void)
 	return aclint_mtimer_cold_init(&mtimer, NULL);
 }
 
-/*
- * Platform descriptor.
- */
-const struct sbi_platform_operations platform_ops = {
-	.early_init = ariane_early_init,
-	.final_init = ariane_final_init,
-	.irqchip_init = ariane_irqchip_init,
-	.timer_init = ariane_timer_init,
+static int openhwgroup_ariane_platform_init(const void *fdt, int nodeoff, const struct fdt_match *match)
+{
+	generic_platform_ops.early_init = ariane_early_init;
+	generic_platform_ops.timer_init = ariane_timer_init;
+	generic_platform_ops.irqchip_init = ariane_irqchip_init;
+	generic_platform_ops.final_init = ariane_final_init;
+
+	return 0;
+}
+
+static const struct fdt_match openhwgroup_ariane_match[] = {
+	{ .compatible = "eth,ariane-bare-dev" },
+	{ },
 };
 
-const struct sbi_platform platform = {
-	.opensbi_version = OPENSBI_VERSION,
-	.platform_version = SBI_PLATFORM_VERSION(0x0, 0x01),
-	.name = "ARIANE RISC-V",
-	.features = SBI_PLATFORM_DEFAULT_FEATURES,
-	.hart_count = ARIANE_HART_COUNT,
-	.hart_stack_size = SBI_PLATFORM_DEFAULT_HART_STACK_SIZE,
-	.heap_size = SBI_PLATFORM_DEFAULT_HEAP_SIZE(ARIANE_HART_COUNT),
-	.platform_ops_addr = (unsigned long)&platform_ops
+const struct fdt_driver openhwgroup_ariane = {
+	.match_table = openhwgroup_ariane_match,
+	.init = openhwgroup_ariane_platform_init,
 };

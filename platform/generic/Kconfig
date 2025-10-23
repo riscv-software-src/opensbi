@@ -47,6 +47,10 @@ config PLATFORM_OPENHWGROUP_OPENPITON
 	bool "OpenHWGroup Openpiton support"
 	default n
 
+config PLATFORM_OPENHWGROUP_ARIANE
+	bool "OpenHWGroup Ariane support"
+	default n
+
 config PLATFORM_RENESAS_RZFIVE
 	bool "Renesas RZ/Five support"
 	select ANDES_PMA

@@ -48,6 +48,7 @@ RISC-V Platforms Using Generic Platform
 * **Spike** (*[spike.md]*)
 * **T-HEAD C9xx series Processors** (*[thead-c9xx.md]*)
 * **OpenPiton FPGA SoC** (*[fpga-openpiton.md]*)
+* **Ariane FPGA SoC** (*[fpga-ariane.md]*)
 
 [andes-ae350.md]: andes-ae350.md
 [qemu_virt.md]: qemu_virt.md
@@ -57,3 +58,4 @@ RISC-V Platforms Using Generic Platform
 [spike.md]: spike.md
 [thead-c9xx.md]: thead-c9xx.md
 [fpga-openpiton.md]: fpga-openpiton.md
+[fpga-ariane.md]: fpga-ariane.md

@@ -13,7 +13,7 @@ The FPGA SoC currently contains the following peripherals:
 - Bootrom containing zero stage bootloader and device tree.
 
 To build platform specific library and firmwares, provide the
-*PLATFORM=fpga/ariane* parameter to the top level `make` command.
+*PLATFORM=generic* parameter to the top level `make` command.
 
 Platform Options
 ----------------
@@ -26,7 +26,7 @@ Building Ariane FPGA Platform
 **Linux Kernel Payload**
 
 ```
-make PLATFORM=fpga/ariane FW_PAYLOAD_PATH=<linux_build_directory>/arch/riscv/boot/Image
+make PLATFORM=generic FW_PAYLOAD_PATH=<linux_build_directory>/arch/riscv/boot/Image
 ```
 
 Booting Ariane FPGA Platform
