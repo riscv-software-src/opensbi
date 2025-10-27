@@ -57,6 +57,7 @@ static const struct fdt_match ipi_mswi_match[] = {
 	{ .compatible = "sifive,clint0", .data = &clint_offset },
 	{ .compatible = "thead,c900-clint", .data = &clint_offset },
 	{ .compatible = "thead,c900-aclint-mswi" },
+	{ .compatible = "mips,p8700-aclint-mswi" },
 	{ .compatible = "riscv,aclint-mswi" },
 	{ },
 };
