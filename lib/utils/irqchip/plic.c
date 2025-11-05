@@ -136,7 +136,7 @@ void plic_suspend(void)
 		return;
 
 	sbi_for_each_hartindex(h) {
-		u32 context_id = plic->context_map[h][PLIC_S_CONTEXT];
+		s16 context_id = plic->context_map[h][PLIC_S_CONTEXT];
 
 		if (context_id < 0)
 			continue;
@@ -167,7 +167,7 @@ void plic_resume(void)
 		return;
 
 	sbi_for_each_hartindex(h) {
-		u32 context_id = plic->context_map[h][PLIC_S_CONTEXT];
+		s16 context_id = plic->context_map[h][PLIC_S_CONTEXT];
 
 		if (context_id < 0)
 			continue;
