@@ -8,16 +8,8 @@
 #include <sbi_utils/fdt/fdt_fixup.h>
 #include <sbi_utils/ipi/aclint_mswi.h>
 #include <sbi_utils/irqchip/plic.h>
-#include <sbi_utils/serial/uart8250.h>
 #include <sbi_utils/timer/aclint_mtimer.h>
 
-#define OPENPITON_DEFAULT_UART_ADDR		0xfff0c2c000ULL
-#define OPENPITON_DEFAULT_UART_FREQ		60000000
-#define OPENPITON_DEFAULT_UART_BAUDRATE		115200
-#define OPENPITON_DEFAULT_UART_REG_SHIFT	0
-#define OPENPITON_DEFAULT_UART_REG_WIDTH	1
-#define OPENPITON_DEFAULT_UART_REG_OFFSET	0
-#define OPENPITON_DEFAULT_UART_CAPS		0
 #define OPENPITON_DEFAULT_PLIC_ADDR		0xfff1100000ULL
 #define OPENPITON_DEFAULT_PLIC_SIZE		(0x200000 + \
 				(OPENPITON_DEFAULT_HART_COUNT * 0x1000))
@@ -30,11 +22,6 @@
 #define OPENPITON_DEFAULT_ACLINT_MTIMER_ADDR	\
 		(OPENPITON_DEFAULT_CLINT_ADDR + CLINT_MTIMER_OFFSET)
 
-static struct platform_uart_data uart = {
-	(unsigned long)OPENPITON_DEFAULT_UART_ADDR,
-	OPENPITON_DEFAULT_UART_FREQ,
-	OPENPITON_DEFAULT_UART_BAUDRATE,
-};
 static struct plic_data plic = {
 	.addr = (unsigned long)OPENPITON_DEFAULT_PLIC_ADDR,
 	.size = OPENPITON_DEFAULT_PLIC_SIZE,
@@ -73,7 +60,6 @@ static struct aclint_mtimer_data mtimer = {
 static int openpiton_early_init(bool cold_boot)
 {
 	const void *fdt;
-	struct platform_uart_data uart_data = { 0 };
 	struct plic_data plic_data = plic;
 	unsigned long aclint_freq;
 	uint64_t clint_addr;
@@ -83,9 +69,9 @@ static int openpiton_early_init(bool cold_boot)
 		return 0;
 	fdt = fdt_get_address();
 
-	rc = fdt_parse_uart8250(fdt, &uart_data, "ns16550");
-	if (!rc)
-		uart = uart_data;
+	rc = generic_early_init(cold_boot);
+	if (rc)
+		return rc;
 
 	rc = fdt_parse_plic(fdt, &plic_data, "riscv,plic0");
 	if (!rc)
@@ -104,11 +90,6 @@ static int openpiton_early_init(bool cold_boot)
 				    ACLINT_DEFAULT_MTIMECMP_OFFSET;
 	}
 
-	rc = uart8250_init(uart.addr, uart.freq, uart.baud,
-			   OPENPITON_DEFAULT_UART_REG_SHIFT,
-			   OPENPITON_DEFAULT_UART_REG_WIDTH,
-			   OPENPITON_DEFAULT_UART_REG_OFFSET,
-			   OPENPITON_DEFAULT_UART_CAPS);
 	if (rc)
 		return rc;
 
