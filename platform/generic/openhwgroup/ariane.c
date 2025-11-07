@@ -9,16 +9,8 @@
 #include <sbi_utils/fdt/fdt_fixup.h>
 #include <sbi_utils/ipi/aclint_mswi.h>
 #include <sbi_utils/irqchip/plic.h>
-#include <sbi_utils/serial/uart8250.h>
 #include <sbi_utils/timer/aclint_mtimer.h>
 
-#define ARIANE_UART_ADDR			0x10000000
-#define ARIANE_UART_FREQ			50000000
-#define ARIANE_UART_BAUDRATE			115200
-#define ARIANE_UART_REG_SHIFT			2
-#define ARIANE_UART_REG_WIDTH			4
-#define ARIANE_UART_REG_OFFSET			0
-#define ARIANE_UART_CAPS			0
 #define ARIANE_PLIC_ADDR			0xc000000
 #define ARIANE_PLIC_SIZE			(0x200000 + \
 						 (ARIANE_HART_COUNT * 0x1000))
@@ -66,20 +58,37 @@ static struct aclint_mtimer_data mtimer = {
  */
 static int ariane_early_init(bool cold_boot)
 {
+	const void *fdt;
+	struct plic_data plic_data = plic;
+	unsigned long aclint_freq;
+	uint64_t clint_addr;
 	int rc;
 
 	if (!cold_boot)
 		return 0;
 
-	rc = uart8250_init(ARIANE_UART_ADDR,
-			   ARIANE_UART_FREQ,
-			   ARIANE_UART_BAUDRATE,
-			   ARIANE_UART_REG_SHIFT,
-			   ARIANE_UART_REG_WIDTH,
-			   ARIANE_UART_REG_OFFSET,
-			   ARIANE_UART_CAPS);
+	rc = generic_early_init(cold_boot);
 	if (rc)
 		return rc;
+
+	fdt = fdt_get_address();
+
+	rc = fdt_parse_timebase_frequency(fdt, &aclint_freq);
+	if (!rc)
+		mtimer.mtime_freq = aclint_freq;
+
+	rc = fdt_parse_compat_addr(fdt, &clint_addr, "riscv,clint0");
+	if (!rc) {
+		mswi.addr = clint_addr;
+		mtimer.mtime_addr = clint_addr + CLINT_MTIMER_OFFSET +
+				    ACLINT_DEFAULT_MTIME_OFFSET;
+		mtimer.mtimecmp_addr = clint_addr + CLINT_MTIMER_OFFSET +
+				       ACLINT_DEFAULT_MTIMECMP_OFFSET;
+	}
+
+	rc = fdt_parse_plic(fdt, &plic_data, "riscv,plic0");
+	if (!rc)
+		plic = plic_data;
 
 	return aclint_mswi_cold_init(&mswi);
 }
