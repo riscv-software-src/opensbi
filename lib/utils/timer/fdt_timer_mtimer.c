@@ -157,6 +157,7 @@ static const struct timer_mtimer_quirks thead_aclint_quirks = {
 };
 
 static const struct fdt_match timer_mtimer_match[] = {
+	{ .compatible = "mips,p8700-aclint-mtimer" },
 	{ .compatible = "riscv,clint0", .data = &sifive_clint_quirks },
 	{ .compatible = "sifive,clint0", .data = &sifive_clint_quirks },
 	{ .compatible = "sifive,clint2", .data = &sifive_clint_quirks },
