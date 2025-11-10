@@ -291,6 +291,15 @@ struct sbi_pmu_event_info {
 #define SBI_PMU_CFG_FLAG_SET_UINH	(1 << 5)
 #define SBI_PMU_CFG_FLAG_SET_SINH	(1 << 6)
 #define SBI_PMU_CFG_FLAG_SET_MINH	(1 << 7)
+/* Event configuration mask */
+#define SBI_PMU_CFG_EVENT_MASK		\
+	( \
+		SBI_PMU_CFG_FLAG_SET_VUINH | \
+		SBI_PMU_CFG_FLAG_SET_VSINH | \
+		SBI_PMU_CFG_FLAG_SET_UINH  | \
+		SBI_PMU_CFG_FLAG_SET_SINH  | \
+		SBI_PMU_CFG_FLAG_SET_MINH    \
+	)
 
 /* Flags defined for counter start function */
 #define SBI_PMU_START_FLAG_SET_INIT_VALUE (1 << 0)

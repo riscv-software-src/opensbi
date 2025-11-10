@@ -56,6 +56,14 @@ union sbi_pmu_ctr_info {
 #error "Can't handle firmware counters beyond BITS_PER_LONG"
 #endif
 
+/** HW event configuration parameters */
+struct sbi_pmu_hw_event_config {
+	/* event_data value from sbi_pmu_ctr_cfg_match() */
+	uint64_t event_data;
+	/* HW events flags from sbi_pmu_ctr_cfg_match() */
+	uint64_t flags;
+};
+
 /** Per-HART state of the PMU counters */
 struct sbi_pmu_hart_state {
 	/* HART to which this state belongs */
@@ -72,11 +80,12 @@ struct sbi_pmu_hart_state {
 	 * and hence can optimally share the same memory.
 	 */
 	uint64_t fw_counters_data[SBI_PMU_FW_CTR_MAX];
-	/* Data values from sbi_pmu_ctr_cfg_match() command which
-	 * is used for restoring RAW hardware events after
+	/* HW events configuration parameters from
+	 * sbi_pmu_ctr_cfg_match() command which are
+	 * used for restoring RAW hardware events after
 	 * cpu suspending.
 	 */
-	uint64_t hw_counters_data[SBI_PMU_HW_CTR_MAX];
+	struct sbi_pmu_hw_event_config hw_counters_cfg[SBI_PMU_HW_CTR_MAX];
 };
 
 /** Offset of pointer to PMU HART state in scratch space */
@@ -561,9 +570,13 @@ int sbi_pmu_ctr_start(unsigned long cbase, unsigned long cmask,
 					       ival, bUpdate);
 		} else {
 			if (cidx >= 3) {
+				struct sbi_pmu_hw_event_config *ev_cfg =
+					&phs->hw_counters_cfg[cidx];
+
 				ret = pmu_update_hw_mhpmevent(&hw_event_map[cidx], cidx,
-							0, phs->active_events[cidx],
-							phs->hw_counters_data[cidx]);
+							ev_cfg->flags,
+							phs->active_events[cidx],
+							ev_cfg->event_data);
 				if (ret)
 					return ret;
 			}
@@ -892,8 +905,14 @@ int sbi_pmu_ctr_cfg_match(unsigned long cidx_base, unsigned long cidx_mask,
 	} else {
 		ctr_idx = pmu_ctr_find_hw(phs, cidx_base, cidx_mask, flags,
 					  event_idx, event_data);
-		if (ctr_idx >= 0)
-			phs->hw_counters_data[ctr_idx] = event_data;
+		if (ctr_idx >= 0) {
+			struct sbi_pmu_hw_event_config *ev_cfg =
+					&phs->hw_counters_cfg[ctr_idx];
+
+			ev_cfg->event_data = event_data;
+			/* Remove flags that are used in match call only */
+			ev_cfg->flags = flags & SBI_PMU_CFG_EVENT_MASK;
+		}
 	}
 
 	if (ctr_idx < 0)
