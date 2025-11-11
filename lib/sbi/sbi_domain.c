@@ -431,7 +431,7 @@ static int sanitize_domain(struct sbi_domain *dom)
 	}
 
 	/* Remove covered regions */
-	while(i < (count - 1)) {
+	for (i = 0; i < (count - 1);) {
 		is_covered = false;
 		reg = &dom->regions[i];
 
