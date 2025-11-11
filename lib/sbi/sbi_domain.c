@@ -25,7 +25,6 @@ static u32 domain_count = 0;
 static bool domain_finalized = false;
 
 #define ROOT_REGION_MAX	32
-static u32 root_memregs_count = 0;
 
 struct sbi_domain root = {
 	.name = "root",
@@ -368,6 +367,17 @@ static void clear_region(struct sbi_domain_memregion* reg)
 	sbi_memset(reg, 0x0, sizeof(*reg));
 }
 
+static int sbi_domain_used_memregions(const struct sbi_domain *dom)
+{
+	int count = 0;
+	struct sbi_domain_memregion *reg;
+
+	sbi_domain_for_each_memregion(dom, reg)
+		count++;
+
+	return count;
+}
+
 static int sanitize_domain(struct sbi_domain *dom)
 {
 	u32 i, j, count;
@@ -406,9 +416,7 @@ static int sanitize_domain(struct sbi_domain *dom)
 	}
 
 	/* Count memory regions */
-	count = 0;
-	sbi_domain_for_each_memregion(dom, reg)
-		count++;
+	count = sbi_domain_used_memregions(dom);
 
 	/* Check presence of firmware regions */
 	if (!dom->fw_region_inited) {
@@ -692,6 +700,7 @@ static int root_add_memregion(const struct sbi_domain_memregion *reg)
 	int rc;
 	bool reg_merged;
 	struct sbi_domain_memregion *nreg, *nreg1, *nreg2;
+	int root_memregs_count = sbi_domain_used_memregions(&root);
 
 	/* Sanity checks */
 	if (!reg || domain_finalized || !root.regions ||
@@ -862,6 +871,7 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 	int rc;
 	struct sbi_hartmask *root_hmask;
 	struct sbi_domain_memregion *root_memregs;
+	int root_memregs_count = 0;
 
 	SBI_INIT_LIST_HEAD(&domain_list);
 
