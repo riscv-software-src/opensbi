@@ -14,4 +14,7 @@ libsbiutils-objs-$(CONFIG_FDT_CACHE_SIFIVE_CCACHE) += cache/fdt_sifive_ccache.o
 carray-fdt_cache_drivers-$(CONFIG_FDT_CACHE_SIFIVE_PL2) += fdt_sifive_pl2
 libsbiutils-objs-$(CONFIG_FDT_CACHE_SIFIVE_PL2) += cache/fdt_sifive_pl2.o
 
+carray-fdt_cache_drivers-$(CONFIG_FDT_CACHE_SIFIVE_EC) += fdt_sifive_ec
+libsbiutils-objs-$(CONFIG_FDT_CACHE_SIFIVE_EC) += cache/fdt_sifive_ec.o
+
 libsbiutils-objs-$(CONFIG_CACHE) += cache/cache.o
