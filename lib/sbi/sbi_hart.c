@@ -112,6 +112,11 @@ static void mstatus_init(struct sbi_scratch *scratch)
 		else
 			mstateen_val &= ~SMSTATEEN0_CTR;
 
+		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SSQOSID))
+			mstateen_val |= SMSTATEEN0_SRMCFG;
+		else
+			mstateen_val &= ~SMSTATEEN0_SRMCFG;
+
 		csr_write64(CSR_MSTATEEN0, mstateen_val);
 		csr_write64(CSR_MSTATEEN1, SMSTATEEN_STATEN);
 		csr_write64(CSR_MSTATEEN2, SMSTATEEN_STATEN);
@@ -685,6 +690,7 @@ const struct sbi_hart_ext_data sbi_hart_ext[] = {
 	__SBI_HART_EXT_DATA(ssdbltrp, SBI_HART_EXT_SSDBLTRP),
 	__SBI_HART_EXT_DATA(smctr, SBI_HART_EXT_SMCTR),
 	__SBI_HART_EXT_DATA(ssctr, SBI_HART_EXT_SSCTR),
+	__SBI_HART_EXT_DATA(ssqosid, SBI_HART_EXT_SSQOSID),
 	__SBI_HART_EXT_DATA(ssstateen, SBI_HART_EXT_SSSTATEEN),
 	__SBI_HART_EXT_DATA(xsfcflushdlone, SBI_HART_EXT_XSIFIVE_CFLUSH_D_L1),
 	__SBI_HART_EXT_DATA(xsfcease, SBI_HART_EXT_XSIFIVE_CEASE),

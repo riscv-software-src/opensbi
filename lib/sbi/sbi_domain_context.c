@@ -45,6 +45,8 @@ struct hart_context {
 	unsigned long scounteren;
 	/** Supervisor environment configuration register */
 	unsigned long senvcfg;
+	/** Supervisor resource management configuration register */
+	unsigned long srmcfg;
 
 	/** Reference to the owning domain */
 	struct sbi_domain *dom;
@@ -145,6 +147,8 @@ static int switch_to_next_domain_context(struct hart_context *ctx,
 		ctx->scounteren = csr_swap(CSR_SCOUNTEREN, dom_ctx->scounteren);
 	if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_12)
 		ctx->senvcfg	= csr_swap(CSR_SENVCFG, dom_ctx->senvcfg);
+	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SSQOSID))
+		ctx->srmcfg	= csr_swap(CSR_SRMCFG, dom_ctx->srmcfg);
 
 	/* Save current trap state and restore target domain's trap state */
 	trap_ctx = sbi_trap_get_context(scratch);

@@ -378,6 +378,9 @@
 #define CSR_SSTATEEN2			0x10E
 #define CSR_SSTATEEN3			0x10F
 
+/* Supervisor Resource Management Configuration CSRs */
+#define CSR_SRMCFG			0x181
+
 /* Machine-Level Control transfer records CSRs */
 #define CSR_MCTRCTL                     0x34e
 
@@ -849,6 +852,8 @@
 #define SMSTATEEN0_FCSR			(_ULL(1) << SMSTATEEN0_FCSR_SHIFT)
 #define SMSTATEEN0_CTR_SHIFT		54
 #define SMSTATEEN0_CTR			(_ULL(1) << SMSTATEEN0_CTR_SHIFT)
+#define SMSTATEEN0_SRMCFG_SHIFT		55
+#define SMSTATEEN0_SRMCFG		(_ULL(1) << SMSTATEEN0_SRMCFG_SHIFT)
 #define SMSTATEEN0_CONTEXT_SHIFT	57
 #define SMSTATEEN0_CONTEXT		(_ULL(1) << SMSTATEEN0_CONTEXT_SHIFT)
 #define SMSTATEEN0_IMSIC_SHIFT		58

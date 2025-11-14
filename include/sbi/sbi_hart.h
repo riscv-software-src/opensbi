@@ -79,6 +79,8 @@ enum sbi_hart_extensions {
 	SBI_HART_EXT_SMCTR,
 	/** HART has CTR S-mode CSRs */
 	SBI_HART_EXT_SSCTR,
+	/** Hart has Ssqosid extension */
+	SBI_HART_EXT_SSQOSID,
 	/** HART has Ssstateen extension **/
 	SBI_HART_EXT_SSSTATEEN,
 	/** Hart has Xsfcflushdlone extension */
