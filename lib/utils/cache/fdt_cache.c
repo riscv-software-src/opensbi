@@ -23,7 +23,9 @@ int fdt_cache_add(const void *fdt, int noff, struct cache_device *dev)
 	sbi_dprintf("%s: %s\n", __func__, dev->name);
 
 	rc = fdt_next_cache_get(fdt, noff, &dev->next);
-	if (rc)
+	if (rc == SBI_ENOENT)
+		dev->next = NULL;
+	else if (rc)
 		return rc;
 
 	return cache_add(dev);
