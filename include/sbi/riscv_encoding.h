@@ -949,7 +949,7 @@
 #define INSN_MASK_WFI			0xffffff00
 #define INSN_MATCH_WFI			0x10500000
 
-#define INSN_MASK_FENCE_TSO		0xffffffff
+#define INSN_MASK_FENCE_TSO		0xfff0707f
 #define INSN_MATCH_FENCE_TSO		0x8330000f
 
 #define INSN_MASK_VECTOR_UNIT_STRIDE		0xfdf0707f
