@@ -189,7 +189,7 @@
 
 #define TOPI_IID_SHIFT			16
 #define TOPI_IID_MASK			0xfff
-#define TOPI_IPRIO_MASK		0xff
+#define TOPI_IPRIO_MASK			0xff
 
 #if __riscv_xlen == 64
 #define MHPMEVENT_OF			(_UL(1) << 63)
@@ -940,10 +940,10 @@
 #define INSN_MASK_C_FSWSP		0xe003
 
 #define INSN_MATCH_C_LHU		0x8400
-#define INSN_MASK_C_LHU		0xfc43
-#define INSN_MATCH_C_LH		0x8440
+#define INSN_MASK_C_LHU			0xfc43
+#define INSN_MATCH_C_LH			0x8440
 #define INSN_MASK_C_LH			0xfc43
-#define INSN_MATCH_C_SH		0x8c00
+#define INSN_MATCH_C_SH			0x8c00
 #define INSN_MASK_C_SH			0xfc43
 
 #define INSN_MASK_WFI			0xffffff00
@@ -1312,7 +1312,7 @@
 /* 64-bit read for VS-stage address translation (RV64) */
 #define INSN_PSEUDO_VS_LOAD		0x00003000
 /* 64-bit write for VS-stage address translation (RV64) */
-#define INSN_PSEUDO_VS_STORE	0x00003020
+#define INSN_PSEUDO_VS_STORE		0x00003020
 
 #elif __riscv_xlen == 32
 
@@ -1320,7 +1320,7 @@
 #define INSN_PSEUDO_VS_LOAD		0x00002000
 
 /* 32-bit write for VS-stage address translation (RV32) */
-#define INSN_PSEUDO_VS_STORE	0x00002020
+#define INSN_PSEUDO_VS_STORE		0x00002020
 
 #else
 #error "Unexpected __riscv_xlen"
@@ -1340,11 +1340,11 @@
 #define SHIFT_AQRL			25
 
 #define VM_MASK				0x1
-#define VIEW_MASK				0x3
-#define VSEW_MASK				0x3
-#define VLMUL_MASK				0x7
+#define VIEW_MASK			0x3
+#define VSEW_MASK			0x3
+#define VLMUL_MASK			0x7
 #define VD_MASK				0x1f
-#define VS2_MASK				0x1f
+#define VS2_MASK			0x1f
 #define INSN_16BIT_MASK			0x3
 #define INSN_32BIT_MASK			0x1c
 
@@ -1356,8 +1356,8 @@
 
 #define INSN_LEN(insn)			(INSN_IS_16BIT(insn) ? 2 : 4)
 
-#define SH_VSEW			3
-#define SH_VIEW			12
+#define SH_VSEW				3
+#define SH_VIEW				12
 #define SH_VD				7
 #define SH_VS2				20
 #define SH_VM				25
@@ -1405,17 +1405,17 @@
 #define IMM_S(insn)			(((s32)(insn) >> 25 << 5) | \
 					 (s32)(((insn) >> 7) & 0x1f))
 
-#define IS_MASKED(insn)		(((insn >> SH_VM) & VM_MASK) == 0)
+#define IS_MASKED(insn)			(((insn >> SH_VM) & VM_MASK) == 0)
 #define GET_VD(insn)			((insn >> SH_VD) & VD_MASK)
 #define GET_VS2(insn)			((insn >> SH_VS2) & VS2_MASK)
 #define GET_VIEW(insn)			(((insn) >> SH_VIEW) & VIEW_MASK)
 #define GET_MEW(insn)			(((insn) >> SH_MEW) & 1)
-#define GET_VSEW(vtype)		(((vtype) >> SH_VSEW) & VSEW_MASK)
+#define GET_VSEW(vtype)			(((vtype) >> SH_VSEW) & VSEW_MASK)
 #define GET_VLMUL(vtype)		((vtype) & VLMUL_MASK)
 #define GET_LEN(view)			(1UL << (view))
 #define GET_NF(insn)			(1 + ((insn >> 29) & 7))
 #define GET_VEMUL(vlmul, view, vsew)	((vlmul + view - vsew) & 7)
-#define GET_EMUL(vemul)		(1UL << ((vemul) >= 4 ? 0 : (vemul)))
+#define GET_EMUL(vemul)			(1UL << ((vemul) >= 4 ? 0 : (vemul)))
 
 #define CSRRW 1
 #define CSRRS 2
