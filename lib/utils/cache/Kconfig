@@ -14,6 +14,10 @@ config FDT_CACHE_SIFIVE_CCACHE
 	bool "SiFive CCACHE FDT cache driver"
 	default n
 
+config FDT_CACHE_SIFIVE_PL2
+	bool "SiFive PL2 FDT cache driver"
+	default n
+
 endif
 
 config CACHE
