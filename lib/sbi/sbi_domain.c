@@ -235,7 +235,11 @@ bool sbi_domain_check_addr(const struct sbi_domain *dom,
 			rstart + ((1UL << reg->order) - 1) : -1UL;
 		if (rstart <= addr && addr <= rend) {
 			rmmio = (rflags & SBI_DOMAIN_MEMREGION_MMIO) ? true : false;
-			if (mmio != rmmio)
+			/*
+			 * MMIO devices may appear in regions without the flag set (such as the
+			 * default region), but MMIO device regions should not be used as memory.
+			 */
+			if (!mmio && rmmio)
 				return false;
 			return ((rrwx & rwx) == rwx) ? true : false;
 		}
