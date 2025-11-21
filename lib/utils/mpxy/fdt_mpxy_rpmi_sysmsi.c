@@ -57,7 +57,8 @@ static int mpxy_rpmi_sysmis_xfer(void *context, struct mbox_chan *chan,
 			sys_msi_address |= ((u64)le32_to_cpu(((u32 *)xfer->tx)[2])) << 32;
 			if (!sbi_domain_check_addr_range(sbi_domain_thishart_ptr(),
 							 sys_msi_address, 0x4, PRV_S,
-							 SBI_DOMAIN_READ | SBI_DOMAIN_WRITE)) {
+							 SBI_DOMAIN_READ | SBI_DOMAIN_WRITE |
+							 SBI_DOMAIN_MMIO)) {
 				((u32 *)xfer->rx)[0] = cpu_to_le32(RPMI_ERR_INVALID_ADDR);
 				args->rx_data_len = sizeof(u32);
 				break;
