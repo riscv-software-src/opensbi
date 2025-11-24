@@ -51,10 +51,10 @@ static void spacemit_k1_pre_init(void)
 	scratch = sbi_scratch_thishart_ptr();
 
 	writel(scratch->warmboot_addr, (unsigned int *)C0_RVBADDR_LO_ADDR);
-	writel(scratch->warmboot_addr >> 32, (unsigned int *)C0_RVBADDR_HI_ADDR);
+	writel((u64)scratch->warmboot_addr >> 32, (unsigned int *)C0_RVBADDR_HI_ADDR);
 
 	writel(scratch->warmboot_addr, (unsigned int *)C1_RVBADDR_LO_ADDR);
-	writel(scratch->warmboot_addr >> 32, (unsigned int *)C1_RVBADDR_HI_ADDR);
+	writel((u64)scratch->warmboot_addr >> 32, (unsigned int *)C1_RVBADDR_HI_ADDR);
 
 	for (i = 0; i < PLATFORM_MAX_CPUS; i++) {
 		clusterid = CPU_TO_CLUSTER(i);
