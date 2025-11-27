@@ -29,7 +29,7 @@ static unsigned long tlb_fifo_off;
 static unsigned long tlb_fifo_mem_off;
 static unsigned long tlb_range_flush_limit;
 
-static void tlb_flush_all(void)
+void __sbi_sfence_vma_all(void)
 {
 	__asm__ __volatile("sfence.vma");
 }
@@ -86,7 +86,7 @@ static void sbi_tlb_local_sfence_vma(struct sbi_tlb_info *tinfo)
 	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_SFENCE_VMA_RCVD);
 
 	if ((start == 0 && size == 0) || (size == SBI_TLB_FLUSH_ALL)) {
-		tlb_flush_all();
+		__sbi_sfence_vma_all();
 		return;
 	}
 

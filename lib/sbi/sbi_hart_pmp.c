@@ -12,6 +12,7 @@
 #include <sbi/sbi_hfence.h>
 #include <sbi/sbi_math.h>
 #include <sbi/sbi_platform.h>
+#include <sbi/sbi_tlb.h>
 #include <sbi/riscv_asm.h>
 
 /*
@@ -74,7 +75,7 @@ static void sbi_hart_pmp_fence(void)
 	 * conditions.
 	 */
 	if (misa_extension('S')) {
-		__asm__ __volatile__("sfence.vma");
+		__sbi_sfence_vma_all();
 
 		/*
 		 * If hypervisor mode is supported, flush caching
