@@ -13,8 +13,10 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_heap.h>
+#include <sbi/sbi_hfence.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_string.h>
+#include <sbi/sbi_tlb.h>
 #include <sbi/sbi_types.h>
 
 #include <sbi/riscv_asm.h>
@@ -167,7 +169,16 @@ static int fwft_adue_supported(struct fwft_config *conf)
 
 static int fwft_set_adue(struct fwft_config *conf, unsigned long value)
 {
-	return fwft_menvcfg_set_bit(value, ENVCFG_ADUE_SHIFT);
+	int res = fwft_menvcfg_set_bit(value, ENVCFG_ADUE_SHIFT);
+
+	if (res == SBI_OK) {
+		__sbi_sfence_vma_all();
+
+		if (misa_extension('H'))
+			__sbi_hfence_gvma_all();
+	}
+
+	return res;
 }
 
 static int fwft_get_adue(struct fwft_config *conf, unsigned long *value)
