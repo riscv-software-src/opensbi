@@ -30,7 +30,7 @@
 #define UX600_NUCLEI_TIMER_ADDR		0x2000000
 #define UX600_NUCLEI_TIMER_MSFTRST_OFS	0xFF0
 #define UX600_NUCLEI_TIMER_MSFTRST_KEY	0x80000A5F
-/* The clint compatiable timer offset is 0x1000 against nuclei timer */
+/* The clint compatible timer offset is 0x1000 against nuclei timer */
 #define UX600_CLINT_TIMER_ADDR		(UX600_NUCLEI_TIMER_ADDR + 0x1000)
 #define UX600_ACLINT_MSWI_ADDR		(UX600_CLINT_TIMER_ADDR + \
 					 CLINT_MSWI_OFFSET)

@@ -312,7 +312,7 @@ uint64_t generic_pmu_xlate_to_mhpmevent(uint32_t event_idx, uint64_t data)
 		/**
 		 * Generic platform follows the SBI specification recommendation
 		 * i.e. zero extended event_idx is used as mhpmevent value for
-		 * hardware general/cache events if platform does't define one.
+		 * hardware general/cache events if platform doesn't define one.
 		 */
 		evt_val = fdt_pmu_get_select_value(event_idx);
 		if (!evt_val)

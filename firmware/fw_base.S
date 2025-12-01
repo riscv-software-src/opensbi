@@ -253,7 +253,7 @@ _scratch_init:
 	blt	t1, s7, _scratch_init
 
 	/*
-	 * Relocate Flatened Device Tree (FDT)
+	 * Relocate Flattened Device Tree (FDT)
 	 * source FDT address = previous arg1
 	 * destination FDT address = next arg1
 	 *
