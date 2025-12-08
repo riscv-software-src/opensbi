@@ -371,11 +371,6 @@ static void swap_region(struct sbi_domain_memregion* reg1,
 	sbi_memcpy(reg2, &treg, sizeof(treg));
 }
 
-static void clear_region(struct sbi_domain_memregion* reg)
-{
-	sbi_memset(reg, 0x0, sizeof(*reg));
-}
-
 static int sbi_domain_used_memregions(const struct sbi_domain *dom)
 {
 	int count = 0;
@@ -463,10 +458,7 @@ static int sanitize_domain(struct sbi_domain *dom)
 
 		/* find a region is superset of reg, remove reg */
 		if (is_covered) {
-			for (j = i; j < (count - 1); j++)
-				swap_region(&dom->regions[j],
-					    &dom->regions[j + 1]);
-			clear_region(&dom->regions[count - 1]);
+			sbi_memmove(reg, reg + 1, sizeof(*reg) * (count - i));
 			count--;
 		} else
 			i++;
@@ -708,7 +700,7 @@ static int root_add_memregion(const struct sbi_domain_memregion *reg)
 {
 	int rc;
 	bool reg_merged;
-	struct sbi_domain_memregion *nreg, *nreg1, *nreg2;
+	struct sbi_domain_memregion *nreg, *nreg1;
 	int root_memregs_count = sbi_domain_used_memregions(&root);
 
 	/* Sanity checks */
@@ -750,12 +742,10 @@ static int root_add_memregion(const struct sbi_domain_memregion *reg)
 			    (nreg->base + BIT(nreg->order)) == nreg1->base &&
 			    nreg->order == nreg1->order &&
 			    nreg->flags == nreg1->flags) {
+				int i1 = nreg1 - root.regions;
 				nreg->order++;
-				while (nreg1->order) {
-					nreg2 = nreg1 + 1;
-					sbi_memcpy(nreg1, nreg2, sizeof(*nreg1));
-					nreg1++;
-				}
+				sbi_memmove(nreg1, nreg1 + 1,
+					    sizeof(*nreg1) * (root_memregs_count - i1));
 				reg_merged = true;
 				root_memregs_count--;
 			}
