@@ -578,6 +578,20 @@ int sbi_hart_pmp_configure(struct sbi_scratch *scratch)
 	return rc;
 }
 
+void sbi_hart_pmp_unconfigure(struct sbi_scratch *scratch)
+{
+	int i, pmp_count = sbi_hart_pmp_count(scratch);
+
+	for (i = 0; i < pmp_count; i++) {
+		/* Don't revoke firmware access permissions */
+		if (sbi_hart_smepmp_is_fw_region(i))
+			continue;
+
+		sbi_platform_pmp_disable(sbi_platform_ptr(scratch), i);
+		pmp_disable(i);
+	}
+}
+
 int sbi_hart_priv_version(struct sbi_scratch *scratch)
 {
 	struct sbi_hart_features *hfeatures =
