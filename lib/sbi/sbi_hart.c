@@ -17,6 +17,7 @@
 #include <sbi/sbi_csr_detect.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_hart_protection.h>
 #include <sbi/sbi_math.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_pmu.h>
@@ -316,6 +317,30 @@ bool sbi_hart_smepmp_is_fw_region(unsigned int pmp_idx)
 	return bitmap_test(fw_smepmp_ids, pmp_idx) ? true : false;
 }
 
+static void sbi_hart_pmp_fence(void)
+{
+	/*
+	 * As per section 3.7.2 of privileged specification v1.12,
+	 * virtual address translations can be speculatively performed
+	 * (even before actual access). These, along with PMP traslations,
+	 * can be cached. This can pose a problem with CPU hotplug
+	 * and non-retentive suspend scenario because PMP states are
+	 * not preserved.
+	 * It is advisable to flush the caching structures under such
+	 * conditions.
+	 */
+	if (misa_extension('S')) {
+		__asm__ __volatile__("sfence.vma");
+
+		/*
+		 * If hypervisor mode is supported, flush caching
+		 * structures in guest mode too.
+		 */
+		if (misa_extension('H'))
+			__sbi_hfence_gvma_all();
+	}
+}
+
 static void sbi_hart_smepmp_set(struct sbi_scratch *scratch,
 				struct sbi_domain *dom,
 				struct sbi_domain_memregion *reg,
@@ -348,14 +373,19 @@ static bool is_valid_pmp_idx(unsigned int pmp_count, unsigned int pmp_idx)
 	return false;
 }
 
-static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch,
-				     unsigned int pmp_count,
-				     unsigned int pmp_log2gran,
-				     unsigned long pmp_addr_max)
+static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch)
 {
 	struct sbi_domain_memregion *reg;
 	struct sbi_domain *dom = sbi_domain_thishart_ptr();
-	unsigned int pmp_idx, pmp_flags;
+	unsigned int pmp_log2gran, pmp_bits;
+	unsigned int pmp_idx, pmp_count;
+	unsigned long pmp_addr_max;
+	unsigned int pmp_flags;
+
+	pmp_count = sbi_hart_pmp_count(scratch);
+	pmp_log2gran = sbi_hart_pmp_log2gran(scratch);
+	pmp_bits = sbi_hart_pmp_addrbits(scratch) - 1;
+	pmp_addr_max = (1UL << pmp_bits) | ((1UL << pmp_bits) - 1);
 
 	/*
 	 * Set the RLB so that, we can write to PMP entries without
@@ -435,20 +465,64 @@ static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch,
 	 * Keep the RLB bit so that dynamic mappings can be done.
 	 */
 
+	sbi_hart_pmp_fence();
 	return 0;
 }
 
-static int sbi_hart_oldpmp_configure(struct sbi_scratch *scratch,
-				     unsigned int pmp_count,
-				     unsigned int pmp_log2gran,
-				     unsigned long pmp_addr_max)
+static int sbi_hart_smepmp_map_range(struct sbi_scratch *scratch,
+				     unsigned long addr, unsigned long size)
+{
+	/* shared R/W access for M and S/U mode */
+	unsigned int pmp_flags = (PMP_W | PMP_X);
+	unsigned long order, base = 0;
+
+	if (is_pmp_entry_mapped(SBI_SMEPMP_RESV_ENTRY))
+		return SBI_ENOSPC;
+
+	for (order = MAX(sbi_hart_pmp_log2gran(scratch), log2roundup(size));
+	     order <= __riscv_xlen; order++) {
+		if (order < __riscv_xlen) {
+			base = addr & ~((1UL << order) - 1UL);
+			if ((base <= addr) &&
+			    (addr < (base + (1UL << order))) &&
+			    (base <= (addr + size - 1UL)) &&
+			    ((addr + size - 1UL) < (base + (1UL << order))))
+				break;
+		} else {
+			return SBI_EFAIL;
+		}
+	}
+
+	sbi_platform_pmp_set(sbi_platform_ptr(scratch), SBI_SMEPMP_RESV_ENTRY,
+			     SBI_DOMAIN_MEMREGION_SHARED_SURW_MRW,
+			     pmp_flags, base, order);
+	pmp_set(SBI_SMEPMP_RESV_ENTRY, pmp_flags, base, order);
+
+	return SBI_OK;
+}
+
+static int sbi_hart_smepmp_unmap_range(struct sbi_scratch *scratch,
+				       unsigned long addr, unsigned long size)
+{
+	sbi_platform_pmp_disable(sbi_platform_ptr(scratch), SBI_SMEPMP_RESV_ENTRY);
+	return pmp_disable(SBI_SMEPMP_RESV_ENTRY);
+}
+
+static int sbi_hart_oldpmp_configure(struct sbi_scratch *scratch)
 {
 	struct sbi_domain_memregion *reg;
 	struct sbi_domain *dom = sbi_domain_thishart_ptr();
-	unsigned int pmp_idx = 0;
+	unsigned long pmp_addr, pmp_addr_max;
+	unsigned int pmp_log2gran, pmp_bits;
+	unsigned int pmp_idx, pmp_count;
 	unsigned int pmp_flags;
-	unsigned long pmp_addr;
 
+	pmp_count = sbi_hart_pmp_count(scratch);
+	pmp_log2gran = sbi_hart_pmp_log2gran(scratch);
+	pmp_bits = sbi_hart_pmp_addrbits(scratch) - 1;
+	pmp_addr_max = (1UL << pmp_bits) | ((1UL << pmp_bits) - 1);
+
+	pmp_idx = 0;
 	sbi_domain_for_each_memregion(dom, reg) {
 		if (!is_valid_pmp_idx(pmp_count, pmp_idx))
 			return SBI_EFAIL;
@@ -483,43 +557,19 @@ static int sbi_hart_oldpmp_configure(struct sbi_scratch *scratch,
 		}
 	}
 
+	sbi_hart_pmp_fence();
 	return 0;
 }
 
 int sbi_hart_map_saddr(unsigned long addr, unsigned long size)
 {
-	/* shared R/W access for M and S/U mode */
-	unsigned int pmp_flags = (PMP_W | PMP_X);
-	unsigned long order, base = 0;
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 
 	/* If Smepmp is not supported no special mapping is required */
 	if (!sbi_hart_has_extension(scratch, SBI_HART_EXT_SMEPMP))
 		return SBI_OK;
 
-	if (is_pmp_entry_mapped(SBI_SMEPMP_RESV_ENTRY))
-		return SBI_ENOSPC;
-
-	for (order = MAX(sbi_hart_pmp_log2gran(scratch), log2roundup(size));
-	     order <= __riscv_xlen; order++) {
-		if (order < __riscv_xlen) {
-			base = addr & ~((1UL << order) - 1UL);
-			if ((base <= addr) &&
-			    (addr < (base + (1UL << order))) &&
-			    (base <= (addr + size - 1UL)) &&
-			    ((addr + size - 1UL) < (base + (1UL << order))))
-				break;
-		} else {
-			return SBI_EFAIL;
-		}
-	}
-
-	sbi_platform_pmp_set(sbi_platform_ptr(scratch), SBI_SMEPMP_RESV_ENTRY,
-			     SBI_DOMAIN_MEMREGION_SHARED_SURW_MRW,
-			     pmp_flags, base, order);
-	pmp_set(SBI_SMEPMP_RESV_ENTRY, pmp_flags, base, order);
-
-	return SBI_OK;
+	return sbi_hart_smepmp_map_range(scratch, addr, size);
 }
 
 int sbi_hart_unmap_saddr(void)
@@ -529,53 +579,18 @@ int sbi_hart_unmap_saddr(void)
 	if (!sbi_hart_has_extension(scratch, SBI_HART_EXT_SMEPMP))
 		return SBI_OK;
 
-	sbi_platform_pmp_disable(sbi_platform_ptr(scratch), SBI_SMEPMP_RESV_ENTRY);
-	return pmp_disable(SBI_SMEPMP_RESV_ENTRY);
+	return sbi_hart_smepmp_unmap_range(scratch, 0, 0);
 }
 
 int sbi_hart_pmp_configure(struct sbi_scratch *scratch)
 {
-	int rc;
-	unsigned int pmp_bits, pmp_log2gran;
-	unsigned int pmp_count = sbi_hart_pmp_count(scratch);
-	unsigned long pmp_addr_max;
-
-	if (!pmp_count)
+	if (!sbi_hart_pmp_count(scratch))
 		return 0;
 
-	pmp_log2gran = sbi_hart_pmp_log2gran(scratch);
-	pmp_bits = sbi_hart_pmp_addrbits(scratch) - 1;
-	pmp_addr_max = (1UL << pmp_bits) | ((1UL << pmp_bits) - 1);
-
 	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SMEPMP))
-		rc = sbi_hart_smepmp_configure(scratch, pmp_count,
-						pmp_log2gran, pmp_addr_max);
+		return sbi_hart_smepmp_configure(scratch);
 	else
-		rc = sbi_hart_oldpmp_configure(scratch, pmp_count,
-						pmp_log2gran, pmp_addr_max);
-
-	/*
-	 * As per section 3.7.2 of privileged specification v1.12,
-	 * virtual address translations can be speculatively performed
-	 * (even before actual access). These, along with PMP traslations,
-	 * can be cached. This can pose a problem with CPU hotplug
-	 * and non-retentive suspend scenario because PMP states are
-	 * not preserved.
-	 * It is advisable to flush the caching structures under such
-	 * conditions.
-	 */
-	if (misa_extension('S')) {
-		__asm__ __volatile__("sfence.vma");
-
-		/*
-		 * If hypervisor mode is supported, flush caching
-		 * structures in guest mode too.
-		 */
-		if (misa_extension('H'))
-			__sbi_hfence_gvma_all();
-	}
-
-	return rc;
+		return sbi_hart_oldpmp_configure(scratch);
 }
 
 void sbi_hart_pmp_unconfigure(struct sbi_scratch *scratch)
@@ -590,6 +605,41 @@ void sbi_hart_pmp_unconfigure(struct sbi_scratch *scratch)
 		sbi_platform_pmp_disable(sbi_platform_ptr(scratch), i);
 		pmp_disable(i);
 	}
+}
+
+static struct sbi_hart_protection pmp_protection = {
+	.name = "pmp",
+	.rating = 100,
+	.configure = sbi_hart_oldpmp_configure,
+	.unconfigure = sbi_hart_pmp_unconfigure,
+};
+
+static struct sbi_hart_protection epmp_protection = {
+	.name = "epmp",
+	.rating = 200,
+	.configure = sbi_hart_smepmp_configure,
+	.unconfigure = sbi_hart_pmp_unconfigure,
+	.map_range = sbi_hart_smepmp_map_range,
+	.unmap_range = sbi_hart_smepmp_unmap_range,
+};
+
+static int sbi_hart_pmp_init(struct sbi_scratch *scratch)
+{
+	int rc;
+
+	if (sbi_hart_pmp_count(scratch)) {
+		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SMEPMP)) {
+			rc = sbi_hart_protection_register(&epmp_protection);
+			if (rc)
+				return rc;
+		} else {
+			rc = sbi_hart_protection_register(&pmp_protection);
+			if (rc)
+				return rc;
+		}
+	}
+
+	return 0;
 }
 
 int sbi_hart_priv_version(struct sbi_scratch *scratch)
@@ -1056,6 +1106,12 @@ int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot)
 	rc = hart_detect_features(scratch);
 	if (rc)
 		return rc;
+
+	if (cold_boot) {
+		rc = sbi_hart_pmp_init(scratch);
+		if (rc)
+			return rc;
+	}
 
 	rc = delegate_traps(scratch);
 	if (rc)
