@@ -561,39 +561,7 @@ static int sbi_hart_oldpmp_configure(struct sbi_scratch *scratch)
 	return 0;
 }
 
-int sbi_hart_map_saddr(unsigned long addr, unsigned long size)
-{
-	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
-
-	/* If Smepmp is not supported no special mapping is required */
-	if (!sbi_hart_has_extension(scratch, SBI_HART_EXT_SMEPMP))
-		return SBI_OK;
-
-	return sbi_hart_smepmp_map_range(scratch, addr, size);
-}
-
-int sbi_hart_unmap_saddr(void)
-{
-	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
-
-	if (!sbi_hart_has_extension(scratch, SBI_HART_EXT_SMEPMP))
-		return SBI_OK;
-
-	return sbi_hart_smepmp_unmap_range(scratch, 0, 0);
-}
-
-int sbi_hart_pmp_configure(struct sbi_scratch *scratch)
-{
-	if (!sbi_hart_pmp_count(scratch))
-		return 0;
-
-	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SMEPMP))
-		return sbi_hart_smepmp_configure(scratch);
-	else
-		return sbi_hart_oldpmp_configure(scratch);
-}
-
-void sbi_hart_pmp_unconfigure(struct sbi_scratch *scratch)
+static void sbi_hart_pmp_unconfigure(struct sbi_scratch *scratch)
 {
 	int i, pmp_count = sbi_hart_pmp_count(scratch);
 

@@ -117,8 +117,8 @@ enum sbi_hart_csrs {
  * When shared memory access is required, the physical address
  * should be programmed into the first PMP entry with R/W
  * permissions to the M-mode. Once the work is done, it should be
- * unmapped. sbi_hart_map_saddr/sbi_hart_unmap_saddr function
- * pair should be used to map/unmap the shared memory.
+ * unmapped. sbi_hart_protection_map_range/sbi_hart_protection_unmap_range
+ * function pair should be used to map/unmap the shared memory.
  */
 #define SBI_SMEPMP_RESV_ENTRY		0
 
@@ -149,10 +149,6 @@ unsigned int sbi_hart_pmp_log2gran(struct sbi_scratch *scratch);
 unsigned int sbi_hart_pmp_addrbits(struct sbi_scratch *scratch);
 unsigned int sbi_hart_mhpm_bits(struct sbi_scratch *scratch);
 bool sbi_hart_smepmp_is_fw_region(unsigned int pmp_idx);
-int sbi_hart_pmp_configure(struct sbi_scratch *scratch);
-void sbi_hart_pmp_unconfigure(struct sbi_scratch *scratch);
-int sbi_hart_map_saddr(unsigned long base, unsigned long size);
-int sbi_hart_unmap_saddr(void);
 int sbi_hart_priv_version(struct sbi_scratch *scratch);
 void sbi_hart_get_priv_version_str(struct sbi_scratch *scratch,
 				   char *version_str, int nvstr);
