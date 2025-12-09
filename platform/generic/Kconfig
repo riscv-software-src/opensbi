@@ -23,6 +23,11 @@ config PLATFORM_GENERIC_MINOR_VER
 	range 0 65535
 	default 1
 
+config PLATFORM_GENERIC_FDT_EMPTY_SPACE
+	int "Platform FDT empty space (KB)"
+	range 0 1024
+	default 4
+
 config PLATFORM_ALLWINNER_D1
 	bool "Allwinner D1 support"
 	depends on FDT_IRQCHIP_PLIC

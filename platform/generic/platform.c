@@ -245,7 +245,10 @@ int generic_final_init(bool cold_boot)
 	fdt_fixups(fdt);
 	fdt_domain_fixup(fdt);
 
+	/* Set the empty space in FDT based on kconfig option */
 	fdt_pack(fdt);
+	fdt_open_into(fdt, fdt, fdt_totalsize(fdt) +
+		      CONFIG_PLATFORM_GENERIC_FDT_EMPTY_SPACE * 1024);
 
 	return 0;
 }
