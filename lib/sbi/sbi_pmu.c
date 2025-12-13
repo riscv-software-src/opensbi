@@ -453,6 +453,9 @@ static int pmu_ctr_start_fw(struct sbi_pmu_hart_state *phs,
 	    event_code > SBI_PMU_FW_PLATFORM)
 		return SBI_EINVAL;
 
+	if (phs->fw_counters_started & BIT(cidx - num_hw_ctrs))
+		return SBI_EALREADY_STARTED;
+
 	if (SBI_PMU_FW_PLATFORM == event_code) {
 		if (!pmu_dev ||
 		    !pmu_dev->fw_counter_write_value ||
@@ -622,6 +625,9 @@ static int pmu_ctr_stop_fw(struct sbi_pmu_hart_state *phs,
 	    event_code <= SBI_PMU_FW_RESERVED_MAX) ||
 	    event_code > SBI_PMU_FW_PLATFORM)
 		return SBI_EINVAL;
+
+	if (!(phs->fw_counters_started & BIT(cidx - num_hw_ctrs)))
+		return SBI_EALREADY_STOPPED;
 
 	if (SBI_PMU_FW_PLATFORM == event_code &&
 	    pmu_dev && pmu_dev->fw_counter_stop) {
