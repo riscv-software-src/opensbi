@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+config ESWIN_EIC770X_FEAT0_CFG
+	hex "ESWIN EIC7700X Feature Disable 0 CSR Configuration"
+	default 0x4000
+	help
+	 CSR Value to initialize EIC770X_FEAT0 (0x7c1) with.
+	 Refer to EIC770X SoC TRM for recommendations.
+
+config ESWIN_EIC770X_FEAT1_CFG
+	hex "ESWIN EIC7700X Feature Disable 1 CSR Configuration"
+	default 0x80
+	help
+	 CSR Value to initialize EIC770X_FEAT1 (0x7c2) with.
+	 Refer to EIC770X SoC TRM for recommendations.
+
+config ESWIN_EIC770X_L1_HWPF_CFG
+	hex "ESWIN EIC7700X L1 HW Prefetcher CSR Configuration"
+	default 0x1005c1be649
+	help
+	 CSR Value to initialize EIC770X_L1_HWPF (0x7c3) with.
+	 Refer to EIC770X SoC TRM for recommendations.
+
+config ESWIN_EIC770X_L2_HWPF_CFG
+	hex "ESWIN EIC7700X L2 HW Prefetcher CSR Configuration"
+	default 0x929f
+	help
+	 CSR Value to initialize EIC770X_L2_HWPF (0x7c4) with.
+	 Refer to EIC770X SoC TRM for recommendations.

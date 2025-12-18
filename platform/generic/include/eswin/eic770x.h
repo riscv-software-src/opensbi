@@ -1,0 +1,79 @@
+/*
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
+ * Copyright (c) 2025 Bo Gan <ganboing@gmail.com>
+ *
+ */
+
+#ifndef __EIC770X_H__
+#define __EIC770X_H__
+
+#include <sbi/riscv_asm.h>
+
+struct eic770x_board_override {
+	struct sbi_system_reset_device *reset_dev;
+};
+
+/* CSRs */
+#define EIC770X_CSR_BRPREDICT	0x7c0
+#define EIC770X_CSR_FEAT0	0x7c1
+#define EIC770X_CSR_FEAT1	0x7c2
+#define EIC770X_CSR_L1_HWPF	0x7c3
+#define EIC770X_CSR_L2_HWPF	0x7c4
+
+/* Hart ID to core/die conversion */
+#define CPU_CORE_BITS		2
+#define CPU_CORE_MASK		((1 << CPU_CORE_BITS) - 1)
+#define CPU_DIE_SHIFT		CPU_CORE_BITS
+#define CPU_DIE_BITS		1
+#define CPU_DIE_MASK		((1 << CPU_DIE_BITS) - 1)
+
+#define hart_core(i)		((i) & CPU_CORE_MASK)
+#define hart_die(i)		(((i) >> CPU_DIE_SHIFT) & CPU_DIE_MASK)
+#define current_hart_core()	hart_core(current_hartid())
+#define current_hart_die()	hart_die(current_hartid())
+
+/* P550 Internal and System Port 0 */
+#define EIC770X_P550INT_SIZE	0x20000000UL
+#define EIC770X_P550INT_BASE(d)	(0UL + EIC770X_P550INT_SIZE * (d))
+#define EIC770X_P550INT_LOCAL	EIC770X_P550INT_BASE(current_hart_die())
+#define EIC770X_TL64D2D_OUT	(EIC770X_P550INT_LOCAL + 0x200000)
+#define EIC770X_TL256D2D_OUT	(EIC770X_P550INT_LOCAL + 0x202000)
+#define EIC770X_TL256D2D_IN	(EIC770X_P550INT_LOCAL + 0x204000)
+#define EIC770X_L3_ZERO_SIZE	0x400000UL
+#define EIC770X_L3_ZERO_BASE(d)	(EIC770X_P550INT_BASE(d) + 0x1a000000)
+#define EIC770X_L3_ZERO_LOCAL	EIC770X_L3_ZERO_BASE(current_hart_die())
+#define EIC770X_L3_ZERO_REMOTE	EIC770X_L3_ZERO_BASE(1 - current_hart_die())
+
+#define EIC770X_SYSPORT_SIZE	0x20000000UL
+#define EIC770X_SYSPORT_BASE(d)	(0x40000000UL + EIC770X_SYSPORT_SIZE * (d))
+#define EIC770X_SYSPORT_LOCAL	EIC770X_SYSPORT_BASE(current_hart_die())
+#define EIC770X_SYSCRG		(EIC770X_SYSPORT_LOCAL + 0x11828000UL)
+#define EIC770X_SYSCRG_RST	(EIC770X_SYSCRG + 0x300UL)
+#define EIC770X_SYSCRG_RST_VAL	0x1AC0FFE6UL
+
+/* Memory Ports */
+#define EIC770X_MEMPORT_BASE	0x0080000000UL // 2G
+#define EIC770X_MEMPORT_SIZE	0x7f80000000UL // +510G
+#define EIC770X_MEMPORT_LIMIT	(EIC770X_MEMPORT_BASE + EIC770X_MEMPORT_SIZE)
+#define EIC770X_D0_MEM_BASE	0x0080000000UL // 2G
+#define EIC770X_D0_MEM_SIZE	0x0f80000000UL // +62G
+#define EIC770X_D0_MEM_LIMIT	(EIC770X_D0_MEM_BASE + EIC770X_D0_MEM_SIZE)
+#define EIC770X_D1_MEM_BASE	0x2000000000UL // 128G
+#define EIC770X_D1_MEM_SIZE	0x1000000000UL // +64G
+#define EIC770X_D1_MEM_LIMIT	(EIC770X_D1_MEM_BASE + EIC770X_D1_MEM_SIZE)
+#define EIC770X_CACHED_BASE	(current_hart_die() ? \
+				EIC770X_D1_MEM_BASE : \
+				EIC770X_D0_MEM_BASE)
+
+/* Uncached memory mapped in System Port 1 */
+#define EIC770X_D0_UC_BASE	0xc000000000UL
+#define EIC770X_D1_UC_BASE	0xe000000000UL
+#define EIC770X_UNCACHED_BASE	(current_hart_die() ? \
+				EIC770X_D1_UC_BASE : \
+				EIC770X_D0_UC_BASE)
+
+#define EIC770X_TO_UNCACHED(x)	((x) - EIC770X_CACHED_BASE + \
+				EIC770X_UNCACHED_BASE)
+
+#endif

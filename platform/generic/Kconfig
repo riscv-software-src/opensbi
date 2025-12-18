@@ -48,6 +48,10 @@ config PLATFORM_ANDES_QILAI
 	select ANDES_SBI
 	default n
 
+config PLATFORM_ESWIN_EIC770X
+	bool "ESWIN EIC770X support"
+	default n
+
 config PLATFORM_OPENHWGROUP_OPENPITON
 	bool "OpenHWGroup Openpiton support"
 	default n
@@ -98,6 +102,7 @@ config PLATFORM_SPACEMIT_K1
 	default n
 
 source "$(OPENSBI_SRC_DIR)/platform/generic/andes/Kconfig"
+source "$(OPENSBI_SRC_DIR)/platform/generic/eswin/Kconfig"
 source "$(OPENSBI_SRC_DIR)/platform/generic/thead/Kconfig"
 
 endif
