@@ -47,49 +47,55 @@
 
 /* clang-format on */
 
-static volatile char *uart8250_base;
-static u32 uart8250_in_freq;
-static u32 uart8250_baudrate;
-static u32 uart8250_reg_width;
-static u32 uart8250_reg_shift;
+static struct uart8250_device uart8250_dev;
 
-static u32 get_reg(u32 num)
+static u32 get_reg(struct uart8250_device *dev, u32 num)
 {
-	u32 offset = num << uart8250_reg_shift;
+	u32 offset = num << dev->reg_shift;
 
-	if (uart8250_reg_width == 1)
-		return readb(uart8250_base + offset);
-	else if (uart8250_reg_width == 2)
-		return readw(uart8250_base + offset);
+	if (dev->reg_width == 1)
+		return readb(dev->base + offset);
+	else if (dev->reg_width == 2)
+		return readw(dev->base + offset);
 	else
-		return readl(uart8250_base + offset);
+		return readl(dev->base + offset);
 }
 
-static void set_reg(u32 num, u32 val)
+static void set_reg(struct uart8250_device *dev, u32 num, u32 val)
 {
-	u32 offset = num << uart8250_reg_shift;
+	u32 offset = num << dev->reg_shift;
 
-	if (uart8250_reg_width == 1)
-		writeb(val, uart8250_base + offset);
-	else if (uart8250_reg_width == 2)
-		writew(val, uart8250_base + offset);
+	if (dev->reg_width == 1)
+		writeb(val, dev->base + offset);
+	else if (dev->reg_width == 2)
+		writew(val, dev->base + offset);
 	else
-		writel(val, uart8250_base + offset);
+		writel(val, dev->base + offset);
+}
+
+void uart8250_device_putc(struct uart8250_device *dev, char ch)
+{
+	while ((get_reg(dev, UART_LSR_OFFSET) & UART_LSR_THRE) == 0)
+		;
+
+	set_reg(dev, UART_THR_OFFSET, ch);
 }
 
 static void uart8250_putc(char ch)
 {
-	while ((get_reg(UART_LSR_OFFSET) & UART_LSR_THRE) == 0)
-		;
+	return uart8250_device_putc(&uart8250_dev, ch);
+}
 
-	set_reg(UART_THR_OFFSET, ch);
+int uart8250_device_getc(struct uart8250_device *dev)
+{
+	if (get_reg(dev, UART_LSR_OFFSET) & UART_LSR_DR)
+		return get_reg(dev, UART_RBR_OFFSET);
+	return -1;
 }
 
 static int uart8250_getc(void)
 {
-	if (get_reg(UART_LSR_OFFSET) & UART_LSR_DR)
-		return get_reg(UART_RBR_OFFSET);
-	return -1;
+	return uart8250_device_getc(&uart8250_dev);
 }
 
 static struct sbi_console_device uart8250_console = {
@@ -98,46 +104,54 @@ static struct sbi_console_device uart8250_console = {
 	.console_getc = uart8250_getc
 };
 
-int uart8250_init(unsigned long base, u32 in_freq, u32 baudrate, u32 reg_shift,
-		  u32 reg_width, u32 reg_offset, u32 caps)
+void uart8250_device_init(struct uart8250_device *dev, unsigned long base,
+			  u32 in_freq, u32 baudrate, u32 reg_shift,
+			  u32 reg_width, u32 reg_offset, u32 caps)
 {
 	u16 bdiv = 0;
 
-	uart8250_base      = (volatile char *)base + reg_offset;
-	uart8250_reg_shift = reg_shift;
-	uart8250_reg_width = reg_width;
-	uart8250_in_freq   = in_freq;
-	uart8250_baudrate  = baudrate;
+	dev->base      = (volatile char *)base + reg_offset;
+	dev->reg_shift = reg_shift;
+	dev->reg_width = reg_width;
+	dev->in_freq   = in_freq;
+	dev->baudrate  = baudrate;
 
-	if (uart8250_baudrate) {
-		bdiv = (uart8250_in_freq + 8 * uart8250_baudrate) /
-		       (16 * uart8250_baudrate);
+	if (dev->baudrate) {
+		bdiv = (dev->in_freq + 8 * dev->baudrate) /
+		       (16 * dev->baudrate);
 	}
 
 	/* Disable all interrupts */
-	set_reg(UART_IER_OFFSET, (caps & UART_CAP_UUE) ?
+	set_reg(dev, UART_IER_OFFSET, (caps & UART_CAP_UUE) ?
 				 UART_IER_UUE : 0x00);
 	/* Enable DLAB */
-	set_reg(UART_LCR_OFFSET, 0x80);
+	set_reg(dev, UART_LCR_OFFSET, 0x80);
 
 	if (bdiv) {
 		/* Set divisor low byte */
-		set_reg(UART_DLL_OFFSET, bdiv & 0xff);
+		set_reg(dev, UART_DLL_OFFSET, bdiv & 0xff);
 		/* Set divisor high byte */
-		set_reg(UART_DLM_OFFSET, (bdiv >> 8) & 0xff);
+		set_reg(dev, UART_DLM_OFFSET, (bdiv >> 8) & 0xff);
 	}
 
 	/* 8 bits, no parity, one stop bit */
-	set_reg(UART_LCR_OFFSET, 0x03);
+	set_reg(dev, UART_LCR_OFFSET, 0x03);
 	/* Enable FIFO */
-	set_reg(UART_FCR_OFFSET, 0x01);
+	set_reg(dev, UART_FCR_OFFSET, 0x01);
 	/* No modem control DTR RTS */
-	set_reg(UART_MCR_OFFSET, 0x00);
+	set_reg(dev, UART_MCR_OFFSET, 0x00);
 	/* Clear line status and read receive buffer */
-	if (get_reg(UART_LSR_OFFSET) & UART_LSR_DR)
-		get_reg(UART_RBR_OFFSET);
+	if (get_reg(dev, UART_LSR_OFFSET) & UART_LSR_DR)
+		get_reg(dev, UART_RBR_OFFSET);
 	/* Set scratchpad */
-	set_reg(UART_SCR_OFFSET, 0x00);
+	set_reg(dev, UART_SCR_OFFSET, 0x00);
+}
+
+int uart8250_init(unsigned long base, u32 in_freq, u32 baudrate, u32 reg_shift,
+		  u32 reg_width, u32 reg_offset, u32 caps)
+{
+	uart8250_device_init(&uart8250_dev, base, in_freq, baudrate,
+			     reg_shift, reg_width, reg_offset, caps);
 
 	sbi_console_set_device(&uart8250_console);
 
