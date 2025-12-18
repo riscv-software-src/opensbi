@@ -62,7 +62,7 @@ bool sbi_hart_smepmp_is_fw_region(unsigned int pmp_idx)
 	return bitmap_test(fw_smepmp_ids, pmp_idx) ? true : false;
 }
 
-static void sbi_hart_pmp_fence(void)
+void sbi_hart_pmp_fence(void)
 {
 	/*
 	 * As per section 3.7.2 of privileged specification v1.12,
