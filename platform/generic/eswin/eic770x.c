@@ -13,6 +13,7 @@
 #include <sbi/sbi_hart_pmp.h>
 #include <sbi/sbi_hart_protection.h>
 #include <eswin/eic770x.h>
+#include <eswin/hfp.h>
 
 static struct sbi_hart_protection eswin_eic7700_pmp_protection;
 
@@ -393,6 +394,7 @@ static int eswin_eic7700_platform_init(const void *fdt, int nodeoff,
 }
 
 static const struct fdt_match eswin_eic7700_match[] = {
+	{ .compatible = "sifive,hifive-premier-p550", .data = &hfp_override },
 	{ .compatible = "eswin,eic7700" },
 	{ },
 };
