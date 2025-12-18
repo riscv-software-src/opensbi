@@ -254,6 +254,13 @@ void sbi_domain_memregion_init(unsigned long addr,
 				struct sbi_domain_memregion *reg);
 
 /**
+ * Return the oldpmp pmpcfg LRWX encoding for the flags in @reg.
+ *
+ * @param reg pointer to memory region; its flags field encodes permissions.
+ */
+unsigned int sbi_domain_get_oldpmp_flags(struct sbi_domain_memregion *reg);
+
+/**
  * Return the Smepmp pmpcfg LRWX encoding for the flags in @reg.
  *
  * @param reg pointer to memory region; its flags field encodes permissions.
