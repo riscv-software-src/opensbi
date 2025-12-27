@@ -9,12 +9,12 @@
 
 static inline void sifive_cease(void)
 {
-	__asm__ __volatile__(".insn 0x30500073" ::: "memory");
+	__asm__ __volatile__(".word 0x30500073" ::: "memory");
 }
 
 static inline void sifive_cflush(void)
 {
-	__asm__ __volatile__(".insn 0xfc000073" ::: "memory");
+	__asm__ __volatile__(".word 0xfc000073" ::: "memory");
 }
 
 #endif
