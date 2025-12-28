@@ -53,15 +53,15 @@ void spin_lock(spinlock_t *lock)
 
 	__asm__ __volatile__(
 		/* Atomically increment the next ticket. */
-#ifdef __riscv_atomic
+#if defined(__riscv_atomic) || defined(__riscv_zaamo)
 		"	amoadd.w.aqrl	%0, %4, %3\n"
-#elif __riscv_zalrsc
+#elif defined(__riscv_zalrsc)
 		"3:	lr.w.aqrl	%0, %3\n"
 		"	addw	%1, %0, %4\n"
 		"	sc.w.aqrl	%1, %1, %3\n"
 		"	bnez	%1, 3b\n"
 #else
-#error "need a or zalrsc"
+#error "need A or Zaamo or Zalrsc"
 #endif
 
 		/* Did we get the lock? */

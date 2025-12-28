@@ -12,8 +12,8 @@
 #include <sbi/riscv_atomic.h>
 #include <sbi/riscv_barrier.h>
 
-#if !defined(__riscv_atomic) && !defined(__riscv_zalrsc)
-#error "opensbi strongly relies on the A extension of RISC-V"
+#if !defined(__riscv_atomic) && !defined(__riscv_zaamo) && !defined(__riscv_zalrsc)
+#error "opensbi strongly relies on the Zaamo or Zalrsc extensions of RISC-V"
 #endif
 
 long atomic_read(atomic_t *atom)
@@ -31,7 +31,7 @@ void atomic_write(atomic_t *atom, long value)
 
 long atomic_add_return(atomic_t *atom, long value)
 {
-#ifdef __riscv_atomic
+#if defined(__riscv_atomic) || defined(__riscv_zaamo)
 	long ret;
 #if __SIZEOF_LONG__ == 4
 	__asm__ __volatile__("	amoadd.w.aqrl  %1, %2, %0"
@@ -44,7 +44,7 @@ long atomic_add_return(atomic_t *atom, long value)
 			     : "r"(value)
 			     : "memory");
 #endif
-#elif __riscv_zalrsc
+#elif defined(__riscv_zalrsc)
 	long ret, temp;
 #if __SIZEOF_LONG__ == 4
 	__asm__ __volatile__("1:lr.w.aqrl	%1,%0\n"
@@ -64,7 +64,7 @@ long atomic_add_return(atomic_t *atom, long value)
 			     : "memory");
 #endif
 #else
-#error "need a or zalrsc"
+#error "need A or Zaamo or Zalrsc"
 #endif
 
 	return ret + value;
@@ -75,7 +75,7 @@ long atomic_sub_return(atomic_t *atom, long value)
 	return atomic_add_return(atom, -value);
 }
 
-#ifdef __riscv_atomic
+#if defined(__riscv_atomic) || defined(__riscv_zaamo)
 #define __axchg(ptr, new, size)							\
 	({									\
 		__typeof__(ptr) __ptr = (ptr);					\
@@ -101,7 +101,7 @@ long atomic_sub_return(atomic_t *atom, long value)
 		}								\
 		__ret;								\
 	})
-#elif __riscv_zalrsc
+#elif defined(__riscv_zalrsc)
 #define __axchg(ptr, new, size)							\
 	({									\
 		__typeof__(ptr) __ptr = (ptr);					\
@@ -132,7 +132,7 @@ long atomic_sub_return(atomic_t *atom, long value)
 		__ret;								\
 	})
 #else
-#error "need a or zalrsc"
+#error "need A or Zaamo or Zalrsc"
 #endif
 
 #define axchg(ptr, x)								\

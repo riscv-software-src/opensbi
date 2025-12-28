@@ -30,9 +30,9 @@ _start:
 	/* Pick one hart to run the main boot sequence */
 	lla	a3, _hart_lottery
 	li	a2, 1
-#ifdef __riscv_atomic
+#if defined(__riscv_atomic) || defined(__riscv_zaamo)
 	amoadd.w a3, a2, (a3)
-#elif __riscv_zalrsc
+#elif defined(__riscv_zalrsc)
 _sc_fail:
 	lr.w	t0, (a3)
 	addw	t1, t0, a2

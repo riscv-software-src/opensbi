@@ -59,10 +59,10 @@ _try_lottery:
 	/* Jump to relocation wait loop if we don't get relocation lottery */
 	lla	a6, _boot_lottery
 	li	a7, BOOT_LOTTERY_ACQUIRED
-#ifdef __riscv_atomic
+#if defined(__riscv_atomic) || defined(__riscv_zaamo)
 	amoswap.w a6, a7, (a6)
 	bnez	a6, _wait_for_boot_hart
-#elif __riscv_zalrsc
+#elif defined(__riscv_zalrsc)
 _sc_fail:
 	lr.w	t0, (a6)
 	sc.w	t1, a7, (a6)

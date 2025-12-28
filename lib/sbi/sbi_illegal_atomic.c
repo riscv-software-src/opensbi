@@ -11,18 +11,18 @@
 #include <sbi/sbi_illegal_atomic.h>
 #include <sbi/sbi_illegal_insn.h>
 
-#if !defined(__riscv_atomic) && !defined(__riscv_zalrsc)
-#error "opensbi strongly relies on the A extension of RISC-V"
+#if !defined(__riscv_atomic) && !defined(__riscv_zaamo) && !defined(__riscv_zalrsc)
+#error "opensbi strongly relies on the Zaamo or Zalrsc extension of RISC-V"
 #endif
 
-#ifdef __riscv_atomic
+#if defined(__riscv_atomic) || defined(__riscv_zaamo)
 
 int sbi_illegal_atomic(ulong insn, struct sbi_trap_regs *regs)
 {
 	return truly_illegal_insn(insn, regs);
 }
 
-#elif __riscv_zalrsc
+#elif defined(__riscv_zalrsc)
 
 #define DEFINE_UNPRIVILEGED_LR_FUNCTION(type, aqrl, insn)			\
 	static type lr_##type##aqrl(const type *addr,				\
