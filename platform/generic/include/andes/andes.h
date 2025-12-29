@@ -10,16 +10,21 @@
 #include <sbi/sbi_scratch.h>
 
 /* Memory and Miscellaneous Registers */
+#define CSR_MPFT_CTL		0x7c5
 #define CSR_MCACHE_CTL		0x7ca
 #define CSR_MCCTLCOMMAND	0x7cc
+#define CSR_MMISC_CTL		0x7d0
 
 /* Configuration Control & Status Registers */
 #define CSR_MICM_CFG		0xfc0
 #define CSR_MDCM_CFG		0xfc1
 #define CSR_MMSC_CFG		0xfc2
 
-/* Machine Trap Related Registers */
+/* Trap Related Registers */
+#define CSR_MXSTATUS		0x7c4
 #define CSR_MSLIDELEG		0x7d5
+#define CSR_SLIE		0x9c4
+#define CSR_SLIP		0x9c5
 
 /* Counter Related Registers */
 #define CSR_MCOUNTERWEN		0x7ce
@@ -80,6 +85,21 @@
 
 #endif /* __ASSEMBLER__ */
 
+struct andes_hart_data {
+	unsigned long mcache_ctl;
+	unsigned long mmisc_ctl;
+	unsigned long mpft_ctl;
+	unsigned long mslideleg;
+	unsigned long mxstatus;
+	unsigned long slie;
+	unsigned long slip;
+	unsigned long pmacfg0;
+	unsigned long pmacfg2;
+	unsigned long pmaaddrX[16];
+};
+
+void ae350_non_ret_save(struct sbi_scratch *scratch);
+void ae350_non_ret_restore(struct sbi_scratch *scratch);
 void ae350_enable_coherency_warmboot(void);
 
 /*

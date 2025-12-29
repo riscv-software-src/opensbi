@@ -126,6 +126,7 @@ static int ae350_hart_stop(void)
 	if (rc)
 		return SBI_EFAIL;
 
+	ae350_non_ret_save(sbi_scratch_thishart_ptr());
 	ae350_disable_coherency();
 	wfi();
 	return 0;
