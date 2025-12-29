@@ -60,5 +60,6 @@ int atcsmu_set_reset_vector(u64 wakeup_addr, u32 hartid);
 u32 atcsmu_get_sleep_type(u32 hartid);
 void atcsmu_write_scratch(u32 value);
 u32 atcsmu_read_scratch(void);
+bool atcsmu_pcs_is_sleep(u32 hartid, bool deep_sleep);
 
 #endif

@@ -8,9 +8,12 @@
 #include <andes/andes_pmu.h>
 #include <andes/andes_sbi.h>
 #include <platform_override.h>
+#include <sbi/sbi_ecall_interface.h>
+#include <sbi/riscv_asm.h>
 #include <sbi/sbi_init.h>
 #include <sbi/sbi_scratch.h>
 #include <sbi_utils/fdt/fdt_helper.h>
+#include <sbi_utils/hsm/fdt_hsm_andes_atcsmu.h>
 
 static unsigned long andes_hart_data_offset;
 extern void _start_warm(void);
@@ -59,14 +62,17 @@ void ae350_enable_coherency_warmboot(void)
 
 static int ae350_early_init(bool cold_boot)
 {
+	u32 hartid = current_hartid();
+	u32 sleep_type = atcsmu_get_sleep_type(hartid);
+
 	if (cold_boot) {
 		andes_hart_data_offset = sbi_scratch_alloc_offset(sizeof(struct andes_hart_data));
 		if (!andes_hart_data_offset)
 			return SBI_ENOMEM;
 	}
 
-	/* Don't restore Andes CSRs during boot */
-	if (sbi_init_count(current_hartindex()))
+	/* Don't restore Andes CSRs during boot or wake up from light sleep */
+	if (sbi_init_count(current_hartindex()) && sleep_type == SBI_SUSP_SLEEP_TYPE_SUSPEND)
 		ae350_non_ret_restore(sbi_scratch_thishart_ptr());
 
 	return generic_early_init(cold_boot);

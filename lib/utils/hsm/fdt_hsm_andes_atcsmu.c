@@ -94,16 +94,38 @@ u32 atcsmu_read_scratch(void)
 	return readl_relaxed((char *)atcsmu_base + SCRATCH_PAD_OFFSET);
 }
 
+bool atcsmu_pcs_is_sleep(u32 hartid, bool deep_sleep)
+{
+	u32 pcs_status = readl_relaxed((char *)atcsmu_base + PCSm_STATUS_OFFSET(hartid));
+	u32 pd_status = deep_sleep ? PD_STATUS_DEEP_SLEEP : PD_STATUS_LIGHT_SLEEP;
+
+	if (EXTRACT_FIELD(pcs_status, PD_TYPE_MASK) != PD_TYPE_SLEEP) {
+		sbi_printf("ATCSMU: hart%d (PCS%d): failed to sleep\n", hartid, hartid + 3);
+		return false;
+	}
+
+	if (EXTRACT_FIELD(pcs_status, PD_STATUS_MASK) != pd_status) {
+		sbi_printf("ATCSMU: hart%d (PCS%d): failed to enter %s sleep\n",
+			   hartid, hartid + 3, deep_sleep ? "deep" : "light");
+		return false;
+	}
+
+	return true;
+}
+
 static int ae350_hart_start(u32 hartid, ulong saddr)
 {
 	u32 hartindex = sbi_hartid_to_hartindex(hartid);
+	u32 sleep_type = atcsmu_get_sleep_type(hartid);
 
 	/*
 	 * Don't send wakeup command when:
 	 * 1) boot time
 	 * 2) the target hart is non-sleepable 25-series hart0
+	 * 3) light sleep
 	 */
-	if (!sbi_init_count(hartindex) || (is_andes(25) && hartid == 0))
+	if (!sbi_init_count(hartindex) || (is_andes(25) && hartid == 0) ||
+	    sleep_type == SBI_SUSP_AE350_LIGHT_SLEEP)
 		return sbi_ipi_raw_send(hartindex, false);
 
 	atcsmu_set_command(WAKEUP_CMD, hartid);
@@ -130,16 +152,27 @@ static int ae350_hart_stop(void)
 	/* Prevent the core leaving the WFI mode unexpectedly */
 	csr_write(CSR_MIE, 0);
 
-	atcsmu_set_wakeup_events(0x0, hartid);
-	atcsmu_set_command(DEEP_SLEEP_CMD, hartid);
-	rc = atcsmu_set_reset_vector((ulong)ae350_enable_coherency_warmboot, hartid);
-	if (rc)
-		return SBI_EFAIL;
+	if (sleep_type == SBI_SUSP_AE350_LIGHT_SLEEP) {
+		csr_write(CSR_MIE, MIP_MSIP);
+		atcsmu_set_wakeup_events(PCS_WAKEUP_MSIP_MASK, hartid);
+		atcsmu_set_command(LIGHT_SLEEP_CMD, hartid);
+	} else if (sleep_type == SBI_SUSP_SLEEP_TYPE_SUSPEND) {
+		atcsmu_set_wakeup_events(0x0, hartid);
+		atcsmu_set_command(DEEP_SLEEP_CMD, hartid);
+		rc = atcsmu_set_reset_vector((ulong)ae350_enable_coherency_warmboot, hartid);
+		if (rc)
+			return SBI_EFAIL;
 
-	ae350_non_ret_save(sbi_scratch_thishart_ptr());
+		ae350_non_ret_save(sbi_scratch_thishart_ptr());
+	}
+
 	ae350_disable_coherency();
 	wfi();
-	return 0;
+
+	/* Light sleep resumes here */
+	ae350_enable_coherency();
+
+	return SBI_ENOTSUPP;
 }
 
 static const struct sbi_hsm_device hsm_andes_atcsmu = {
