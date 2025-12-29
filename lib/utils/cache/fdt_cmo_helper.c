@@ -41,6 +41,29 @@ int fdt_cmo_llc_flush_all(void)
 	return cache_flush_all(llc);
 }
 
+int fdt_cmo_private_flc_enable(bool enable)
+{
+	struct cache_device *flc = get_hart_flc(sbi_scratch_thishart_ptr());
+
+	if (!flc || !flc->cpu_private)
+		return SBI_ENODEV;
+
+	return cache_enable(flc, enable);
+}
+
+int fdt_cmo_llc_enable(bool enable)
+{
+	struct cache_device *llc = get_hart_flc(sbi_scratch_thishart_ptr());
+
+	if (!llc)
+		return SBI_ENODEV;
+
+	while (llc->next)
+		llc = llc->next;
+
+	return cache_enable(llc, enable);
+}
+
 static int fdt_cmo_cold_init(const void *fdt)
 {
 	struct sbi_scratch *scratch;

@@ -19,6 +19,8 @@ struct cache_ops {
 	int (*warm_init)(struct cache_device *dev);
 	/** Flush entire cache **/
 	int (*cache_flush_all)(struct cache_device *dev);
+	/** Enable/Disable cache **/
+	int (*cache_enable)(struct cache_device *dev, bool enable);
 };
 
 struct cache_device {
@@ -65,5 +67,14 @@ int cache_add(struct cache_device *dev);
  * @return 0 on success, or a negative error code on failure
  */
 int cache_flush_all(struct cache_device *dev);
+
+/**
+ * Enable/Disable the cache
+ *
+ * @param dev the cache to enable/disable
+ *
+ * @return 0 on success, or a negative error code on failure
+ */
+int cache_enable(struct cache_device *dev, bool enable);
 
 #endif

@@ -44,3 +44,14 @@ int cache_flush_all(struct cache_device *dev)
 
 	return dev->ops->cache_flush_all(dev);
 }
+
+int cache_enable(struct cache_device *dev, bool enable)
+{
+	if (!dev)
+		return SBI_ENODEV;
+
+	if (!dev->ops || !dev->ops->cache_enable)
+		return SBI_ENOTSUPP;
+
+	return dev->ops->cache_enable(dev, enable);
+}
