@@ -9,6 +9,10 @@ config FDT_HSM
 
 if FDT_HSM
 
+config FDT_HSM_ANDES_ATCSMU
+	bool "FDT Andes ATCSMU driver"
+	default n
+
 config FDT_HSM_RPMI
 	bool "FDT RPMI HSM driver"
 	depends on FDT_MAILBOX && RPMI_MAILBOX

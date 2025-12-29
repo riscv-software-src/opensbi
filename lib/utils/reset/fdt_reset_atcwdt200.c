@@ -1,10 +1,7 @@
 /*
  * SPDX-License-Identifier: BSD-2-Clause
  *
- * Copyright (c) 2022 Andes Technology Corporation
- *
- * Authors:
- *   Yu Chien Peter Lin <peterlin@andestech.com>
+ * Copyright (c) 2025 Andes Technology Corporation
  */
 
 #include <libfdt.h>
@@ -15,7 +12,7 @@
 #include <sbi/sbi_system.h>
 #include <sbi_utils/fdt/fdt_driver.h>
 #include <sbi_utils/fdt/fdt_helper.h>
-#include <sbi_utils/sys/atcsmu.h>
+#include <sbi_utils/hsm/fdt_hsm_andes_atcsmu.h>
 
 #define ATCWDT200_WP_NUM 0x5aa5
 #define WREN_REG 0x18
@@ -41,8 +38,9 @@
 #define CLK_PCLK (1 << 1)
 #define WDT_EN (1 << 0)
 
+#define AE350_FLASH_BASE 0x80000000
+
 static volatile char *wdt_addr = NULL;
-static struct smu_data smu = { 0 };
 
 static int ae350_system_reset_check(u32 type, u32 reason)
 {
@@ -59,7 +57,7 @@ static int ae350_system_reset_check(u32 type, u32 reason)
 static void ae350_system_reset(u32 type, u32 reason)
 {
 	sbi_for_each_hartindex(i)
-		if (smu_set_reset_vector(&smu, FLASH_BASE, i))
+		if (atcsmu_set_reset_vector(AE350_FLASH_BASE, i))
 			goto fail;
 
 	/* Program WDT control register  */
@@ -88,16 +86,6 @@ static int atcwdt200_reset_init(const void *fdt, int nodeoff,
 		return SBI_ENODEV;
 
 	wdt_addr = (volatile char *)(unsigned long)reg_addr;
-
-	/*
-	 * The reset device requires smu to program the reset
-	 * vector for each hart.
-	 */
-	if (fdt_parse_compat_addr(fdt, &reg_addr, "andestech,atcsmu"))
-		return SBI_ENODEV;
-
-	smu.addr = (unsigned long)reg_addr;
-
 	sbi_system_reset_add_device(&atcwdt200_reset);
 
 	return 0;

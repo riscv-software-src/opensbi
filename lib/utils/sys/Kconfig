@@ -2,10 +2,6 @@
 
 menu "System Device Support"
 
-config SYS_ATCSMU
-	bool "Andes System Management Unit (SMU) support"
-	default n
-
 config SYS_HTIF
 	bool "Host transfere interface (HTIF) support"
 	default n
