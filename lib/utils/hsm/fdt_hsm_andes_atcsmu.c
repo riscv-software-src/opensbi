@@ -84,6 +84,16 @@ u32 atcsmu_get_sleep_type(u32 hartid)
 	return readl_relaxed((char *)atcsmu_base + PCSm_SCRATCH_OFFSET(hartid));
 }
 
+void atcsmu_write_scratch(u32 value)
+{
+	writel_relaxed(value, (char *)atcsmu_base + SCRATCH_PAD_OFFSET);
+}
+
+u32 atcsmu_read_scratch(void)
+{
+	return readl_relaxed((char *)atcsmu_base + SCRATCH_PAD_OFFSET);
+}
+
 static int ae350_hart_start(u32 hartid, ulong saddr)
 {
 	u32 hartindex = sbi_hartid_to_hartindex(hartid);
