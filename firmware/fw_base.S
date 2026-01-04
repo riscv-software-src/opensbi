@@ -107,6 +107,30 @@ _bss_zero:
 	add	s4, s4, __SIZEOF_POINTER__
 	blt	s4, s5, _bss_zero
 
+	/* Trying to initialize the stack guard via the Zkr extension */
+	lla	t0, __stack_chk_guard_done
+	csrw	CSR_MTVEC, t0
+	li	t0, 0
+	li	t3, SEED_OPTS_ES16
+	li	t4, SEED_ENTROPY_MASK
+	li	t5, __SIZEOF_POINTER__
+__stack_chk_guard_loop:
+	csrrw	t1, CSR_SEED, x0
+	li	t2, SEED_OPTS_MASK
+	and	t2, t2, t1
+	bgtu	t2, t3, __stack_chk_guard_done
+	bltu	t2, t3, __stack_chk_guard_loop
+	and	t1, t1, t4
+	slli	t0, t0, 16
+	or	t0, t0, t1
+	addi	t5, t5, -2
+	bgtz	t5, __stack_chk_guard_loop
+	lla	t1, __stack_chk_guard
+	REG_S	t0, 0(t1)
+	j	__stack_chk_guard_done
+	.align 3
+__stack_chk_guard_done:
+
 	/* Setup temporary trap handler */
 	lla	s4, _start_hang
 	csrw	CSR_MTVEC, s4

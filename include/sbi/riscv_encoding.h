@@ -261,6 +261,16 @@
 #define CSR_FRM				0x002
 #define CSR_FCSR			0x003
 
+/* User entropy source */
+#define CSR_SEED			0x015
+#define SEED_OPTS_SHIFT			30
+#define SEED_OPTS_MASK			(_UL(3) << SEED_OPTS_SHIFT)
+#define SEED_OPTS_BIST			(_UL(0) << SEED_OPTS_SHIFT)
+#define SEED_OPTS_WAIT			(_UL(1) << SEED_OPTS_SHIFT)
+#define SEED_OPTS_ES16			(_UL(2) << SEED_OPTS_SHIFT)
+#define SEED_OPTS_DEAD			(_UL(3) << SEED_OPTS_SHIFT)
+#define SEED_ENTROPY_MASK		0xffff
+
 /* User Counters/Timers */
 #define CSR_CYCLE			0xc00
 #define CSR_TIME			0xc01
