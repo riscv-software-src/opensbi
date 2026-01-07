@@ -394,7 +394,7 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	 * detected, M-mode access to the S/U space will be rescinded.
 	 */
 	rc = sbi_hart_protection_configure(scratch);
-	if (rc) {
+	if (rc && rc != SBI_EINVAL) {
 		sbi_printf("%s: hart isolation configure failed (error %d)\n",
 			   __func__, rc);
 		sbi_hart_hang();
@@ -473,7 +473,7 @@ static void __noreturn init_warm_startup(struct sbi_scratch *scratch,
 	 * detected, M-mode access to the S/U space will be rescinded.
 	 */
 	rc = sbi_hart_protection_configure(scratch);
-	if (rc)
+	if (rc && rc != SBI_EINVAL)
 		sbi_hart_hang();
 
 	count = sbi_scratch_offset_ptr(scratch, init_count_offset);
@@ -494,7 +494,7 @@ static void __noreturn init_warm_resume(struct sbi_scratch *scratch,
 		sbi_hart_hang();
 
 	rc = sbi_hart_protection_configure(scratch);
-	if (rc)
+	if (rc && rc != SBI_EINVAL)
 		sbi_hart_hang();
 
 	sbi_hsm_hart_resume_finish(scratch, hartid);
