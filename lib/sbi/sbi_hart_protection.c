@@ -54,7 +54,7 @@ int sbi_hart_protection_configure(struct sbi_scratch *scratch)
 	struct sbi_hart_protection *hprot = sbi_hart_protection_best();
 
 	if (!hprot)
-		return SBI_EINVAL;
+		return 0;
 	if (!hprot->configure)
 		return SBI_ENOSYS;
 
@@ -75,9 +75,7 @@ int sbi_hart_protection_map_range(unsigned long base, unsigned long size)
 {
 	struct sbi_hart_protection *hprot = sbi_hart_protection_best();
 
-	if (!hprot)
-		return SBI_EINVAL;
-	if (!hprot->map_range)
+	if (!hprot || !hprot->map_range)
 		return 0;
 
 	return hprot->map_range(sbi_scratch_thishart_ptr(), base, size);
@@ -87,9 +85,7 @@ int sbi_hart_protection_unmap_range(unsigned long base, unsigned long size)
 {
 	struct sbi_hart_protection *hprot = sbi_hart_protection_best();
 
-	if (!hprot)
-		return SBI_EINVAL;
-	if (!hprot->unmap_range)
+	if (!hprot || !hprot->unmap_range)
 		return 0;
 
 	return hprot->unmap_range(sbi_scratch_thishart_ptr(), base, size);
