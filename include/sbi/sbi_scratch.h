@@ -186,7 +186,7 @@ extern u32 sbi_scratch_hart_count;
 /** HART index to HART id table */
 extern u32 hartindex_to_hartid_table[];
 
-/** Get sbi_scratch from HART index */
+/** Get HART id from HART index */
 #define sbi_hartindex_to_hartid(__hartindex)		\
 ({							\
 	((__hartindex) < SBI_HARTMASK_MAX_BITS) ?	\
