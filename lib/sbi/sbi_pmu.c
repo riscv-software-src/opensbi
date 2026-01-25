@@ -227,7 +227,7 @@ static bool pmu_ctr_idx_validate(unsigned long cbase, unsigned long cmask)
 	return cmask && cbase + sbi_fls(cmask) < total_ctrs;
 }
 
-int sbi_pmu_ctr_fw_read(uint32_t cidx, uint64_t *cval)
+int sbi_pmu_ctr_fw_read(unsigned long cidx, uint64_t *cval, bool high_bits)
 {
 	int event_idx_type;
 	uint32_t event_code;
@@ -235,6 +235,14 @@ int sbi_pmu_ctr_fw_read(uint32_t cidx, uint64_t *cval)
 
 	if (unlikely(!phs))
 		return SBI_EINVAL;
+
+	if (cidx < num_hw_ctrs || cidx >= total_ctrs)
+		return SBI_EINVAL;
+
+#if __riscv_xlen > 32
+	if (high_bits)
+		return 0;
+#endif
 
 	event_idx_type = pmu_ctr_validate(phs, cidx, &event_code);
 	if (event_idx_type != SBI_PMU_EVENT_TYPE_FW)

@@ -50,12 +50,12 @@ static int sbi_ecall_pmu_handler(unsigned long extid, unsigned long funcid,
 
 		break;
 	case SBI_EXT_PMU_COUNTER_FW_READ:
-		ret = sbi_pmu_ctr_fw_read(regs->a0, &temp);
+		ret = sbi_pmu_ctr_fw_read(regs->a0, &temp, false);
 		out->value = temp;
 		break;
 	case SBI_EXT_PMU_COUNTER_FW_READ_HI:
+		ret = sbi_pmu_ctr_fw_read(regs->a0, &temp, true);
 #if __riscv_xlen == 32
-		ret = sbi_pmu_ctr_fw_read(regs->a0, &temp);
 		out->value = temp >> 32;
 #else
 		out->value = 0;
