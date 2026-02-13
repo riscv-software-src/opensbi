@@ -24,6 +24,11 @@ static int irqchip_plic_update_context_map(const void *fdt, int nodeoff,
 	u32 phandle, hwirq, hartid, hartindex;
 	int i, err, count, cpu_offset, cpu_intc_offset;
 
+	for (i = 0; i < sbi_hart_count(); i++) {
+		pd->context_map[i][PLIC_M_CONTEXT] = -1;
+		pd->context_map[i][PLIC_S_CONTEXT] = -1;
+	}
+
 	val = fdt_getprop(fdt, nodeoff, "interrupts-extended", &count);
 	if (!val || count < sizeof(fdt32_t))
 		return SBI_EINVAL;
