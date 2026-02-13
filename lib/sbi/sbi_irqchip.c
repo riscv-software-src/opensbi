@@ -30,6 +30,18 @@ int sbi_irqchip_process(void)
 	return hd->chip->process_hwirqs(hd->chip);
 }
 
+struct sbi_irqchip_device *sbi_irqchip_find_device(u32 id)
+{
+	struct sbi_irqchip_device *chip;
+
+	sbi_list_for_each_entry(chip, &irqchip_list, node) {
+		if (chip->id == id)
+			return chip;
+	}
+
+	return NULL;
+}
+
 int sbi_irqchip_add_device(struct sbi_irqchip_device *chip)
 {
 	struct sbi_irqchip_hart_data *hd;
@@ -38,6 +50,9 @@ int sbi_irqchip_add_device(struct sbi_irqchip_device *chip)
 
 	if (!chip || !sbi_hartmask_weight(&chip->target_harts))
 		return SBI_EINVAL;
+
+	if (sbi_irqchip_find_device(chip->id))
+		return SBI_EALREADY;
 
 	if (chip->process_hwirqs) {
 		sbi_hartmask_for_each_hartindex(h, &chip->target_harts) {

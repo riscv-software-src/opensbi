@@ -21,6 +21,9 @@ struct sbi_irqchip_device {
 	/** Node in the list of irqchip devices */
 	struct sbi_dlist node;
 
+	/** Unique ID of this irqchip */
+	u32 id;
+
 	/** Set of harts targetted by this irqchip */
 	struct sbi_hartmask target_harts;
 
@@ -40,6 +43,9 @@ struct sbi_irqchip_device {
  * @param regs pointer for trap registers
  */
 int sbi_irqchip_process(void);
+
+/** Find an irqchip device based on unique ID */
+struct sbi_irqchip_device *sbi_irqchip_find_device(u32 id);
 
 /** Register an irqchip device to receive callbacks */
 int sbi_irqchip_add_device(struct sbi_irqchip_device *chip);

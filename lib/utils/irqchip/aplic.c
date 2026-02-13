@@ -306,6 +306,7 @@ int aplic_cold_irqchip_init(struct aplic_data *aplic)
 	}
 
 	/* Register irqchip device */
+	aplic->irqchip.id = aplic->unique_id;
 	rc = sbi_irqchip_add_device(&aplic->irqchip);
 	if (rc)
 		return rc;
