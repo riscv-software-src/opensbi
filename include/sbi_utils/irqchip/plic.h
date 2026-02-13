@@ -17,6 +17,7 @@ struct plic_data {
 	/* Private members */
 	struct sbi_irqchip_device irqchip;
 	/* Public members */
+	u32 unique_id;
 	unsigned long addr;
 	unsigned long size;
 	unsigned long num_src;

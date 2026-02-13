@@ -24,6 +24,7 @@ struct imsic_regs {
 };
 
 struct imsic_data {
+	u32 unique_id;
 	bool targets_mmode;
 	u32 guest_index_bits;
 	u32 hart_index_bits;

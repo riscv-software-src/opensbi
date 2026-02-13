@@ -23,6 +23,7 @@
 		(OPENPITON_DEFAULT_CLINT_ADDR + CLINT_MTIMER_OFFSET)
 
 static struct plic_data plic = {
+	.unique_id = 0,
 	.addr = (unsigned long)OPENPITON_DEFAULT_PLIC_ADDR,
 	.size = OPENPITON_DEFAULT_PLIC_SIZE,
 	.num_src = OPENPITON_DEFAULT_PLIC_NUM_SOURCES,

@@ -24,6 +24,7 @@
 						 CLINT_MTIMER_OFFSET)
 
 static struct plic_data plic = {
+	.unique_id = 0,
 	.addr = ARIANE_PLIC_ADDR,
 	.size = ARIANE_PLIC_SIZE,
 	.num_src = ARIANE_PLIC_NUM_SOURCES,

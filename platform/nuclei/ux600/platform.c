@@ -63,6 +63,7 @@
 static u32 ux600_clk_freq = 8000000;
 
 static struct plic_data plic = {
+	.unique_id = 0,
 	.addr = UX600_PLIC_ADDR,
 	.size = UX600_PLIC_SIZE,
 	.num_src = UX600_PLIC_NUM_SOURCES,

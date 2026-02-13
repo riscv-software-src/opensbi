@@ -34,6 +34,7 @@
 #define PLATFORM_UART_BAUDRATE		115200
 
 static struct plic_data plic = {
+	.unique_id = 0,
 	.addr = PLATFORM_PLIC_ADDR,
 	.size = PLATFORM_PLIC_SIZE,
 	.num_src = PLATFORM_PLIC_NUM_SOURCES,
