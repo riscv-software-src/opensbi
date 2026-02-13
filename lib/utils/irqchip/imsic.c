@@ -147,7 +147,7 @@ int imsic_get_target_file(u32 hartindex)
 	return imsic_get_hart_file(scratch);
 }
 
-static int imsic_process_hwirqs(void)
+static int imsic_process_hwirqs(struct sbi_irqchip_device *chip)
 {
 	ulong mirq;
 
@@ -391,7 +391,10 @@ int imsic_cold_irqchip_init(struct imsic_data *imsic)
 	}
 
 	/* Register irqchip device */
-	sbi_irqchip_add_device(&imsic_device);
+	sbi_hartmask_set_all(&imsic_device.target_harts);
+	rc = sbi_irqchip_add_device(&imsic_device);
+	if (rc)
+		return rc;
 
 	/* Register IPI device */
 	sbi_ipi_add_device(&imsic_ipi_device);

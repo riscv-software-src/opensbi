@@ -276,11 +276,10 @@ int plic_cold_irqchip_init(struct plic_data *plic)
 			continue;
 
 		plic_set_hart_data_ptr(sbi_hartindex_to_scratch(i), plic);
+		sbi_hartmask_set_hartindex(i, &plic->irqchip.target_harts);
 	}
 
 	/* Register irqchip device */
 	plic->irqchip.warm_init = plic_warm_irqchip_init;
-	sbi_irqchip_add_device(&plic->irqchip);
-
-	return 0;
+	return sbi_irqchip_add_device(&plic->irqchip);
 }

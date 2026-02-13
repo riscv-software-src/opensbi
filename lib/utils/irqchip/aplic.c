@@ -297,8 +297,18 @@ int aplic_cold_irqchip_init(struct aplic_data *aplic)
 			return rc;
 	}
 
+	if (aplic->num_idc) {
+		for (i = 0; i < aplic->num_idc; i++)
+			sbi_hartmask_set_hartindex(aplic->idc_map[i],
+						   &aplic->irqchip.target_harts);
+	} else {
+		sbi_hartmask_set_all(&aplic->irqchip.target_harts);
+	}
+
 	/* Register irqchip device */
-	sbi_irqchip_add_device(&aplic->irqchip);
+	rc = sbi_irqchip_add_device(&aplic->irqchip);
+	if (rc)
+		return rc;
 
 	/* Attach to the aplic list */
 	sbi_list_add_tail(&aplic->node, &aplic_list);
