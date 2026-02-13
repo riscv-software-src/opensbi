@@ -23,8 +23,8 @@ struct sbi_irqchip_device {
 	/** Initialize per-hart state for the current hart */
 	int (*warm_init)(struct sbi_irqchip_device *chip);
 
-	/** Handle an IRQ from this irqchip */
-	int (*irq_handle)(void);
+	/** Process hardware interrupts from this irqchip */
+	int (*process_hwirqs)(void);
 };
 
 /**

@@ -147,7 +147,7 @@ int imsic_get_target_file(u32 hartindex)
 	return imsic_get_hart_file(scratch);
 }
 
-static int imsic_external_irqfn(void)
+static int imsic_process_hwirqs(void)
 {
 	ulong mirq;
 
@@ -348,7 +348,7 @@ int imsic_data_check(struct imsic_data *imsic)
 
 static struct sbi_irqchip_device imsic_device = {
 	.warm_init	= imsic_warm_irqchip_init,
-	.irq_handle	= imsic_external_irqfn,
+	.process_hwirqs	= imsic_process_hwirqs,
 };
 
 int imsic_cold_irqchip_init(struct imsic_data *imsic)

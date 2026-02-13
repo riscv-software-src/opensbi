@@ -29,8 +29,8 @@ void sbi_irqchip_add_device(struct sbi_irqchip_device *chip)
 {
 	sbi_list_add_tail(&chip->node, &irqchip_list);
 
-	if (chip->irq_handle)
-		ext_irqfn = chip->irq_handle;
+	if (chip->process_hwirqs)
+		ext_irqfn = chip->process_hwirqs;
 }
 
 int sbi_irqchip_init(struct sbi_scratch *scratch, bool cold_boot)
