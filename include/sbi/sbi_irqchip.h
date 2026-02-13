@@ -21,7 +21,7 @@ struct sbi_irqchip_device {
 	struct sbi_dlist node;
 
 	/** Initialize per-hart state for the current hart */
-	int (*warm_init)(struct sbi_irqchip_device *dev);
+	int (*warm_init)(struct sbi_irqchip_device *chip);
 
 	/** Handle an IRQ from this irqchip */
 	int (*irq_handle)(void);
@@ -38,7 +38,7 @@ struct sbi_irqchip_device {
 int sbi_irqchip_process(void);
 
 /** Register an irqchip device to receive callbacks */
-void sbi_irqchip_add_device(struct sbi_irqchip_device *dev);
+void sbi_irqchip_add_device(struct sbi_irqchip_device *chip);
 
 /** Initialize interrupt controllers */
 int sbi_irqchip_init(struct sbi_scratch *scratch, bool cold_boot);

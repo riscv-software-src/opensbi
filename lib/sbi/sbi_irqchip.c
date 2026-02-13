@@ -25,19 +25,19 @@ int sbi_irqchip_process(void)
 	return ext_irqfn();
 }
 
-void sbi_irqchip_add_device(struct sbi_irqchip_device *dev)
+void sbi_irqchip_add_device(struct sbi_irqchip_device *chip)
 {
-	sbi_list_add_tail(&dev->node, &irqchip_list);
+	sbi_list_add_tail(&chip->node, &irqchip_list);
 
-	if (dev->irq_handle)
-		ext_irqfn = dev->irq_handle;
+	if (chip->irq_handle)
+		ext_irqfn = chip->irq_handle;
 }
 
 int sbi_irqchip_init(struct sbi_scratch *scratch, bool cold_boot)
 {
 	int rc;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
-	struct sbi_irqchip_device *dev;
+	struct sbi_irqchip_device *chip;
 
 	if (cold_boot) {
 		rc = sbi_platform_irqchip_init(plat);
@@ -45,10 +45,10 @@ int sbi_irqchip_init(struct sbi_scratch *scratch, bool cold_boot)
 			return rc;
 	}
 
-	sbi_list_for_each_entry(dev, &irqchip_list, node) {
-		if (!dev->warm_init)
+	sbi_list_for_each_entry(chip, &irqchip_list, node) {
+		if (!chip->warm_init)
 			continue;
-		rc = dev->warm_init(dev);
+		rc = chip->warm_init(chip);
 		if (rc)
 			return rc;
 	}
