@@ -346,9 +346,17 @@ int imsic_data_check(struct imsic_data *imsic)
 	return 0;
 }
 
+static int imsic_hwirq_setup(struct sbi_irqchip_device *chip, u32 hwirq)
+{
+	if (!hwirq || hwirq == IMSIC_IPI_ID)
+		return SBI_ENOTSUPP;
+	return 0;
+}
+
 static struct sbi_irqchip_device imsic_device = {
 	.warm_init	= imsic_warm_irqchip_init,
 	.process_hwirqs	= imsic_process_hwirqs,
+	.hwirq_setup	= imsic_hwirq_setup,
 };
 
 int imsic_cold_irqchip_init(struct imsic_data *imsic)
@@ -392,6 +400,7 @@ int imsic_cold_irqchip_init(struct imsic_data *imsic)
 
 	/* Register irqchip device */
 	imsic_device.id = imsic->unique_id;
+	imsic_device.num_hwirq = imsic->num_ids + 1;
 	sbi_hartmask_set_all(&imsic_device.target_harts);
 	rc = sbi_irqchip_add_device(&imsic_device);
 	if (rc)

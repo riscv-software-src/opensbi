@@ -18,11 +18,20 @@ struct sbi_scratch;
 
 /** irqchip hardware device */
 struct sbi_irqchip_device {
-	/** Node in the list of irqchip devices */
+	/** Node in the list of irqchip devices (private) */
 	struct sbi_dlist node;
+
+	/** Internal data of all hardware interrupts of this irqchip (private) */
+	struct sbi_irqchip_hwirq_data *hwirqs;
+
+	/** List of interrupt handlers */
+	struct sbi_dlist handler_list;
 
 	/** Unique ID of this irqchip */
 	u32 id;
+
+	/** Number of hardware IRQs of this irqchip */
+	u32 num_hwirq;
 
 	/** Set of harts targetted by this irqchip */
 	struct sbi_hartmask target_harts;
@@ -32,6 +41,21 @@ struct sbi_irqchip_device {
 
 	/** Process hardware interrupts from this irqchip */
 	int (*process_hwirqs)(struct sbi_irqchip_device *chip);
+
+	/** Setup a hardware interrupt of this irqchip */
+	int (*hwirq_setup)(struct sbi_irqchip_device *chip, u32 hwirq);
+
+	/** Cleanup a hardware interrupt of this irqchip */
+	void (*hwirq_cleanup)(struct sbi_irqchip_device *chip, u32 hwirq);
+
+	/** End of hardware interrupt of this irqchip */
+	void (*hwirq_eoi)(struct sbi_irqchip_device *chip, u32 hwirq);
+
+	/** Mask a hardware interrupt of this irqchip */
+	void (*hwirq_mask)(struct sbi_irqchip_device *chip, u32 hwirq);
+
+	/** Unmask a hardware interrupt of this irqchip */
+	void (*hwirq_unmask)(struct sbi_irqchip_device *chip, u32 hwirq);
 };
 
 /**
@@ -43,6 +67,36 @@ struct sbi_irqchip_device {
  * @param regs pointer for trap registers
  */
 int sbi_irqchip_process(void);
+
+/**
+ * Process a hwirq of an irqchip device
+ *
+ * This function is called by irqchip drivers to handle hardware
+ * interrupts of the irqchip.
+ */
+int sbi_irqchip_process_hwirq(struct sbi_irqchip_device *chip, u32 hwirq);
+
+/** Unmask a hardware interrupt */
+int sbi_irqchip_unmask_hwirq(struct sbi_irqchip_device *chip, u32 hwirq);
+
+/** Mask a hardware interrupt */
+int sbi_irqchip_mask_hwirq(struct sbi_irqchip_device *chip, u32 hwirq);
+
+/** Default raw hardware interrupt handler */
+int sbi_irqchip_raw_handler_default(struct sbi_irqchip_device *chip, u32 hwirq);
+
+/** Set raw hardware interrupt handler */
+int sbi_irqchip_set_raw_handler(struct sbi_irqchip_device *chip, u32 hwirq,
+				int (*raw_hndl)(struct sbi_irqchip_device *, u32));
+
+/** Register a hardware interrupt handler */
+int sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
+				 u32 first_hwirq, u32 num_hwirq,
+				 int (*callback)(u32 hwirq, void *opaque), void *opaque);
+
+/** Unregister a hardware interrupt handler */
+int sbi_irqchip_unregister_handler(struct sbi_irqchip_device *chip,
+				   u32 first_hwirq, u32 num_hwirq);
 
 /** Find an irqchip device based on unique ID */
 struct sbi_irqchip_device *sbi_irqchip_find_device(u32 id);

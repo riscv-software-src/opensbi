@@ -281,6 +281,7 @@ int plic_cold_irqchip_init(struct plic_data *plic)
 
 	/* Register irqchip device */
 	plic->irqchip.id = plic->unique_id;
+	plic->irqchip.num_hwirq = plic->num_src + 1;
 	plic->irqchip.warm_init = plic_warm_irqchip_init;
 	return sbi_irqchip_add_device(&plic->irqchip);
 }
