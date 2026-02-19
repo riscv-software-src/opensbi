@@ -502,7 +502,7 @@ static int fdt_parse_uart_node_common(const void *fdt, int nodeoffset,
 
 	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
 				    &reg_addr, &reg_size);
-	if (rc < 0 || !reg_addr || !reg_size)
+	if (rc < 0 || !reg_size)
 		return SBI_ENODEV;
 	uart->addr = reg_addr;
 
@@ -671,7 +671,7 @@ int fdt_parse_aplic_node(const void *fdt, int nodeoff, struct aplic_data *aplic)
 		return SBI_ENODEV;
 
 	rc = fdt_get_node_addr_size(fdt, nodeoff, 0, &reg_addr, &reg_size);
-	if (rc < 0 || !reg_addr || !reg_size)
+	if (rc < 0 || !reg_size)
 		return SBI_ENODEV;
 	aplic->addr = reg_addr;
 	aplic->size = reg_size;
@@ -863,7 +863,7 @@ int fdt_parse_imsic_node(const void *fdt, int nodeoff, struct imsic_data *imsic)
 
 		rc = fdt_get_node_addr_size(fdt, nodeoff, i,
 					    &reg_addr, &reg_size);
-		if (rc < 0 || !reg_addr || !reg_size)
+		if (rc < 0 || !reg_size)
 			break;
 		regs->addr = reg_addr;
 		regs->size = reg_size;
@@ -885,7 +885,7 @@ int fdt_parse_plic_node(const void *fdt, int nodeoffset, struct plic_data *plic)
 
 	rc = fdt_get_node_addr_size(fdt, nodeoffset, 0,
 				    &reg_addr, &reg_size);
-	if (rc < 0 || !reg_addr || !reg_size)
+	if (rc < 0 || !reg_size)
 		return SBI_ENODEV;
 	plic->addr = reg_addr;
 	plic->size = reg_size;
