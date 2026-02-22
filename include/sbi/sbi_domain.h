@@ -170,9 +170,11 @@ static inline bool sbi_domain_memregion_is_subset(
 				const struct sbi_domain_memregion *regB)
 {
 	ulong regA_start = regA->base;
-	ulong regA_end = regA->base + (BIT(regA->order) - 1);
+	ulong regA_mask = (regA->order >= __riscv_xlen) ? ~0UL : (BIT(regA->order) - 1);
+	ulong regA_end = regA_start + regA_mask;
 	ulong regB_start = regB->base;
-	ulong regB_end = regB->base + (BIT(regB->order) - 1);
+	ulong regB_mask = (regB->order >= __riscv_xlen) ? ~0UL : (BIT(regB->order) - 1);
+	ulong regB_end = regB_start + regB_mask;
 
 	if ((regB_start <= regA_start) &&
 	    (regA_start < regB_end) &&
