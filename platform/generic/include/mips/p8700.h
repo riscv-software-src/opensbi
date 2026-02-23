@@ -144,6 +144,24 @@ extern const struct p8700_cm_info *p8700_cm_info;
 #define L2SM_COP_RESULT_ABORT_OK	3
 #define L2SM_COP_RESULT_ABORT_ERROR	4
 #define GCR_L2SM_COP_PRESENT		BIT(31)
+/* MMIO regions. Actual count in GCR_GLOBAL_CONFIG.GCR_GC_NUM_MMIOS */
+#define GCR_MMIO_BOTTOM(n)		(0x700 + (n) * 0x10) /* n = 0..7 */
+#define GCR_MMIO_TOP(n)			(0x708 + (n) * 0x10) /* n = 0..7 */
+#define GCR_MMIO_ADDR			GENMASK(47, 16) /* both top and bottom */
+#define GCR_MMIO_BOTTOM_CCA		GENMASK(9, 8)
+#define GCR_MMIO_BOTTOM_FORCE_NC	BIT(6)
+/*
+ * 15:12 - reserved
+ * 11 - AUX3
+ * 10 - AUX2
+ * 9  - AUX1
+ * 8  - AUX0
+ * 7:1 - reserved
+ * 0  - Main memory port; MEM
+ */
+#define GCR_MMIO_BOTTOM_PORT		GENMASK(5, 2)
+#define GCR_MMIO_BOTTOM_DIS_RQ_LIM	BIT(1)
+#define GCR_MMIO_BOTTOM_EN		BIT(0)
 
 /* CPC Block offsets */
 #define CPC_PWRUP_CTL		0x0030

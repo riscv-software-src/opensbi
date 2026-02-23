@@ -37,6 +37,7 @@
 #define OLB_ACC1		0x65000000
 #define OLB_XNN0		0x43600000
 #define OLB_XNN1		0x63600000
+#define NCORE			0x67800000
 #define OLB_WEST		0x48600000
 #define OLB_WEST_TSTCSR		0x60
 #define TSTCSR_PALLADIUM	BIT(0)
@@ -369,6 +370,12 @@ static int eyeq7h_nascent_init(void)
 			     (void *)(cm_base + L2_PFT_CONTROL_OFFSET));
 		__raw_writel(0x15ff,
 			     (void *)(cm_base + L2_PFT_CONTROL_B_OFFSET));
+		/*
+		 * Remove access to NCORE CSRs from mmio region 1
+		 * which is routed to AUX. NCORE to use default route through MEM.
+		 */
+		__raw_writeq(NCORE-1, (void *)(cm_base + GCR_MMIO_TOP(1)));
+		mb();
 	}
 
 	/* Per core set up */
