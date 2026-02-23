@@ -147,6 +147,11 @@ extern const struct p8700_cm_info *p8700_cm_info;
 
 /* CPC Block offsets */
 #define CPC_PWRUP_CTL		0x0030
+#define CPC_TIMECTL		0x0058
+#define TIMECTL_HARMED		BIT(3)
+#define TIMECTL_HSTOP		BIT(2)
+#define TIMECTL_MARMED		BIT(1)
+#define TIMECTL_MSTOP		BIT(0)
 #define CPC_HRTIME		0x0090
 #define CPC_CM_STAT_CONF	0x1008
 

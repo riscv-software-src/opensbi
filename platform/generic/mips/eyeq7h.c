@@ -44,6 +44,9 @@
 #define TSTCSR_MIPS12_PRESENT	GENMASK(3, 2)
 #define TSTCSR_ACC_PRESENT	GENMASK(5, 4)
 
+#define OLB_WEST_CFG		0x68
+#define WEST_CFG_MIPS_MTIME_START	BIT(8)
+
 /* Use in nascent init - not have DTB yet */
 #define DRAM_ADDRESS		0x800000000UL
 #define DRAM_SIZE		0x800000000UL
@@ -243,6 +246,20 @@ static void eyeq7h_init_clusters(void)
 		eyeq7h_power_up_other_cluster(INSERT_FIELD(0, P8700_HARTID_CLUSTER, i));
 	}
 	eyeq7h_active_clusters = num_clusters;
+	/**
+	 * sync timers in all clusters. EQ7 have counters restart pins for clusters
+	 * connected to the OLB.
+	 * Stop/arm all counters, then restart all at once
+	 */
+	for (int i = 0; i < num_clusters; i++) {
+		write_cpc_timectl(INSERT_FIELD(0, P8700_HARTID_CLUSTER, i),
+				  TIMECTL_HARMED | TIMECTL_HSTOP | TIMECTL_MARMED | TIMECTL_MSTOP);
+	}
+	{
+		u32 cfg = readl((void*)OLB_WEST + OLB_WEST_CFG);
+
+		writel(cfg | WEST_CFG_MIPS_MTIME_START, (void*)OLB_WEST + OLB_WEST_CFG);
+	}
 }
 
 static int eyeq7h_early_init(bool cold_boot)
