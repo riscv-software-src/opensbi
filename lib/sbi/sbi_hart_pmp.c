@@ -204,6 +204,9 @@ static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch)
 		sbi_hart_smepmp_set(scratch, dom, reg, pmp_idx++, pmp_flags,
 				    pmp_log2gran, pmp_addr_max);
 	}
+	/* Disable remaining PMP entries */
+	for(; pmp_idx < pmp_count; pmp_idx++)
+		pmp_disable(pmp_idx);
 
 	/*
 	 * All entries are programmed.
@@ -286,6 +289,9 @@ static int sbi_hart_oldpmp_configure(struct sbi_scratch *scratch)
 				   reg->order);
 		}
 	}
+	/* Disable remaining PMP entries */
+	for(; pmp_idx < pmp_count; pmp_idx++)
+		pmp_disable(pmp_idx);
 
 	sbi_hart_pmp_fence();
 	return 0;
