@@ -33,6 +33,10 @@
 #define MIPS_CTL0_SW_RESET_N	BIT(17)
 #define MIPS_CTL0_CORE_CLK_STS(n)	BIT(28 + (n)) /* n = 0..3 */
 
+#define OLB_ACC0		0x45000000
+#define OLB_ACC1		0x65000000
+#define OLB_XNN0		0x43600000
+#define OLB_XNN1		0x63600000
 #define OLB_WEST		0x48600000
 #define OLB_WEST_TSTCSR		0x60
 #define TSTCSR_PALLADIUM	BIT(0)
@@ -138,15 +142,27 @@ static void eyeq7h_acc_clusters_do_fixup(struct fdt_general_fixup *f, void *fdt)
 		    YN[acc01_present & BIT(0)],
 		    YN[(acc01_present >> 1) & BIT(0)]);
 
+	/* if accelerators present, correspondend OLBS present too */
+	/* deassert cluster resets for accelerators and XNN */
 	if (!(acc01_present & BIT(0))) {
 		sbi_dprintf("Disable ACC0\n");
 		fdt_disable_by_compat(fdt, "mobileye,eyeq7h-acc0-olb");
 		fdt_disable_by_compat(fdt, "mobileye,eyeq7h-xnn0-olb");
+	} else {
+		writel(0xff, (void*)OLB_ACC0 + 0x60);
+		writel(0xff, (void*)OLB_ACC0 + 0x64);
+		writel(0x7f, (void*)OLB_XNN0 + 0x60);
+		writel(0x7f, (void*)OLB_XNN0 + 0x64);
 	}
 	if (!(acc01_present & BIT(1))) {
 		sbi_dprintf("Disable ACC1\n");
 		fdt_disable_by_compat(fdt, "mobileye,eyeq7h-acc1-olb");
 		fdt_disable_by_compat(fdt, "mobileye,eyeq7h-xnn1-olb");
+	} else {
+		writel(0xff, (void*)OLB_ACC1 + 0x60);
+		writel(0xff, (void*)OLB_ACC1 + 0x64);
+		writel(0x7f, (void*)OLB_XNN1 + 0x60);
+		writel(0x7f, (void*)OLB_XNN1 + 0x64);
 	}
 }
 
