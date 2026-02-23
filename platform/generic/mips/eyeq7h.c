@@ -15,6 +15,7 @@
 #include <sbi/sbi_hart_pmp.h>
 #include <sbi/riscv_io.h>
 #include <sbi_utils/fdt/fdt_helper.h>
+#include <sbi_utils/fdt/fdt_fixup.h>
 #include <mips/p8700.h>
 #include <mips/mips-cm.h>
 
@@ -112,12 +113,55 @@ static struct sbi_domain_memregion *find_last_memregion(const struct sbi_domain 
 	return --reg;
 }
 
+static void fdt_disable_by_compat(void *fdt, const char *compatible)
+{
+	int node = 0;
+
+	while ((node = fdt_node_offset_by_compatible(fdt, node, compatible)) >= 0)
+		fdt_setprop_string(fdt, node, "status", "disabled");
+}
+
+/**
+ * p8700_acc_clusters_do_fixup() - detect present accelerator clusters
+ *
+ * Detect what accelerator clusters are actually present in design and
+ * disable missed ones. Same bit indicates presence of the ACC and XNN
+ * clusters
+ */
+static void eyeq7h_acc_clusters_do_fixup(struct fdt_general_fixup *f, void *fdt)
+{
+	u32 tstcsr = readl((void*)OLB_WEST + OLB_WEST_TSTCSR);
+	u32 acc01_present = EXTRACT_FIELD(tstcsr, TSTCSR_ACC_PRESENT);
+	static const char YN[2] = {'N', 'Y'};
+
+	sbi_dprintf("OLB indicates ACC clusters[01] = [%c%c]\n",
+		    YN[acc01_present & BIT(0)],
+		    YN[(acc01_present >> 1) & BIT(0)]);
+
+	if (!(acc01_present & BIT(0))) {
+		sbi_dprintf("Disable ACC0\n");
+		fdt_disable_by_compat(fdt, "mobileye,eyeq7h-acc0-olb");
+		fdt_disable_by_compat(fdt, "mobileye,eyeq7h-xnn0-olb");
+	}
+	if (!(acc01_present & BIT(1))) {
+		sbi_dprintf("Disable ACC1\n");
+		fdt_disable_by_compat(fdt, "mobileye,eyeq7h-acc1-olb");
+		fdt_disable_by_compat(fdt, "mobileye,eyeq7h-xnn1-olb");
+	}
+}
+
+static struct fdt_general_fixup eyeq7h_acc_clusters_fixup = {
+	.name = "acc-clusters-fixup",
+	.do_fixup = eyeq7h_acc_clusters_do_fixup,
+};
+
 static int eyeq7h_final_init(bool cold_boot)
 {
 	if (!cold_boot)
 		return 0;
 
 	sbi_hsm_set_device(&eyeq7h_hsm);
+	fdt_register_general_fixup(&eyeq7h_acc_clusters_fixup);
 
 	return generic_final_init(cold_boot);
 }
