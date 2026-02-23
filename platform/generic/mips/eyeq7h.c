@@ -240,7 +240,7 @@ static void eyeq7h_init_clusters(void)
 	sbi_dprintf("Use %d clusters\n", num_clusters);
 	/* Power up other clusters in the platform. */
 	for (int i = 1; i < num_clusters; i++) {
-		eyeq7h_power_up_other_cluster(i << NEW_CLUSTER_SHIFT);
+		eyeq7h_power_up_other_cluster(INSERT_FIELD(0, P8700_HARTID_CLUSTER, i));
 	}
 	eyeq7h_active_clusters = num_clusters;
 }

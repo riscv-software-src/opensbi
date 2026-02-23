@@ -47,7 +47,7 @@ void mips_p8700_power_up_other_cluster(u32 hartid)
 	for (int i = 100; i > 0; i--) {
 		u32 stat = read_cpc_cm_stat_conf(hartid);
 
-		stat = EXT(stat, CPC_Cx_STAT_CONF_SEQ_STATE);
+		stat = EXTRACT_FIELD(stat, CPC_Cx_STAT_CONF_SEQ_STATE);
 		if (stat == CPC_Cx_STAT_CONF_SEQ_STATE_U5)
 			return;
 		cpu_relax();
@@ -67,7 +67,7 @@ static bool mips_hart_reached_state(void *arg)
 	struct mips_boot_params *p = arg;
 	u32 stat = read_cpc_co_stat_conf(p->hartid);
 
-	stat = EXT(stat, CPC_Cx_STAT_CONF_SEQ_STATE);
+	stat = EXTRACT_FIELD(stat, CPC_Cx_STAT_CONF_SEQ_STATE);
 	return stat == p->target_state;
 }
 

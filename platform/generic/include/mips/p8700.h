@@ -21,16 +21,16 @@ struct p8700_cm_info {
 extern const struct p8700_cm_info *p8700_cm_info;
 
 /* PMA */
-#define CSR_MIPSPMACFG0	0x7e0
-#define CSR_MIPSPMACFG1	0x7e1
-#define CSR_MIPSPMACFG2	0x7e2
-#define CSR_MIPSPMACFG3	0x7e3
-#define CSR_MIPSPMACFG4	0x7e4
-#define CSR_MIPSPMACFG5	0x7e5
-#define CSR_MIPSPMACFG6	0x7e6
-#define CSR_MIPSPMACFG7	0x7e7
-#define CSR_MIPSPMACFG8	0x7e8
-#define CSR_MIPSPMACFG9	0x7e9
+#define CSR_MIPSPMACFG0		0x7e0
+#define CSR_MIPSPMACFG1		0x7e1
+#define CSR_MIPSPMACFG2		0x7e2
+#define CSR_MIPSPMACFG3		0x7e3
+#define CSR_MIPSPMACFG4		0x7e4
+#define CSR_MIPSPMACFG5		0x7e5
+#define CSR_MIPSPMACFG6		0x7e6
+#define CSR_MIPSPMACFG7		0x7e7
+#define CSR_MIPSPMACFG8		0x7e8
+#define CSR_MIPSPMACFG9		0x7e9
 #define CSR_MIPSPMACFG10	0x7ea
 #define CSR_MIPSPMACFG11	0x7eb
 #define CSR_MIPSPMACFG12	0x7ec
@@ -68,26 +68,13 @@ extern const struct p8700_cm_info *p8700_cm_info;
 
 #define MIPSCONFIG5_MTW		4
 
-#define GEN_MASK(h, l)	(((1ul << ((h) + 1 - (l))) - 1) << (l))
-#define EXT(val, mask)	(((val) & (mask)) >> (__builtin_ffs(mask) - 1))
-
-/*
- * We allocate the number of bits to encode clusters, cores, and harts
- * from the original mhartid to a new dense index.
- */
-#define NUM_OF_BITS_FOR_CLUSTERS	4
-#define NUM_OF_BITS_FOR_CORES		12
-#define NUM_OF_BITS_FOR_HARTS		4
-
-/* To get the field from new/hashed mhartid */
-#define NEW_CLUSTER_SHIFT	(NUM_OF_BITS_FOR_CORES + NUM_OF_BITS_FOR_HARTS)
-#define NEW_CLUSTER_MASK	((1 << NUM_OF_BITS_FOR_CLUSTERS) - 1)
-#define NEW_CORE_SHIFT		NUM_OF_BITS_FOR_HARTS
-#define NEW_CORE_MASK		((1 << NUM_OF_BITS_FOR_CORES) - 1)
-#define NEW_HART_MASK		((1 << NUM_OF_BITS_FOR_HARTS) - 1)
-#define cpu_cluster(i)		(((i) >> NEW_CLUSTER_SHIFT) & NEW_CLUSTER_MASK)
-#define cpu_core(i)		(((i) >> NEW_CORE_SHIFT) & NEW_CORE_MASK)
-#define cpu_hart(i)		((i) & NEW_HART_MASK)
+/* mhartID structure */
+#define P8700_HARTID_CLUSTER	GENMASK(19, 16)
+#define P8700_HARTID_CORE	GENMASK(11, 4)
+#define P8700_HARTID_HART	GENMASK(3, 0)
+#define cpu_cluster(i)		EXTRACT_FIELD(i, P8700_HARTID_CLUSTER)
+#define cpu_core(i)		EXTRACT_FIELD(i, P8700_HARTID_CORE)
+#define cpu_hart(i)		EXTRACT_FIELD(i, P8700_HARTID_HART)
 
 #define CPC_OFFSET		(0x8000)
 
@@ -172,7 +159,7 @@ extern const struct p8700_cm_info *p8700_cm_info;
 #define CPC_Cx_CMD_RESET	0x4
 
 #define CPC_Cx_STAT_CONF	0x0008
-#define CPC_Cx_STAT_CONF_SEQ_STATE	GEN_MASK(22, 19)
+#define CPC_Cx_STAT_CONF_SEQ_STATE	GENMASK(22, 19)
 #define CPC_Cx_STAT_CONF_SEQ_STATE_U5	6
 #define CPC_Cx_STAT_CONF_SEQ_STATE_U6	7
 
