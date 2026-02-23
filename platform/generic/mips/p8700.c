@@ -12,7 +12,7 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hsm.h>
 #include <sbi/sbi_timer.h>
-#include <sbi/riscv_barrier.h>
+#include <sbi/riscv_io.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <mips/p8700.h>
 #include <mips/mips-cm.h>
@@ -20,6 +20,9 @@
 extern void mips_warm_boot(void);
 #define MMIO_BASE 0x00000000
 #define MMIO_SIZE 0x80000000
+
+/* FIXME! Please change GLOBAL_CM_BASE for your platform */
+long GLOBAL_CM_BASE[CLUSTERS_IN_PLATFORM] = {CM_BASE};
 
 static void mips_p8700_pmp_set(unsigned int n, unsigned long flags,
 			       unsigned long prot, unsigned long addr,
@@ -44,14 +47,16 @@ static void mips_p8700_pmp_set(unsigned int n, unsigned long flags,
 static void power_up_other_cluster(u32 hartid)
 {
 	unsigned int cl = cpu_cluster(hartid);
-	bool local_p = (cpu_cluster(current_hartid()) == cl);
 
+	/* remap local cluster address to its global address */
+	writeq(GLOBAL_CM_BASE[cl], (void*)GLOBAL_CM_BASE[cl] + GCR_BASE_OFFSET);
+	wmb();
 	/* Power up CM in cluster */
-	write_cpc_pwrup_ctl(hartid, 1, local_p);
+	write_cpc_pwrup_ctl(hartid, 1);
 
 	/* Wait for the CM to start up */
 	for (int i = 100; i > 0; i--) {
-		u32 stat = read_cpc_cm_stat_conf(hartid, local_p);
+		u32 stat = read_cpc_cm_stat_conf(hartid);
 
 		stat = EXT(stat, CPC_Cx_STAT_CONF_SEQ_STATE);
 		if (stat == CPC_Cx_STAT_CONF_SEQ_STATE_U5)
@@ -64,14 +69,13 @@ static void power_up_other_cluster(u32 hartid)
 
 struct mips_boot_params {
 	u32 hartid;
-	bool local_p;
 	u32 target_state;
 };
 
 static bool mips_hart_reached_state(void *arg)
 {
 	struct mips_boot_params *p = arg;
-	u32 stat = read_cpc_co_stat_conf(p->hartid, p->local_p);
+	u32 stat = read_cpc_co_stat_conf(p->hartid);
 
 	stat = EXT(stat, CPC_Cx_STAT_CONF_SEQ_STATE);
 	return stat == p->target_state;
@@ -79,32 +83,29 @@ static bool mips_hart_reached_state(void *arg)
 
 static int mips_hart_start(u32 hartid, ulong saddr)
 {
-	bool local_p = (cpu_cluster(current_hartid()) == cpu_cluster(hartid));
-
 	/* Hart 0 is the boot hart, and we don't use the CPC cmd to start.  */
 	if (hartid == 0)
 		return SBI_ENOTSUPP;
 
 	/* Change reset base to mips_warm_boot */
-	write_gcr_co_reset_base(hartid, (unsigned long)mips_warm_boot, local_p);
+	write_gcr_co_reset_base(hartid, (unsigned long)mips_warm_boot);
 
 	if (cpu_hart(hartid) == 0) {
 		unsigned int const timeout_ms = 10;
 		bool booted;
 		struct mips_boot_params p = {
 			.hartid = hartid,
-			.local_p = local_p,
 			.target_state = CPC_Cx_STAT_CONF_SEQ_STATE_U6,
 		};
 
 		/* Ensure its coherency is disabled */
-		write_gcr_co_coherence(hartid, 0, local_p);
+		write_gcr_co_coherence(hartid, 0);
 
 		/* Start cluster cl core co hart 0 */
-		write_cpc_co_vp_run(hartid, 1 << cpu_hart(hartid), local_p);
+		write_cpc_co_vp_run(hartid, 1 << cpu_hart(hartid));
 
 		/* Reset cluster cl core co hart 0 */
-		write_cpc_co_cmd(hartid, CPC_Cx_CMD_RESET, local_p);
+		write_cpc_co_cmd(hartid, CPC_Cx_CMD_RESET);
 
 		booted = sbi_timer_waitms_until(mips_hart_reached_state, &p, timeout_ms);
 		if (!booted) {
@@ -113,7 +114,7 @@ static int mips_hart_start(u32 hartid, ulong saddr)
 			return -SBI_ETIMEDOUT;
 		}
 	} else {
-		write_cpc_co_vp_run(hartid, 1 << cpu_hart(hartid), local_p);
+		write_cpc_co_vp_run(hartid, 1 << cpu_hart(hartid));
 	}
 
 	return 0;
@@ -122,13 +123,12 @@ static int mips_hart_start(u32 hartid, ulong saddr)
 static int mips_hart_stop()
 {
 	u32 hartid = current_hartid();
-	bool local_p = (cpu_cluster(current_hartid()) == cpu_cluster(hartid));
 
 	/* Hart 0 is the boot hart, and we don't use the CPC cmd to stop.  */
 	if (hartid == 0)
 		return SBI_ENOTSUPP;
 
-	write_cpc_co_vp_stop(hartid, 1 << cpu_hart(hartid), local_p);
+	write_cpc_co_vp_stop(hartid, 1 << cpu_hart(hartid));
 
 	return 0;
 }
@@ -159,6 +159,11 @@ static int mips_p8700_early_init(bool cold_boot)
 	if (!cold_boot)
 		return 0;
 
+	sbi_dprintf("Remap Cluster %d CM 0x%lx -> 0x%lx\n", 0,
+		    readq((void*)GLOBAL_CM_BASE[0] + GCR_BASE_OFFSET),
+		    GLOBAL_CM_BASE[0]);
+	writeq(GLOBAL_CM_BASE[0], (void*)GLOBAL_CM_BASE[0] + GCR_BASE_OFFSET);
+	wmb();
 	/* Power up other clusters in the platform. */
 	for (i = 1; i < CLUSTERS_IN_PLATFORM; i++) {
 		power_up_other_cluster(i << NEW_CLUSTER_SHIFT);
@@ -177,23 +182,6 @@ static int mips_p8700_early_init(bool cold_boot)
  * 0x08_00000000  0x10_00000000   M:---- S:-RWX DDR64
  * 0x10_00000000  0x20_00000000   M:---- S:IRW- PCI64 BARs
  */
-	/* CM and MTIMER */
-	rc = sbi_domain_root_add_memrange(CM_BASE, SIZE_FOR_CPC_MTIME,
-					  SIZE_FOR_CPC_MTIME,
-					  (SBI_DOMAIN_MEMREGION_MMIO |
-					   SBI_DOMAIN_MEMREGION_M_READABLE |
-					   SBI_DOMAIN_MEMREGION_M_WRITABLE));
-	if (rc)
-		return rc;
-
-	/* M-mode APLIC and ACLINT */
-	rc = sbi_domain_root_add_memrange(AIA_BASE, SIZE_FOR_AIA_M_MODE,
-					  SIZE_FOR_AIA_M_MODE,
-					  (SBI_DOMAIN_MEMREGION_MMIO |
-					   SBI_DOMAIN_MEMREGION_M_READABLE |
-					   SBI_DOMAIN_MEMREGION_M_WRITABLE));
-	if (rc)
-		return rc;
 
 	for (i = 0; i < CLUSTERS_IN_PLATFORM; i++) {
 		unsigned long cm_base = GLOBAL_CM_BASE[i];
@@ -208,7 +196,7 @@ static int mips_p8700_early_init(bool cold_boot)
 			return rc;
 
 		/* For the APLIC and ACLINT m-mode region */
-		rc = sbi_domain_root_add_memrange(cm_base + AIA_BASE - CM_BASE, SIZE_FOR_AIA_M_MODE,
+		rc = sbi_domain_root_add_memrange(cm_base + AIA_OFFSET, SIZE_FOR_AIA_M_MODE,
 						  SIZE_FOR_AIA_M_MODE,
 						  (SBI_DOMAIN_MEMREGION_MMIO |
 						   SBI_DOMAIN_MEMREGION_M_READABLE |
@@ -234,7 +222,8 @@ static int mips_p8700_early_init(bool cold_boot)
 static int mips_p8700_nascent_init(void)
 {
 	u64 hartid = current_hartid();
-	u64 cm_base = CM_BASE;
+	int cl = cpu_cluster(hartid);
+	u64 cm_base = GLOBAL_CM_BASE[cl];
 	int i;
 
 	/* Coherence enable for every core */

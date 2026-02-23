@@ -71,10 +71,10 @@
 #define cpu_core(i)		(((i) >> NEW_CORE_SHIFT) & NEW_CORE_MASK)
 #define cpu_hart(i)		((i) & NEW_HART_MASK)
 
-#define CPC_BASE		(CM_BASE + 0x8000)
+#define CPC_OFFSET		(0x8000)
 
 #define SIZE_FOR_CPC_MTIME	0x10000	/* The size must be 2^order */
-#define AIA_BASE		(CM_BASE + 0x40000)
+#define AIA_OFFSET		(0x40000)
 #define SIZE_FOR_AIA_M_MODE	0x20000	/* The size must be 2^order */
 #define P8700_ALIGN		0x10000
 
