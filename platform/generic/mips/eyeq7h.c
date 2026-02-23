@@ -14,6 +14,7 @@
 #include <sbi/sbi_timer.h>
 #include <sbi/sbi_hart_pmp.h>
 #include <sbi/riscv_io.h>
+#include <libfdt.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/fdt/fdt_fixup.h>
 #include <mips/p8700.h>
@@ -119,6 +120,31 @@ static struct sbi_domain_memregion *find_last_memregion(const struct sbi_domain 
 
 	sbi_domain_for_each_memregion(dom, reg) {}
 	return --reg;
+}
+
+static int fixup_dram_region(const struct sbi_domain *dom,
+			     struct sbi_domain_memregion *reg)
+{
+	const void *fdt = fdt_get_address();
+	int node;
+	int ret;
+	uint64_t mem_addr, mem_size;
+	static const char mem_str[] = "memory";
+
+	if (!reg || !fdt)
+		return SBI_EINVAL;
+
+	/* Find the memory range */
+	node = fdt_node_offset_by_prop_value(fdt, -1, "device_type",
+					     mem_str, sizeof(mem_str));
+	ret = fdt_get_node_addr_size(fdt, node, 0, &mem_addr, &mem_size);
+	if (ret)
+		return ret;
+	reg->flags = SBI_DOMAIN_MEMREGION_MMIO; /* disable cache & prefetch */
+	return sbi_domain_root_add_memrange(mem_addr, mem_size, mem_size,
+					    (SBI_DOMAIN_MEMREGION_SU_READABLE |
+					     SBI_DOMAIN_MEMREGION_SU_WRITABLE |
+					     SBI_DOMAIN_MEMREGION_SU_EXECUTABLE));
 }
 
 static void fdt_disable_by_compat(void *fdt, const char *compatible)
@@ -265,6 +291,8 @@ static void eyeq7h_init_clusters(void)
 
 static int eyeq7h_early_init(bool cold_boot)
 {
+	const struct sbi_domain *dom;
+	struct sbi_domain_memregion *reg;
 	int rc;
 	unsigned long cm_base;
 
@@ -310,7 +338,14 @@ static int eyeq7h_early_init(bool cold_boot)
 					  SBI_DOMAIN_MEMREGION_SU_READABLE |
 					  SBI_DOMAIN_MEMREGION_SU_WRITABLE);
 
-	return 0;
+	/*
+	 * sbi_domain_init adds last "all-inclusive" memory region
+	 * 0 .. ~0 RWX
+	 * Find this region (it is the last one) and update size according to DRAM
+	 */
+	dom = sbi_domain_thishart_ptr();
+	reg = find_last_memregion(dom);
+	return fixup_dram_region(dom, reg);
 }
 
 static int eyeq7h_nascent_init(void)
