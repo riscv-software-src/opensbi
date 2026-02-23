@@ -36,6 +36,19 @@ void mips_p8700_pmp_set(unsigned int n, unsigned long flags,
 	csr_write_num(pmacfg_csr, pmacfg);
 }
 
+static void mips_p8700_sync_hrtimer(unsigned int cl)
+{
+	u64 v1, v2, mv, delta;
+	volatile u64 *my_timer = (volatile u64 *)(p8700_cm_info->gcr_base[cl] + CPC_OFFSET + CPC_HRTIME);
+	volatile u64 *ref_timer = (volatile u64 *)(p8700_cm_info->gcr_base[0] + CPC_OFFSET + CPC_HRTIME);
+
+	v1 = readq_relaxed(my_timer);
+	mv = readq_relaxed(ref_timer);
+	v2 = readq_relaxed(my_timer);
+	delta = mv - ((v1 / 2) + (v2 / 2));
+	writeq_relaxed(readq_relaxed(my_timer) + delta, my_timer);
+}
+
 void mips_p8700_power_up_other_cluster(u32 hartid)
 {
 	unsigned int cl = cpu_cluster(hartid);
@@ -48,8 +61,11 @@ void mips_p8700_power_up_other_cluster(u32 hartid)
 		u32 stat = read_cpc_cm_stat_conf(hartid);
 
 		stat = EXTRACT_FIELD(stat, CPC_Cx_STAT_CONF_SEQ_STATE);
-		if (stat == CPC_Cx_STAT_CONF_SEQ_STATE_U5)
+		if (stat == CPC_Cx_STAT_CONF_SEQ_STATE_U5) {
+			if (cl) /* sync high-res timer to cluster 0 */
+				mips_p8700_sync_hrtimer(cl);
 			return;
+		}
 		cpu_relax();
 	}
 	sbi_printf("ERROR: Fail to power up cluster %u\n", cl);
