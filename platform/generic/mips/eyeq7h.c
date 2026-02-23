@@ -18,6 +18,20 @@
 #include <mips/p8700.h>
 #include <mips/mips-cm.h>
 
+#define MIPS_OLB1		0x67046000
+#define MIPS_OLB2		0x67047000
+#define MIPS_CM_CTL0		(0x14)
+#define MIPS_CTL0_CM_PWR_UP	BIT(0)
+#define MIPS_CTL0_DBU_PWR_UP	BIT(1)
+#define MIPS_CTL0_CM_RST_HOLD	BIT(2)
+#define MIPS_CTL0_DBU_RST_HOLD	BIT(3)
+#define MIPS_CTL0_DBU_COLD_PWR_UP	GENMASK(5, 4) /* after cold rst: 00 - pwr down, 01 -clk off */
+#define MIPS_CTL0_PARITY_EN	BIT(6)
+#define MIPS_CTL0_DBG_RST_DASRT	BIT(7)
+#define MIPS_CTL0_CACHE_HW_INIT_INHIBIT	BIT(16)
+#define MIPS_CTL0_SW_RESET_N	BIT(17)
+#define MIPS_CTL0_CORE_CLK_STS(n)	BIT(28 + (n)) /* n = 0..3 */
+
 #define OLB_WEST		0x48600000
 #define OLB_WEST_TSTCSR		0x60
 #define TSTCSR_PALLADIUM	BIT(0)
@@ -35,11 +49,39 @@
 
 static int eyeq7h_active_clusters = 1;
 
+static long MIPS_OLB_ADDR[3] = {0, MIPS_OLB1, MIPS_OLB2};
+
+static void eyeq7h_powerup_olb(u32 hartid)
+{
+	int cl = cpu_cluster(hartid);
+	volatile void *cmd;
+	u32 temp;
+
+	if (cl < 1 || cl >= p8700_cm_info->num_cm || cl >= array_size(MIPS_OLB_ADDR))
+		return;
+
+	/* Get the MIPS_CM_CTL0 address */
+	cmd = (volatile void *)(MIPS_OLB_ADDR[cl] + MIPS_CM_CTL0);
+
+	temp = readl(cmd);
+	/* Enable HW cache init */
+	temp = temp & ~MIPS_CTL0_CACHE_HW_INIT_INHIBIT;
+	/* deassert reset */
+	temp = temp | MIPS_CTL0_SW_RESET_N;
+	writel(temp, cmd);
+	wmb();
+	/* TODO: using CPU clock ready as reset complete indication, is it correct? */
+	while(!(readl(cmd) & MIPS_CTL0_CORE_CLK_STS(0)))
+			cpu_relax();
+}
+
 static void eyeq7h_power_up_other_cluster(u32 hartid)
 {
 	unsigned int cl = cpu_cluster(hartid);
 	unsigned long cm_base = p8700_cm_info->gcr_base[cl];
 
+	/* Power up MIPS OLB */
+	eyeq7h_powerup_olb(hartid);
 	/* remap local cluster address to its global address */
 	writeq(cm_base, (void*)cm_base + GCR_BASE_OFFSET);
 	wmb();
