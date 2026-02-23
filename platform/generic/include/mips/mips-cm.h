@@ -14,16 +14,14 @@
 /* Define 1 to print out CM read and write info */
 #define DEBUG_CM 0
 
-extern long GLOBAL_CM_BASE[];
-
-
 #define CPS_ACCESSOR_R(unit, sz, off, name)				\
 static inline u##sz read_##unit##_##name(u32 hartid)			\
 {									\
 	u##sz value;							\
 	int cl = cpu_cluster(hartid);					\
 	int co = cpu_core(hartid);					\
-	long cmd_reg = GLOBAL_CM_BASE[cl] + (co << CM_BASE_CORE_SHIFT)	\
+	long cmd_reg = p8700_cm_info->gcr_base[cl]			\
+		       + (co << CM_BASE_CORE_SHIFT)			\
 		  + off;						\
 	if (DEBUG_CM)							\
 		sbi_printf("CM_READ%d(0x%lx) ...\n", sz, cmd_reg);	\
@@ -42,7 +40,8 @@ static inline void write_##unit##_##name(u32 hartid, u##sz value)	\
 {									\
 	int cl = cpu_cluster(hartid);					\
 	int co = cpu_core(hartid);					\
-	long cmd_reg = GLOBAL_CM_BASE[cl] + (co << CM_BASE_CORE_SHIFT)	\
+	long cmd_reg = p8700_cm_info->gcr_base[cl]			\
+		       + (co << CM_BASE_CORE_SHIFT)			\
 		  + off;						\
 	if (DEBUG_CM)							\
 		sbi_printf("CM_WRITE%d(0x%lx, 0x%lx)\n", sz, 	\

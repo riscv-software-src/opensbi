@@ -23,9 +23,6 @@ extern void mips_warm_boot(void);
 #define MMIO_BASE 0x00000000
 #define MMIO_SIZE 0x80000000
 
-/* FIXME! Please change GLOBAL_CM_BASE for your platform */
-long GLOBAL_CM_BASE[CLUSTERS_IN_PLATFORM] = {CM_BASE};
-
 static void mips_p8700_pmp_set(unsigned int n, unsigned long flags,
 			       unsigned long prot, unsigned long addr,
 			       unsigned long log2len)
@@ -49,9 +46,10 @@ static void mips_p8700_pmp_set(unsigned int n, unsigned long flags,
 static void power_up_other_cluster(u32 hartid)
 {
 	unsigned int cl = cpu_cluster(hartid);
+	unsigned long cm_base = p8700_cm_info->gcr_base[cl];
 
 	/* remap local cluster address to its global address */
-	writeq(GLOBAL_CM_BASE[cl], (void*)GLOBAL_CM_BASE[cl] + GCR_BASE_OFFSET);
+	writeq(cm_base, (void*)cm_base + GCR_BASE_OFFSET);
 	wmb();
 	/* Power up CM in cluster */
 	write_cpc_pwrup_ctl(hartid, 1);
@@ -161,13 +159,17 @@ static int mips_p8700_early_init(bool cold_boot)
 	if (!cold_boot)
 		return 0;
 
-	sbi_dprintf("Remap Cluster %d CM 0x%lx -> 0x%lx\n", 0,
-		    readq((void*)GLOBAL_CM_BASE[0] + GCR_BASE_OFFSET),
-		    GLOBAL_CM_BASE[0]);
-	writeq(GLOBAL_CM_BASE[0], (void*)GLOBAL_CM_BASE[0] + GCR_BASE_OFFSET);
-	wmb();
+	{ /* cluster 0 - only remap, already up */
+		unsigned long cm_base = p8700_cm_info->gcr_base[0];
+
+		sbi_dprintf("Remap Cluster %d CM 0x%lx -> 0x%lx\n", 0,
+			    readq((void*)cm_base + GCR_BASE_OFFSET),
+			    cm_base);
+		writeq(cm_base, (void*)cm_base + GCR_BASE_OFFSET);
+		wmb();
+	}
 	/* Power up other clusters in the platform. */
-	for (i = 1; i < CLUSTERS_IN_PLATFORM; i++) {
+	for (i = 1; i < p8700_cm_info->num_cm; i++) {
 		power_up_other_cluster(i << NEW_CLUSTER_SHIFT);
 	}
 
@@ -185,8 +187,8 @@ static int mips_p8700_early_init(bool cold_boot)
  * 0x10_00000000  0x20_00000000   M:---- S:IRW- PCI64 BARs
  */
 
-	for (i = 0; i < CLUSTERS_IN_PLATFORM; i++) {
-		unsigned long cm_base = GLOBAL_CM_BASE[i];
+	for (i = 0; i < p8700_cm_info->num_cm; i++) {
+		unsigned long cm_base = p8700_cm_info->gcr_base[i];
 
 		/* CM and MTIMER */
 		rc = sbi_domain_root_add_memrange(cm_base, SIZE_FOR_CPC_MTIME,
@@ -225,7 +227,7 @@ static int mips_p8700_nascent_init(void)
 {
 	u64 hartid = current_hartid();
 	int cl = cpu_cluster(hartid);
-	u64 cm_base = GLOBAL_CM_BASE[cl];
+	u64 cm_base = p8700_cm_info->gcr_base[cl];
 	int i;
 
 	/* Coherence enable for every core */
