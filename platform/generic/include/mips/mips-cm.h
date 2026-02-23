@@ -32,12 +32,14 @@ static inline u##sz read_##unit##_##name(u32 hartid, bool local_p)	\
 		  + (co << CM_BASE_CORE_SHIFT)				\
 		  + off;						\
 	if (DEBUG_CM)							\
-		sbi_printf("CM READ%d cmd_reg=%lx\n", sz, cmd_reg);	\
+		sbi_printf("CM_READ%d(0x%lx) ...\n", sz, cmd_reg);	\
 	if (sz == 32)							\
 		asm volatile("lw %0,0(%1)":"=r"(value):"r"(cmd_reg));	\
 	else if (sz == 64)						\
 		asm volatile("ld %0,0(%1)":"=r"(value):"r"(cmd_reg));	\
 	asm volatile("fence");						\
+	if (DEBUG_CM)							\
+		sbi_printf("CM_READ%d(0x%lx) -> 0x%lx\n", sz, cmd_reg, (unsigned long)value);	\
 	return value;							\
 }
 
@@ -52,7 +54,7 @@ static inline void write_##unit##_##name(u32 hartid, u##sz value, bool local_p)	
 		  + (co << CM_BASE_CORE_SHIFT)				\
 		  + off;						\
 	if (DEBUG_CM)							\
-		sbi_printf("CM WRITE%d cmd_reg=%lx value=%lx\n", sz, 	\
+		sbi_printf("CM_WRITE%d(0x%lx, 0x%lx)\n", sz, 	\
 			    cmd_reg, (unsigned long)value);		\
 	if (sz == 32)							\
 		asm volatile("sw %0,0(%1)"::"r"(value),"r"(cmd_reg));	\
