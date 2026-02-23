@@ -8,8 +8,6 @@
 #ifndef __P8700_H__
 #define __P8700_H__
 
-#include <mips/board.h>
-
 /** Coherence manager information
  *
  * @num_cm: Number of coherence manager
@@ -97,6 +95,17 @@ extern const struct p8700_cm_info *p8700_cm_info;
 /* GCR Block offsets */
 #define GCR_OFF_LOCAL		0x2000
 
+#define GCR_GLOBAL_CONFIG	0x0000
+#define GCR_GC_NUM_CORES	GENMASK(7, 0)
+#define GCR_GC_NUM_IOCUS	GENMASK(11, 8)
+#define GCR_GC_NUM_MMIOS	GENMASK(19, 16)
+#define GCR_GC_NUM_AUX		GENMASK(22, 20)
+#define GCR_GC_NUM_CLUSTERS	GENMASK(29, 23)
+#define GCR_GC_HAS_ITU		BIT(31)
+#define GCR_GC_CL_ID		GENMASK(39, 32)
+#define GCR_GC_HAS_DBU		BIT(40)
+#define GCR_GC_NOC		GENMASK(43, 41)
+
 #define GCR_BASE_OFFSET		0x0008
 #define GCR_CORE_COH_EN		0x00f8
 #define GCR_CORE_COH_EN_EN	(0x1 << 0)
@@ -121,5 +130,15 @@ extern const struct p8700_cm_info *p8700_cm_info;
 #define CPC_Cx_STAT_CONF_SEQ_STATE	GEN_MASK(22, 19)
 #define CPC_Cx_STAT_CONF_SEQ_STATE_U5	6
 #define CPC_Cx_STAT_CONF_SEQ_STATE_U6	7
+
+extern const struct p8700_cm_info *p8700_cm_info;
+void mips_p8700_pmp_set(unsigned int n, unsigned long flags,
+			unsigned long prot, unsigned long addr,
+			unsigned long log2len);
+void mips_p8700_power_up_other_cluster(u32 hartid);
+int mips_p8700_hart_start(u32 hartid, ulong saddr);
+int mips_p8700_hart_stop(void);
+struct fdt_match;
+int mips_p8700_platform_init(const void *fdt, int nodeoff, const struct fdt_match *match);
 
 #endif

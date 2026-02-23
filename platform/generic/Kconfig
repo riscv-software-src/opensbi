@@ -91,14 +91,22 @@ config PLATFORM_THEAD
 	select THEAD_C9XX_PMU
 	default n
 
-config PLATFORM_MIPS_P8700
-	bool "MIPS P8700 support"
-	default n
-
 config PLATFORM_SPACEMIT_K1
 	bool "Spacemit K1 support"
 	select FDT_HSM_SPACEMIT
 	default n
+
+config CPU_MIPS_P8700
+	bool
+	default n
+
+config PLATFORM_MIPS_P8700_EYEQ7H
+	select CPU_MIPS_P8700
+	bool "EyeQ7H"
+
+config PLATFORM_MIPS_P8700_BOSTON
+	select CPU_MIPS_P8700
+	bool "Boston"
 
 source "$(OPENSBI_SRC_DIR)/platform/generic/andes/Kconfig"
 source "$(OPENSBI_SRC_DIR)/platform/generic/eswin/Kconfig"
