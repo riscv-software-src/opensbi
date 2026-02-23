@@ -45,11 +45,10 @@ extern const struct p8700_cm_info *p8700_cm_info;
 
 /* MIPS CSR */
 #define CSR_MIPSTVEC		0x7c0
-#define CSR_MIPSCONFIG0		0x7d0
+#define CSR_MIPSCACHEERR	0x7c5
+#define CSR_MIPSERRCTL		0x7c6
+#define CSR_MIPSDIAGDATA	0x7c8
 #define CSR_MIPSCONFIG1		0x7d1
-#define CSR_MIPSCONFIG2		0x7d2
-#define CSR_MIPSCONFIG3		0x7d3
-#define CSR_MIPSCONFIG4		0x7d4
 #define CSR_MIPSCONFIG5		0x7d5
 #define CSR_MIPSCONFIG6		0x7d6
 #define CSR_MIPSCONFIG7		0x7d7
@@ -58,6 +57,23 @@ extern const struct p8700_cm_info *p8700_cm_info;
 #define CSR_MIPSCONFIG10	0x7da
 #define CSR_MIPSCONFIG11	0x7db
 
+/* fields for CSR_MIPSCACHEERR */
+#define MIPSCACHEERR_STATE	GENMASK(31,30)
+#define MIPSCACHEERR_ARRAY	GENMASK(29,26)
+#define MIPSCACHEERR_ERR_BIT	GENMASK(25,20)	/* for correctable */
+#define MIPSCACHEERR_F2		BIT(23)		/* for uncorrectable */
+#define MIPSCACHEERR_F		BIT(22)		/* for uncorrectable */
+#define MIPSCACHEERR_P		BIT(21)		/* for uncorrectable */
+#define MIPSCACHEERR_S		BIT(20)		/* for uncorrectable */
+#define MIPSCACHEERR_WAY	GENMASK(19,17)
+#define MIPSCACHEERR_INDEX	GENMASK(16,4)
+#define MIPSCACHEERR_WORD	GENMASK(3,0)
+
+/* fields for CSR_MIPSERRCTL */
+#define MIPSERRCTL_PE		BIT(31)
+#define MIPSERRCTL_BUS_TO	GENMASK(19,10)
+
+/* fields for CSR_MIPSCONFIG1 */
 #define MIPSCONFIG1_L2C		BIT(31)
 #define MIPSCONFIG1_IS		GENMASK(24,22)
 #define MIPSCONFIG1_IL		GENMASK(21,19)
