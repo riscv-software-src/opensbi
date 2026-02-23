@@ -16,6 +16,69 @@
 
 const struct p8700_cm_info *p8700_cm_info;
 
+void mips_p8700_dump_mmio(void)
+{
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	unsigned hartid = current_hartid();
+	unsigned cl = cpu_cluster(hartid);
+	unsigned long cm_base = p8700_cm_info->gcr_base[cl];
+	u64 gcr_config = readq((void*)cm_base + GCR_GLOBAL_CONFIG);
+	int num_mmios = EXTRACT_FIELD(gcr_config, GCR_GC_NUM_MMIOS);
+	static const char *ports[16] = {
+		[0] = "MEM",
+		[1] = "? 1",
+		[2] = "? 2",
+		[3] = "? 3",
+		[4] = "? 4",
+		[5] = "? 5",
+		[6] = "? 6",
+		[7] = "? 7",
+		[8]  = "AUX0",
+		[9]  = "AUX1",
+		[10] = "AUX2",
+		[11] = "AUX3",
+		[12] = "? 12",
+		[13] = "? 13",
+		[14] = "? 14",
+		[15] = "? 15",
+	};
+	static const char *ccas[4] = {
+		[0] = "ANY",
+		[1] = "UC",
+		[2] = "UCA",
+		[3] = "UC|UCA",
+	};
+	static const char *ncs[2] = {
+		[0] = "  ",
+		[1] = "NC",
+	};
+	static const char *dis_rqs[2] = {
+		[0] = "          ",
+		[1] = "DIS_RQ_LIM",
+	};
+	if (!(scratch->options & SBI_SCRATCH_DEBUG_PRINTS))
+		return;
+
+	sbi_printf("Cluster %d: %d MMIO regions\n", cl, num_mmios);
+	for (int i = 0; i < num_mmios; i++) {
+		u64 b = readq((void*)cm_base + GCR_MMIO_BOTTOM(i));
+		u64 t = readq((void*)cm_base + GCR_MMIO_TOP(i));
+		if (b & GCR_MMIO_BOTTOM_EN) {
+			ulong ta = EXTRACT_FIELD(t, GCR_MMIO_ADDR) << 16;
+			ulong ba = EXTRACT_FIELD(b, GCR_MMIO_ADDR) << 16;
+			int cca = EXTRACT_FIELD(b, GCR_MMIO_BOTTOM_CCA);
+			int nc = EXTRACT_FIELD(b, GCR_MMIO_BOTTOM_FORCE_NC);
+			int port = EXTRACT_FIELD(b, GCR_MMIO_BOTTOM_PORT);
+			int dis_rq_lim = EXTRACT_FIELD(b, GCR_MMIO_BOTTOM_DIS_RQ_LIM);
+
+			sbi_printf("  [%d] : 0x%016lx-0x%016lx %4s %6s %s %s\n", i,
+				   ba, ta, ports[port], ccas[cca], ncs[nc], dis_rqs[dis_rq_lim]);
+		} else {
+			sbi_printf("  [%d] : --disabled--\n", i);
+		}
+	}
+}
+
 void mips_p8700_pmp_set(unsigned int n, unsigned long flags,
 			unsigned long prot, unsigned long addr,
 			unsigned long log2len)

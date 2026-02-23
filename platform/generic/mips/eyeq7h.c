@@ -376,6 +376,7 @@ static int eyeq7h_nascent_init(void)
 		 */
 		__raw_writeq(NCORE-1, (void *)(cm_base + GCR_MMIO_TOP(1)));
 		mb();
+		mips_p8700_dump_mmio();
 	}
 
 	/* Per core set up */

@@ -188,6 +188,7 @@ extern const struct p8700_cm_info *p8700_cm_info;
 #define CPC_Cx_STAT_CONF_SEQ_STATE_U6	7
 
 extern const struct p8700_cm_info *p8700_cm_info;
+void mips_p8700_dump_mmio(void);
 void mips_p8700_pmp_set(unsigned int n, unsigned long flags,
 			unsigned long prot, unsigned long addr,
 			unsigned long log2len);
