@@ -10,6 +10,18 @@
 
 #include <mips/board.h>
 
+/** Coherence manager information
+ *
+ * @num_cm: Number of coherence manager
+ * @gcr_base: Array of base address of the CM
+ */
+struct p8700_cm_info {
+	unsigned int num_cm;
+	unsigned long *gcr_base;
+};
+
+extern const struct p8700_cm_info *p8700_cm_info;
+
 /* PMA */
 #define CSR_MIPSPMACFG0	0x7e0
 #define CSR_MIPSPMACFG1	0x7e1

@@ -17,6 +17,8 @@
 #include <mips/p8700.h>
 #include <mips/mips-cm.h>
 
+const struct p8700_cm_info *p8700_cm_info;
+
 extern void mips_warm_boot(void);
 #define MMIO_BASE 0x00000000
 #define MMIO_SIZE 0x80000000
@@ -287,6 +289,14 @@ static int mips_p8700_nascent_init(void)
 
 static int mips_p8700_platform_init(const void *fdt, int nodeoff, const struct fdt_match *match)
 {
+	const struct p8700_cm_info *data = match->data;
+
+	if (!data) {
+		sbi_printf("Missing CM info for %s\n", match->compatible);
+		return SBI_EINVAL;
+	}
+
+	p8700_cm_info = data;
 	generic_platform_ops.early_init = mips_p8700_early_init;
 	generic_platform_ops.final_init = mips_p8700_final_init;
 	generic_platform_ops.nascent_init = mips_p8700_nascent_init;
@@ -295,8 +305,17 @@ static int mips_p8700_platform_init(const void *fdt, int nodeoff, const struct f
 	return 0;
 }
 
+static unsigned long mips_p8700_gcr_base[] = {
+	0x16100000,
+};
+
+static struct p8700_cm_info mips_p8700_cm_info = {
+	.num_cm = array_size(mips_p8700_gcr_base),
+	.gcr_base = mips_p8700_gcr_base,
+};
+
 static const struct fdt_match mips_p8700_match[] = {
-	{ .compatible = "mips,p8700" },
+	{ .compatible = "mips,p8700", .data = &mips_p8700_cm_info },
 	{ },
 };
 
