@@ -70,7 +70,7 @@ static void mstatus_init(struct sbi_scratch *scratch)
 	 */
 	mhpmevent_init_val |= (MHPMEVENT_OF | MHPMEVENT_MINH);
 	for (cidx = 0; cidx <= 28; cidx++) {
-		if (!(mhpm_mask & 1 << (cidx + 3)))
+		if (!(mhpm_mask & 1UL << (cidx + 3)))
 			continue;
 #if __riscv_xlen == 32
 		csr_write_num(CSR_MHPMEVENT3 + cidx,

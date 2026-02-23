@@ -144,7 +144,7 @@ enum sbi_fwft_feature_t {
 	SBI_FWFT_GLOBAL_PLATFORM_END		= 0xffffffff,
 };
 
-#define SBI_FWFT_GLOBAL_FEATURE_BIT		(1 << 31)
+#define SBI_FWFT_GLOBAL_FEATURE_BIT		(1UL << 31)
 #define SBI_FWFT_PLATFORM_FEATURE_BIT		(1 << 30)
 
 #define SBI_FWFT_SET_FLAG_LOCK			(1 << 0)
