@@ -12,6 +12,7 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hsm.h>
 #include <sbi/sbi_timer.h>
+#include <sbi/riscv_barrier.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <mips/p8700.h>
 #include <mips/mips-cm.h>
@@ -42,32 +43,22 @@ static void mips_p8700_pmp_set(unsigned int n, unsigned long flags,
 
 static void power_up_other_cluster(u32 hartid)
 {
-	unsigned int stat;
-	unsigned int timeout;
-	bool local_p = (cpu_cluster(current_hartid()) == cpu_cluster(hartid));
+	unsigned int cl = cpu_cluster(hartid);
+	bool local_p = (cpu_cluster(current_hartid()) == cl);
 
-	/* Power up cluster cl core 0 hart 0 */
+	/* Power up CM in cluster */
 	write_cpc_pwrup_ctl(hartid, 1, local_p);
 
 	/* Wait for the CM to start up */
-	timeout = 100;
-	while (true) {
-		stat = read_cpc_cm_stat_conf(hartid, local_p);
+	for (int i = 100; i > 0; i--) {
+		u32 stat = read_cpc_cm_stat_conf(hartid, local_p);
+
 		stat = EXT(stat, CPC_Cx_STAT_CONF_SEQ_STATE);
 		if (stat == CPC_Cx_STAT_CONF_SEQ_STATE_U5)
-			break;
-
-		/* Delay a little while before we start warning */
-		if (timeout) {
-			sbi_dprintf("Delay a little while before we start warning\n");
-			timeout--;
-		}
-		else {
-			sbi_printf("Waiting for cluster %u CM to power up... STAT_CONF=0x%x\n",
-				   cpu_cluster(hartid), stat);
-			break;
-		}
+			return;
+		cpu_relax();
 	}
+	sbi_printf("ERROR: Fail to power up cluster %u\n", cl);
 }
 
 static int mips_hart_start(u32 hartid, ulong saddr)
