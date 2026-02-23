@@ -17,6 +17,8 @@
 #include <mips/mips-cm.h>
 
 extern void mips_warm_boot(void);
+#define MMIO_BASE 0x00000000
+#define MMIO_SIZE 0x80000000
 
 static void mips_p8700_pmp_set(unsigned int n, unsigned long flags,
 			       unsigned long prot, unsigned long addr,
@@ -38,7 +40,6 @@ static void mips_p8700_pmp_set(unsigned int n, unsigned long flags,
 	csr_write_num(pmacfg_csr, pmacfg);
 }
 
-#if CLUSTERS_IN_PLATFORM > 1
 static void power_up_other_cluster(u32 hartid)
 {
 	unsigned int stat;
@@ -68,7 +69,6 @@ static void power_up_other_cluster(u32 hartid)
 		}
 	}
 }
-#endif
 
 static int mips_hart_start(u32 hartid, ulong saddr)
 {
@@ -152,23 +152,57 @@ static int mips_p8700_final_init(bool cold_boot)
 static int mips_p8700_early_init(bool cold_boot)
 {
 	int rc;
+	int i;
 
 	rc = generic_early_init(cold_boot);
 	if (rc)
 		return rc;
 
-	if (cold_boot) {
-#if CLUSTERS_IN_PLATFORM > 1
-		int i;
-		/* Power up other clusters in the platform. */
-		for (i = 1; i < CLUSTERS_IN_PLATFORM; i++) {
-			power_up_other_cluster(i << NEW_CLUSTER_SHIFT);
-		}
-#endif
+	if (!cold_boot)
+		return 0;
 
-		/* For the CPC mtime region, the minimum size is 0x10000. */
-		rc = sbi_domain_root_add_memrange(CM_BASE, SIZE_FOR_CPC_MTIME,
-						  P8700_ALIGN,
+	/* Power up other clusters in the platform. */
+	for (i = 1; i < CLUSTERS_IN_PLATFORM; i++) {
+		power_up_other_cluster(i << NEW_CLUSTER_SHIFT);
+	}
+
+/**
+ * Memory map:
+ * 0x00_20080000  0x00_20100000   M:IRW- S:---- GCR local access (CM_BASE)
+ * 0x00_40000000  0x00_70000000   M:IRW- S:IRW- Peripherals
+ *   0x00_48700000  0x00_48780000 M:IRW- S:---- GCR cluster 0
+ *   0x00_67480000  0x00_67500000 M:IRW- S:---- GCR cluster 1
+ *   0x00_67500000  0x00_67580000 M:IRW- S:---- GCR cluster 2
+ *   0x00_67800000  0x00_67900000 M:IRW- S:---- Ncore
+ * 0x00_70000000  0x00_80000000   M:---- S:IRW- PCI32 BARs, NOT USED - 32-bit mode
+ * 0x01_00000000  0x08_00000000   M:---- S:IRW- PCI64 BARs, NOT USED - PCI2PCI
+ * 0x08_00000000  0x10_00000000   M:---- S:-RWX DDR64
+ * 0x10_00000000  0x20_00000000   M:---- S:IRW- PCI64 BARs
+ */
+	/* CM and MTIMER */
+	rc = sbi_domain_root_add_memrange(CM_BASE, SIZE_FOR_CPC_MTIME,
+					  SIZE_FOR_CPC_MTIME,
+					  (SBI_DOMAIN_MEMREGION_MMIO |
+					   SBI_DOMAIN_MEMREGION_M_READABLE |
+					   SBI_DOMAIN_MEMREGION_M_WRITABLE));
+	if (rc)
+		return rc;
+
+	/* M-mode APLIC and ACLINT */
+	rc = sbi_domain_root_add_memrange(AIA_BASE, SIZE_FOR_AIA_M_MODE,
+					  SIZE_FOR_AIA_M_MODE,
+					  (SBI_DOMAIN_MEMREGION_MMIO |
+					   SBI_DOMAIN_MEMREGION_M_READABLE |
+					   SBI_DOMAIN_MEMREGION_M_WRITABLE));
+	if (rc)
+		return rc;
+
+	for (i = 0; i < CLUSTERS_IN_PLATFORM; i++) {
+		unsigned long cm_base = GLOBAL_CM_BASE[i];
+
+		/* CM and MTIMER */
+		rc = sbi_domain_root_add_memrange(cm_base, SIZE_FOR_CPC_MTIME,
+						  SIZE_FOR_CPC_MTIME,
 						  (SBI_DOMAIN_MEMREGION_MMIO |
 						   SBI_DOMAIN_MEMREGION_M_READABLE |
 						   SBI_DOMAIN_MEMREGION_M_WRITABLE));
@@ -176,36 +210,25 @@ static int mips_p8700_early_init(bool cold_boot)
 			return rc;
 
 		/* For the APLIC and ACLINT m-mode region */
-		rc = sbi_domain_root_add_memrange(AIA_BASE, SIZE_FOR_AIA_M_MODE,
-						  P8700_ALIGN,
+		rc = sbi_domain_root_add_memrange(cm_base + AIA_BASE - CM_BASE, SIZE_FOR_AIA_M_MODE,
+						  SIZE_FOR_AIA_M_MODE,
 						  (SBI_DOMAIN_MEMREGION_MMIO |
 						   SBI_DOMAIN_MEMREGION_M_READABLE |
 						   SBI_DOMAIN_MEMREGION_M_WRITABLE));
 		if (rc)
 			return rc;
-
-#if CLUSTERS_IN_PLATFORM > 1
-		for (i = 0; i < CLUSTERS_IN_PLATFORM; i++) {
-			/* For the CPC mtime region, the minimum size is 0x10000. */
-			rc = sbi_domain_root_add_memrange(GLOBAL_CM_BASE[i], SIZE_FOR_CPC_MTIME,
-							  P8700_ALIGN,
-							  (SBI_DOMAIN_MEMREGION_MMIO |
-							   SBI_DOMAIN_MEMREGION_M_READABLE |
-							   SBI_DOMAIN_MEMREGION_M_WRITABLE));
-			if (rc)
-				return rc;
-
-			/* For the APLIC and ACLINT m-mode region */
-			rc = sbi_domain_root_add_memrange(AIA_BASE - CM_BASE + GLOBAL_CM_BASE[i], SIZE_FOR_AIA_M_MODE,
-							  P8700_ALIGN,
-							  (SBI_DOMAIN_MEMREGION_MMIO |
-							   SBI_DOMAIN_MEMREGION_M_READABLE |
-							   SBI_DOMAIN_MEMREGION_M_WRITABLE));
-			if (rc)
-				return rc;
-		}
-#endif
 	}
+	/* the rest of MMIO - shared with S-mode */
+	rc = sbi_domain_root_add_memrange(MMIO_BASE, MMIO_SIZE, MMIO_SIZE,
+					  SBI_DOMAIN_MEMREGION_MMIO |
+					  SBI_DOMAIN_MEMREGION_SHARED_SURW_MRW);
+	if (rc)
+		return rc;
+	/* PCIE BARs - MMIO S-mode */
+	rc = sbi_domain_root_add_memrange(0x1000000000UL, 0x1000000000UL, 0x1000000000UL,
+					  SBI_DOMAIN_MEMREGION_MMIO |
+					  SBI_DOMAIN_MEMREGION_SU_READABLE |
+					  SBI_DOMAIN_MEMREGION_SU_WRITABLE);
 
 	return 0;
 }
