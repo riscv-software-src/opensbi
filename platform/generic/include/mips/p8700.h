@@ -192,6 +192,7 @@ struct p8700_cache_info {
 
 void mips_p8700_cache_info(struct p8700_cache_info *l1d, struct p8700_cache_info *l1i,
 			   struct p8700_cache_info *l2);
+int mips_p8700_add_memranges(void);
 struct fdt_match;
 int mips_p8700_platform_init(const void *fdt, int nodeoff, const struct fdt_match *match);
 

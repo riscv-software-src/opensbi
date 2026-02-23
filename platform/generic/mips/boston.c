@@ -43,30 +43,12 @@ static int boston_early_init(bool cold_boot)
 	if (rc)
 		return rc;
 
-	if (cold_boot) {
-		unsigned long cm_base = p8700_cm_info->gcr_base[0];
+	if (!cold_boot)
+		return 0;
 
-		/* For the CPC mtime region, the minimum size is 0x10000. */
-		rc = sbi_domain_root_add_memrange(cm_base, SIZE_FOR_CPC_MTIME,
-						  P8700_ALIGN,
-						  (SBI_DOMAIN_MEMREGION_MMIO |
-						   SBI_DOMAIN_MEMREGION_M_READABLE |
-						   SBI_DOMAIN_MEMREGION_M_WRITABLE));
-		if (rc)
-			return rc;
+	rc = mips_p8700_add_memranges();
 
-		/* For the APLIC and ACLINT m-mode region */
-		rc = sbi_domain_root_add_memrange(cm_base + AIA_OFFSET, SIZE_FOR_AIA_M_MODE,
-						  P8700_ALIGN,
-						  (SBI_DOMAIN_MEMREGION_MMIO |
-						   SBI_DOMAIN_MEMREGION_M_READABLE |
-						   SBI_DOMAIN_MEMREGION_M_WRITABLE));
-		if (rc)
-			return rc;
-
-	}
-
-	return 0;
+	return rc;
 }
 
 static int boston_nascent_init(void)

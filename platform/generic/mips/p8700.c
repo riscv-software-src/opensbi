@@ -168,6 +168,57 @@ void mips_p8700_cache_info(struct p8700_cache_info *l1d, struct p8700_cache_info
 	}
 }
 
+/**
+ * See CPU cluster memory map in the table below
+ * To save PMP regions, group areas with M mode access, marked (1) and (2)
+ *
+ * GCR_BASE offset   |   |   | Block Name   | Description
+ * 0x00000 - 0x01FFF | M | ^ | GCR.Global   | Per-cluster CM registers.
+ * 0x02000 - 0x05FFF | M | | | GCR.Core     | Per-core CM registers.
+ * 0x06000 - 0x07FFF | - |(1)| Reserved.
+ * 0x08000 - 0x09FFF | M | | | CPC.Global   | Per-cluster CPC registers.
+ * 0x0A000 - 0x0EFFF | M | | | CPC.Core     | Per-core/Per-device CPC registers.
+ * 0x0F000 - 0x0FFFF | - | v | Reserved.
+ * 0x10000 - 0x1FFFF | S |   | uGCR         | Reserved for user defined CM registers.
+ * 0x20000 - 0x3EFFF | - |   | Reserved.
+ * 0x3F000 - 0x3F0FF | ? |   | FDC.Global   | FDC.Global registers.
+ * 0x3F100 - 0x3FFFF | ? |   | TRF.Global   | TRF.Global registers
+ * 0x40000 - 0x4BFFF | M | ^ | APLIC.M      | APLIC Machine registers.
+ * 0x4C000 - 0x4CFFF | M |(2)| APLIC.custom | APLIC custom registers.
+ * 0x4D000 - 0x4FFFF | - | | | Reserved.
+ * 0x50000 - 0x5FFFF | M | v | ACLINT.M     | ACLINT Machine registers.
+ * 0x60000 - 0x6BFFF | S |   | APLIC.S      | APLIC Supervisor registers.
+ * 0x6C000 - 0x6FFFF | S |   | ACLINT.S     | ACLINT Supervisor registers.
+ * 0x70000 - 0x7EFFF | - |   | Reserved.
+ * 0x7F000 - 0x7FFFF | S |   | GCR.U        | User Mode GCRs.
+ */
+int mips_p8700_add_memranges(void)
+{
+	int rc = SBI_OK;
+	for (int i = 0; i < p8700_cm_info->num_cm; i++) {
+		unsigned long cm_base = p8700_cm_info->gcr_base[i];
+
+		/* CM and MTIMER */
+		rc = sbi_domain_root_add_memrange(cm_base, SIZE_FOR_CPC_MTIME,
+						  SIZE_FOR_CPC_MTIME,
+						  (SBI_DOMAIN_MEMREGION_MMIO |
+						   SBI_DOMAIN_MEMREGION_M_READABLE |
+						   SBI_DOMAIN_MEMREGION_M_WRITABLE));
+		if (rc)
+			return rc;
+
+		/* For the APLIC and ACLINT m-mode region */
+		rc = sbi_domain_root_add_memrange(cm_base + AIA_OFFSET, SIZE_FOR_AIA_M_MODE,
+						  SIZE_FOR_AIA_M_MODE,
+						  (SBI_DOMAIN_MEMREGION_MMIO |
+						   SBI_DOMAIN_MEMREGION_M_READABLE |
+						   SBI_DOMAIN_MEMREGION_M_WRITABLE));
+		if (rc)
+			return rc;
+	}
+	return rc;
+}
+
 int mips_p8700_platform_init(const void *fdt, int nodeoff, const struct fdt_match *match)
 {
 	const struct p8700_cm_info *data = match->data;
