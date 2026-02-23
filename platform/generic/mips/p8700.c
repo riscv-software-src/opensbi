@@ -61,10 +61,24 @@ static void power_up_other_cluster(u32 hartid)
 	sbi_printf("ERROR: Fail to power up cluster %u\n", cl);
 }
 
+
+struct mips_boot_params {
+	u32 hartid;
+	bool local_p;
+	u32 target_state;
+};
+
+static bool mips_hart_reached_state(void *arg)
+{
+	struct mips_boot_params *p = arg;
+	u32 stat = read_cpc_co_stat_conf(p->hartid, p->local_p);
+
+	stat = EXT(stat, CPC_Cx_STAT_CONF_SEQ_STATE);
+	return stat == p->target_state;
+}
+
 static int mips_hart_start(u32 hartid, ulong saddr)
 {
-	unsigned int stat;
-	unsigned int timeout;
 	bool local_p = (cpu_cluster(current_hartid()) == cpu_cluster(hartid));
 
 	/* Hart 0 is the boot hart, and we don't use the CPC cmd to start.  */
@@ -75,6 +89,14 @@ static int mips_hart_start(u32 hartid, ulong saddr)
 	write_gcr_co_reset_base(hartid, (unsigned long)mips_warm_boot, local_p);
 
 	if (cpu_hart(hartid) == 0) {
+		unsigned int const timeout_ms = 10;
+		bool booted;
+		struct mips_boot_params p = {
+			.hartid = hartid,
+			.local_p = local_p,
+			.target_state = CPC_Cx_STAT_CONF_SEQ_STATE_U6,
+		};
+
 		/* Ensure its coherency is disabled */
 		write_gcr_co_coherence(hartid, 0, local_p);
 
@@ -84,28 +106,13 @@ static int mips_hart_start(u32 hartid, ulong saddr)
 		/* Reset cluster cl core co hart 0 */
 		write_cpc_co_cmd(hartid, CPC_Cx_CMD_RESET, local_p);
 
-		timeout = 100;
-		while (true) {
-			stat = read_cpc_co_stat_conf(hartid, local_p);
-			stat = EXT(stat, CPC_Cx_STAT_CONF_SEQ_STATE);
-			if (stat == CPC_Cx_STAT_CONF_SEQ_STATE_U6)
-				break;
-
-			/* Delay a little while before we start warning */
-			if (timeout) {
-				sbi_timer_mdelay(10);
-				timeout--;
-			}
-			else {
-				sbi_printf("Waiting for cluster %u core %u hart %u to start... STAT_CONF=0x%x\n",
-					   cpu_cluster(hartid),
-					   cpu_core(hartid), cpu_hart(hartid),
-					   stat);
-				break;
-			}
+		booted = sbi_timer_waitms_until(mips_hart_reached_state, &p, timeout_ms);
+		if (!booted) {
+			sbi_printf("ERROR: failed to boot hart 0x%x in %d ms\n",
+				   hartid, timeout_ms);
+			return -SBI_ETIMEDOUT;
 		}
-	}
-	else {
+	} else {
 		write_cpc_co_vp_run(hartid, 1 << cpu_hart(hartid), local_p);
 	}
 
