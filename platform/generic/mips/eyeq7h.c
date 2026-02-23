@@ -436,6 +436,8 @@ static int eyeq7h_nascent_init(void)
 	/* Per hart set up */
 	/* Enable AMO and RDTIME illegal instruction exceptions. */
 	csr_set(CSR_MIPSCONFIG6, (1<<2)|(1<<1));
+	/* enable ECC for L1 I/D and FTLB */
+	csr_set(CSR_MIPSERRCTL, MIPSERRCTL_PE);
 
 	return 0;
 }
