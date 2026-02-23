@@ -171,6 +171,32 @@ static struct fdt_general_fixup eyeq7h_acc_clusters_fixup = {
 	.do_fixup = eyeq7h_acc_clusters_do_fixup,
 };
 
+static void eyeq7h_cache_do_fixup(struct fdt_general_fixup *f, void *fdt)
+{
+	struct p8700_cache_info l1d, l1i, l2;
+	mips_p8700_cache_info(&l1d, &l1i, &l2);
+
+	sbi_dprintf("Cache geometry:\n"
+		    "  D: %4d Kbytes line %3d bytes %2d ways %5d sets\n"
+		    "  I: %4d Kbytes line %3d bytes %2d ways %5d sets\n",
+		    l1d.assoc_ways * l1d.line * l1d.sets / 1024,
+		    l1d.line, l1d.assoc_ways, l1d.sets,
+		    l1i.assoc_ways * l1i.line * l1i.sets / 1024,
+		    l1i.line, l1i.assoc_ways, l1i.sets);
+	if (l2.line) {
+		sbi_dprintf(" L2: %4d Kbytes line %3d bytes %2d ways %5d sets\n",
+			    l2.assoc_ways * l2.line * l2.sets / 1024,
+			    l2.line, l2.assoc_ways, l2.sets);
+	} else {
+		sbi_dprintf(" L2: not present\n");
+	}
+}
+
+static struct fdt_general_fixup eyeq7h_cache_fixup = {
+	.name = "cache-fixup",
+	.do_fixup = eyeq7h_cache_do_fixup,
+};
+
 static int eyeq7h_final_init(bool cold_boot)
 {
 	if (!cold_boot)
@@ -178,6 +204,7 @@ static int eyeq7h_final_init(bool cold_boot)
 
 	sbi_hsm_set_device(&eyeq7h_hsm);
 	fdt_register_general_fixup(&eyeq7h_acc_clusters_fixup);
+	fdt_register_general_fixup(&eyeq7h_cache_fixup);
 
 	return generic_final_init(cold_boot);
 }

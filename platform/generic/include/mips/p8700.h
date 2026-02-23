@@ -58,6 +58,14 @@ extern const struct p8700_cm_info *p8700_cm_info;
 #define CSR_MIPSCONFIG10	0x7da
 #define CSR_MIPSCONFIG11	0x7db
 
+#define MIPSCONFIG1_L2C		BIT(31)
+#define MIPSCONFIG1_IS		GENMASK(24,22)
+#define MIPSCONFIG1_IL		GENMASK(21,19)
+#define MIPSCONFIG1_IA		GENMASK(18,16)
+#define MIPSCONFIG1_DS		GENMASK(15,13)
+#define MIPSCONFIG1_DL		GENMASK(12,10)
+#define MIPSCONFIG1_DA		GENMASK(9,7)
+
 #define MIPSCONFIG5_MTW		4
 
 #define GEN_MASK(h, l)	(((1ul << ((h) + 1 - (l))) - 1) << (l))
@@ -113,6 +121,43 @@ extern const struct p8700_cm_info *p8700_cm_info;
 #define L2_PFT_CONTROL_OFFSET	0x0300
 #define L2_PFT_CONTROL_B_OFFSET	0x0308
 
+#define GCR_L2_CONFIG		0x0130
+#define GCR_L2_ASSOC		GENMASK(7, 0)
+#define GCR_L2_LINE_SIZE	GENMASK(11, 8)
+#define GCR_L2_SET_SIZE		GENMASK(15, 12)
+#define GCR_L2_BYPASS		BIT(20)
+#define GCR_L2_COP_DATA_ECC_WE	BIT(24)
+#define GCR_L2_COP_TAG_ECC_WE	BIT(25)
+#define GCR_L2_COP_LRU_WE	BIT(26)
+#define GCR_L2_REG_EXISTS	BIT(31)
+
+#define GCR_L2_TAG_ADDR		0x0600
+#define GCR_L2_TAG_STATE	0x0608
+#define GCR_L2_DATA		0x0610
+#define GCR_L2_ECC		0x0618
+
+#define GCR_L2SM_COP		0x0620
+#define GCR_L2SM_COP_CMD	GENMASK(1, 0)
+#define L2SM_COP_CMD_NOP	0
+#define L2SM_COP_CMD_START	1
+#define L2SM_COP_CMD_ABORT	3
+#define GCR_L2SM_COP_TYPE	GENMASK(4, 2)
+#define L2SM_COP_TYPE_IDX_WBINV		0
+#define L2SM_COP_TYPE_IDX_STORETAG	1
+#define L2SM_COP_TYPE_IDX_STORETAGDATA	2
+#define L2SM_COP_TYPE_HIT_INV		4
+#define L2SM_COP_TYPE_HIT_WBINV		5
+#define L2SM_COP_TYPE_HIT_WB		6
+#define L2SM_COP_TYPE_FETCHLOCK		7
+#define GCR_L2SM_COP_RUNNING		BIT(5)
+#define GCR_L2SM_COP_RESULT		GENMASK(8, 6)
+#define L2SM_COP_RESULT_DONTCARE	0
+#define L2SM_COP_RESULT_DONE_OK		1
+#define L2SM_COP_RESULT_DONE_ERROR	2
+#define L2SM_COP_RESULT_ABORT_OK	3
+#define L2SM_COP_RESULT_ABORT_ERROR	4
+#define GCR_L2SM_COP_PRESENT		BIT(31)
+
 /* CPC Block offsets */
 #define CPC_PWRUP_CTL		0x0030
 #define CPC_CM_STAT_CONF	0x1008
@@ -138,6 +183,15 @@ void mips_p8700_pmp_set(unsigned int n, unsigned long flags,
 void mips_p8700_power_up_other_cluster(u32 hartid);
 int mips_p8700_hart_start(u32 hartid, ulong saddr);
 int mips_p8700_hart_stop(void);
+
+struct p8700_cache_info {
+	u32 line;
+	u32 assoc_ways;
+	u32 sets;
+};
+
+void mips_p8700_cache_info(struct p8700_cache_info *l1d, struct p8700_cache_info *l1i,
+			   struct p8700_cache_info *l2);
 struct fdt_match;
 int mips_p8700_platform_init(const void *fdt, int nodeoff, const struct fdt_match *match);
 
