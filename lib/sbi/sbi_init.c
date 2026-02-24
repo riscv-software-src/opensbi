@@ -265,11 +265,15 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	 */
 	wake_coldboot_harts(scratch);
 
-	rc = sbi_platform_early_init(plat, true);
+	rc = sbi_hart_init(scratch, true);
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_hart_init(scratch, true);
+	rc = sbi_timer_init(scratch, true);
+	if (rc)
+		sbi_hart_hang();
+
+	rc = sbi_platform_early_init(plat, true);
 	if (rc)
 		sbi_hart_hang();
 
@@ -304,12 +308,6 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	rc = sbi_tlb_init(scratch, true);
 	if (rc) {
 		sbi_printf("%s: tlb init failed (error %d)\n", __func__, rc);
-		sbi_hart_hang();
-	}
-
-	rc = sbi_timer_init(scratch, true);
-	if (rc) {
-		sbi_printf("%s: timer init failed (error %d)\n", __func__, rc);
 		sbi_hart_hang();
 	}
 
@@ -424,11 +422,15 @@ static void __noreturn init_warm_startup(struct sbi_scratch *scratch,
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_platform_early_init(plat, false);
+	rc = sbi_hart_init(scratch, false);
 	if (rc)
 		sbi_hart_hang();
 
-	rc = sbi_hart_init(scratch, false);
+	rc = sbi_timer_init(scratch, false);
+	if (rc)
+		sbi_hart_hang();
+
+	rc = sbi_platform_early_init(plat, false);
 	if (rc)
 		sbi_hart_hang();
 
@@ -449,10 +451,6 @@ static void __noreturn init_warm_startup(struct sbi_scratch *scratch,
 		sbi_hart_hang();
 
 	rc = sbi_tlb_init(scratch, false);
-	if (rc)
-		sbi_hart_hang();
-
-	rc = sbi_timer_init(scratch, false);
 	if (rc)
 		sbi_hart_hang();
 
