@@ -22,6 +22,7 @@
 
 #define REG_L		__REG_SEL(ld, lw)
 #define REG_S		__REG_SEL(sd, sw)
+#define REG_ADDW	__REG_SEL(addw, add)
 
 	.section .entry, "ax", %progbits
 	.align 3
@@ -35,7 +36,7 @@ _start:
 #elif defined(__riscv_zalrsc)
 _sc_fail:
 	lr.w	t0, (a3)
-	addw	t1, t0, a2
+	REG_ADDW t1, t0, a2
 	sc.w	t1, t1, (a3)
 	bnez	t1, _sc_fail
 	move	a3, t0

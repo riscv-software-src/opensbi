@@ -48,7 +48,7 @@ long atomic_add_return(atomic_t *atom, long value)
 	long ret, temp;
 #if __SIZEOF_LONG__ == 4
 	__asm__ __volatile__("1:lr.w.aqrl	%1,%0\n"
-			     "  addw	%2,%1,%3\n"
+			     "  add	%2,%1,%3\n"
 			     "  sc.w.aqrl	%2,%2,%0\n"
 			     "  bnez	%2,1b"
 			     : "+A"(atom->counter), "=&r"(ret), "=&r"(temp)

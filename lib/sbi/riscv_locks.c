@@ -57,7 +57,11 @@ void spin_lock(spinlock_t *lock)
 		"	amoadd.w.aqrl	%0, %4, %3\n"
 #elif defined(__riscv_zalrsc)
 		"3:	lr.w.aqrl	%0, %3\n"
+#if __riscv_xlen == 64
 		"	addw	%1, %0, %4\n"
+#elif __riscv_xlen == 32
+		"	add	%1, %0, %4\n"
+#endif
 		"	sc.w.aqrl	%1, %1, %3\n"
 		"	bnez	%1, 3b\n"
 #else
