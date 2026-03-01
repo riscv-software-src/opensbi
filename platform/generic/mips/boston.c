@@ -140,7 +140,7 @@ static struct p8700_cm_info boston_cm_info = {
 };
 
 static const struct fdt_match boston_match[] = {
-	{ .compatible = "mips,p8700", .data = &boston_cm_info },
+	{ .compatible = "mips,p8700-boston", .data = &boston_cm_info },
 	{ },
 };
 
