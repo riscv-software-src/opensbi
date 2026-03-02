@@ -548,7 +548,7 @@ static void sse_event_inject(struct sbi_sse_event *e,
 
 	sse_event_set_state(e, SBI_SSE_STATE_RUNNING);
 
-	e->attrs.status = ~BIT(SBI_SSE_ATTR_STATUS_PENDING_OFFSET);
+	e->attrs.status &= ~BIT(SBI_SSE_ATTR_STATUS_PENDING_OFFSET);
 
 	i_ctx->a6 = regs->a6;
 	i_ctx->a7 = regs->a7;
