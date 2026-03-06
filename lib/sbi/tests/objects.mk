@@ -21,3 +21,6 @@ libsbi-objs-$(CONFIG_SBIUNIT) += tests/sbi_ecall_test.o
 
 carray-sbi_unit_tests-$(CONFIG_SBIUNIT) += bitops_test_suite
 libsbi-objs-$(CONFIG_SBIUNIT) += tests/sbi_bitops_test.o
+
+carray-sbi_unit_tests-$(CONFIG_SBIUNIT) += string_test_suite
+libsbi-objs-$(CONFIG_SBIUNIT) += tests/sbi_string_test.o
