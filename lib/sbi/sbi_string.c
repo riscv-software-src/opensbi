@@ -88,13 +88,12 @@ char *sbi_strncpy(char *dest, const char *src, size_t count)
 
 char *sbi_strchr(const char *s, int c)
 {
-	while (*s != '\0' && *s != (char)c)
-		s++;
+	do {
+		if (*s == (char)c)
+			return (char *)s;
+	} while (*s++ != '\0');
 
-	if (*s == '\0')
-		return NULL;
-	else
-		return (char *)s;
+	return NULL;
 }
 
 char *sbi_strrchr(const char *s, int c)
