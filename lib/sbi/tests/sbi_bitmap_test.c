@@ -92,10 +92,39 @@ static void bitmap_xor_test(struct sbiunit_test_case *test)
 	SBIUNIT_EXPECT_MEMEQ(test, res, data_zero, DATA_SIZE);
 }
 
+static void bitmap_empty_test(struct sbiunit_test_case *test)
+{
+	unsigned long res[DATA_SIZE];
+
+	/* All zeros = empty */
+	SBIUNIT_EXPECT_EQ(test, bitmap_empty(data_zero, DATA_BIT_SIZE), true);
+
+	/* Non-zero data = not empty */
+	SBIUNIT_EXPECT_EQ(test, bitmap_empty(data_a, DATA_BIT_SIZE), false);
+	SBIUNIT_EXPECT_EQ(test, bitmap_empty(data_b, DATA_BIT_SIZE), false);
+
+	/* bitmap_zero creates empty bitmap */
+	bitmap_zero(res, DATA_BIT_SIZE);
+	SBIUNIT_EXPECT_EQ(test, bitmap_empty(res, DATA_BIT_SIZE), true);
+
+	/* bitmap_fill creates non-empty bitmap */
+	bitmap_fill(res, DATA_BIT_SIZE);
+	SBIUNIT_EXPECT_EQ(test, bitmap_empty(res, DATA_BIT_SIZE), false);
+
+	/* Single bit set = not empty */
+	bitmap_zero(res, DATA_BIT_SIZE);
+	bitmap_set(res, 0, 1);
+	SBIUNIT_EXPECT_EQ(test, bitmap_empty(res, DATA_BIT_SIZE), false);
+
+	/* Zero nbits = empty */
+	SBIUNIT_EXPECT_EQ(test, bitmap_empty(data_a, 0), true);
+}
+
 static struct sbiunit_test_case bitmap_test_cases[] = {
 	SBIUNIT_TEST_CASE(bitmap_and_test),
 	SBIUNIT_TEST_CASE(bitmap_or_test),
 	SBIUNIT_TEST_CASE(bitmap_xor_test),
+	SBIUNIT_TEST_CASE(bitmap_empty_test),
 	SBIUNIT_END_CASE,
 };
 
