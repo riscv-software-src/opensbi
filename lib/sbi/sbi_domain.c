@@ -505,6 +505,9 @@ bool sbi_domain_check_addr_range(const struct sbi_domain *dom,
 	if (!dom)
 		return false;
 
+	if (size && max <= addr)
+		return false;
+
 	while (addr < max) {
 		reg = find_region(dom, addr);
 		if (!reg)
