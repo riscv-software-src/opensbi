@@ -158,6 +158,9 @@ qemu-system-riscv32 -M virt -m 256M -nographic \
 Debugging with GDB
 ------------------
 
+Note: the command line examples here assume that OpenSBI was compiled using
+the `DEBUG=1 FW_TEXT_START=0x80000000` configuration.
+
 In a first console start OpenSBI with QEMU:
 
 ```
