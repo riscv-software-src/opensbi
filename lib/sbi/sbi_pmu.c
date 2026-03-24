@@ -830,13 +830,20 @@ static int pmu_ctr_find_hw(struct sbi_pmu_hart_state *phs,
 
 	if (ctr_idx == SBI_ENOTSUPP) {
 		/**
-		 * We can't find any programmable counters for cycle/instret.
-		 * Return the fixed counter as they are mandatory anyways.
+		 * We can't find a programmable counter, see if we can use a
+		 * fixed counter instead if one was found for this event.
+		 *
+		 * If sscofpmf is present but smcntrpmf is not, we can't
+		 * fallback to a fixed counter, because the fixed counter
+		 * doesn't support filtering whereas a programmable counter
+		 * would.
 		 */
-		if (fixed_ctr >= 0)
-			return pmu_fixed_ctr_update_inhibit_bits(fixed_ctr, flags);
-		else
+		if (fixed_ctr < 0 ||
+		    ((sbi_hart_has_extension(scratch, SBI_HART_EXT_SSCOFPMF) &&
+		      !sbi_hart_has_extension(scratch, SBI_HART_EXT_SMCNTRPMF))))
 			return SBI_EFAIL;
+
+		return pmu_fixed_ctr_update_inhibit_bits(fixed_ctr, flags);
 	}
 	ret = pmu_update_hw_mhpmevent(temp, ctr_idx, flags, event_idx, data);
 
