@@ -396,16 +396,13 @@ static int __fdt_parse_domain(const void *fdt, int domain_offset, void *opaque)
 	dom->fw_region_inited = root.fw_region_inited;
 
 	/* Read "boot-hart" DT property */
-	val32 = -1U;
+	val32 = current_hartid();
 	val = fdt_getprop(fdt, domain_offset, "boot-hart", &len);
 	if (val && len >= 4) {
 		cpu_offset = fdt_node_offset_by_phandle(fdt,
 							 fdt32_to_cpu(*val));
 		if (cpu_offset >= 0 && fdt_node_is_enabled(fdt, cpu_offset))
 			fdt_parse_hart_id(fdt, cpu_offset, &val32);
-	} else {
-		if (domain_offset == *cold_domain_offset)
-			val32 = current_hartid();
 	}
 	dom->boot_hartid = val32;
 

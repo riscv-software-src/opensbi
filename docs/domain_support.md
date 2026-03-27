@@ -173,9 +173,9 @@ The DT properties of a domain instance DT node are as follows:
   Any region of a domain defined in DT node cannot have only M-bits set
   in access permissions i.e. it cannot be an m-mode only accessible region.
 * **boot-hart** (Optional) - The DT node phandle of the HART booting the
-  domain instance. If coldboot HART is assigned to the domain instance then
-  this DT property is ignored and the coldboot HART is assumed to be the
-  boot HART of the domain instance.
+  domain instance. If not specified, defaults to the coldboot HART. Note that
+  if the coldboot HART is assigned to this domain, it will be forced as
+  the boot HART regardless of this property.
 * **next-arg1** (Optional) - The 64 bit next booting stage arg1 for the
   domain instance. If this DT property is not available and coldboot HART
   is not assigned to the domain instance then **next booting stage arg1 of coldboot HART**
