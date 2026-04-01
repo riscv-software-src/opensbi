@@ -160,8 +160,16 @@ static int fwft_get_double_trap(struct fwft_config *conf, unsigned long *value)
 
 static int fwft_adue_supported(struct fwft_config *conf)
 {
+	/*
+	 * FWFT.PTE_AD_HW_UPDATING is only supported when both Svade and Svadu
+	 * are supported. We need both in order to support toggling and to
+	 * ensure the reset value of zero is valid (it wouldn't be when only
+	 * Svadu is supported).
+	 */
 	if (!sbi_hart_has_extension(sbi_scratch_thishart_ptr(),
-				    SBI_HART_EXT_SVADU))
+				    SBI_HART_EXT_SVADU) ||
+	    !sbi_hart_has_extension(sbi_scratch_thishart_ptr(),
+				    SBI_HART_EXT_SVADE))
 		return SBI_ENOTSUPP;
 
 	return SBI_OK;

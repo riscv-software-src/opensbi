@@ -137,6 +137,9 @@ static void mstatus_init(struct sbi_scratch *scratch)
 	if (sbi_hart_priv_version(scratch) >= SBI_HART_PRIV_VER_1_12) {
 		menvcfg_val = csr_read64(CSR_MENVCFG);
 
+		/* Disable HW A/D updating by default */
+		menvcfg_val &= ~ENVCFG_ADUE;
+
 		/* Disable double trap by default */
 		menvcfg_val &= ~ENVCFG_DTE;
 
@@ -158,18 +161,17 @@ static void mstatus_init(struct sbi_scratch *scratch)
 #endif
 		__set_menvcfg_ext(SBI_HART_EXT_SSTC, ENVCFG_STCE)
 		__set_menvcfg_ext(SBI_HART_EXT_SMCDELEG, ENVCFG_CDE);
-		__set_menvcfg_ext(SBI_HART_EXT_SVADU, ENVCFG_ADUE);
-
-#undef __set_menvcfg_ext
 
 		/*
-		 * When both Svade and Svadu are present in DT, the default scheme for managing
-		 * the PTE A/D bits should use Svade. Check Svadu before Svade extension to ensure
-		 * that the ADUE bit is cleared when the Svade support are specified.
+		 * Assume only Svadu is supported when it is the only extension
+		 * present in the ISA string. Svade is assumed when neither are
+		 * present. When both are present we must default to Svade (see
+		 * the zero reset value of FWFT.PTE_AD_HW_UPDATING).
 		 */
+		if (!sbi_hart_has_extension(scratch, SBI_HART_EXT_SVADE))
+			__set_menvcfg_ext(SBI_HART_EXT_SVADU, ENVCFG_ADUE);
 
-		if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SVADE))
-			menvcfg_val &= ~ENVCFG_ADUE;
+#undef __set_menvcfg_ext
 
 		csr_write64(CSR_MENVCFG, menvcfg_val);
 
