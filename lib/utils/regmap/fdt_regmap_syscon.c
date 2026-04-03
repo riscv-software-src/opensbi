@@ -190,7 +190,7 @@ static int regmap_syscon_init(const void *fdt, int nodeoff,
 
 	srm->rmap.id = nodeoff;
 	srm->rmap.reg_shift = 0;
-	srm->rmap.reg_stride = srm->reg_io_width * 8;
+	srm->rmap.reg_stride = srm->reg_io_width;
 	srm->rmap.reg_base = 0;
 	srm->rmap.reg_max = size / srm->reg_io_width;
 	switch (srm->reg_io_width) {
