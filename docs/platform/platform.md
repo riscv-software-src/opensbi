@@ -18,9 +18,6 @@ OpenSBI currently supports the following virtual and hardware platforms:
   machine. More details on this platform can be found in the file
   *[sifive_fu540.md]*.
 
-* **Kendryte K210 SoC**: Platform support for the Kendryte K210 SoC used on
-  boards such as the Kendryte KD233 or the Sipeed MAIX Dock.
-
 * **Andes AE350 SoC**: Platform support for the Andes's SoC (AE350). More
   details on this platform can be found in the file *[andes-ae350.md]*.
 

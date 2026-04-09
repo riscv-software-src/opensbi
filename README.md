@@ -402,6 +402,5 @@ make I=<install_directory> install_docs
 [Firmware Documentation]: docs/firmware/fw.md
 [Domain Support]: docs/domain_support.md
 [Doxygen manual]: http://www.doxygen.nl/manual/index.html
-[Kendryte standalone SDK]: https://github.com/kendryte/kendryte-standalone-sdk
 [third party notices]: ThirdPartyNotices.md
 [reproducible builds]: https://reproducible-builds.org

@@ -100,7 +100,6 @@ build_opensbi() {
 	64)
 		# Setup 64-bit platform list
 		BUILD_PLATFORM_SUBDIR+=("nuclei/ux600")
-		BUILD_PLATFORM_SUBDIR+=("kendryte/k210")
 		BUILD_PLATFORM_SUBDIR+=("generic")
 		;;
 	*)
