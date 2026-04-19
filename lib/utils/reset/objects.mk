@@ -20,6 +20,9 @@ libsbiutils-objs-$(CONFIG_FDT_RESET_HTIF) += reset/fdt_reset_htif.o
 carray-fdt_early_drivers-$(CONFIG_FDT_RESET_SG2042_HWMON_MCU) += fdt_reset_sg2042_mcu
 libsbiutils-objs-$(CONFIG_FDT_RESET_SG2042_HWMON_MCU) += reset/fdt_reset_sg2042_hwmon_mcu.o
 
+carray-fdt_early_drivers-$(CONFIG_FDT_RESET_SPACEMIT_P1) += fdt_reset_spacemit_p1
+libsbiutils-objs-$(CONFIG_FDT_RESET_SPACEMIT_P1) += reset/fdt_reset_spacemit_p1.o
+
 carray-fdt_early_drivers-$(CONFIG_FDT_RESET_SUNXI_WDT) += fdt_reset_sunxi_wdt
 libsbiutils-objs-$(CONFIG_FDT_RESET_SUNXI_WDT) += reset/fdt_reset_sunxi_wdt.o
 
