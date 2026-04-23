@@ -101,7 +101,11 @@ int sbi_irqchip_set_raw_handler(struct sbi_irqchip_device *chip, u32 hwirq,
 /** Register a hardware interrupt handler */
 int sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
 				 u32 first_hwirq, u32 num_hwirq, u32 hwirq_flags,
-				 int (*callback)(u32 hwirq, void *opaque), void *opaque);
+				 int (*callback)(u32 hwirq, void *priv), void *priv);
+
+/** Register a hardware interrupts as reserved */
+int sbi_irqchip_register_reserved(struct sbi_irqchip_device *chip,
+				  u32 first_hwirq, u32 num_hwirq);
 
 /** Unregister a hardware interrupt handler */
 int sbi_irqchip_unregister_handler(struct sbi_irqchip_device *chip,

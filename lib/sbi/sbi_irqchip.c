@@ -108,13 +108,14 @@ static struct sbi_irqchip_handler *sbi_irqchip_find_handler(struct sbi_irqchip_d
 int sbi_irqchip_raw_handler_default(struct sbi_irqchip_device *chip, u32 hwirq)
 {
 	struct sbi_irqchip_handler *h;
-	int rc;
+	int rc = SBI_OK;
 
 	if (!chip || chip->num_hwirq <= hwirq)
 		return SBI_EINVAL;
 
 	h = sbi_irqchip_find_handler(chip, hwirq);
-	rc = h->callback(hwirq, h->priv);
+	if (h->callback)
+		rc = h->callback(hwirq, h->priv);
 
 	if (chip->hwirq_eoi)
 		chip->hwirq_eoi(chip, hwirq);
@@ -135,19 +136,13 @@ int sbi_irqchip_set_raw_handler(struct sbi_irqchip_device *chip, u32 hwirq,
 	return 0;
 }
 
-int sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
-				 u32 first_hwirq, u32 num_hwirq, u32 hwirq_flags,
-				 int (*callback)(u32 hwirq, void *opaque), void *priv)
+static int __sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
+					  u32 first_hwirq, u32 num_hwirq, u32 hwirq_flags,
+					  int (*callback)(u32 hwirq, void *priv), void *priv)
 {
 	struct sbi_irqchip_handler *h, *th, *nh;
 	u32 i, j;
 	int rc;
-
-	if (!chip || !num_hwirq || !callback)
-		return SBI_EINVAL;
-	if (chip->num_hwirq <= first_hwirq ||
-	    chip->num_hwirq <= (first_hwirq + num_hwirq - 1))
-		return SBI_EBAD_RANGE;
 
 	for (i = first_hwirq; i < (first_hwirq + num_hwirq); i++) {
 		h = sbi_irqchip_find_handler(chip, i);
@@ -196,6 +191,33 @@ int sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
 	}
 
 	return 0;
+}
+
+int sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
+				 u32 first_hwirq, u32 num_hwirq, u32 hwirq_flags,
+				 int (*callback)(u32 hwirq, void *priv), void *priv)
+{
+	if (!chip || !num_hwirq || !callback)
+		return SBI_EINVAL;
+	if (chip->num_hwirq <= first_hwirq ||
+	    chip->num_hwirq <= (first_hwirq + num_hwirq - 1))
+		return SBI_EBAD_RANGE;
+
+	return __sbi_irqchip_register_handler(chip, first_hwirq, num_hwirq, hwirq_flags,
+					      callback, priv);
+}
+
+int sbi_irqchip_register_reserved(struct sbi_irqchip_device *chip,
+				  u32 first_hwirq, u32 num_hwirq)
+{
+	if (!chip || !num_hwirq)
+		return SBI_EINVAL;
+	if (chip->num_hwirq <= first_hwirq ||
+	    chip->num_hwirq <= (first_hwirq + num_hwirq - 1))
+		return SBI_EBAD_RANGE;
+
+	return __sbi_irqchip_register_handler(chip, first_hwirq, num_hwirq,
+					      SBI_HWIRQ_FLAGS_NONE, NULL, NULL);
 }
 
 int sbi_irqchip_unregister_handler(struct sbi_irqchip_device *chip,
