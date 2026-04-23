@@ -60,6 +60,10 @@ struct sbi_irqchip_device {
 	/** End of hardware interrupt of this irqchip */
 	void (*hwirq_eoi)(struct sbi_irqchip_device *chip, u32 hwirq);
 
+	/** Set hardware interrupt affinity */
+	int (*hwirq_set_affinity)(struct sbi_irqchip_device *chip, u32 hwirq,
+				  u32 hart_index);
+
 	/** Mask a hardware interrupt of this irqchip */
 	void (*hwirq_mask)(struct sbi_irqchip_device *chip, u32 hwirq);
 
@@ -97,6 +101,13 @@ int sbi_irqchip_raw_handler_default(struct sbi_irqchip_device *chip, u32 hwirq);
 /** Set raw hardware interrupt handler */
 int sbi_irqchip_set_raw_handler(struct sbi_irqchip_device *chip, u32 hwirq,
 				int (*raw_hndl)(struct sbi_irqchip_device *, u32));
+
+/** Get hardware interrupt affinity */
+int sbi_irqchip_get_affinity(struct sbi_irqchip_device *chip, u32 hwirq,
+			     u32 *out_hart_index);
+
+/** Set hardware interrupt affinity */
+int sbi_irqchip_set_affinity(struct sbi_irqchip_device *chip, u32 hwirq, u32 hart_index);
 
 /** Register a hardware interrupt handler */
 int sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,

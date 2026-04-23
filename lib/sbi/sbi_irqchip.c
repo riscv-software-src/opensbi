@@ -7,7 +7,9 @@
  *   Anup Patel <apatel@ventanamicro.com>
  */
 
+#include <sbi/sbi_console.h>
 #include <sbi/sbi_heap.h>
+#include <sbi/sbi_hsm.h>
 #include <sbi/sbi_irqchip.h>
 #include <sbi/sbi_list.h>
 #include <sbi/sbi_platform.h>
@@ -17,6 +19,9 @@
 struct sbi_irqchip_hwirq_data {
 	/** raw hardware interrupt handler */
 	int (*raw_handler)(struct sbi_irqchip_device *chip, u32 hwirq);
+
+	/** target hart index */
+	u32 hart_index;
 };
 
 /** Internal irqchip interrupt handler */
@@ -136,6 +141,78 @@ int sbi_irqchip_set_raw_handler(struct sbi_irqchip_device *chip, u32 hwirq,
 	return 0;
 }
 
+int sbi_irqchip_get_affinity(struct sbi_irqchip_device *chip, u32 hwirq,
+			     u32 *out_hart_index)
+{
+	if (!chip || chip->num_hwirq <= hwirq)
+		return SBI_EINVAL;
+
+	/*
+	 * If no handler registered for hwirq then hwirq
+	 * is not being used so return failure
+	 */
+	if (!sbi_irqchip_find_handler(chip, hwirq))
+		return SBI_ENOTSUPP;
+
+	*out_hart_index = chip->hwirqs[hwirq].hart_index;
+	return 0;
+}
+
+int sbi_irqchip_set_affinity(struct sbi_irqchip_device *chip, u32 hwirq,
+			     u32 hart_index)
+{
+	struct sbi_irqchip_hwirq_data *data;
+	int rc;
+
+	if (!chip || chip->num_hwirq <= hwirq || sbi_hart_count() <= hart_index)
+		return SBI_EINVAL;
+
+	/*
+	 * If no handler registered for hwirq then hwirq
+	 * is not being used so return failure
+	 */
+	if (!sbi_irqchip_find_handler(chip, hwirq))
+		return SBI_ENOTSUPP;
+
+	data = &chip->hwirqs[hwirq];
+	if (data->hart_index != hart_index) {
+		if (chip->hwirq_set_affinity) {
+			rc = chip->hwirq_set_affinity(chip, hwirq, hart_index);
+			if (rc)
+				return rc;
+		}
+		data->hart_index = hart_index;
+	}
+
+	return 0;
+}
+
+static int __sbi_irqchip_handler_set_affinity(struct sbi_irqchip_device *chip,
+					      struct sbi_irqchip_handler *h,
+					      u32 compare_hart_index,
+					      u32 hart_index)
+{
+	u32 i, current_hart_index;
+	int rc;
+
+	for (i = 0; i < h->num_hwirq; i++) {
+		rc = sbi_irqchip_get_affinity(chip, h->first_hwirq + i,
+					      &current_hart_index);
+		if (rc)
+			return rc;
+
+		if (compare_hart_index != -1U &&
+		    current_hart_index != compare_hart_index)
+			continue;
+
+		rc = sbi_irqchip_set_affinity(chip, h->first_hwirq + i, hart_index);
+		if (rc)
+			return rc;
+	}
+
+	return 0;
+}
+
 static int __sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
 					  u32 first_hwirq, u32 num_hwirq, u32 hwirq_flags,
 					  int (*callback)(u32 hwirq, void *priv), void *priv)
@@ -183,6 +260,17 @@ static int __sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
 				return rc;
 			}
 		}
+	}
+
+	rc = __sbi_irqchip_handler_set_affinity(chip, h, -1U, current_hartindex());
+	if (rc) {
+		if (chip->hwirq_cleanup) {
+			for (i = 0; i < h->num_hwirq; i++)
+				chip->hwirq_cleanup(chip, h->first_hwirq + i);
+		}
+		sbi_list_del(&h->node);
+		sbi_free(h);
+		return rc;
 	}
 
 	if (chip->hwirq_unmask) {
@@ -294,8 +382,10 @@ int sbi_irqchip_add_device(struct sbi_irqchip_device *chip)
 	chip->hwirqs = sbi_zalloc(sizeof(*chip->hwirqs) * chip->num_hwirq);
 	if (!chip->hwirqs)
 		return SBI_ENOMEM;
-	for (i = 0; i < chip->num_hwirq; i++)
+	for (i = 0; i < chip->num_hwirq; i++) {
 		sbi_irqchip_set_raw_handler(chip, i, sbi_irqchip_raw_handler_default);
+		chip->hwirqs[i].hart_index = -1U;
+	}
 
 	SBI_INIT_LIST_HEAD(&chip->handler_list);
 
@@ -340,6 +430,37 @@ int sbi_irqchip_init(struct sbi_scratch *scratch, bool cold_boot)
 void sbi_irqchip_exit(struct sbi_scratch *scratch)
 {
 	struct sbi_irqchip_hart_data *hd;
+	struct sbi_irqchip_device *chip;
+	struct sbi_irqchip_handler *h;
+	u32 migrate_hidx = -1U;
+	bool migrate = false;
+	int rc;
+
+	sbi_for_each_hartindex(i) {
+		if (i == current_hartindex())
+			continue;
+		if (__sbi_hsm_hart_get_state(i) == SBI_HSM_STATE_STOPPED ||
+		    __sbi_hsm_hart_get_state(i) == SBI_HSM_STATE_STOP_PENDING)
+			continue;
+		migrate_hidx = i;
+		migrate = true;
+		break;
+	}
+
+	if (!migrate)
+		goto skip_migrate;
+	sbi_list_for_each_entry(chip, &irqchip_list, node) {
+		sbi_list_for_each_entry(h, &chip->handler_list, node) {
+			rc = __sbi_irqchip_handler_set_affinity(chip, h,
+								current_hartindex(),
+								migrate_hidx);
+			if (rc) {
+				sbi_printf("%s: chip 0x%x handler 0x%x set affinity (err %d)\n",
+					   __func__, chip->id, h->first_hwirq, rc);
+			}
+		}
+	}
+skip_migrate:
 
 	hd = sbi_scratch_thishart_offset_ptr(irqchip_hart_data_off);
 	if (hd && hd->chip && hd->chip->process_hwirqs)
