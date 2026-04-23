@@ -149,12 +149,11 @@ int sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
 	    chip->num_hwirq <= (first_hwirq + num_hwirq - 1))
 		return SBI_EBAD_RANGE;
 
-	h = sbi_irqchip_find_handler(chip, first_hwirq);
-	if (h)
-		return SBI_EALREADY;
-	h = sbi_irqchip_find_handler(chip, first_hwirq + num_hwirq - 1);
-	if (h)
-		return SBI_EALREADY;
+	for (i = first_hwirq; i < (first_hwirq + num_hwirq); i++) {
+		h = sbi_irqchip_find_handler(chip, i);
+		if (h)
+			return SBI_EALREADY;
+	}
 
 	h = sbi_zalloc(sizeof(*h));
 	if (!h)
