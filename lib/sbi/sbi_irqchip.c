@@ -136,7 +136,7 @@ int sbi_irqchip_set_raw_handler(struct sbi_irqchip_device *chip, u32 hwirq,
 }
 
 int sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
-				 u32 first_hwirq, u32 num_hwirq,
+				 u32 first_hwirq, u32 num_hwirq, u32 hwirq_flags,
 				 int (*callback)(u32 hwirq, void *opaque), void *priv)
 {
 	struct sbi_irqchip_handler *h, *th, *nh;
@@ -177,7 +177,7 @@ int sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
 
 	if (chip->hwirq_setup) {
 		for (i = 0; i < h->num_hwirq; i++) {
-			rc = chip->hwirq_setup(chip, h->first_hwirq + i);
+			rc = chip->hwirq_setup(chip, h->first_hwirq + i, hwirq_flags);
 			if (rc) {
 				if (chip->hwirq_cleanup) {
 					for (j = 0; j < i; j++)

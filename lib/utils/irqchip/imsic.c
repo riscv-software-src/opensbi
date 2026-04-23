@@ -346,9 +346,9 @@ int imsic_data_check(struct imsic_data *imsic)
 	return 0;
 }
 
-static int imsic_hwirq_setup(struct sbi_irqchip_device *chip, u32 hwirq)
+static int imsic_hwirq_setup(struct sbi_irqchip_device *chip, u32 hwirq, u32 hwirq_flags)
 {
-	if (!hwirq || hwirq == IMSIC_IPI_ID)
+	if (!hwirq || hwirq == IMSIC_IPI_ID || hwirq_flags != SBI_HWIRQ_FLAGS_NONE)
 		return SBI_ENOTSUPP;
 	return 0;
 }

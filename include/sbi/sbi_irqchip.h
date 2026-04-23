@@ -43,7 +43,16 @@ struct sbi_irqchip_device {
 	int (*process_hwirqs)(struct sbi_irqchip_device *chip);
 
 	/** Setup a hardware interrupt of this irqchip */
-	int (*hwirq_setup)(struct sbi_irqchip_device *chip, u32 hwirq);
+	int (*hwirq_setup)(struct sbi_irqchip_device *chip, u32 hwirq,
+			   u32 hwirq_flags);
+#define SBI_HWIRQ_FLAGS_NONE			0x00000000UL
+#define SBI_HWIRQ_FLAGS_EDGE_RISING		0x00000001UL
+#define SBI_HWIRQ_FLAGS_EDGE_FALLING		0x00000002UL
+#define SBI_HWIRQ_FLAGS_EDGE_BOTH		(SBI_HWIRQ_FLAGS_EDGE_RISING | \
+						 SBI_HWIRQ_FLAGS_EDGE_FALLING)
+#define SBI_HWIRQ_FLAGS_LEVEL_HIGH		0x00000004UL
+#define SBI_HWIRQ_FLAGS_LEVEL_LOW		0x00000008UL
+#define SBI_HWIRQ_FLAGS_LEVEL_SENSE_MASK	0x0000000fUL
 
 	/** Cleanup a hardware interrupt of this irqchip */
 	void (*hwirq_cleanup)(struct sbi_irqchip_device *chip, u32 hwirq);
@@ -91,7 +100,7 @@ int sbi_irqchip_set_raw_handler(struct sbi_irqchip_device *chip, u32 hwirq,
 
 /** Register a hardware interrupt handler */
 int sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
-				 u32 first_hwirq, u32 num_hwirq,
+				 u32 first_hwirq, u32 num_hwirq, u32 hwirq_flags,
 				 int (*callback)(u32 hwirq, void *opaque), void *opaque);
 
 /** Unregister a hardware interrupt handler */
