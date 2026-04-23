@@ -139,7 +139,7 @@ int sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
 				 u32 first_hwirq, u32 num_hwirq,
 				 int (*callback)(u32 hwirq, void *opaque), void *priv)
 {
-	struct sbi_irqchip_handler *h;
+	struct sbi_irqchip_handler *h, *th, *nh;
 	u32 i, j;
 	int rc;
 
@@ -162,7 +162,18 @@ int sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
 	h->num_hwirq = num_hwirq;
 	h->callback = callback;
 	h->priv = priv;
-	sbi_list_add_tail(&h->node, &chip->handler_list);
+
+	nh = NULL;
+	sbi_list_for_each_entry(th, &chip->handler_list, node) {
+		if (h->first_hwirq < th->first_hwirq) {
+			nh = th;
+			break;
+		}
+	}
+	if (nh)
+		sbi_list_add(&h->node, &nh->node);
+	else
+		sbi_list_add_tail(&h->node, &chip->handler_list);
 
 	if (chip->hwirq_setup) {
 		for (i = 0; i < h->num_hwirq; i++) {
