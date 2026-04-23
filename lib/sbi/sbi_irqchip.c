@@ -35,6 +35,9 @@ struct sbi_irqchip_handler {
 	/** Number of consecutive hardware IRQs handled by this handler */
 	u32 num_hwirq;
 
+	/** Write MSI function of this handler */
+	void (*write_msi)(u32 hwirq, const struct sbi_irqchip_msi_msg *msg, void *priv);
+
 	/** Callback function of this handler */
 	int (*callback)(u32 hwirq, void *priv);
 
@@ -141,6 +144,24 @@ int sbi_irqchip_set_raw_handler(struct sbi_irqchip_device *chip, u32 hwirq,
 	return 0;
 }
 
+int sbi_irqchip_write_msi(struct sbi_irqchip_device *chip, u32 hwirq,
+			  const struct sbi_irqchip_msi_msg *msg)
+{
+	struct sbi_irqchip_handler *h;
+
+	if (!chip || chip->num_hwirq <= hwirq || !msg)
+		return SBI_EINVAL;
+
+	h = sbi_irqchip_find_handler(chip, hwirq);
+	if (!h)
+		return SBI_EFAIL;
+	if (!h->write_msi)
+		return SBI_ENOTSUPP;
+
+	h->write_msi(hwirq, msg, h->priv);
+	return 0;
+}
+
 int sbi_irqchip_get_affinity(struct sbi_irqchip_device *chip, u32 hwirq,
 			     u32 *out_hart_index)
 {
@@ -215,6 +236,9 @@ static int __sbi_irqchip_handler_set_affinity(struct sbi_irqchip_device *chip,
 
 static int __sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
 					  u32 first_hwirq, u32 num_hwirq, u32 hwirq_flags,
+					  void (*write_msi)(u32 hwirq,
+							    const struct sbi_irqchip_msi_msg *msg,
+							    void *priv),
 					  int (*callback)(u32 hwirq, void *priv), void *priv)
 {
 	struct sbi_irqchip_handler *h, *th, *nh;
@@ -232,6 +256,7 @@ static int __sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
 		return SBI_ENOMEM;
 	h->first_hwirq = first_hwirq;
 	h->num_hwirq = num_hwirq;
+	h->write_msi = write_msi;
 	h->callback = callback;
 	h->priv = priv;
 
@@ -281,6 +306,48 @@ static int __sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
 	return 0;
 }
 
+int sbi_irqchip_register_msi(struct sbi_irqchip_device *chip, u32 num_hwirq,
+			     void (*write_msi)(u32 hwirq,
+					       const struct sbi_irqchip_msi_msg *msg,
+					       void *priv),
+			     int (*callback)(u32 hwirq, void *priv), void *priv,
+			     u32 *out_first_hwirq)
+{
+	struct sbi_irqchip_handler *h;
+	bool found;
+	u32 hwirq;
+
+	if (!chip || !chip->hwirq_set_affinity || !num_hwirq ||
+	    !write_msi || !callback || !out_first_hwirq)
+		return SBI_EINVAL;
+	if (chip->num_hwirq < num_hwirq)
+		return SBI_EBAD_RANGE;
+
+	hwirq = 0;
+	found = false;
+	sbi_list_for_each_entry(h, &chip->handler_list, node) {
+		if (h->first_hwirq <= hwirq && hwirq < (h->first_hwirq + h->num_hwirq)) {
+			hwirq = h->first_hwirq + h->num_hwirq;
+		} else if (hwirq < h->first_hwirq) {
+			if (h->first_hwirq - hwirq < num_hwirq) {
+				found = true;
+				break;
+			} else {
+				hwirq = h->first_hwirq + h->num_hwirq;
+			}
+		}
+	}
+	if (!found && !hwirq)
+		found = true;
+	if (!found)
+		return SBI_ENOSPC;
+	*out_first_hwirq = hwirq;
+
+	return __sbi_irqchip_register_handler(chip, *out_first_hwirq,
+					      num_hwirq, SBI_HWIRQ_FLAGS_NONE,
+					      write_msi, callback, priv);
+}
+
 int sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
 				 u32 first_hwirq, u32 num_hwirq, u32 hwirq_flags,
 				 int (*callback)(u32 hwirq, void *priv), void *priv)
@@ -292,7 +359,7 @@ int sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
 		return SBI_EBAD_RANGE;
 
 	return __sbi_irqchip_register_handler(chip, first_hwirq, num_hwirq, hwirq_flags,
-					      callback, priv);
+					      NULL, callback, priv);
 }
 
 int sbi_irqchip_register_reserved(struct sbi_irqchip_device *chip,
@@ -305,7 +372,7 @@ int sbi_irqchip_register_reserved(struct sbi_irqchip_device *chip,
 		return SBI_EBAD_RANGE;
 
 	return __sbi_irqchip_register_handler(chip, first_hwirq, num_hwirq,
-					      SBI_HWIRQ_FLAGS_NONE, NULL, NULL);
+					      SBI_HWIRQ_FLAGS_NONE, NULL, NULL, NULL);
 }
 
 int sbi_irqchip_unregister_handler(struct sbi_irqchip_device *chip,

@@ -16,6 +16,13 @@
 
 struct sbi_scratch;
 
+/** irqchip message signalled interrupt (MSI) */
+struct sbi_irqchip_msi_msg {
+	u32 address_lo;
+	u32 address_hi;
+	u32 data;
+};
+
 /** irqchip hardware device */
 struct sbi_irqchip_device {
 	/** Node in the list of irqchip devices (private) */
@@ -108,6 +115,18 @@ int sbi_irqchip_get_affinity(struct sbi_irqchip_device *chip, u32 hwirq,
 
 /** Set hardware interrupt affinity */
 int sbi_irqchip_set_affinity(struct sbi_irqchip_device *chip, u32 hwirq, u32 hart_index);
+
+/** Write MSI message to the hardware interrupt handler */
+int sbi_irqchip_write_msi(struct sbi_irqchip_device *chip, u32 hwirq,
+			  const struct sbi_irqchip_msi_msg *msg);
+
+/** Register a hardware MSI handler */
+int sbi_irqchip_register_msi(struct sbi_irqchip_device *chip, u32 num_hwirq,
+			     void (*write_msi)(u32 hwirq,
+					       const struct sbi_irqchip_msi_msg *msg,
+					       void *priv),
+			     int (*callback)(u32 hwirq, void *priv), void *priv,
+			     u32 *out_first_hwirq);
 
 /** Register a hardware interrupt handler */
 int sbi_irqchip_register_handler(struct sbi_irqchip_device *chip,
