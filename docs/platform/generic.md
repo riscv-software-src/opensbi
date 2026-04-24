@@ -47,6 +47,7 @@ RISC-V Platforms Using Generic Platform
 * **SiFive HiFive Unleashed** (*[sifive_fu540.md]*)
 * **Spike** (*[spike.md]*)
 * **T-HEAD C9xx series Processors** (*[thead-c9xx.md]*)
+* **Tenstorrent Atlantis Platform** (*[tt-atlantis.md]*)
 * **OpenPiton FPGA SoC** (*[fpga-openpiton.md]*)
 * **Ariane FPGA SoC** (*[fpga-ariane.md]*)
 
@@ -57,5 +58,6 @@ RISC-V Platforms Using Generic Platform
 [sifive_fu540.md]: sifive_fu540.md
 [spike.md]: spike.md
 [thead-c9xx.md]: thead-c9xx.md
+[tt-atlantis.md]: tt-atlantis.md
 [fpga-openpiton.md]: fpga-openpiton.md
 [fpga-ariane.md]: fpga-ariane.md

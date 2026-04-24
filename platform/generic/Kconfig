@@ -89,6 +89,11 @@ config PLATFORM_STARFIVE_JH7110
 	bool "StarFive JH7110 support"
 	default n
 
+config PLATFORM_TENSTORRENT_ATLANTIS
+	bool "Tenstorrent Atlantis support"
+	select CPU_TENSTORRENT_ASCALON
+	default n
+
 config PLATFORM_THEAD
 	bool "THEAD C9xx support"
 	select THEAD_C9XX_ERRATA
@@ -114,6 +119,7 @@ config PLATFORM_MIPS_P8700_BOSTON
 
 source "$(OPENSBI_SRC_DIR)/platform/generic/andes/Kconfig"
 source "$(OPENSBI_SRC_DIR)/platform/generic/eswin/Kconfig"
+source "$(OPENSBI_SRC_DIR)/platform/generic/tenstorrent/Kconfig"
 source "$(OPENSBI_SRC_DIR)/platform/generic/thead/Kconfig"
 
 endif

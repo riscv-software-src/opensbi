@@ -1,0 +1,5 @@
+# SPDX-FileCopyrightText: (c) 2025-2026 Tenstorrent USA, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
+config CPU_TENSTORRENT_ASCALON
+	bool
