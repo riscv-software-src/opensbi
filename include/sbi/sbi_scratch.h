@@ -171,9 +171,11 @@ do {									\
 					= (__type)(__ptr);		\
 } while (0)
 
+/** Get the hart index of a particular sbi_scratch */
+#define sbi_scratch_hartindex(__scratch) ((__scratch)->hartindex)
+
 /** Get the hart index of the current hart */
-#define current_hartindex() \
-	(sbi_scratch_thishart_ptr()->hartindex)
+#define current_hartindex() sbi_scratch_hartindex(sbi_scratch_thishart_ptr())
 
 /** Number of harts managed by this OpenSBI instance */
 extern u32 sbi_scratch_hart_count;
