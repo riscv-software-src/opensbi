@@ -88,6 +88,21 @@ struct sbi_timer_device {
 
 struct sbi_scratch;
 
+/** Compute timer value delta based on arbitary units */
+u64 sbi_timer_compute_delta(ulong units, u64 unit_freq);
+
+/** Compute timer value delta from milliseconds */
+static inline u64 sbi_timer_compute_mdelta(ulong msecs)
+{
+	return sbi_timer_compute_delta(msecs, 1000);
+}
+
+/** Compute timer value delta from microseconds */
+static inline u64 sbi_timer_compute_udelta(ulong usecs)
+{
+	return sbi_timer_compute_delta(usecs, 1000000);
+}
+
 /** Generic delay loop of desired granularity */
 void sbi_timer_delay_loop(ulong units, u64 unit_freq,
 			  void (*delay_fn)(void *), void *opaque);
@@ -124,6 +139,18 @@ bool sbi_timer_waitms_until(bool (*predicate)(void *), void *arg,
 
 /** Get timer value for current HART */
 u64 sbi_timer_value(void);
+
+/** Compute timer value after specified milliseconds */
+static inline u64 sbi_timer_value_after_msecs(ulong msecs)
+{
+	return sbi_timer_value() + sbi_timer_compute_mdelta(msecs);
+}
+
+/** Compute timer value after specified microseconds */
+static inline u64 sbi_timer_value_after_usecs(ulong usecs)
+{
+	return sbi_timer_value() + sbi_timer_compute_udelta(usecs);
+}
 
 /** Get virtualized timer value for current HART */
 u64 sbi_timer_virt_value(void);

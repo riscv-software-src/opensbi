@@ -58,6 +58,15 @@ static void nop_delay_fn(void *opaque)
 	cpu_relax();
 }
 
+u64 sbi_timer_compute_delta(ulong units, u64 unit_freq)
+{
+	u64 delta;
+
+	delta = ((u64)timer_dev->timer_freq * (u64)units);
+	delta = delta / unit_freq;
+	return delta;
+}
+
 void sbi_timer_delay_loop(ulong units, u64 unit_freq,
 			  void (*delay_fn)(void *), void *opaque)
 {
@@ -72,15 +81,12 @@ void sbi_timer_delay_loop(ulong units, u64 unit_freq,
 	/* Save starting timer value */
 	start_val = get_time_val();
 
-	/* Compute desired timer value delta */
-	delta = ((u64)timer_dev->timer_freq * (u64)units);
-	delta = delta / unit_freq;
-
 	/* Use NOP delay function if delay function not available */
 	if (!delay_fn)
 		delay_fn = nop_delay_fn;
 
 	/* Busy loop until desired timer value delta reached */
+	delta = sbi_timer_compute_delta(units, unit_freq);
 	while ((get_time_val() - start_val) < delta)
 		delay_fn(opaque);
 }
