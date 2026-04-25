@@ -10,9 +10,11 @@
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_barrier.h>
 #include <sbi/riscv_encoding.h>
+#include <sbi/riscv_locks.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_pmu.h>
 #include <sbi/sbi_scratch.h>
@@ -20,6 +22,9 @@
 
 struct timer_state {
 	u64 time_delta;
+	spinlock_t event_list_lock;
+	struct sbi_dlist event_list;
+	struct sbi_timer_event smode_ev;
 };
 
 static unsigned long timer_state_off;
@@ -136,8 +141,130 @@ void sbi_timer_set_delta_upper(ulong delta_upper)
 }
 #endif
 
-void sbi_timer_event_start(u64 next_event)
+static void __sbi_timer_update_device(struct timer_state *tstate)
 {
+	struct sbi_timer_event *ev;
+
+	if (!timer_dev)
+		return;
+
+	if (sbi_list_empty(&tstate->event_list)) {
+		if (timer_dev->timer_event_stop)
+			timer_dev->timer_event_stop();
+		csr_clear(CSR_MIE, MIP_MTIP);
+	} else {
+		ev = sbi_list_first_entry(&tstate->event_list, struct sbi_timer_event, head);
+		if (timer_dev->timer_event_start)
+			timer_dev->timer_event_start(ev->time_stamp);
+		csr_set(CSR_MIE, MIP_MTIP);
+	}
+}
+
+static void __sbi_timer_event_stop(struct sbi_timer_event *ev)
+{
+	if (ev->hart_index > -1) {
+		sbi_list_del(&ev->head);
+		ev->hart_index = -1;
+	}
+}
+
+static void __sbi_timer_event_start(struct timer_state *tstate,
+				    struct sbi_timer_event *ev, u64 next_event)
+{
+	struct sbi_timer_event *tev, *next_ev = NULL;
+
+	/* Find where to insert the event in per-HART event list */
+	sbi_list_for_each_entry(tev, &tstate->event_list, head) {
+		if (next_event < tev->time_stamp) {
+			next_ev = tev;
+			break;
+		}
+	}
+
+	/* Insert the event in per-HART event list */
+	ev->hart_index = current_hartindex();
+	ev->time_stamp = next_event;
+	if (next_ev)
+		sbi_list_add(&ev->head, &next_ev->head);
+	else
+		sbi_list_add_tail(&ev->head, &tstate->event_list);
+}
+
+void sbi_timer_event_start(struct sbi_timer_event *ev, u64 next_event)
+{
+	struct timer_state *tstate;
+
+	if (!ev)
+		return;
+
+	/* Ensure that event is not on the per-HART event list */
+	if (ev->hart_index > -1) {
+		tstate = sbi_scratch_offset_ptr(sbi_hartindex_to_scratch(ev->hart_index),
+						timer_state_off);
+		spin_lock(&tstate->event_list_lock);
+		__sbi_timer_event_stop(ev);
+		spin_unlock(&tstate->event_list_lock);
+	}
+
+	tstate = sbi_scratch_thishart_offset_ptr(timer_state_off);
+	spin_lock(&tstate->event_list_lock);
+
+	__sbi_timer_event_start(tstate, ev, next_event);
+	__sbi_timer_update_device(tstate);
+
+	spin_unlock(&tstate->event_list_lock);
+}
+
+void sbi_timer_event_stop(struct sbi_timer_event *ev)
+{
+	struct timer_state *tstate;
+	int ev_hart_index;
+
+	if (!ev)
+		return;
+
+	/* Ensure that event is not on the per-HART event list */
+	ev_hart_index = ev->hart_index;
+	if (ev->hart_index > -1) {
+		tstate = sbi_scratch_offset_ptr(sbi_hartindex_to_scratch(ev->hart_index),
+						timer_state_off);
+		spin_lock(&tstate->event_list_lock);
+		__sbi_timer_event_stop(ev);
+		spin_unlock(&tstate->event_list_lock);
+	}
+
+	/* Re-program timer device on the current HART */
+	if (ev_hart_index == current_hartindex()) {
+		tstate = sbi_scratch_thishart_offset_ptr(timer_state_off);
+		spin_lock(&tstate->event_list_lock);
+		__sbi_timer_update_device(tstate);
+		spin_unlock(&tstate->event_list_lock);
+	}
+}
+
+static void sbi_timer_smode_event_callback(struct sbi_timer_event *ev,
+					   struct sbi_timer_event_restart *restart)
+{
+	/*
+	 * If sstc extension is available, supervisor can receive the timer
+	 * directly without M-mode come in between. This function should
+	 * only invoked if M-mode programs the timer for its own purpose.
+	 */
+	if (!sbi_hart_has_extension(sbi_scratch_thishart_ptr(), SBI_HART_EXT_SSTC))
+		csr_set(CSR_MIP, MIP_STIP);
+}
+
+static void sbi_timer_smode_event_cleanup(struct sbi_timer_event *ev)
+{
+	if (!sbi_hart_has_extension(sbi_scratch_thishart_ptr(), SBI_HART_EXT_SSTC))
+		csr_clear(CSR_MIP, MIP_STIP);
+}
+
+void sbi_timer_smode_event_start(u64 next_event)
+{
+	struct timer_state *tstate = sbi_scratch_offset_ptr(sbi_scratch_thishart_ptr(),
+							    timer_state_off);
+
 	sbi_pmu_ctr_incr_fw(SBI_PMU_FW_SET_TIMER);
 
 	/**
@@ -146,23 +273,47 @@ void sbi_timer_event_start(u64 next_event)
 	 */
 	if (sbi_hart_has_extension(sbi_scratch_thishart_ptr(), SBI_HART_EXT_SSTC)) {
 		csr_write64(CSR_STIMECMP, next_event);
-	} else if (timer_dev && timer_dev->timer_event_start) {
-		timer_dev->timer_event_start(next_event);
+	} else {
 		csr_clear(CSR_MIP, MIP_STIP);
+		sbi_timer_event_start(&tstate->smode_ev, next_event);
 	}
-	csr_set(CSR_MIE, MIP_MTIP);
 }
 
 void sbi_timer_process(void)
 {
-	csr_clear(CSR_MIE, MIP_MTIP);
-	/*
-	 * If sstc extension is available, supervisor can receive the timer
-	 * directly without M-mode come in between. This function should
-	 * only invoked if M-mode programs the timer for its own purpose.
-	 */
-	if (!sbi_hart_has_extension(sbi_scratch_thishart_ptr(), SBI_HART_EXT_SSTC))
-		csr_set(CSR_MIP, MIP_STIP);
+	struct timer_state *tstate = sbi_scratch_thishart_offset_ptr(timer_state_off);
+	struct sbi_timer_event_restart restart;
+	SBI_LIST_HEAD(restart_list);
+	struct sbi_timer_event *ev;
+
+	spin_lock(&tstate->event_list_lock);
+
+	while (!sbi_list_empty(&tstate->event_list)) {
+		ev = sbi_list_first_entry(&tstate->event_list, struct sbi_timer_event, head);
+		if (ev->time_stamp > sbi_timer_value())
+			break;
+
+		__sbi_timer_event_stop(ev);
+		if (ev->callback) {
+			restart.required = false;
+			restart.next_event = 0;
+			ev->callback(ev, &restart);
+			if (restart.required) {
+				ev->time_stamp = restart.next_event;
+				sbi_list_add_tail(&ev->head, &restart_list);
+			}
+		}
+	}
+
+	while (!sbi_list_empty(&restart_list)) {
+		ev = sbi_list_first_entry(&tstate->event_list, struct sbi_timer_event, head);
+		sbi_list_del(&ev->head);
+		__sbi_timer_event_start(tstate, ev, ev->time_stamp);
+	}
+
+	__sbi_timer_update_device(tstate);
+
+	spin_unlock(&tstate->event_list_lock);
 }
 
 const struct sbi_timer_device *sbi_timer_get_device(void)
@@ -204,6 +355,11 @@ int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot)
 
 	tstate = sbi_scratch_offset_ptr(scratch, timer_state_off);
 	tstate->time_delta = 0;
+	SPIN_LOCK_INIT(tstate->event_list_lock);
+	SBI_INIT_LIST_HEAD(&tstate->event_list);
+	SBI_INIT_TIMER_EVENT(&tstate->smode_ev,
+			     sbi_timer_smode_event_callback,
+			     sbi_timer_smode_event_cleanup, NULL);
 
 	if (timer_dev && timer_dev->warm_init) {
 		ret = timer_dev->warm_init();
@@ -216,9 +372,19 @@ int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot)
 
 void sbi_timer_exit(struct sbi_scratch *scratch)
 {
-	if (timer_dev && timer_dev->timer_event_stop)
-		timer_dev->timer_event_stop();
+	struct timer_state *tstate = sbi_scratch_thishart_offset_ptr(timer_state_off);
+	struct sbi_timer_event *ev;
 
-	csr_clear(CSR_MIP, MIP_STIP);
-	csr_clear(CSR_MIE, MIP_MTIP);
+	spin_lock(&tstate->event_list_lock);
+
+	while (!sbi_list_empty(&tstate->event_list)) {
+		ev = sbi_list_first_entry(&tstate->event_list, struct sbi_timer_event, head);
+		__sbi_timer_event_stop(ev);
+		if (ev->cleanup)
+			ev->cleanup(ev);
+	}
+
+	__sbi_timer_update_device(tstate);
+
+	spin_unlock(&tstate->event_list_lock);
 }
