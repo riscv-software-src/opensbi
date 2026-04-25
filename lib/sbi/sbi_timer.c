@@ -18,7 +18,11 @@
 #include <sbi/sbi_scratch.h>
 #include <sbi/sbi_timer.h>
 
-static unsigned long time_delta_off;
+struct timer_state {
+	u64 time_delta;
+};
+
+static unsigned long timer_state_off;
 static u64 (*get_time_val)(void);
 static const struct sbi_timer_device *timer_dev = NULL;
 
@@ -98,35 +102,37 @@ u64 sbi_timer_value(void)
 
 u64 sbi_timer_virt_value(void)
 {
-	u64 *time_delta = sbi_scratch_offset_ptr(sbi_scratch_thishart_ptr(),
-						 time_delta_off);
+	struct timer_state *tstate = sbi_scratch_thishart_offset_ptr(timer_state_off);
 
-	return sbi_timer_value() + *time_delta;
+	return sbi_timer_value() + tstate->time_delta;
 }
 
 u64 sbi_timer_get_delta(void)
 {
-	u64 *time_delta = sbi_scratch_offset_ptr(sbi_scratch_thishart_ptr(),
-						 time_delta_off);
+	struct timer_state *tstate = sbi_scratch_thishart_offset_ptr(timer_state_off);
 
-	return *time_delta;
+	return tstate->time_delta;
 }
 
 void sbi_timer_set_delta(ulong delta)
 {
-	ulong *time_delta = sbi_scratch_offset_ptr(sbi_scratch_thishart_ptr(),
-						   time_delta_off);
+	struct timer_state *tstate = sbi_scratch_thishart_offset_ptr(timer_state_off);
 
-	*time_delta = delta;
+#if __riscv_xlen == 32
+	tstate->time_delta &= ~0xffffffffUL;
+	tstate->time_delta |= (u32)delta;
+#else
+	tstate->time_delta = delta;
+#endif
 }
 
 #if __riscv_xlen == 32
 void sbi_timer_set_delta_upper(ulong delta_upper)
 {
-	ulong *time_delta = sbi_scratch_offset_ptr(sbi_scratch_thishart_ptr(),
-						   time_delta_off);
+	struct timer_state *tstate = sbi_scratch_thishart_offset_ptr(timer_state_off);
 
-	*(time_delta + 1) = delta_upper;
+	tstate->time_delta &= 0xffffffffUL;
+	tstate->time_delta |= (u64)delta_upper << 32;
 }
 #endif
 
@@ -176,13 +182,13 @@ void sbi_timer_set_device(const struct sbi_timer_device *dev)
 
 int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot)
 {
-	u64 *time_delta;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
+	struct timer_state *tstate;
 	int ret;
 
 	if (cold_boot) {
-		time_delta_off = sbi_scratch_alloc_offset(sizeof(*time_delta));
-		if (!time_delta_off)
+		timer_state_off = sbi_scratch_alloc_offset(sizeof(*tstate));
+		if (!timer_state_off)
 			return SBI_ENOMEM;
 
 		if (sbi_hart_has_csr(scratch, SBI_HART_CSR_TIME))
@@ -192,12 +198,12 @@ int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot)
 		if (ret)
 			return ret;
 	} else {
-		if (!time_delta_off)
+		if (!timer_state_off)
 			return SBI_ENOMEM;
 	}
 
-	time_delta = sbi_scratch_offset_ptr(scratch, time_delta_off);
-	*time_delta = 0;
+	tstate = sbi_scratch_offset_ptr(scratch, timer_state_off);
+	tstate->time_delta = 0;
 
 	if (timer_dev && timer_dev->warm_init) {
 		ret = timer_dev->warm_init();
