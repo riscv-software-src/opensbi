@@ -129,10 +129,6 @@ static int switch_to_next_domain_context(struct hart_context *ctx,
 	sbi_hartmask_set_hartindex(hartindex, &target_dom->assigned_harts);
 	spin_unlock(&target_dom->assigned_harts_lock);
 
-	/* Reconfigure PMP settings for the new domain */
-	sbi_hart_protection_unconfigure(scratch);
-	sbi_hart_protection_configure(scratch);
-
 	/* Save current CSR context and restore target domain's CSR context */
 	ctx->sstatus	= csr_swap(CSR_SSTATUS, dom_ctx->sstatus);
 	ctx->sie	= csr_swap(CSR_SIE, dom_ctx->sie);
@@ -167,6 +163,16 @@ static int switch_to_next_domain_context(struct hart_context *ctx,
 	trap_ctx = sbi_trap_get_context(scratch);
 	sbi_memcpy(&ctx->trap_ctx, trap_ctx, sizeof(*trap_ctx));
 	sbi_memcpy(trap_ctx, &dom_ctx->trap_ctx, sizeof(*trap_ctx));
+
+	/*
+	 * Re-configure PMP settings for the new domain
+	 *
+	 * This will internally perform full SFENCE / HFENCE which
+	 * is also required for some of the above CSR updates (such
+	 * as satp CSR).
+	 */
+	sbi_hart_protection_unconfigure(scratch);
+	sbi_hart_protection_configure(scratch);
 
 	/* Mark current context structure initialized because context saved */
 	ctx->initialized = true;
