@@ -332,7 +332,7 @@ static int hart_pmp_write(pmp_t *pmp, unsigned int n)
 	return SBI_OK;
 }
 
-int pmp_disable(unsigned int n)
+int sbi_hart_pmp_disable(unsigned int n)
 {
 	pmp_t pmp;
 	int rc;
@@ -346,18 +346,18 @@ int pmp_disable(unsigned int n)
 	return hart_pmp_write(&pmp, n);
 }
 
-int is_pmp_entry_mapped(unsigned long entry)
+bool sbi_hart_is_pmp_enabled(unsigned int n)
 {
 	pmp_t pmp;
 
-	if (hart_pmp_read(&pmp, entry) != SBI_OK)
+	if (hart_pmp_read(&pmp, n) != SBI_OK)
 		return false;
 
 	return sbi_pmp_is_enabled(&pmp);
 }
 
-int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
-	    unsigned long log2len)
+int sbi_hart_pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
+		     unsigned long log2len)
 {
 	pmp_t pmp;
 	int rc;
@@ -369,8 +369,8 @@ int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
 	return hart_pmp_write(&pmp, n);
 }
 
-int pmp_get(unsigned int n, unsigned long *prot_out, unsigned long *addr_out,
-	    unsigned long *log2len)
+int sbi_hart_pmp_get(unsigned int n, unsigned long *prot_out, unsigned long *addr_out,
+		     unsigned long *log2len)
 {
 	pmp_t pmp;
 	int rc;

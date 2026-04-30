@@ -81,6 +81,8 @@
 
 #ifndef __ASSEMBLER__
 
+#include <sbi/sbi_types.h>
+
 #define csr_swap(csr, val)                                              \
 	({                                                              \
 		register unsigned long __v = (unsigned long)(val);      \
@@ -210,16 +212,16 @@ int misa_xlen(void);
 void misa_string(int xlen, char *out, unsigned int out_sz);
 
 /* Disable pmp entry at a given index */
-int pmp_disable(unsigned int n);
+int sbi_hart_pmp_disable(unsigned int n);
 
 /* Check if the matching field is set */
-int is_pmp_entry_mapped(unsigned long entry);
+bool sbi_hart_is_pmp_enabled(unsigned int n);
 
-int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
-	    unsigned long log2len);
+int sbi_hart_pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
+		     unsigned long log2len);
 
-int pmp_get(unsigned int n, unsigned long *prot_out, unsigned long *addr_out,
-	    unsigned long *log2len);
+int sbi_hart_pmp_get(unsigned int n, unsigned long *prot_out, unsigned long *addr_out,
+		     unsigned long *log2len);
 
 #endif /* !__ASSEMBLER__ */
 

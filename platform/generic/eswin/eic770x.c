@@ -254,21 +254,21 @@ static int eswin_eic7700_final_init(bool cold_boot)
 				   __func__);
 			return SBI_EFAIL;
 		}
-		pmp_set(pmp_idx++, sbi_domain_get_oldpmp_flags(reg),
-			reg->base, reg->order);
+		sbi_hart_pmp_set(pmp_idx++, sbi_domain_get_oldpmp_flags(reg),
+				 reg->base, reg->order);
 	}
 
-	pmp_set(PMP_RESERVED_A, PMP_L, EIC770X_L3_ZERO_REMOTE,
-			   log2roundup(EIC770X_L3_ZERO_SIZE));
+	sbi_hart_pmp_set(PMP_RESERVED_A, PMP_L, EIC770X_L3_ZERO_REMOTE,
+			 log2roundup(EIC770X_L3_ZERO_SIZE));
 	/**
 	 * Enable P550 internal + System Port, so OpenSBI can access
 	 * CLINT/PLIC/UART. Might be overwritten in pmp_configure.
 	 */
-	pmp_set(PMP_FREE_A_START + PMP_FREE_A_COUNT - 1, 0, 0,
-		log2roundup(EIC770X_MEMPORT_BASE));
+	sbi_hart_pmp_set(PMP_FREE_A_START + PMP_FREE_A_COUNT - 1, 0, 0,
+			 log2roundup(EIC770X_MEMPORT_BASE));
 
-	pmp_set(PMP_RESERVED_B, PMP_L, 0,
-		log2roundup(EIC770X_MEMPORT_LIMIT));
+	sbi_hart_pmp_set(PMP_RESERVED_B, PMP_L, 0,
+			 log2roundup(EIC770X_MEMPORT_LIMIT));
 	/**
 	 * These must come after the setup of PMP, as we are about to
 	 * enable speculation and HW prefetcher bits
@@ -321,13 +321,13 @@ static int eswin_eic7700_pmp_configure(struct sbi_scratch *scratch)
 		if (pmp_idx >= pmp_max)
 			goto no_more_pmp;
 
-		pmp_set(pmp_idx++, sbi_domain_get_oldpmp_flags(reg),
-			reg->base, reg->order);
+		sbi_hart_pmp_set(pmp_idx++, sbi_domain_get_oldpmp_flags(reg),
+				 reg->base, reg->order);
 		prev = reg;
 	}
 	/* Disable the rest */
 	while (pmp_idx < pmp_max)
-		pmp_disable(pmp_idx++);
+		sbi_hart_pmp_disable(pmp_idx++);
 
 	/* Process the second free range B [7-7] */
 	pmp_idx = PMP_FREE_B_START,
@@ -340,12 +340,12 @@ static int eswin_eic7700_pmp_configure(struct sbi_scratch *scratch)
 		if (pmp_idx >= pmp_max)
 			goto no_more_pmp;
 
-		pmp_set(pmp_idx++, sbi_domain_get_oldpmp_flags(reg),
-			reg->base, reg->order);
+		sbi_hart_pmp_set(pmp_idx++, sbi_domain_get_oldpmp_flags(reg),
+				 reg->base, reg->order);
 	}
 	/* Disable the rest */
 	while (pmp_idx < pmp_max)
-		pmp_disable(pmp_idx++);
+		sbi_hart_pmp_disable(pmp_idx++);
 
 	sbi_hart_pmp_fence();
 	return 0;
@@ -357,14 +357,14 @@ no_more_pmp:
 static void eswin_eic7700_pmp_unconfigure(struct sbi_scratch *scratch)
 {
 	/* Enable P550 internal + System Port */
-	pmp_set(PMP_FREE_A_START + PMP_FREE_A_COUNT - 1, 0, 0,
-		log2roundup(EIC770X_MEMPORT_BASE));
+	sbi_hart_pmp_set(PMP_FREE_A_START + PMP_FREE_A_COUNT - 1, 0, 0,
+			 log2roundup(EIC770X_MEMPORT_BASE));
 
 	for (unsigned int i = 0; i < PMP_FREE_A_COUNT - 1; i++)
-		pmp_disable(i + PMP_FREE_A_START);
+		sbi_hart_pmp_disable(i + PMP_FREE_A_START);
 
 	for (unsigned int i = 0; i < PMP_FREE_B_COUNT; i++)
-		pmp_disable(i + PMP_FREE_B_START);
+		sbi_hart_pmp_disable(i + PMP_FREE_B_START);
 }
 
 static struct sbi_hart_protection eswin_eic7700_pmp_protection = {
