@@ -9,6 +9,18 @@
 
 #include <sbi/sbi_types.h>
 
+/* Disable pmp entry at a given index */
+int sbi_hart_pmp_disable(unsigned int n);
+
+/* Check if the matching field is set */
+bool sbi_hart_is_pmp_enabled(unsigned int n);
+
+int sbi_hart_pmp_set(unsigned int n, unsigned long prot,
+		     unsigned long addr, unsigned long log2len);
+
+int sbi_hart_pmp_get(unsigned int n, unsigned long *prot_out,
+		     unsigned long *addr_out, unsigned long *log2len);
+
 struct sbi_scratch;
 
 unsigned int sbi_hart_pmp_count(struct sbi_scratch *scratch);
