@@ -336,17 +336,50 @@ int is_pmp_entry_mapped(unsigned long entry)
 	return false;
 }
 
+static int pmp_encode(pmp_t *pmp, unsigned long prot, unsigned long addr,
+		      unsigned long log2len)
+{
+	/* check parameters */
+	if (log2len > __riscv_xlen || log2len < PMP_SHIFT)
+		return SBI_EINVAL;
+
+	/* encode PMP config */
+	prot &= ~PMP_A;
+	prot |= (log2len == PMP_SHIFT) ? PMP_A_NA4 : PMP_A_NAPOT;
+	pmp->cfg = prot;
+
+	/* encode PMP address */
+	if (log2len == PMP_SHIFT) {
+		pmp->addr = (addr >> PMP_SHIFT);
+	} else {
+		if (log2len == __riscv_xlen) {
+			pmp->addr = -1UL;
+		} else {
+			unsigned long addrmask;
+			addrmask = (1UL << (log2len - PMP_SHIFT)) - 1;
+			pmp->addr = ((addr >> PMP_SHIFT) & ~addrmask);
+			pmp->addr |= (addrmask >> 1);
+		}
+	}
+
+	return SBI_OK;
+}
+
 int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
 	    unsigned long log2len)
 {
 	int pmpcfg_csr, pmpcfg_shift, pmpaddr_csr;
 	unsigned long cfgmask, pmpcfg;
-	unsigned long addrmask;
 	pmp_t pmp;
+	int rc;
 
 	/* check parameters */
-	if (n >= PMP_COUNT || log2len > __riscv_xlen || log2len < PMP_SHIFT)
+	if (n >= PMP_COUNT)
 		return SBI_EINVAL;
+
+	rc = pmp_encode(&pmp, prot, addr, log2len);
+	if (rc)
+		return rc;
 
 	/* calculate PMP register and offset */
 #if __riscv_xlen == 32
@@ -360,24 +393,6 @@ int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
 #endif
 	pmpaddr_csr = CSR_PMPADDR0 + n;
 
-	/* encode PMP config */
-	prot &= ~PMP_A;
-	prot |= (log2len == PMP_SHIFT) ? PMP_A_NA4 : PMP_A_NAPOT;
-	pmp.cfg = prot;
-
-	/* encode PMP address */
-	if (log2len == PMP_SHIFT) {
-		pmp.addr = (addr >> PMP_SHIFT);
-	} else {
-		if (log2len == __riscv_xlen) {
-			pmp.addr = -1UL;
-		} else {
-			addrmask = (1UL << (log2len - PMP_SHIFT)) - 1;
-			pmp.addr = ((addr >> PMP_SHIFT) & ~addrmask);
-			pmp.addr |= (addrmask >> 1);
-		}
-	}
-
 	/* write csrs */
 	csr_write_num(pmpaddr_csr, pmp.addr);
 	cfgmask = ~(0xffUL << pmpcfg_shift);
@@ -388,18 +403,54 @@ int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
 	return 0;
 }
 
+static int pmp_decode(pmp_t *pmp, unsigned long *prot_out, unsigned long *addr_out,
+		      unsigned long *log2len)
+{
+	unsigned long prot;
+	unsigned long t1, addr, len;
+
+	/* check parameters */
+	if (!prot_out || !addr_out || !log2len)
+		return SBI_EINVAL;
+	*prot_out = *addr_out = *log2len = 0;
+
+	/* decode PMP config */
+	prot = pmp->cfg;
+
+	/* decode PMP address */
+	if ((prot & PMP_A) == PMP_A_NAPOT) {
+		addr = pmp->addr;
+		if (addr == -1UL) {
+			addr	= 0;
+			len	= __riscv_xlen;
+		} else {
+			t1	= ctz(~addr);
+			addr	= (addr & ~((1UL << t1) - 1)) << PMP_SHIFT;
+			len	= (t1 + PMP_SHIFT + 1);
+		}
+	} else {
+		addr	= pmp->addr << PMP_SHIFT;
+		len	= PMP_SHIFT;
+	}
+
+	/* return details */
+	*prot_out    = prot;
+	*addr_out    = addr;
+	*log2len     = len;
+
+	return SBI_OK;
+}
+
 int pmp_get(unsigned int n, unsigned long *prot_out, unsigned long *addr_out,
 	    unsigned long *log2len)
 {
 	int pmpcfg_csr, pmpcfg_shift, pmpaddr_csr;
-	unsigned long cfgmask, prot;
-	unsigned long t1, addr, len;
+	unsigned long cfgmask;
 	pmp_t pmp;
 
 	/* check parameters */
-	if (n >= PMP_COUNT || !prot_out || !addr_out || !log2len)
+	if (n >= PMP_COUNT)
 		return SBI_EINVAL;
-	*prot_out = *addr_out = *log2len = 0;
 
 	/* calculate PMP register and offset */
 #if __riscv_xlen == 32
@@ -417,29 +468,5 @@ int pmp_get(unsigned int n, unsigned long *prot_out, unsigned long *addr_out,
 	pmp.cfg = (csr_read_num(pmpcfg_csr) & cfgmask) >> pmpcfg_shift;
 	pmp.addr = csr_read_num(pmpaddr_csr);
 
-	/* decode PMP config */
-	prot = pmp.cfg;
-
-	/* decode PMP address */
-	if ((prot & PMP_A) == PMP_A_NAPOT) {
-		addr = pmp.addr;
-		if (addr == -1UL) {
-			addr	= 0;
-			len	= __riscv_xlen;
-		} else {
-			t1	= ctz(~addr);
-			addr	= (addr & ~((1UL << t1) - 1)) << PMP_SHIFT;
-			len	= (t1 + PMP_SHIFT + 1);
-		}
-	} else {
-		addr	= pmp.addr << PMP_SHIFT;
-		len	= PMP_SHIFT;
-	}
-
-	/* return details */
-	*prot_out    = prot;
-	*addr_out    = addr;
-	*log2len     = len;
-
-	return 0;
+	return pmp_decode(&pmp, prot_out, addr_out, log2len);
 }
