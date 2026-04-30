@@ -353,11 +353,7 @@ int is_pmp_entry_mapped(unsigned long entry)
 	if (hart_pmp_read(&pmp, entry) != SBI_OK)
 		return false;
 
-	/* If address matching bits are non-zero, the entry is enable */
-	if (pmp.cfg & PMP_A)
-		return true;
-
-	return false;
+	return sbi_pmp_is_enabled(&pmp);
 }
 
 int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,

@@ -14,6 +14,7 @@ struct pmp {
 };
 typedef struct pmp pmp_t;
 
+bool sbi_pmp_is_enabled(pmp_t *pmp);
 int sbi_pmp_encode(pmp_t *pmp, unsigned long prot, unsigned long addr,
 		    unsigned long log2len);
 int sbi_pmp_decode(pmp_t *pmp, unsigned long *prot, unsigned long *addr,

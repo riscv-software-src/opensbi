@@ -28,6 +28,15 @@ static unsigned long ctz(unsigned long x)
 	return ret;
 }
 
+bool sbi_pmp_is_enabled(pmp_t *pmp)
+{
+	/* If address matching bits are non-zero, the entry is enable */
+	if (pmp->cfg & PMP_A)
+		return true;
+
+	return false;
+}
+
 int sbi_pmp_encode(pmp_t *pmp, unsigned long prot, unsigned long addr,
 		    unsigned long log2len)
 {
