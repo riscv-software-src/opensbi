@@ -12,6 +12,7 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_console.h>
+#include <sbi/sbi_pmp.h>
 
 /* determine CPU extension, return non-zero support */
 int misa_extension_imp(char ext)
@@ -272,27 +273,6 @@ void csr_write_num(int csr_num, unsigned long val)
 #undef switchcase_csr_write
 }
 
-struct pmp {
-	unsigned long addr;
-	u8 cfg;
-};
-typedef struct pmp pmp_t;
-
-static unsigned long ctz(unsigned long x)
-{
-	unsigned long ret = 0;
-
-	if (x == 0)
-		return 8 * sizeof(x);
-
-	while (!(x & 1UL)) {
-		ret++;
-		x = x >> 1;
-	}
-
-	return ret;
-}
-
 int pmp_disable(unsigned int n)
 {
 	int pmpcfg_csr, pmpcfg_shift;
@@ -336,35 +316,6 @@ int is_pmp_entry_mapped(unsigned long entry)
 	return false;
 }
 
-static int pmp_encode(pmp_t *pmp, unsigned long prot, unsigned long addr,
-		      unsigned long log2len)
-{
-	/* check parameters */
-	if (log2len > __riscv_xlen || log2len < PMP_SHIFT)
-		return SBI_EINVAL;
-
-	/* encode PMP config */
-	prot &= ~PMP_A;
-	prot |= (log2len == PMP_SHIFT) ? PMP_A_NA4 : PMP_A_NAPOT;
-	pmp->cfg = prot;
-
-	/* encode PMP address */
-	if (log2len == PMP_SHIFT) {
-		pmp->addr = (addr >> PMP_SHIFT);
-	} else {
-		if (log2len == __riscv_xlen) {
-			pmp->addr = -1UL;
-		} else {
-			unsigned long addrmask;
-			addrmask = (1UL << (log2len - PMP_SHIFT)) - 1;
-			pmp->addr = ((addr >> PMP_SHIFT) & ~addrmask);
-			pmp->addr |= (addrmask >> 1);
-		}
-	}
-
-	return SBI_OK;
-}
-
 int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
 	    unsigned long log2len)
 {
@@ -377,7 +328,7 @@ int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
 	if (n >= PMP_COUNT)
 		return SBI_EINVAL;
 
-	rc = pmp_encode(&pmp, prot, addr, log2len);
+	rc = sbi_pmp_encode(&pmp, prot, addr, log2len);
 	if (rc)
 		return rc;
 
@@ -401,44 +352,6 @@ int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
 	csr_write_num(pmpcfg_csr, pmpcfg);
 
 	return 0;
-}
-
-static int pmp_decode(pmp_t *pmp, unsigned long *prot_out, unsigned long *addr_out,
-		      unsigned long *log2len)
-{
-	unsigned long prot;
-	unsigned long t1, addr, len;
-
-	/* check parameters */
-	if (!prot_out || !addr_out || !log2len)
-		return SBI_EINVAL;
-	*prot_out = *addr_out = *log2len = 0;
-
-	/* decode PMP config */
-	prot = pmp->cfg;
-
-	/* decode PMP address */
-	if ((prot & PMP_A) == PMP_A_NAPOT) {
-		addr = pmp->addr;
-		if (addr == -1UL) {
-			addr	= 0;
-			len	= __riscv_xlen;
-		} else {
-			t1	= ctz(~addr);
-			addr	= (addr & ~((1UL << t1) - 1)) << PMP_SHIFT;
-			len	= (t1 + PMP_SHIFT + 1);
-		}
-	} else {
-		addr	= pmp->addr << PMP_SHIFT;
-		len	= PMP_SHIFT;
-	}
-
-	/* return details */
-	*prot_out    = prot;
-	*addr_out    = addr;
-	*log2len     = len;
-
-	return SBI_OK;
 }
 
 int pmp_get(unsigned int n, unsigned long *prot_out, unsigned long *addr_out,
@@ -468,5 +381,5 @@ int pmp_get(unsigned int n, unsigned long *prot_out, unsigned long *addr_out,
 	pmp.cfg = (csr_read_num(pmpcfg_csr) & cfgmask) >> pmpcfg_shift;
 	pmp.addr = csr_read_num(pmpaddr_csr);
 
-	return pmp_decode(&pmp, prot_out, addr_out, log2len);
+	return sbi_pmp_decode(&pmp, prot_out, addr_out, log2len);
 }
