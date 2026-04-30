@@ -273,93 +273,10 @@ void csr_write_num(int csr_num, unsigned long val)
 #undef switchcase_csr_write
 }
 
-int pmp_disable(unsigned int n)
-{
-	int pmpcfg_csr, pmpcfg_shift;
-	unsigned long cfgmask, pmpcfg;
-
-	if (n >= PMP_COUNT)
-		return SBI_EINVAL;
-
-#if __riscv_xlen == 32
-	pmpcfg_csr   = CSR_PMPCFG0 + (n >> 2);
-	pmpcfg_shift = (n & 3) << 3;
-#elif __riscv_xlen == 64
-	pmpcfg_csr   = (CSR_PMPCFG0 + (n >> 2)) & ~1;
-	pmpcfg_shift = (n & 7) << 3;
-#else
-# error "Unexpected __riscv_xlen"
-#endif
-
-	/* Clear the address matching bits to disable the pmp entry */
-	cfgmask = ~(0xffUL << pmpcfg_shift);
-	pmpcfg	= (csr_read_num(pmpcfg_csr) & cfgmask);
-
-	csr_write_num(pmpcfg_csr, pmpcfg);
-
-	return SBI_OK;
-}
-
-int is_pmp_entry_mapped(unsigned long entry)
-{
-	unsigned long prot;
-	unsigned long addr;
-	unsigned long log2len;
-
-	if (pmp_get(entry, &prot, &addr, &log2len) != 0)
-		return false;
-
-	/* If address matching bits are non-zero, the entry is enable */
-	if (prot & PMP_A)
-		return true;
-
-	return false;
-}
-
-int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
-	    unsigned long log2len)
-{
-	int pmpcfg_csr, pmpcfg_shift, pmpaddr_csr;
-	unsigned long cfgmask, pmpcfg;
-	pmp_t pmp;
-	int rc;
-
-	/* check parameters */
-	if (n >= PMP_COUNT)
-		return SBI_EINVAL;
-
-	rc = sbi_pmp_encode(&pmp, prot, addr, log2len);
-	if (rc)
-		return rc;
-
-	/* calculate PMP register and offset */
-#if __riscv_xlen == 32
-	pmpcfg_csr   = CSR_PMPCFG0 + (n >> 2);
-	pmpcfg_shift = (n & 3) << 3;
-#elif __riscv_xlen == 64
-	pmpcfg_csr   = (CSR_PMPCFG0 + (n >> 2)) & ~1;
-	pmpcfg_shift = (n & 7) << 3;
-#else
-# error "Unexpected __riscv_xlen"
-#endif
-	pmpaddr_csr = CSR_PMPADDR0 + n;
-
-	/* write csrs */
-	csr_write_num(pmpaddr_csr, pmp.addr);
-	cfgmask = ~(0xffUL << pmpcfg_shift);
-	pmpcfg  = (csr_read_num(pmpcfg_csr) & cfgmask);
-	pmpcfg |= (((unsigned long)pmp.cfg << pmpcfg_shift) & ~cfgmask);
-	csr_write_num(pmpcfg_csr, pmpcfg);
-
-	return 0;
-}
-
-int pmp_get(unsigned int n, unsigned long *prot_out, unsigned long *addr_out,
-	    unsigned long *log2len)
+static int hart_pmp_read(pmp_t *pmp, unsigned int n)
 {
 	int pmpcfg_csr, pmpcfg_shift, pmpaddr_csr;
 	unsigned long cfgmask;
-	pmp_t pmp;
 
 	/* check parameters */
 	if (n >= PMP_COUNT)
@@ -378,8 +295,93 @@ int pmp_get(unsigned int n, unsigned long *prot_out, unsigned long *addr_out,
 	pmpaddr_csr = CSR_PMPADDR0 + n;
 
 	cfgmask = (0xffUL << pmpcfg_shift);
-	pmp.cfg = (csr_read_num(pmpcfg_csr) & cfgmask) >> pmpcfg_shift;
-	pmp.addr = csr_read_num(pmpaddr_csr);
+	pmp->cfg = (csr_read_num(pmpcfg_csr) & cfgmask) >> pmpcfg_shift;
+	pmp->addr = csr_read_num(pmpaddr_csr);
+
+	return SBI_OK;
+}
+
+static int hart_pmp_write(pmp_t *pmp, unsigned int n)
+{
+	int pmpcfg_csr, pmpcfg_shift, pmpaddr_csr;
+	unsigned long cfgmask, pmpcfg;
+
+	/* check parameters */
+	if (n >= PMP_COUNT)
+		return SBI_EINVAL;
+
+	/* calculate PMP register and offset */
+#if __riscv_xlen == 32
+	pmpcfg_csr   = CSR_PMPCFG0 + (n >> 2);
+	pmpcfg_shift = (n & 3) << 3;
+#elif __riscv_xlen == 64
+	pmpcfg_csr   = (CSR_PMPCFG0 + (n >> 2)) & ~1;
+	pmpcfg_shift = (n & 7) << 3;
+#else
+# error "Unexpected __riscv_xlen"
+#endif
+	pmpaddr_csr = CSR_PMPADDR0 + n;
+
+	/* write csrs */
+	csr_write_num(pmpaddr_csr, pmp->addr);
+	cfgmask = ~(0xffUL << pmpcfg_shift);
+	pmpcfg  = (csr_read_num(pmpcfg_csr) & cfgmask);
+	pmpcfg |= (((unsigned long)pmp->cfg << pmpcfg_shift) & ~cfgmask);
+	csr_write_num(pmpcfg_csr, pmpcfg);
+
+	return SBI_OK;
+}
+
+int pmp_disable(unsigned int n)
+{
+	pmp_t pmp;
+	int rc;
+
+	rc = hart_pmp_read(&pmp, n);
+	if (rc)
+		return rc;
+
+	pmp.cfg = 0;
+
+	return hart_pmp_write(&pmp, n);
+}
+
+int is_pmp_entry_mapped(unsigned long entry)
+{
+	pmp_t pmp;
+
+	if (hart_pmp_read(&pmp, entry) != SBI_OK)
+		return false;
+
+	/* If address matching bits are non-zero, the entry is enable */
+	if (pmp.cfg & PMP_A)
+		return true;
+
+	return false;
+}
+
+int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
+	    unsigned long log2len)
+{
+	pmp_t pmp;
+	int rc;
+
+	rc = sbi_pmp_encode(&pmp, prot, addr, log2len);
+	if (rc)
+		return rc;
+
+	return hart_pmp_write(&pmp, n);
+}
+
+int pmp_get(unsigned int n, unsigned long *prot_out, unsigned long *addr_out,
+	    unsigned long *log2len)
+{
+	pmp_t pmp;
+	int rc;
+
+	rc = hart_pmp_read(&pmp, n);
+	if (rc)
+		return rc;
 
 	return sbi_pmp_decode(&pmp, prot_out, addr_out, log2len);
 }
