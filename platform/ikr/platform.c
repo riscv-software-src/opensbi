@@ -20,30 +20,81 @@
 #include <sbi_utils/timer/aclint_mtimer.h>
 
 #define PLATFORM_PLIC_ADDR		0x00200100
-#define PLATFORM_PLIC_SIZE		(0x200000 + \
-					 (PLATFORM_HART_COUNT * 0x1000))
+#define PLATFORM_PLIC_SIZE		(0x200000 + (2 * PLATFORM_HART_COUNT * 0x1000))
 #define PLATFORM_PLIC_NUM_SOURCES	128
 #define PLATFORM_HART_COUNT		1
-// #define PLATFORM_CLINT_ADDR		0x2000000
+
 #define PLATFORM_ACLINT_MTIMER_FREQ	10000000
 #define PLATFORM_ACLINT_MSWI_ADDR 0x00000096
 #define PLATFORM_ACLINT_MTIMER_ADDR	0x00000080
+
 #define PLATFORM_UART_ADDR		0x1
-// #define PLATFORM_UART_INPUT_FREQ	10000000
-// #define PLATFORM_UART_BAUDRATE		115200
-#define PLATFORM_UART_DATA_OFFSET	0
+#define PLATFORM_UART_INPUT_FREQ	10000000
 #define PLATFORM_UART_RXSTS_OFFSET	1
-#define PLATFORM_UART_TXSTS_OFFSET	2
-#define PLATFORM_UART_RX_AVAIL		0x1
+#define PLATFORM_UART_TXSTS_OFFSET	2	
+#define PLATFORM_UART_DATA_OFFSET   0x00
+#define PLATFORM_UART_IER_OFFSET    0x01
+#define PLATFORM_UART_FCR_OFFSET    0x02
+#define PLATFORM_UART_LCR_OFFSET    0x03
+#define PLATFORM_UART_MCR_OFFSET    0x04
+#define PLATFORM_UART_LSR_OFFSET    0x05
+#define PLATFORM_UART_RX_AVAIL      0x01 // DR bit in LSR
+/* Bit masks for the LSR (Offset 5) */
+#define PLATFORM_UART_LSR_RX_READY  0x01 // Bit 0: Data Ready
+#define PLATFORM_UART_LSR_TX_EMPTY  0x20 // Bit 5: Transmit Holding Register Empty
+
+//For Qemu
+// static void ikr_uart_putc(char ch)
+// {
+//     // Wait until THR is empty (Bit 5 of LSR becomes 1)
+//     while ((readb((volatile void *)(PLATFORM_UART_ADDR + PLATFORM_UART_LSR_OFFSET)) & 
+//             PLATFORM_UART_LSR_TX_EMPTY) == 0)
+//         ;
+
+//     writeb((u8)ch, (volatile void *)(PLATFORM_UART_ADDR + PLATFORM_UART_DATA_OFFSET));
+// }
+
+// //For Qemu
+// static int ikr_uart_getc(void)
+// {
+//     // Check LSR Bit 0 (Data Ready)
+//     u8 status = readb((volatile void *)(PLATFORM_UART_ADDR + PLATFORM_UART_LSR_OFFSET));
+// //
+//     if (status & PLATFORM_UART_LSR_RX_READY) {
+//         // Read the data; this hardware-clears the Ready bit
+//         return (int)readb((volatile void *)(PLATFORM_UART_ADDR + PLATFORM_UART_DATA_OFFSET));
+//     }
+//     return -1;
+// }
+
 
 static void ikr_uart_putc(char ch)
 {
 	while (readb((volatile void *)(PLATFORM_UART_ADDR +
-				      PLATFORM_UART_TXSTS_OFFSET)) != 0)
-		;
+				      PLATFORM_UART_TXSTS_OFFSET)) != 0);
 
 	writeb((u8)ch, (volatile void *)(PLATFORM_UART_ADDR +
 					 PLATFORM_UART_DATA_OFFSET));
+}
+
+static int ikr_uart_getc(void)
+{
+	/*
+	 * Check RX_STATE bit 0 (data available). Reading UART_DATA
+	 * automatically clears the RX_AVAIL bit in hardware, so no
+	 * explicit status-register write is needed here. Writing 0
+	 * to RXSTS after the DATA read would race with rvemu's input
+	 * thread (which sets RX_AVAIL for the next queued character
+	 * between the DATA read and such a write), silently dropping
+	 * characters when multiple bytes arrive before a poll cycle.
+	 */
+	if (readb((volatile void *)(PLATFORM_UART_ADDR +
+				      PLATFORM_UART_RXSTS_OFFSET)) &
+	    PLATFORM_UART_RX_AVAIL) {
+		return (int)(u8)readb((volatile void *)(PLATFORM_UART_ADDR +
+					      PLATFORM_UART_DATA_OFFSET));
+	}
+	return -1;
 }
 
 static void ikr_uart_puts(const char *s)
@@ -53,21 +104,6 @@ static void ikr_uart_puts(const char *s)
 			ikr_uart_putc('\r');
 		ikr_uart_putc(*s++);
 	}
-}
-
-static int ikr_uart_getc(void)
-{
-	if (readb((volatile void *)(PLATFORM_UART_ADDR +
-				      PLATFORM_UART_RXSTS_OFFSET)) &
-	    PLATFORM_UART_RX_AVAIL) {
-		u8 ch = readb((volatile void *)(PLATFORM_UART_ADDR +
-					      PLATFORM_UART_DATA_OFFSET));
-		writeb(0, (volatile void *)(PLATFORM_UART_ADDR +
-				    PLATFORM_UART_RXSTS_OFFSET));
-		return ch;
-	}
-
-	return -1;
 }
 
 static struct sbi_console_device ikr_uart_console = {
@@ -85,14 +121,6 @@ static struct plic_data plic = {
 		[0] = { 0, 1 },
 	},
 };
-
-// With 1 hart this is usually fine. With multi-hart kernels you must add MSWI/IPI support.
-// static struct aclint_mswi_data mswi = {
-// 	.addr = PLATFORM_ACLINT_MSWI_ADDR,
-// 	.size = ACLINT_MSWI_SIZE,
-// 	.first_hartid = 0,
-// 	.hart_count = PLATFORM_HART_COUNT,
-// };
 
 static struct aclint_mtimer_data mtimer = {
 	.mtime_freq = PLATFORM_ACLINT_MTIMER_FREQ,
@@ -123,6 +151,15 @@ static int platform_early_init(bool cold_boot)
 	sbi_domain_root_add_memrange(0x0, PAGE_SIZE, PAGE_SIZE,
 				     (SBI_DOMAIN_MEMREGION_MMIO |
 				      SBI_DOMAIN_MEMREGION_SHARED_SURW_MRW));
+	/* Allow access to the new UART location */
+	sbi_domain_root_add_memrange(PLATFORM_UART_ADDR, PAGE_SIZE, PAGE_SIZE,
+					(SBI_DOMAIN_MEMREGION_MMIO |
+					SBI_DOMAIN_MEMREGION_SHARED_SURW_MRW));
+
+	/* Keep access to the PLIC/Timer area (assuming they are near 0x0c000000 or 0x02000000) */
+	sbi_domain_root_add_memrange(PLATFORM_PLIC_ADDR, 0x400000, PAGE_SIZE,
+					(SBI_DOMAIN_MEMREGION_MMIO |
+					SBI_DOMAIN_MEMREGION_SHARED_SURW_MRW));
 
 	/* rvemu does not provide a page-aligned MSWI window; with one hart we can
 	 * skip MSWI initialization and still boot OpenSBI.
