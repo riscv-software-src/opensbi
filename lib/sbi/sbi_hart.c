@@ -522,6 +522,16 @@ static int hart_detect_features(struct sbi_scratch *scratch)
 	hfeatures->mhpm_mask = 0;
 	hfeatures->priv_version = SBI_HART_PRIV_VER_UNKNOWN;
 
+	/*
+	 * Parse device tree extensions early, before any trap-based checks.
+	 * Needed to detect Smrnmi and install NMI handlers before CSR probes
+	 * that may trigger traps.
+	 */
+	rc = sbi_platform_extensions_init(sbi_platform_thishart_ptr(),
+					  hfeatures);
+	if (rc)
+		return rc;
+
 #define __check_hpm_csr(__csr, __mask) 					  \
 	oldval = csr_read_allowed(__csr, &trap);			  \
 	if (!trap.cause) {						  \
@@ -675,12 +685,6 @@ __pmp_skip:
 	__check_csr_existence(CSR_INSTRET, SBI_HART_CSR_INSTRET);
 
 #undef __check_csr_existence
-
-	/* Let platform populate extensions */
-	rc = sbi_platform_extensions_init(sbi_platform_thishart_ptr(),
-					  hfeatures);
-	if (rc)
-		return rc;
 
 	/* Zicntr should only be detected using traps */
 	__sbi_hart_update_extension(hfeatures, SBI_HART_EXT_ZICNTR,
