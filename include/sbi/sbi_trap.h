@@ -289,6 +289,8 @@ static inline void sbi_trap_set_context(struct sbi_scratch *scratch,
 
 struct sbi_trap_context *sbi_trap_handler(struct sbi_trap_context *tcntx);
 
+struct sbi_trap_context *sbi_trap_rnmi_handler(struct sbi_trap_context *tcntx);
+
 #endif
 
 #endif

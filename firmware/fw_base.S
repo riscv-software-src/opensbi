@@ -529,6 +529,45 @@ memcmp:
 	csrrw	tp, CSR_MSCRATCH, tp
 .endm
 
+.macro	TRAP_SAVE_AND_SETUP_SP_T0_NMI
+	/* Swap TP and MNSCRATCH (for RNMI) */
+	csrrw	tp, CSR_MNSCRATCH, tp
+
+	/* Save T0 in scratch space */
+	REG_S	t0, SBI_SCRATCH_TMP1_OFFSET(tp)
+
+	/*
+	 * Set T0 to appropriate exception stack
+	 *
+	 * Came_From_M_Mode = ((MNSTATUS.MNPP < PRV_M) ? 1 : 0) - 1;
+	 * Exception_Stack = TP ^ (Came_From_M_Mode & (SP ^ TP))
+	 */
+	csrr	t0, CSR_MNSTATUS
+	srl	t0, t0, 11		/* MNPP is at bits 11-12 */
+	and	t0, t0, PRV_M
+	slti	t0, t0, PRV_M
+	add	t0, t0, -1
+	xor	sp, sp, tp
+	and	t0, t0, sp
+	xor	sp, sp, tp
+	xor	t0, tp, t0
+
+	/* Save original SP on exception stack */
+	REG_S	sp, (SBI_TRAP_REGS_OFFSET(sp) - SBI_TRAP_CONTEXT_SIZE)(t0)
+
+	/* Set SP to exception stack and make room for trap context */
+	add	sp, t0, -(SBI_TRAP_CONTEXT_SIZE)
+
+	/* Restore T0 from scratch space */
+	REG_L	t0, SBI_SCRATCH_TMP1_OFFSET(tp)
+
+	/* Save T0 on stack */
+	REG_S	t0, SBI_TRAP_REGS_OFFSET(t0)(sp)
+
+	/* Swap TP and MNSCRATCH */
+	csrrw	tp, CSR_MNSCRATCH, tp
+.endm
+
 .macro	TRAP_SAVE_MEPC_MSTATUS have_mstatush
 	/* Save MEPC and MSTATUS CSRs */
 	csrr	t0, CSR_MEPC
@@ -541,6 +580,20 @@ memcmp:
 	.else
 	REG_S	zero, SBI_TRAP_REGS_OFFSET(mstatusH)(sp)
 	.endif
+.endm
+
+.macro	TRAP_SAVE_MNEPC_MNSTATUS have_mstatush
+	/*
+	 * Save MNEPC and MNSTATUS CSRs (for RNMI)
+	 * Note: Trap context structure has generic field names (mepc, mstatus),
+	 * we store MN* CSR values into these same structure fields.
+	 */
+	csrr	t0, CSR_MNEPC
+	REG_S	t0, SBI_TRAP_REGS_OFFSET(mepc)(sp)
+	csrr	t0, CSR_MNSTATUS
+	REG_S	t0, SBI_TRAP_REGS_OFFSET(mstatus)(sp)
+	/* MNSTATUSH doesn't exist in SMRNMI spec */
+	REG_S	zero, SBI_TRAP_REGS_OFFSET(mstatusH)(sp)
 .endm
 
 .macro	TRAP_SAVE_GENERAL_REGS_EXCEPT_SP_T0
@@ -606,10 +659,34 @@ memcmp:
 	CLEAR_MDT t0
 .endm
 
+.macro	TRAP_SAVE_NMI_INFO
+	/*
+	 * Save NMI trap info (MNCAUSE, no MNTVAL in spec)
+	 * Note: Trap info structure has generic field names (cause, tval, etc.),
+	 * we store MN* CSR values into these same structure fields.
+	 */
+	csrr	t0, CSR_MNCAUSE
+	REG_S	t0, (SBI_TRAP_REGS_SIZE + SBI_TRAP_INFO_OFFSET(cause))(sp)
+	/* MNTVAL doesn't exist in SMRNMI spec */
+	REG_S	zero, (SBI_TRAP_REGS_SIZE + SBI_TRAP_INFO_OFFSET(tval))(sp)
+	REG_S	zero, (SBI_TRAP_REGS_SIZE + SBI_TRAP_INFO_OFFSET(tval2))(sp)
+	REG_S	zero, (SBI_TRAP_REGS_SIZE + SBI_TRAP_INFO_OFFSET(tinst))(sp)
+	REG_S	zero, (SBI_TRAP_REGS_SIZE + SBI_TRAP_INFO_OFFSET(gva))(sp)
+
+	/* We are ready to take another trap, clear MDT */
+	CLEAR_MDT t0
+.endm
+
 .macro	TRAP_CALL_C_ROUTINE
 	/* Call C routine */
 	add	a0, sp, zero
 	call	sbi_trap_handler
+.endm
+
+.macro	TRAP_CALL_C_RNMI_ROUTINE
+	/* Call C routine */
+	add	a0, sp, zero
+	call	sbi_trap_rnmi_handler
 .endm
 
 .macro	TRAP_RESTORE_GENERAL_REGS_EXCEPT_A0_T0
@@ -658,6 +735,19 @@ memcmp:
 	csrw	CSR_MSTATUS, t0
 	REG_L	t0, SBI_TRAP_REGS_OFFSET(mepc)(a0)
 	csrw	CSR_MEPC, t0
+.endm
+
+.macro	TRAP_RESTORE_MNEPC_MNSTATUS
+	/*
+	 * Restore MNSTATUS and MNEPC CSRs (for RNMI)
+	 * Note: Load from generic structure fields (mstatus, mepc) and
+	 * restore to NMI-specific CSRs (MNSTATUS, MNEPC).
+	 * No MNSTATUSH in SMRNMI spec.
+	 */
+	REG_L	t0, SBI_TRAP_REGS_OFFSET(mstatus)(a0)
+	csrw	CSR_MNSTATUS, t0
+	REG_L	t0, SBI_TRAP_REGS_OFFSET(mepc)(a0)
+	csrw	CSR_MNEPC, t0
 .endm
 
 .macro TRAP_RESTORE_A0_T0
@@ -723,6 +813,37 @@ _trap_handler_hyp:
 	TRAP_RESTORE_A0_T0
 
 	mret
+
+	.section .entry, "ax", %progbits
+	.align 3
+	.globl _trap_rnmi_handler
+_trap_rnmi_handler:
+	/*
+	 * NMI interrupt handler using MN* CSRs
+	 *
+	 * Context detection via MNPP (previous privilege mode):
+	 * - If MNPP < M-mode: use exception stack (TP)
+	 * - If MNPP == M-mode: use current stack (SP)
+	 * This handles nested interrupt cases.
+	 */
+	TRAP_SAVE_AND_SETUP_SP_T0_NMI
+
+	TRAP_SAVE_MNEPC_MNSTATUS 0
+
+	TRAP_SAVE_GENERAL_REGS_EXCEPT_SP_T0
+
+	TRAP_SAVE_NMI_INFO
+
+	TRAP_CALL_C_RNMI_ROUTINE
+
+	TRAP_RESTORE_GENERAL_REGS_EXCEPT_A0_T0
+
+	TRAP_RESTORE_MNEPC_MNSTATUS
+
+	TRAP_RESTORE_A0_T0
+
+	/* mnret - return from NMI (SMRNMI extension) */
+	.word 0x70200073
 
 	.section .entry, "ax", %progbits
 	.align 3
