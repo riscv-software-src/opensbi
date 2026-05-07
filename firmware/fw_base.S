@@ -258,9 +258,10 @@ _scratch_init:
 	/* Store hartid-to-scratch function address in scratch space */
 	lla	a4, _hartid_to_scratch
 	REG_S	a4, SBI_SCRATCH_HARTID_TO_SCRATCH_OFFSET(tp)
-	/* Clear trap_context and tmp0 in scratch space */
+	/* Clear trap_context, tmp0 and tmp1 in scratch space */
 	REG_S	zero, SBI_SCRATCH_TRAP_CONTEXT_OFFSET(tp)
 	REG_S	zero, SBI_SCRATCH_TMP0_OFFSET(tp)
+	REG_S	zero, SBI_SCRATCH_TMP1_OFFSET(tp)
 	/* Store firmware options in scratch space */
 	MOV_3R	s0, a0, s1, a1, s2, a2
 #ifdef FW_OPTIONS
