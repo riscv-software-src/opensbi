@@ -218,6 +218,8 @@ static void wake_coldboot_harts(struct sbi_scratch *scratch)
 	__smp_store_release(&coldboot_done, 1);
 }
 
+unsigned long __stack_chk_guard = 0x95B5FF5A;
+
 static unsigned long entry_count_offset;
 static unsigned long init_count_offset;
 
@@ -268,6 +270,35 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	rc = sbi_hart_init(scratch, true);
 	if (rc)
 		sbi_hart_hang();
+
+	/*
+	 * Initialize stack guard via Zkr entropy source if Zkr is
+	 * implemented according to device tree. Writing new seed value
+	 * to __stack_chk_guard is safe here because function doesn't
+	 * return and no check against value on entry will be done.
+	 */
+	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_ZKR)) {
+		unsigned long guard_val = 0;
+		int chunks = sizeof(unsigned long) / sizeof(uint16_t);
+		bool res = true;
+
+		while (chunks) {
+			unsigned long seed = csr_swap(CSR_SEED, 0);
+			unsigned long opst = seed & SEED_OPTS_MASK;
+
+			if (opst == SEED_OPTS_DEAD) {
+				res = false;
+				break;
+			}
+			if (opst == SEED_OPTS_ES16) {
+				guard_val = (guard_val << 16) | (seed & SEED_ENTROPY_MASK);
+				chunks--;
+			}
+			continue;
+		}
+		if (res)
+			__stack_chk_guard = guard_val;
+	}
 
 	rc = sbi_timer_init(scratch, true);
 	if (rc)
