@@ -532,6 +532,26 @@ static int hart_detect_features(struct sbi_scratch *scratch)
 	if (rc)
 		return rc;
 
+	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SMRNMI)) {
+		const struct sbi_platform *plat = sbi_platform_thishart_ptr();
+		const struct sbi_platform_operations *ops = sbi_platform_ops(plat);
+		extern void _trap_rnmi_handler(void);
+		extern void _trap_handler(void);
+
+		if (!ops || !ops->smrnmi_handlers_init)
+			sbi_panic("Smrnmi detected, but platform lacks smrnmi_handlers_init callback\n");
+
+		/* Reuse _trap_handler for the RNME slot since RNME is taken
+		 * as a regular M-mode trap with NMIE=0. */
+		ops->smrnmi_handlers_init(_trap_rnmi_handler, _trap_handler);
+
+		/* Initialize MNSCRATCH for the RNMI handler */
+		csr_write(CSR_MNSCRATCH, scratch);
+
+		/* Enable NMIs */
+		csr_set(CSR_MNSTATUS, MNSTATUS_NMIE);
+	}
+
 #define __check_hpm_csr(__csr, __mask) 					  \
 	oldval = csr_read_allowed(__csr, &trap);			  \
 	if (!trap.cause) {						  \
