@@ -215,6 +215,10 @@
 
 #endif
 
+#define MNSTATUS_NMIE			(_UL(0x8))
+#define MNSTATUS_MNPV			(_UL(0x80))
+#define MNSTATUS_MNPP			(_UL(0x1800))
+
 #define MHPMEVENT_SSCOF_MASK		_ULL(0xFF00000000000000)
 
 #define ENVCFG_STCE			(_ULL(1) << 63)
@@ -829,6 +833,12 @@
 
 #define CSR_CUSTOM10_M_RO_BASE		0xFC0
 #define CSR_CUSTOM10_M_RO_COUNT		0x040
+
+/* Smrnmi extension registers */
+#define CSR_MNSCRATCH				0x740
+#define CSR_MNEPC					0x741
+#define CSR_MNCAUSE					0x742
+#define CSR_MNSTATUS				0x744
 
 /* ===== Trap/Exception Causes ===== */
 
