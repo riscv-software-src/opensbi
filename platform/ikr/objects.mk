@@ -31,7 +31,7 @@ platform-ldflags-y =
 #
 # PLATFORM_RISCV_XLEN = 64
 # PLATFORM_RISCV_ABI = lp64
-# PLATFORM_RISCV_ISA = rv64imafdc
+PLATFORM_RISCV_ISA = rv64ima_zicsr_zifencei
 # PLATFORM_RISCV_CODE_MODEL = medany
 
 # Space separated list of object file names to be compiled for the platform
@@ -46,6 +46,9 @@ platform-objs-y += platform.o
 
 # Optional parameter for path to external FDT
 # FW_FDT_PATH="path to platform flattened device tree file"
+# FW_PAYLOAD_PATH=/home/elkomy/rp-workspace/linux/arch/riscv/boot/Image
+# FW_PAYLOAD_PATH=/home/elkomy/rp-workspace/u-boot/u-boot.bin
+# FW_FDT_PATH=/home/elkomy/rp-workspace/output/ikr.dtb
 
 #
 # Dynamic firmware configuration.
