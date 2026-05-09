@@ -14,14 +14,14 @@
 static struct rpmi_mm_get_attributes_rsp rsp;
 
 static struct mpxy_rpmi_service_data mm_srvcdata[] = {
-	[0] {
+	[0] = {
 		.id = RPMI_MM_SRV_GET_ATTRIBUTES,
 		.min_tx_len = 0,
 		.max_tx_len = 0,
 		.min_rx_len = sizeof(struct rpmi_mm_get_attributes_rsp),
 		.max_rx_len = sizeof(struct rpmi_mm_get_attributes_rsp),
 	},
-	[1] {
+	[1] = {
 		.id = RPMI_MM_SRV_COMMUNICATE,
 		.min_tx_len = sizeof(struct rpmi_mm_communicate_req),
 		.max_tx_len = sizeof(struct rpmi_mm_communicate_req),
