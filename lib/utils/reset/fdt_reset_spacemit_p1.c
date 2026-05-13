@@ -102,7 +102,7 @@ static int p1_reset_init(const void *fdt, int nodeoff,
 }
 
 static const struct fdt_match p1_reset_match[] = {
-	{ .compatible = "spacemit,p1", .data = (void *)true },
+	{ .compatible = "spacemit,p1" },
 	{ },
 };
 

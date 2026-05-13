@@ -104,7 +104,7 @@ static int sg2042_mcu_reset_init(const void *fdt, int nodeoff,
 }
 
 static const struct fdt_match sg2042_mcu_reset_match[] = {
-	{ .compatible = "sophgo,sg2042-hwmon-mcu", .data = (void *)true},
+	{ .compatible = "sophgo,sg2042-hwmon-mcu" },
 	{ },
 };
 
