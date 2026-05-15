@@ -455,6 +455,23 @@ else
 CFLAGS		+=	-O2
 endif
 
+ifeq ($(UBSAN),y)
+UBSAN_CC_FLAGS := -fsanitize=undefined
+UBSAN_CC_FLAGS += -DUBSAN_ENABLED
+UBSAN_CC_FLAGS += -fno-sanitize=vptr
+UBSAN_CC_FLAGS += -fno-sanitize=float-cast-overflow
+UBSAN_CC_FLAGS += -fno-sanitize=float-divide-by-zero
+UBSAN_CC_FLAGS += -fsanitize-recover=undefined
+UBSAN_CC_FLAGS += -fsanitize=pointer-overflow
+UBSAN_CC_FLAGS += -fsanitize=alignment
+UBSAN_CC_FLAGS += -fno-sanitize-recover=alignment
+UBSAN_CC_FLAGS += -fno-stack-protector
+ifeq ($(LLVM), y)
+UBSAN_CC_FLAGS += -fno-sanitize-link-runtime
+endif
+CFLAGS += $(UBSAN_CC_FLAGS)
+endif
+
 ifeq ($(V), 1)
 ELFFLAGS	+=	-Wl,--print-gc-sections
 endif

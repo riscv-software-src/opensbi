@@ -24,3 +24,8 @@ libsbi-objs-$(CONFIG_SBIUNIT) += tests/sbi_bitops_test.o
 
 carray-sbi_unit_tests-$(CONFIG_SBIUNIT) += string_test_suite
 libsbi-objs-$(CONFIG_SBIUNIT) += tests/sbi_string_test.o
+
+ifeq ($(UBSAN),y)
+carray-sbi_unit_tests-$(CONFIG_SBIUNIT) += ubsan_test_suite
+libsbi-objs-$(CONFIG_SBIUNIT) += tests/sbi_ubsan_test.o
+endif

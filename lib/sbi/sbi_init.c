@@ -218,7 +218,7 @@ static void wake_coldboot_harts(struct sbi_scratch *scratch)
 	__smp_store_release(&coldboot_done, 1);
 }
 
-unsigned long __stack_chk_guard = 0x95B5FF5A;
+unsigned long __attribute__((weak)) __stack_chk_guard = 0x95B5FF5A;
 
 static unsigned long entry_count_offset;
 static unsigned long init_count_offset;
