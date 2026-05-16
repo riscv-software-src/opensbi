@@ -159,6 +159,13 @@ The DT properties of a domain instance DT node are as follows:
 * **possible-harts** (Optional) - The list of CPU DT node phandles for the
   the domain instance. This list represents the possible HARTs of the
   domain instance.
+* **root-regions-inheritance** (Optional) - A string property controlling
+  how memory regions are inherited from **the ROOT domain**, which are then
+  overlaid with regions specified in the **regions** property for additional
+  restrictions. The allowed values are:
+  * "all" - inherit all memory regions from **the ROOT domain**
+  * "m-only" - inherit M-mode only memory regions from **the ROOT domain**
+  If this DT property is absent, behavior is the same as "m-only".
 * **regions** (Optional) - The list of domain memory region DT node phandle
   and access permissions for the domain instance. Each list entry is a pair
   of DT node phandle and access permissions. The access permissions are

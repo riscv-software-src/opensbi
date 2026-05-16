@@ -10,6 +10,7 @@
 
 #include <libfdt.h>
 #include <libfdt_env.h>
+#include <sbi/sbi_console.h>
 #include <sbi/sbi_domain.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hartmask.h>
@@ -237,7 +238,9 @@ skip_device_disable:
 	fdt_nop_node(fdt, poffset);
 }
 
-#define FDT_DOMAIN_REGION_MAX_COUNT	16
+#define FDT_DOMAIN_REGION_MAX_COUNT		16
+#define FDT_ROOT_REGION_INHERIT_M_ONLY		0
+#define FDT_ROOT_REGION_INHERIT_ALL		1
 
 struct parse_region_data {
 	struct sbi_domain *dom;
@@ -309,12 +312,14 @@ static int __fdt_parse_domain(const void *fdt, int domain_offset, void *opaque)
 	u32 val32;
 	u64 val64;
 	const u32 *val;
+	const char *inherit;
 	struct sbi_domain *dom;
 	struct sbi_hartmask *mask;
 	struct sbi_hartmask assign_mask;
 	struct parse_region_data preg;
 	int *cold_domain_offset = opaque;
 	struct sbi_domain_memregion *reg;
+	int inheritance_mode = FDT_ROOT_REGION_INHERIT_M_ONLY;
 	int i, err = 0, len, cpus_offset, cpu_offset, doffset;
 
 	dom = sbi_zalloc(sizeof(*dom));
@@ -373,20 +378,42 @@ static int __fdt_parse_domain(const void *fdt, int domain_offset, void *opaque)
 	if (err)
 		goto fail_free_all;
 
-	/*
-	 * Copy over root domain memregions which don't allow
-	 * read, write and execute from lower privilege modes.
-	 *
-	 * These root domain memregions without read, write,
-	 * and execute permissions include:
-	 * 1) firmware region protecting the firmware memory
-	 * 2) mmio regions protecting M-mode only mmio devices
-	 */
+	/* Determine root domain regions inheritance behavior. */
+	inherit = fdt_getprop(fdt, domain_offset,
+			       "root-regions-inheritance", &len);
+	if (inherit && len > 0) {
+		if (!strcmp(inherit, "all"))
+			inheritance_mode = FDT_ROOT_REGION_INHERIT_ALL;
+		else if (!strcmp(inherit, "m-only"))
+			inheritance_mode = FDT_ROOT_REGION_INHERIT_M_ONLY;
+		else {
+			sbi_printf("%s: domain \"%s\" has unsupported "
+				   "root-regions-inheritance=\"%s\"\n",
+				   __func__, dom->name, inherit);
+			err = SBI_EINVAL;
+			goto fail_free_all;
+		}
+	}
+
+	/* Copy over root domain memregions according to inheritance_mode. */
 	sbi_domain_for_each_memregion(&root, reg) {
-		if ((reg->flags & SBI_DOMAIN_MEMREGION_SU_READABLE) ||
-		    (reg->flags & SBI_DOMAIN_MEMREGION_SU_WRITABLE) ||
-		    (reg->flags & SBI_DOMAIN_MEMREGION_SU_EXECUTABLE))
+		bool copy = false;
+
+		switch (inheritance_mode) {
+		case FDT_ROOT_REGION_INHERIT_ALL:
+			copy = true;
+			break;
+		case FDT_ROOT_REGION_INHERIT_M_ONLY:
+			if (SBI_DOMAIN_MEMREGION_IS_FIRMWARE(reg->flags) ||
+			    SBI_DOMAIN_MEMREGION_M_ONLY_ACCESS(reg->flags)) {
+				copy = true;
+			}
+			break;
+		}
+
+		if (!copy)
 			continue;
+
 		if (preg.max_regions <= preg.region_count) {
 			err = SBI_EINVAL;
 			goto fail_free_all;
