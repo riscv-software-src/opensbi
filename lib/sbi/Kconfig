@@ -6,6 +6,18 @@ config CONSOLE_EARLY_BUFFER_SIZE
 	int "Early console buffer size (bytes)"
 	default 256
 
+config ZKR_POLL_BUDGET
+	int "Zkr seed polling budget (iterations)"
+	default 1000
+	help
+	  Maximum number of iterations to poll CSR_SEED when initializing
+	  the stack guard variable. The Zkr specification doesn't define
+	  a time limit on transitioning to ES16 between polls, which
+	  makes it impossible to tell whether entropy is being
+	  accumulated slowly or the entropy source is not functioning.
+	  This also limits the wait time on systems with an event-driven
+	  entropy source. A successful read doesn't consume a try.
+
 config SBI_ECALL_TIME
 	bool "Timer extension"
 	default y

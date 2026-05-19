@@ -280,20 +280,29 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_ZKR)) {
 		unsigned long guard_val = 0;
 		int chunks = sizeof(unsigned long) / sizeof(uint16_t);
-		bool res = true;
+#ifndef CONFIG_ZKR_POLL_BUDGET
+#define CONFIG_ZKR_POLL_BUDGET		1000
+#endif
+		unsigned int tries = CONFIG_ZKR_POLL_BUDGET;
+		bool res = false;
 
-		while (chunks) {
+		while (chunks && tries) {
 			unsigned long seed = csr_swap(CSR_SEED, 0);
 			unsigned long opst = seed & SEED_OPTS_MASK;
+			res = false;
 
 			if (opst == SEED_OPTS_DEAD) {
-				res = false;
 				break;
 			}
 			if (opst == SEED_OPTS_ES16) {
 				guard_val = (guard_val << 16) | (seed & SEED_ENTROPY_MASK);
 				chunks--;
+				res = true;
+				/* Successful read doesn't consume a try */
+				tries++;
 			}
+
+			tries--;
 			continue;
 		}
 		if (res)
