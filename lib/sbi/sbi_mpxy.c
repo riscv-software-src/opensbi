@@ -28,7 +28,7 @@ static unsigned long mpxy_shmem_size = PAGE_SIZE;
 static SBI_LIST_HEAD(mpxy_channel_list);
 
 /** Invalid Physical Address(all bits 1) */
-#define INVALID_ADDR		(-1U)
+#define INVALID_ADDR		(-1UL)
 
 /** MPXY Attribute size in bytes */
 #define ATTR_SIZE		(4)
