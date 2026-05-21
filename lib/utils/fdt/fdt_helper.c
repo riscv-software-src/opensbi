@@ -328,8 +328,6 @@ int fdt_parse_timebase_frequency(const void *fdt, unsigned long *freq)
 
 #define RISCV_ISA_EXT_NAME_LEN_MAX	32
 
-static unsigned long fdt_isa_bitmap_offset;
-
 static int fdt_parse_isa_one_hart(const char *isa, unsigned long *extensions)
 {
 	size_t i, j, isa_len;
@@ -409,15 +407,15 @@ static void fdt_parse_isa_extensions_one_hart(const char *isa,
 	}
 }
 
-static int fdt_parse_isa_all_harts(const void *fdt)
+int fdt_parse_isa_extensions_all_harts(const void *fdt)
 {
 	u32 hartid;
 	const fdt32_t *val;
-	unsigned long *hart_exts;
 	struct sbi_scratch *scratch;
+	struct sbi_hart_features *hfeatures;
 	int err, cpu_offset, cpus_offset, len;
 
-	if (!fdt || !fdt_isa_bitmap_offset)
+	if (!fdt)
 		return SBI_EINVAL;
 
 	cpus_offset = fdt_path_offset(fdt, "/cpus");
@@ -436,13 +434,14 @@ static int fdt_parse_isa_all_harts(const void *fdt)
 		if (!scratch)
 			return SBI_ENOENT;
 
-		hart_exts = sbi_scratch_offset_ptr(scratch,
-						   fdt_isa_bitmap_offset);
+		hfeatures = sbi_hart_features_ptr(scratch);
+		if (!hfeatures)
+			return SBI_ENOENT;
 
 		val = fdt_getprop(fdt, cpu_offset, "riscv,isa-extensions", &len);
 		if (val && len > 0) {
 			fdt_parse_isa_extensions_one_hart((const char *)val,
-							  hart_exts, len);
+							  hfeatures->extensions, len);
 			continue;
 		}
 
@@ -450,41 +449,11 @@ static int fdt_parse_isa_all_harts(const void *fdt)
 		if (!val || len <= 0)
 			return SBI_ENOENT;
 
-		err = fdt_parse_isa_one_hart((const char *)val, hart_exts);
+		err = fdt_parse_isa_one_hart((const char *)val, hfeatures->extensions);
 		if (err)
 			return err;
 	}
 
-	return 0;
-}
-
-int fdt_parse_isa_extensions(const void *fdt, unsigned int hartid,
-			unsigned long *extensions)
-{
-	int rc, i;
-	unsigned long *hart_exts;
-	struct sbi_scratch *scratch;
-
-	if (!fdt_isa_bitmap_offset) {
-		fdt_isa_bitmap_offset = sbi_scratch_alloc_offset(
-					sizeof(*hart_exts) *
-					BITS_TO_LONGS(SBI_HART_EXT_MAX));
-		if (!fdt_isa_bitmap_offset)
-			return SBI_ENOMEM;
-
-		rc = fdt_parse_isa_all_harts(fdt);
-		if (rc)
-			return rc;
-	}
-
-	scratch = sbi_hartid_to_scratch(hartid);
-	if (!scratch)
-		return SBI_ENOENT;
-
-	hart_exts = sbi_scratch_offset_ptr(scratch, fdt_isa_bitmap_offset);
-
-	for (i = 0; i < BITS_TO_LONGS(SBI_HART_EXT_MAX); i++)
-		extensions[i] |= hart_exts[i];
 	return 0;
 }
 

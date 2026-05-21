@@ -55,7 +55,6 @@
 struct sbi_domain_memregion;
 struct sbi_ecall_return;
 struct sbi_trap_regs;
-struct sbi_hart_features;
 union sbi_ldst_data;
 
 /** Possible feature flags of a platform */
@@ -105,7 +104,7 @@ struct sbi_platform_operations {
 	int (*misa_get_xlen)(void);
 
 	/** Initialize (or populate) HART extensions for the platform */
-	int (*extensions_init)(struct sbi_hart_features *hfeatures);
+	int (*extensions_init)(bool cold_boot);
 
 	/** Initialize (or populate) domains for the platform */
 	int (*domains_init)(void);
@@ -486,10 +485,10 @@ static inline int sbi_platform_misa_xlen(const struct sbi_platform *plat)
  */
 static inline int sbi_platform_extensions_init(
 					const struct sbi_platform *plat,
-					struct sbi_hart_features *hfeatures)
+					bool cold_boot)
 {
 	if (plat && sbi_platform_ops(plat)->extensions_init)
-		return sbi_platform_ops(plat)->extensions_init(hfeatures);
+		return sbi_platform_ops(plat)->extensions_init(cold_boot);
 	return 0;
 }
 

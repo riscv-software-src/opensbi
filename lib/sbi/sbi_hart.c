@@ -508,7 +508,7 @@ static int hart_mhpm_get_allowed_bits(void)
 	return num_bits;
 }
 
-static int hart_detect_features(struct sbi_scratch *scratch)
+static int hart_detect_features(struct sbi_scratch *scratch, bool cold_boot)
 {
 	struct sbi_trap_info trap = {0};
 	struct sbi_hart_features *hfeatures =
@@ -525,8 +525,7 @@ static int hart_detect_features(struct sbi_scratch *scratch)
 	 * Needed to detect Smrnmi and install NMI handlers before CSR probes
 	 * that may trigger traps.
 	 */
-	rc = sbi_platform_extensions_init(sbi_platform_thishart_ptr(),
-					  hfeatures);
+	rc = sbi_platform_extensions_init(sbi_platform_ptr(scratch), cold_boot);
 	if (rc)
 		return rc;
 
@@ -764,7 +763,7 @@ int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot)
 			return SBI_ENOMEM;
 	}
 
-	rc = hart_detect_features(scratch);
+	rc = hart_detect_features(scratch, cold_boot);
 	if (rc)
 		return rc;
 

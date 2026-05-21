@@ -253,11 +253,13 @@ int generic_final_init(bool cold_boot)
 	return 0;
 }
 
-int generic_extensions_init(struct sbi_hart_features *hfeatures)
+int generic_extensions_init(bool cold_boot)
 {
+	if (!cold_boot)
+		return 0;
+
 	/* Parse the ISA string from FDT and enable the listed extensions */
-	return fdt_parse_isa_extensions(fdt_get_address(), current_hartid(),
-					hfeatures->extensions);
+	return fdt_parse_isa_extensions_all_harts(fdt_get_address());
 }
 
 int generic_domains_init(void)

@@ -9,6 +9,7 @@
 #include <andes/andes_pmu.h>
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_hart.h>
 #include <sbi/sbi_pmu.h>
 #include <libfdt.h>
 #include <platform_override.h>
@@ -58,12 +59,12 @@ static struct sbi_pmu_device andes_pmu = {
 	.hw_counter_filter_mode = andes_hw_counter_filter_mode
 };
 
-int andes_pmu_extensions_init(struct sbi_hart_features *hfeatures)
+int andes_pmu_extensions_init(bool cold_boot)
 {
 	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	int rc;
 
-	rc = generic_extensions_init(hfeatures);
+	rc = generic_extensions_init(cold_boot);
 	if (rc)
 		return rc;
 

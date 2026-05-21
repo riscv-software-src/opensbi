@@ -49,11 +49,11 @@ static int sophgo_sg2042_early_init(bool cold_boot)
 	return 0;
 }
 
-static int sophgo_sg2042_extensions_init(struct sbi_hart_features *hfeatures)
+static int sophgo_sg2042_extensions_init(bool cold_boot)
 {
 	int rc;
 
-	rc = generic_extensions_init(hfeatures);
+	rc = generic_extensions_init(cold_boot);
 	if (rc)
 		return rc;
 

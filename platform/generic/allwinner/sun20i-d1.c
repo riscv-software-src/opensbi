@@ -12,6 +12,7 @@
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_hart.h>
 #include <sbi/sbi_hsm.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_pmu.h>
@@ -197,11 +198,12 @@ static int sun20i_d1_final_init(bool cold_boot)
 	return generic_final_init(cold_boot);
 }
 
-static int sun20i_d1_extensions_init(struct sbi_hart_features *hfeatures)
+static int sun20i_d1_extensions_init(bool cold_boot)
 {
+	struct sbi_hart_features *hfeatures;
 	int rc;
 
-	rc = generic_extensions_init(hfeatures);
+	rc = generic_extensions_init(cold_boot);
 	if (rc)
 		return rc;
 
@@ -209,6 +211,7 @@ static int sun20i_d1_extensions_init(struct sbi_hart_features *hfeatures)
 
 	/* auto-detection doesn't work on t-head c9xx cores */
 	/* D1 has 29 mhpmevent csrs, but only 3-9,13-17 have valid value */
+	hfeatures = sbi_hart_features_ptr(sbi_scratch_thishart_ptr());
 	hfeatures->mhpm_mask = 0x0003e3f8;
 	hfeatures->mhpm_bits = 64;
 

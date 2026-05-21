@@ -26,11 +26,11 @@ static int thead_tlb_flush_early_init(bool cold_boot)
 	return generic_early_init(cold_boot);
 }
 
-static int thead_pmu_extensions_init(struct sbi_hart_features *hfeatures)
+static int thead_pmu_extensions_init(bool cold_boot)
 {
 	int rc;
 
-	rc = generic_extensions_init(hfeatures);
+	rc = generic_extensions_init(cold_boot);
 	if (rc)
 		return rc;
 
