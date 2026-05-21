@@ -520,13 +520,6 @@ static int hart_detect_features(struct sbi_scratch *scratch)
 	if (hfeatures->detected)
 		return 0;
 
-	/* Clear hart features */
-	sbi_memset(hfeatures->extensions, 0, sizeof(hfeatures->extensions));
-	sbi_memset(hfeatures->csrs, 0, sizeof(hfeatures->csrs));
-	hfeatures->pmp_count = 0;
-	hfeatures->mhpm_mask = 0;
-	hfeatures->priv_version = SBI_HART_PRIV_VER_UNKNOWN;
-
 	/*
 	 * Parse device tree extensions early, before any trap-based checks.
 	 * Needed to detect Smrnmi and install NMI handlers before CSR probes
