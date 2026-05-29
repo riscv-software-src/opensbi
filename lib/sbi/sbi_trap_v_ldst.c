@@ -334,11 +334,13 @@ int sbi_misaligned_v_st_emulator(int wlen, union sbi_ldst_data in_val,
 int sbi_misaligned_v_ld_emulator(int rlen, union sbi_ldst_data *out_val,
 				 struct sbi_trap_context *tcntx)
 {
-	return 0;
+	/* Unable to emulate, send trap to previous mode. */
+	return sbi_trap_redirect(&tcntx->regs, &tcntx->trap);
 }
 int sbi_misaligned_v_st_emulator(int wlen, union sbi_ldst_data in_val,
 				 struct sbi_trap_context *tcntx)
 {
-	return 0;
+	/* Unable to emulate, send trap to previous mode. */
+	return sbi_trap_redirect(&tcntx->regs, &tcntx->trap);
 }
 #endif /* OPENSBI_CC_SUPPORT_VECTOR */
