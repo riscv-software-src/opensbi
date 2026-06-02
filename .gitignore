@@ -16,6 +16,9 @@
 build/
 install/
 
+# Python bytecode (e.g. from scripts/Kconfiglib)
+__pycache__
+
 # Development friendly files
 tags
 cscope*
