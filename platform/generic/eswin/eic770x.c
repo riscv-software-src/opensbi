@@ -11,14 +11,109 @@
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_math.h>
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_hsm.h>
+#include <sbi/sbi_ipi.h>
 #include <sbi/sbi_hart_pmp.h>
 #include <sbi/sbi_hart_protection.h>
+#include <sbi_utils/hsm/fdt_hsm_sifive_inst.h>
 #include <eswin/eic770x.h>
 #include <eswin/hfp.h>
 
 static struct sbi_hart_protection eswin_eic7700_pmp_protection;
+static volatile bool eic770x_power_down = false;
 
-static int eic770x_system_reset_check(u32 type, u32 reason)
+static int eic770x_hart_start(u32 hartid, ulong saddr)
+{
+	u32 hartindex = sbi_hartid_to_hartindex(hartid);
+
+	/*
+	 * saddr is ignored intentionally.
+	 * For non-power-down scenarios, eic770x_hart_stop simply
+	 * returns, putting the hart in atomic_read(&hdata->state)
+	 * loop in sbi_hsm_hart_wait. We wake it up if it's in wfi()
+	 */
+	return sbi_ipi_raw_send(hartindex, true);
+}
+
+static int eic770x_hart_stop()
+{
+	/*
+	 * fence to enforce all previous ipi clears are done
+	 * Refer to comments below in eic770x_cease_other_harts
+	 */
+	asm volatile ("fence o, r");
+
+	if (!eic770x_power_down)
+		return SBI_ENOTSUPP;
+
+	/*
+	 * bit 0: disableDCacheClockGate
+	 * When some or all warm boot harts haven't gone under at least 1
+	 * cycle of hsm start/stop, (happens if reset is issued in pre-
+	 * boot environment u-boot/UEFI where all warm boot harts are
+	 * pending start), the FEAT0 CSR still holds the SoC reset values,
+	 * and disableDCacheClockGate is set. A CEASE instruction executed
+	 * when disableDCacheClockGate=1 will not properly reflect its
+	 * ceased status in mcput_cease_from_tile_x. Thus, clear it before
+	 * CEASE.
+	 */
+	csr_clear(EIC770X_CSR_FEAT0, 0x1);
+
+	sifive_cease();
+}
+
+void eic770x_cease_other_harts(void)
+{
+	u32 to_cease[2] = {};
+
+	eic770x_power_down = true;
+	sbi_for_each_hartindex(i) {
+		u32 hartid = sbi_hartindex_to_hartid(i);
+		u32 die    = hart_die(hartid);
+		u32 core   = hart_core(hartid);
+
+		/* Only wait for other harts */
+		if (i == current_hartindex())
+			continue;
+		/*
+		 * Bring harts out of WFI in sbi_hsm_hart_wait
+		 * Harts won't miss this IPI, because:
+		 *  1. If hart goes to wfi() in sbi_hsm_hart_wait,
+		 *     it must have not observed eic770x_power_down
+		 *  2. If it hasn't observed eic770x_power_down,
+		 *     then it must haven't observed the IPI sent,
+		 *     given the wmb() in sbi_ipi_raw_send
+		 *  3. Given the fence o, r, any previous ipi_clear
+		 *     can't fall-through the read of eic770x_power_down
+		 */
+		sbi_ipi_raw_send(i, false);
+		to_cease[die] |= EIC770X_MC_CEASE_BIT(core);
+	}
+
+	for (u32 die = 0; die < array_size(to_cease); die++) {
+		/*
+		 * MCPU status indicates the wfi/debug/halt/cease status
+		 * of each individual harts in the same die. The value
+		 * can change on the fly, but for ceased harts, the cease
+		 * bit remains high until reset
+		 */
+		u32 *status = (u32*)EIC770X_MCPU_STATUS(die);
+
+		if (!to_cease[die])
+			continue;
+
+		/* Wait for mcput_cease_from_tile_x */
+		while ((readl(status) & to_cease[die]) != to_cease[die]);
+	}
+}
+
+static const struct sbi_hsm_device eswin_eic770x_hsm = {
+	.name	      = "eic770x_hsm",
+	.hart_start   = eic770x_hart_start,
+	.hart_stop    = eic770x_hart_stop,
+};
+
+static int eic7700_system_reset_check(u32 type, u32 reason)
 {
 	switch (type) {
 	case SBI_SRST_RESET_TYPE_COLD_REBOOT:
@@ -29,23 +124,23 @@ static int eic770x_system_reset_check(u32 type, u32 reason)
 	}
 }
 
-static void eic770x_system_reset(u32 type, u32 reason)
+static void eic7700_system_reset(u32 type, u32 reason)
 {
 	switch (type) {
 	case SBI_SRST_RESET_TYPE_COLD_REBOOT:
 	case SBI_SRST_RESET_TYPE_WARM_REBOOT:
-		sbi_printf("%s: resetting...\n", __func__);
-		writel(EIC770X_SYSCRG_RST_VAL, (void *)EIC770X_SYSCRG_RST);
+		eic770x_cease_other_harts();
+		writel(EIC770X_SYSRST_VAL, (void *)EIC770X_SYSCRG_SYSRST);
 	}
 
-	sbi_hart_hang();
+	sifive_cease();
 }
 
 static struct sbi_system_reset_device *board_reset = NULL;
-static struct sbi_system_reset_device eic770x_reset = {
-	.name = "eic770x_reset",
-	.system_reset_check = eic770x_system_reset_check,
-	.system_reset = eic770x_system_reset,
+static struct sbi_system_reset_device eic7700_reset = {
+	.name = "eic7700_reset",
+	.system_reset_check = eic7700_system_reset_check,
+	.system_reset = eic7700_system_reset,
 };
 
 #define add_root_mem_chk(...) do { \
@@ -146,7 +241,7 @@ static int eswin_eic7700_early_init(bool cold_boot)
 
 	if (board_reset)
 		sbi_system_reset_add_device(board_reset);
-	sbi_system_reset_add_device(&eic770x_reset);
+	sbi_system_reset_add_device(&eic7700_reset);
 
 	/* Enable bus blocker */
 	writel(1, (void*)EIC770X_TL64D2D_OUT);
@@ -231,6 +326,9 @@ static int eswin_eic7700_final_init(bool cold_boot)
 		     pmp_max = PMP_FW_START + PMP_FW_COUNT;
 	int rc;
 
+
+	if (cold_boot)
+		sbi_hsm_set_device(&eswin_eic770x_hsm);
 
 	/**
 	 * Do generic_final_init stuff first, because it touchs FDT.

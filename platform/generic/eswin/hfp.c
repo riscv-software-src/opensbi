@@ -11,6 +11,7 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi_utils/serial/uart8250.h>
+#include <sbi_utils/hsm/fdt_hsm_sifive_inst.h>
 #include <eswin/eic770x.h>
 #include <eswin/hfp.h>
 
@@ -94,6 +95,7 @@ static int hfp_system_reset_check(u32 type, u32 reason)
 
 static void hfp_system_reset(u32 type, u32 reason)
 {
+	eic770x_cease_other_harts();
 	switch (type) {
 	case SBI_SRST_RESET_TYPE_SHUTDOWN:
 		hfp_send_bmc_msg(HFP_MSG_NOTIFY, HFP_CMD_POWER_OFF,
@@ -104,7 +106,7 @@ static void hfp_system_reset(u32 type, u32 reason)
 				NULL, 0);
 		break;
 	}
-	sbi_hart_hang();
+	sifive_cease();
 }
 
 static struct sbi_system_reset_device hfp_reset = {

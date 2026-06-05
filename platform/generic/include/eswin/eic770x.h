@@ -14,6 +14,8 @@ struct eic770x_board_override {
 	struct sbi_system_reset_device *reset_dev;
 };
 
+void eic770x_cease_other_harts(void);
+
 /* CSRs */
 #define EIC770X_CSR_BRPREDICT	0x7c0
 #define EIC770X_CSR_FEAT0	0x7c1
@@ -55,11 +57,16 @@ struct eic770x_board_override {
 #define EIC770X_UART_REG_SHIFT	2
 #define EIC770X_UART_REG_WIDTH	4
 
-#define EIC770X_SYSCRG		(EIC770X_SYSPORT_LOCAL + 0x11828000UL)
-#define EIC770X_SYSCRG_LSPCLK0	(EIC770X_SYSCRG + 0x200UL)
-#define EIC770X_SYSCRG_SYSCLK	(EIC770X_SYSCRG + 0x20cUL)
-#define EIC770X_SYSCRG_RST	(EIC770X_SYSCRG + 0x300UL)
-#define EIC770X_SYSCRG_RST_VAL	0x1AC0FFE6UL
+#define EIC770X_SYSCON(d)	(EIC770X_SYSPORT_BASE(d) + 0x11810000UL)
+#define EIC770X_MCPU_STATUS(d)	(EIC770X_SYSCON(d) + 0x608UL)
+#define EIC770X_MC_CEASE_BIT(c)	(1UL << (15 - c))
+
+#define EIC770X_SYSCRG(d)	(EIC770X_SYSPORT_BASE(d) + 0x11828000UL)
+#define EIC770X_SYSCRG_LOCAL	(EIC770X_SYSPORT_LOCAL + 0x11828000UL)
+#define EIC770X_SYSCRG_LSPCLK0	(EIC770X_SYSCRG_LOCAL + 0x200UL)
+#define EIC770X_SYSCRG_MCCLK(d)	(EIC770X_SYSCRG(d) + 0x208UL)
+#define EIC770X_SYSCRG_SYSCLK	(EIC770X_SYSCRG_LOCAL + 0x20cUL)
+#define EIC770X_SYSCRG_SYSRST	(EIC770X_SYSCRG_LOCAL + 0x300UL)
 
 /* Memory Ports */
 #define EIC770X_MEMPORT_BASE	0x0080000000UL // 2G
@@ -97,5 +104,8 @@ struct eic770x_board_override {
 		uint32_t divisor = ((x) >> 4) & 7; 	\
 		divisor > 2 ? divisor : 2; 		\
 	})
+
+/* Reset definitions */
+#define EIC770X_SYSRST_VAL	0x1AC0FFE6UL
 
 #endif
