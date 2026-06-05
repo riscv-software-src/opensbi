@@ -83,7 +83,11 @@
 #define GET_FFLAGS() csr_read(CSR_FFLAGS)
 #define SET_FFLAGS(value) csr_write(CSR_FFLAGS, (value))
 
-#define SET_FS_DIRTY(regs) (regs->mstatus |= MSTATUS_FS)
+#define SET_FS_DIRTY(regs) do {				\
+	if (sbi_regs_from_virt(regs))			\
+		csr_set(CSR_VSSTATUS, MSTATUS_FS);	\
+	regs->mstatus |= MSTATUS_FS;			\
+} while(0)
 
 #define GET_F32_RS1(insn, regs) (GET_F32_REG(insn, 15, regs))
 #define GET_F32_RS2(insn, regs) (GET_F32_REG(insn, 20, regs))
