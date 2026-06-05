@@ -273,6 +273,64 @@ static inline int sbi_mstatus_prev_mode(unsigned long mstatus)
 	return (mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
 }
 
+#if __riscv_xlen == 32
+static inline int sbi_regs_prev_xlen(const struct sbi_trap_regs *regs)
+{
+	return __riscv_xlen;
+}
+#else
+static inline int sbi_mstatus_sxl(unsigned long mstatus)
+{
+	return (mstatus & MSTATUS_SXL) >> MSTATUS_SXL_SHIFT;
+}
+
+static inline int sbi_mstatus_uxl(unsigned long mstatus)
+{
+	return (mstatus & MSTATUS_UXL) >> MSTATUS_UXL_SHIFT;
+}
+
+static inline int sbi_hstatus_vsxl(unsigned long hstatus)
+{
+	return (hstatus & HSTATUS_VSXL) >> HSTATUS_VSXL_SHIFT;
+}
+
+static inline int sbi_regs_prev_xlen(const struct sbi_trap_regs *regs)
+{
+	unsigned long hstatus, vsstatus;
+
+	if (!sbi_regs_from_virt(regs)) {
+		switch (sbi_mstatus_prev_mode(regs->mstatus)) {
+		case PRV_M:
+			return __riscv_xlen;
+		case PRV_S:
+			return MXL_TO_XLEN(sbi_mstatus_sxl(regs->mstatus));
+		case PRV_U:
+			return MXL_TO_XLEN(sbi_mstatus_uxl(regs->mstatus));
+		default:
+			__builtin_unreachable();
+		}
+	}
+
+	/* V=1, Check HSXLEN first */
+	if (sbi_mstatus_sxl(regs->mstatus) < MXL_XLEN_64)
+		return 32;
+
+	hstatus = csr_read(CSR_HSTATUS);
+	/* Check VSXLEN */
+	if (sbi_hstatus_vsxl(hstatus) < MXL_XLEN_64)
+		return 32;
+
+	vsstatus = csr_read(CSR_VSSTATUS);
+	switch (sbi_mstatus_prev_mode(regs->mstatus)) {
+		case PRV_S:
+			return MXL_TO_XLEN(sbi_hstatus_vsxl(hstatus));
+		case PRV_U:
+			return MXL_TO_XLEN(sbi_mstatus_uxl(vsstatus));
+	}
+	__builtin_unreachable();
+}
+#endif
+
 int sbi_trap_redirect(struct sbi_trap_regs *regs,
 		      const struct sbi_trap_info *trap);
 
