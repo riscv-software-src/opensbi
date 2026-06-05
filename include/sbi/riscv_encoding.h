@@ -1434,6 +1434,7 @@
 #define GET_RS2S_NUM(insn)		RVC_RS2S(insn)
 #define GET_RS2C_NUM(insn)		RVC_RS2(insn)
 #define GET_RD_NUM(insn)		((insn & MASK_RD) >> SH_RD)
+#define GET_RDS_NUM(insn)		RVC_RS2S(insn)
 #define GET_CSR_NUM(insn)		((insn & MASK_CSR) >> SHIFT_CSR)
 #define GET_AQRL(insn)			((insn & MASK_AQRL) >> SHIFT_AQRL)
 

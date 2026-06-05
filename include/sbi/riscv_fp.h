@@ -91,15 +91,27 @@
 #define GET_F64_RS1(insn, regs) (GET_F64_REG(insn, 15, regs))
 #define GET_F64_RS2(insn, regs) (GET_F64_REG(insn, 20, regs))
 #define GET_F64_RS3(insn, regs) (GET_F64_REG(insn, 27, regs))
-#define SET_F32_RD(insn, regs, val) \
-	(SET_F32_REG(insn, 7, regs, val), SET_FS_DIRTY(regs))
-#define SET_F64_RD(insn, regs, val) \
-	(SET_F64_REG(insn, 7, regs, val), SET_FS_DIRTY(regs))
+#define SET_F32_RD(insn, regs, val) do {	\
+	SET_F32_REG(insn, 7, regs, val);	\
+	SET_FS_DIRTY(regs);			\
+} while(0)
+#define SET_F64_RD(insn, regs, val) do {	\
+	SET_F64_REG(insn, 7, regs, val);	\
+	SET_FS_DIRTY(regs);			\
+} while(0)
 
 #define GET_F32_RS2C(insn, regs) (GET_F32_REG(insn, 2, regs))
-#define GET_F32_RS2S(insn, regs) (GET_F32_REG(RVC_RS2S(insn), 0, regs))
+#define GET_F32_RS2S(insn, regs) (GET_F32_REG(GET_RS2S_NUM(insn), 0, regs))
 #define GET_F64_RS2C(insn, regs) (GET_F64_REG(insn, 2, regs))
-#define GET_F64_RS2S(insn, regs) (GET_F64_REG(RVC_RS2S(insn), 0, regs))
+#define GET_F64_RS2S(insn, regs) (GET_F64_REG(GET_RS2S_NUM(insn), 0, regs))
+#define SET_F32_RDS(insn, regs, val) do {		\
+	SET_F32_REG(GET_RDS_NUM(insn), 0, regs, val);	\
+	SET_FS_DIRTY(regs);				\
+} while(0)
+#define SET_F64_RDS(insn, regs, val) do {		\
+	SET_F64_REG(GET_RDS_NUM(insn), 0, regs, val);	\
+	SET_FS_DIRTY(regs);				\
+} while(0)
 
 #endif
 
