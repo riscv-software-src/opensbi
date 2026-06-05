@@ -451,6 +451,7 @@ DTSCPPFLAGS	=	$(CPPFLAGS) -nostdinc -nostdlib -fno-builtin -D__DTS__ -x assemble
 
 ifneq ($(DEBUG),)
 CFLAGS		+=	-O0
+CPPFLAGS	+=	-DOPENSBI_DEBUG
 else
 CFLAGS		+=	-O2
 endif
