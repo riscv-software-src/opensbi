@@ -36,8 +36,10 @@
 #define MSTATUS_SDT			_UL(0x01000000)
 #define MSTATUS32_SD			_UL(0x80000000)
 #if __riscv_xlen == 64
-#define MSTATUS_UXL			_ULL(0x0000000300000000)
-#define MSTATUS_SXL			_ULL(0x0000000C00000000)
+#define MSTATUS_UXL_SHIFT		32
+#define MSTATUS_UXL			(_ULL(3) << MSTATUS_UXL_SHIFT)
+#define MSTATUS_SXL_SHIFT		34
+#define MSTATUS_SXL			(_ULL(3) << MSTATUS_SXL_SHIFT)
 #define MSTATUS_SBE			_ULL(0x0000001000000000)
 #define MSTATUS_MBE			_ULL(0x0000002000000000)
 #define MSTATUS_GVA			_ULL(0x0000004000000000)
@@ -56,6 +58,9 @@
 #endif
 #define MSTATUS32_SD			_UL(0x80000000)
 #define MSTATUS64_SD			_ULL(0x8000000000000000)
+#define MXL_XLEN_32			1
+#define MXL_XLEN_64			2
+#define MXL_TO_XLEN(x)			(1U << (x + 4))
 
 #define SSTATUS_SIE			MSTATUS_SIE
 #define SSTATUS_SPIE_SHIFT		MSTATUS_SPIE_SHIFT
@@ -959,6 +964,10 @@
 #define INSN_MATCH_C_FSWSP		0xe002
 #define INSN_MASK_C_FSWSP		0xe003
 
+#define INSN_MATCH_C_LBU		0x8000
+#define INSN_MASK_C_LBU			0xfc03
+#define INSN_MATCH_C_SB			0x8800
+#define INSN_MASK_C_SB			0xfc03
 #define INSN_MATCH_C_LHU		0x8400
 #define INSN_MASK_C_LHU			0xfc43
 #define INSN_MATCH_C_LH			0x8440
@@ -1388,6 +1397,9 @@
 #define SH_RS2C				2
 
 #define RV_X(x, s, n)			(((x) >> (s)) & ((1 << (n)) - 1))
+#define RVC_LB_IMM(x)			((RV_X(x, 6, 1) << 0) | \
+					 (RV_X(x, 5, 1) << 1))
+#define RVC_LH_IMM(x)			 (RV_X(x, 5, 1) << 1)
 #define RVC_LW_IMM(x)			((RV_X(x, 6, 1) << 2) | \
 					 (RV_X(x, 10, 3) << 3) | \
 					 (RV_X(x, 5, 1) << 6))
@@ -1399,6 +1411,10 @@
 #define RVC_LDSP_IMM(x)			((RV_X(x, 5, 2) << 3) | \
 					 (RV_X(x, 12, 1) << 5) | \
 					 (RV_X(x, 2, 3) << 6))
+#define RVC_SB_IMM(x)			RVC_LB_IMM(x)
+#define RVC_SH_IMM(x)			RVC_LH_IMM(x)
+#define RVC_SW_IMM(x)			RVC_LW_IMM(x)
+#define RVC_SD_IMM(x)			RVC_LD_IMM(x)
 #define RVC_SWSP_IMM(x)			((RV_X(x, 9, 4) << 2) | \
 					 (RV_X(x, 7, 2) << 6))
 #define RVC_SDSP_IMM(x)			((RV_X(x, 10, 3) << 3) | \
