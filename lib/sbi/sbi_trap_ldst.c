@@ -44,28 +44,34 @@ ulong sbi_misaligned_tinst_fixup(ulong orig_tinst, ulong new_tinst,
 		return orig_tinst | (addr_offset << SH_RS1);
 }
 
+static inline bool sbi_trap_tinst_valid(ulong tinst)
+{
+	/*
+	 * Bit[0] == 1 implies trapped instruction value is
+	 * transformed instruction or custom instruction.
+	 * Also do proper checking per Privileged ISA 19.6.3,
+	 * and make sure high 32 bits of tinst is 0
+	 */
+	return tinst == (uint32_t)tinst && (tinst & 0x1);
+}
+
 static int sbi_trap_emulate_load(struct sbi_trap_context *tcntx,
 				 sbi_trap_ld_emulator emu)
 {
 	const struct sbi_trap_info *orig_trap = &tcntx->trap;
 	struct sbi_trap_regs *regs = &tcntx->regs;
-	ulong insn, insn_len;
+	ulong insn, insn_len, imm = 0, shift = 0, off = 0;
 	union sbi_ldst_data val = { 0 };
 	struct sbi_trap_info uptrap;
-	int rc, fp = 0, shift = 0, len = 0;
+	bool xform = false, fp = false, c_load = false, c_ldsp = false;
+	int rc, len = 0, prev_xlen = 0;
 
-	if (orig_trap->tinst & 0x1) {
-		/*
-		 * Bit[0] == 1 implies trapped instruction value is
-		 * transformed instruction or custom instruction.
-		 */
+	if (sbi_trap_tinst_valid(orig_trap->tinst)) {
+		xform	 = true;
 		insn	 = orig_trap->tinst | INSN_16BIT_MASK;
 		insn_len = (orig_trap->tinst & 0x2) ? INSN_LEN(insn) : 2;
 	} else {
-		/*
-		 * Bit[0] == 0 implies trapped instruction value is
-		 * zero or special value.
-		 */
+		/* trapped instruction value is zero or special value */
 		insn = sbi_get_insn(regs->mepc, &uptrap);
 		if (uptrap.cause) {
 			return sbi_trap_redirect(regs, &uptrap);
@@ -73,93 +79,176 @@ static int sbi_trap_emulate_load(struct sbi_trap_context *tcntx,
 		insn_len = INSN_LEN(insn);
 	}
 
+	/**
+	 * Common for RV32/RV64:
+	 *    lb, lbu, lh, lhu, lw, flw, flw
+	 *    c.lbu, c.lh, c.lhu, c.lw, c.lwsp, c.fld, c.fldsp
+	 */
 	if ((insn & INSN_MASK_LB) == INSN_MATCH_LB) {
-		len   = 1;
-		shift = 8 * (sizeof(ulong) - len);
+		len = -1;
 	} else if ((insn & INSN_MASK_LBU) == INSN_MATCH_LBU) {
 		len = 1;
-	} else if ((insn & INSN_MASK_LW) == INSN_MATCH_LW) {
-		len   = 4;
-		shift = 8 * (sizeof(ulong) - len);
-#if __riscv_xlen == 64
-	} else if ((insn & INSN_MASK_LD) == INSN_MATCH_LD) {
-		len   = 8;
-		shift = 8 * (sizeof(ulong) - len);
-	} else if ((insn & INSN_MASK_LWU) == INSN_MATCH_LWU) {
-		len = 4;
-#endif
-#ifdef __riscv_flen
-	} else if ((insn & INSN_MASK_FLD) == INSN_MATCH_FLD) {
-		fp  = 1;
-		len = 8;
-	} else if ((insn & INSN_MASK_FLW) == INSN_MATCH_FLW) {
-		fp  = 1;
-		len = 4;
-#endif
+	} else if ((insn & INSN_MASK_C_LBU) == INSN_MATCH_C_LBU) {
+		/* Zcb */
+		len = 1;
+		imm = RVC_LB_IMM(insn);
+		c_load = true;
 	} else if ((insn & INSN_MASK_LH) == INSN_MATCH_LH) {
-		len   = 2;
-		shift = 8 * (sizeof(ulong) - len);
+		len = -2;
+	} else if ((insn & INSN_MASK_C_LH) == INSN_MATCH_C_LH) {
+		/* Zcb */
+		len = -2;
+		imm = RVC_LH_IMM(insn);
+		c_load = true;
 	} else if ((insn & INSN_MASK_LHU) == INSN_MATCH_LHU) {
 		len = 2;
-#if __riscv_xlen >= 64
-	} else if ((insn & INSN_MASK_C_LD) == INSN_MATCH_C_LD) {
-		len   = 8;
-		shift = 8 * (sizeof(ulong) - len);
-		insn  = RVC_RS2S(insn) << SH_RD;
-	} else if ((insn & INSN_MASK_C_LDSP) == INSN_MATCH_C_LDSP &&
-		   ((insn >> SH_RD) & 0x1f)) {
-		len   = 8;
-		shift = 8 * (sizeof(ulong) - len);
-#endif
-	} else if ((insn & INSN_MASK_C_LW) == INSN_MATCH_C_LW) {
-		len   = 4;
-		shift = 8 * (sizeof(ulong) - len);
-		insn  = RVC_RS2S(insn) << SH_RD;
-	} else if ((insn & INSN_MASK_C_LWSP) == INSN_MATCH_C_LWSP &&
-		   ((insn >> SH_RD) & 0x1f)) {
-		len   = 4;
-		shift = 8 * (sizeof(ulong) - len);
-#ifdef __riscv_flen
-	} else if ((insn & INSN_MASK_C_FLD) == INSN_MATCH_C_FLD) {
-		fp   = 1;
-		len  = 8;
-		insn = RVC_RS2S(insn) << SH_RD;
-	} else if ((insn & INSN_MASK_C_FLDSP) == INSN_MATCH_C_FLDSP) {
-		fp  = 1;
-		len = 8;
-#if __riscv_xlen == 32
-	} else if ((insn & INSN_MASK_C_FLW) == INSN_MATCH_C_FLW) {
-		fp   = 1;
-		len  = 4;
-		insn = RVC_RS2S(insn) << SH_RD;
-	} else if ((insn & INSN_MASK_C_FLWSP) == INSN_MATCH_C_FLWSP) {
-		fp  = 1;
-		len = 4;
-#endif
-#endif
 	} else if ((insn & INSN_MASK_C_LHU) == INSN_MATCH_C_LHU) {
+		/* Zcb */
 		len = 2;
-		insn = RVC_RS2S(insn) << SH_RD;
-	} else if ((insn & INSN_MASK_C_LH) == INSN_MATCH_C_LH) {
-		len = 2;
-		shift = 8 * (sizeof(ulong) - len);
-		insn = RVC_RS2S(insn) << SH_RD;
+		imm = RVC_LH_IMM(insn);
+		c_load = true;
+	} else if ((insn & INSN_MASK_LW) == INSN_MATCH_LW) {
+		len = -4;
+	} else if ((insn & INSN_MASK_C_LW) == INSN_MATCH_C_LW) {
+		/* Zca */
+		len = -4;
+		imm = RVC_LW_IMM(insn);
+		c_load = true;
+	} else if ((insn & INSN_MASK_C_LWSP) == INSN_MATCH_C_LWSP &&
+		GET_RD_NUM(insn)) {
+		/* Zca */
+		len = -4;
+		imm = RVC_LWSP_IMM(insn);
+		c_ldsp = true;
+#ifdef __riscv_flen
+	} else if ((insn & INSN_MASK_FLW) == INSN_MATCH_FLW) {
+		len = 4;
+		fp = true;
+	} else if ((insn & INSN_MASK_FLD) == INSN_MATCH_FLD) {
+		len = 8;
+		fp = true;
+	} else if ((insn & INSN_MASK_C_FLD) == INSN_MATCH_C_FLD) {
+		/* Zcd */
+		len = 8;
+		imm = RVC_LD_IMM(insn);
+		c_load = true;
+		fp = true;
+	} else if ((insn & INSN_MASK_C_FLDSP) == INSN_MATCH_C_FLDSP) {
+		/* Zcd */
+		len = 8;
+		imm = RVC_LDSP_IMM(insn);
+		c_ldsp = true;
+		fp = true;
+#endif
+	} else {
+		prev_xlen = sbi_regs_prev_xlen(regs);
 	}
 
-	rc = emu(insn, len, orig_trap->tval, &val, tcntx);
+	/**
+	 * Must distinguish between rv64 and rv32, RVC instructions have
+	 * overlapping encoding:
+	 *     c.ld in rv64 == c.flw in rv32
+	 *     c.ldsp in rv64 == c.flwsp in rv32
+	 */
+	if (prev_xlen == 64) {
+		/* RV64 Only: lwu, ld, c.ld, c.ldsp  */
+		if ((insn & INSN_MASK_LWU) == INSN_MATCH_LWU) {
+			len = 4;
+		} else if ((insn & INSN_MASK_LD) == INSN_MATCH_LD) {
+			len = 8;
+		} else if ((insn & INSN_MASK_C_LD) == INSN_MATCH_C_LD) {
+			/* Zca */
+			len = 8;
+			imm = RVC_LD_IMM(insn);
+			c_load = true;
+		} else if ((insn & INSN_MASK_C_LDSP) == INSN_MATCH_C_LDSP &&
+			GET_RD_NUM(insn)) {
+			/* Zca */
+			len = 8;
+			imm = RVC_LDSP_IMM(insn);
+			c_ldsp = true;
+		}
+#ifdef __riscv_flen
+	} else if (prev_xlen == 32) {
+		/* RV32 Only: c.flw, c.flwsp */
+		if ((insn & INSN_MASK_C_FLW) == INSN_MATCH_C_FLW) {
+			/* Zcf */
+			len = 4;
+			imm = RVC_LW_IMM(insn);
+			c_load = true;
+			fp = true;
+		} else if ((insn & INSN_MASK_C_FLWSP) == INSN_MATCH_C_FLWSP) {
+			/* Zcf */
+			len = 4;
+			imm = RVC_LWSP_IMM(insn);
+			c_ldsp = true;
+			fp = true;
+		}
+#endif
+	}
+
+	if (len < 0) {
+		len = -len;
+		shift = 8 * (sizeof(ulong) - len);
+	}
+
+	if (!len) // Unknown instruction
+		goto do_emu;
+
+#if !defined(OPENSBI_DEBUG)
+	/**
+	 * For misaligned faults. Skip offset calculation unless DEBUG
+	 * builds. It helps validating OpenSBI and HW.
+	 */
+	if (orig_trap->cause == CAUSE_MISALIGNED_LOAD)
+		goto do_emu;
+#endif
+
+	if (xform)
+		/* Transformed insn */
+		off = GET_RS1_NUM(insn);
+	else if (c_load)
+		/* non SP-based compressed load */
+		off = orig_trap->tval - GET_RS1S(insn, regs) - imm;
+	else if (c_ldsp)
+		/* SP-based compressed load */
+		off = orig_trap->tval - REG_VAL(2, regs) - imm;
+	else
+		/* I-type non-compressed load */
+		off = orig_trap->tval - GET_RS1(insn, regs) - (ulong)IMM_I(insn);
+	/**
+	 * Normalize offset, in case the XLEN of unpriv mode is smaller,
+	 * and/or pointer masking is in effect
+	 */
+	off &= (len - 1);
+
+do_emu:
+	rc = emu(insn, len, orig_trap->tval - off, &val, tcntx);
 	if (rc <= 0)
 		return rc;
 	if (!len)
 		goto epc_fixup;
 
-	if (!fp)
-		SET_RD(insn, regs, ((long)(val.data_ulong << shift)) >> shift);
+	if (!fp) {
+		ulong v = ((long)(val.data_ulong << shift)) >> shift;
+
+		if (c_load)
+			SET_RDS(insn, regs, v);
+		else
+			SET_RD(insn, regs, v);
 #ifdef __riscv_flen
-	else if (len == 8)
-		SET_F64_RD(insn, regs, val.data_u64);
-	else
-		SET_F32_RD(insn, regs, val.data_ulong);
+	} else if (len == 8) {
+		if (c_load)
+			SET_F64_RDS(insn, regs, val.data_u64);
+		else
+			SET_F64_RD(insn, regs, val.data_u64);
+	} else {
+		if (c_load)
+			SET_F32_RDS(insn, regs, val.data_ulong);
+		else
+			SET_F32_RD(insn, regs, val.data_ulong);
 #endif
+	}
 
 epc_fixup:
 	regs->mepc += insn_len;
@@ -172,23 +261,18 @@ static int sbi_trap_emulate_store(struct sbi_trap_context *tcntx,
 {
 	const struct sbi_trap_info *orig_trap = &tcntx->trap;
 	struct sbi_trap_regs *regs = &tcntx->regs;
-	ulong insn, insn_len;
+	ulong insn, insn_len, imm = 0, off = 0;
 	union sbi_ldst_data val;
 	struct sbi_trap_info uptrap;
-	int rc, len = 0;
+	bool xform = false, fp = false, c_store = false, c_stsp = false;
+	int rc, len = 0, prev_xlen = 0;
 
-	if (orig_trap->tinst & 0x1) {
-		/*
-		 * Bit[0] == 1 implies trapped instruction value is
-		 * transformed instruction or custom instruction.
-		 */
+	if (sbi_trap_tinst_valid(orig_trap->tinst)) {
+		xform	 = true;
 		insn	 = orig_trap->tinst | INSN_16BIT_MASK;
 		insn_len = (orig_trap->tinst & 0x2) ? INSN_LEN(insn) : 2;
 	} else {
-		/*
-		 * Bit[0] == 0 implies trapped instruction value is
-		 * zero or special value.
-		 */
+		/* trapped instruction value is zero or special value */
 		insn = sbi_get_insn(regs->mepc, &uptrap);
 		if (uptrap.cause) {
 			return sbi_trap_redirect(regs, &uptrap);
@@ -196,62 +280,158 @@ static int sbi_trap_emulate_store(struct sbi_trap_context *tcntx,
 		insn_len = INSN_LEN(insn);
 	}
 
-	val.data_ulong = GET_RS2(insn, regs);
-
+	/**
+	 * Common for RV32/RV64:
+	 *    sb, sh, sw, fsw, fsd
+	 *    c.sb, c.sh, c.sw, c.swsp, c.fsd, c.fsdsp
+	 */
 	if ((insn & INSN_MASK_SB) == INSN_MATCH_SB) {
 		len = 1;
-	} else if ((insn & INSN_MASK_SW) == INSN_MATCH_SW) {
-		len = 4;
-#if __riscv_xlen == 64
-	} else if ((insn & INSN_MASK_SD) == INSN_MATCH_SD) {
-		len = 8;
-#endif
-#ifdef __riscv_flen
-	} else if ((insn & INSN_MASK_FSD) == INSN_MATCH_FSD) {
-		len	     = 8;
-		val.data_u64 = GET_F64_RS2(insn, regs);
-	} else if ((insn & INSN_MASK_FSW) == INSN_MATCH_FSW) {
-		len	       = 4;
-		val.data_ulong = GET_F32_RS2(insn, regs);
-#endif
+	} else if ((insn & INSN_MASK_C_SB) == INSN_MATCH_C_SB) {
+		/* Zcb */
+		len = 1;
+		imm = RVC_SB_IMM(insn);
+		c_store = true;
 	} else if ((insn & INSN_MASK_SH) == INSN_MATCH_SH) {
 		len = 2;
-#if __riscv_xlen >= 64
-	} else if ((insn & INSN_MASK_C_SD) == INSN_MATCH_C_SD) {
-		len	       = 8;
-		val.data_ulong = GET_RS2S(insn, regs);
-	} else if ((insn & INSN_MASK_C_SDSP) == INSN_MATCH_C_SDSP) {
-		len	       = 8;
-		val.data_ulong = GET_RS2C(insn, regs);
-#endif
-	} else if ((insn & INSN_MASK_C_SW) == INSN_MATCH_C_SW) {
-		len	       = 4;
-		val.data_ulong = GET_RS2S(insn, regs);
-	} else if ((insn & INSN_MASK_C_SWSP) == INSN_MATCH_C_SWSP) {
-		len	       = 4;
-		val.data_ulong = GET_RS2C(insn, regs);
-#ifdef __riscv_flen
-	} else if ((insn & INSN_MASK_C_FSD) == INSN_MATCH_C_FSD) {
-		len	     = 8;
-		val.data_u64 = GET_F64_RS2S(insn, regs);
-	} else if ((insn & INSN_MASK_C_FSDSP) == INSN_MATCH_C_FSDSP) {
-		len	     = 8;
-		val.data_u64 = GET_F64_RS2C(insn, regs);
-#if __riscv_xlen == 32
-	} else if ((insn & INSN_MASK_C_FSW) == INSN_MATCH_C_FSW) {
-		len	       = 4;
-		val.data_ulong = GET_F32_RS2S(insn, regs);
-	} else if ((insn & INSN_MASK_C_FSWSP) == INSN_MATCH_C_FSWSP) {
-		len	       = 4;
-		val.data_ulong = GET_F32_RS2C(insn, regs);
-#endif
-#endif
 	} else if ((insn & INSN_MASK_C_SH) == INSN_MATCH_C_SH) {
-		len		= 2;
-		val.data_ulong = GET_RS2S(insn, regs);
+		/* Zcb */
+		len = 2;
+		imm = RVC_SH_IMM(insn);
+		c_store = true;
+	} else if ((insn & INSN_MASK_SW) == INSN_MATCH_SW) {
+		len = 4;
+	} else if ((insn & INSN_MASK_C_SW) == INSN_MATCH_C_SW) {
+		/* Zca */
+		len = 4;
+		imm = RVC_SW_IMM(insn);
+		c_store = true;
+	} else if ((insn & INSN_MASK_C_SWSP) == INSN_MATCH_C_SWSP) {
+		/* Zca */
+		len = 4;
+		imm = RVC_SWSP_IMM(insn);
+		c_stsp = true;
+#ifdef __riscv_flen
+	} else if ((insn & INSN_MASK_FSW) == INSN_MATCH_FSW) {
+		len = 4;
+		fp = true;
+	} else if ((insn & INSN_MASK_FSD) == INSN_MATCH_FSD) {
+		len = 8;
+		fp = true;
+	} else if ((insn & INSN_MASK_C_FSD) == INSN_MATCH_C_FSD) {
+		/* Zcd */
+		len = 8;
+		imm = RVC_SD_IMM(insn);
+		c_store = true;
+		fp = true;
+	} else if ((insn & INSN_MASK_C_FSDSP) == INSN_MATCH_C_FSDSP) {
+		/* Zcd */
+		len = 8;
+		imm = RVC_SDSP_IMM(insn);
+		c_stsp = true;
+		fp = true;
+#endif
+	} else {
+		prev_xlen = sbi_regs_prev_xlen(regs);
 	}
 
-	rc = emu(insn, len, orig_trap->tval, val, tcntx);
+	/**
+	 * Must distinguish between rv64 and rv32, RVC instructions have
+	 * overlapping encoding:
+	 *     c.sd in rv64 == c.fsw in rv32
+	 *     c.sdsp in rv64 == c.fswsp in rv32
+	 */
+	if (prev_xlen == 64) {
+		/* RV64 Only: sd, c.sd, c.sdsp */
+		if ((insn & INSN_MASK_SD) == INSN_MATCH_SD) {
+			len = 8;
+		} else if ((insn & INSN_MASK_C_SD) == INSN_MATCH_C_SD) {
+			/* Zca */
+			len = 8;
+			imm = RVC_SD_IMM(insn);
+			c_store = true;
+		} else if ((insn & INSN_MASK_C_SDSP) == INSN_MATCH_C_SDSP) {
+			/* Zca */
+			len = 8;
+			imm = RVC_SDSP_IMM(insn);
+			c_stsp = true;
+		}
+#ifdef __riscv_flen
+	} else if (prev_xlen == 32) {
+		/* RV32 Only: c.fsw, c.fswsp */
+		if ((insn & INSN_MASK_C_FSW) == INSN_MATCH_C_FSW) {
+			/* Zcf */
+			len = 4;
+			imm = RVC_SW_IMM(insn);
+			c_store = true;
+			fp = true;
+		} else if ((insn & INSN_MASK_C_FSWSP) == INSN_MATCH_C_FSWSP) {
+			/* Zcf */
+			len = 4;
+			imm = RVC_SWSP_IMM(insn);
+			c_stsp = true;
+			fp = true;
+		}
+#endif
+	}
+
+	if (!fp) {
+		if (c_store)
+			val.data_ulong = GET_RS2S(insn, regs);
+		else if (c_stsp)
+			val.data_ulong = GET_RS2C(insn, regs);
+		else
+			val.data_ulong = GET_RS2(insn, regs);
+#ifdef __riscv_flen
+	} else if (len == 8) {
+		if (c_store)
+			val.data_u64 = GET_F64_RS2S(insn, regs);
+		else if (c_stsp)
+			val.data_u64 = GET_F64_RS2C(insn, regs);
+		else
+			val.data_u64 = GET_F64_RS2(insn, regs);
+	} else {
+		if (c_store)
+			val.data_ulong = GET_F32_RS2S(insn, regs);
+		else if (c_stsp)
+			val.data_ulong = GET_F32_RS2C(insn, regs);
+		else
+			val.data_ulong = GET_F32_RS2(insn, regs);
+#endif
+	}
+
+	if (!len) // Unknown instruction
+		goto do_emu;
+
+#if !defined(OPENSBI_DEBUG)
+	/**
+	 * For misaligned faults. Skip offset calculation unless DEBUG
+	 * builds. It helps validating OpenSBI and HW.
+	 */
+	if (orig_trap->cause == CAUSE_MISALIGNED_STORE)
+		goto do_emu;
+#endif
+
+	if (xform)
+		/* Transformed insn */
+		off = GET_RS1_NUM(insn);
+	else if (c_store)
+		/* non SP-based compressed store */
+		off = orig_trap->tval - GET_RS1S(insn, regs) - imm;
+	else if (c_stsp)
+		/* SP-based compressed store */
+		off = orig_trap->tval - REG_VAL(2, regs) - imm;
+	else
+		/* S-type non-compressed store */
+		off = orig_trap->tval - GET_RS1(insn, regs) - (ulong)IMM_S(insn);
+	/**
+	 * Normalize offset, in case the XLEN of unpriv mode is smaller,
+	 * and/or pointer masking is in effect
+	 */
+	off &= (len - 1);
+
+do_emu:
+	rc = emu(insn, len, orig_trap->tval - off, val, tcntx);
 	if (rc <= 0)
 		return rc;
 
