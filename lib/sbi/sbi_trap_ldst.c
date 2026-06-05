@@ -18,18 +18,18 @@
 
 /**
  * Load emulator callback:
- *
- * @return rlen=success, 0=success w/o regs modification, or negative error
+ *   Refer to comments of `sbi_platform_emulate_load`.
  */
-typedef int (*sbi_trap_ld_emulator)(int rlen, union sbi_ldst_data *out_val,
+typedef int (*sbi_trap_ld_emulator)(ulong insn, int rlen, ulong raddr,
+				    union sbi_ldst_data *out_val,
 				    struct sbi_trap_context *tcntx);
 
 /**
  * Store emulator callback:
- *
- * @return wlen=success, 0=success w/o regs modification, or negative error
+ *   Refer to comments of `sbi_platform_emulate_store`.
  */
-typedef int (*sbi_trap_st_emulator)(int wlen, union sbi_ldst_data in_val,
+typedef int (*sbi_trap_st_emulator)(ulong insn, int wlen, ulong waddr,
+				    union sbi_ldst_data in_val,
 				    struct sbi_trap_context *tcntx);
 
 ulong sbi_misaligned_tinst_fixup(ulong orig_tinst, ulong new_tinst,
@@ -52,7 +52,7 @@ static int sbi_trap_emulate_load(struct sbi_trap_context *tcntx,
 	ulong insn, insn_len;
 	union sbi_ldst_data val = { 0 };
 	struct sbi_trap_info uptrap;
-	int rc, fp = 0, shift = 0, len = 0, vector = 0;
+	int rc, fp = 0, shift = 0, len = 0;
 
 	if (orig_trap->tinst & 0x1) {
 		/*
@@ -144,28 +144,24 @@ static int sbi_trap_emulate_load(struct sbi_trap_context *tcntx,
 		len = 2;
 		shift = 8 * (sizeof(ulong) - len);
 		insn = RVC_RS2S(insn) << SH_RD;
-	} else if (IS_VECTOR_LOAD_STORE(insn)) {
-		vector = 1;
-		emu = sbi_misaligned_v_ld_emulator;
-	} else {
-		return sbi_trap_redirect(regs, orig_trap);
 	}
 
-	rc = emu(len, &val, tcntx);
+	rc = emu(insn, len, orig_trap->tval, &val, tcntx);
 	if (rc <= 0)
 		return rc;
+	if (!len)
+		goto epc_fixup;
 
-	if (!vector) {
-		if (!fp)
-			SET_RD(insn, regs, ((long)(val.data_ulong << shift)) >> shift);
+	if (!fp)
+		SET_RD(insn, regs, ((long)(val.data_ulong << shift)) >> shift);
 #ifdef __riscv_flen
-		else if (len == 8)
-			SET_F64_RD(insn, regs, val.data_u64);
-		else
-			SET_F32_RD(insn, regs, val.data_ulong);
+	else if (len == 8)
+		SET_F64_RD(insn, regs, val.data_u64);
+	else
+		SET_F32_RD(insn, regs, val.data_ulong);
 #endif
-	}
 
+epc_fixup:
 	regs->mepc += insn_len;
 
 	return 0;
@@ -253,13 +249,9 @@ static int sbi_trap_emulate_store(struct sbi_trap_context *tcntx,
 	} else if ((insn & INSN_MASK_C_SH) == INSN_MATCH_C_SH) {
 		len		= 2;
 		val.data_ulong = GET_RS2S(insn, regs);
-	} else if (IS_VECTOR_LOAD_STORE(insn)) {
-		emu = sbi_misaligned_v_st_emulator;
-	} else {
-		return sbi_trap_redirect(regs, orig_trap);
 	}
 
-	rc = emu(len, val, tcntx);
+	rc = emu(insn, len, orig_trap->tval, val, tcntx);
 	if (rc <= 0)
 		return rc;
 
@@ -268,7 +260,8 @@ static int sbi_trap_emulate_store(struct sbi_trap_context *tcntx,
 	return 0;
 }
 
-static int sbi_misaligned_ld_emulator(int rlen, union sbi_ldst_data *out_val,
+static int sbi_misaligned_ld_emulator(ulong insn, int rlen, ulong addr,
+				      union sbi_ldst_data *out_val,
 				      struct sbi_trap_context *tcntx)
 {
 	const struct sbi_trap_info *orig_trap = &tcntx->trap;
@@ -276,9 +269,20 @@ static int sbi_misaligned_ld_emulator(int rlen, union sbi_ldst_data *out_val,
 	struct sbi_trap_info uptrap;
 	int i;
 
+	if (!rlen) {
+		if (IS_VECTOR_LOAD_STORE(insn))
+			return sbi_misaligned_v_ld_emulator(insn, tcntx);
+		else
+			/* Unrecognized instruction. Can't emulate it. */
+			return sbi_trap_redirect(regs, orig_trap);
+	}
+	/* For misaligned fault, addr must be the same as orig_trap->tval */
+	if (addr != orig_trap->tval)
+		return SBI_EFAIL;
+
 	for (i = 0; i < rlen; i++) {
 		out_val->data_bytes[i] =
-			sbi_load_u8((void *)(orig_trap->tval + i), &uptrap);
+			sbi_load_u8((void *)(addr + i), &uptrap);
 		if (uptrap.cause) {
 			uptrap.tinst = sbi_misaligned_tinst_fixup(
 				orig_trap->tinst, uptrap.tinst, i);
@@ -293,7 +297,8 @@ int sbi_misaligned_load_handler(struct sbi_trap_context *tcntx)
 	return sbi_trap_emulate_load(tcntx, sbi_misaligned_ld_emulator);
 }
 
-static int sbi_misaligned_st_emulator(int wlen, union sbi_ldst_data in_val,
+static int sbi_misaligned_st_emulator(ulong insn, int wlen, ulong addr,
+				      union sbi_ldst_data in_val,
 				      struct sbi_trap_context *tcntx)
 {
 	const struct sbi_trap_info *orig_trap = &tcntx->trap;
@@ -301,8 +306,19 @@ static int sbi_misaligned_st_emulator(int wlen, union sbi_ldst_data in_val,
 	struct sbi_trap_info uptrap;
 	int i;
 
+	if (!wlen) {
+		if (IS_VECTOR_LOAD_STORE(insn))
+			return sbi_misaligned_v_st_emulator(insn, tcntx);
+		else
+			/* Unrecognized instruction. Can't emulate it. */
+			return sbi_trap_redirect(regs, orig_trap);
+	}
+	/* For misaligned fault, addr must be the same as orig_trap->tval */
+	if (addr != orig_trap->tval)
+		return SBI_EFAIL;
+
 	for (i = 0; i < wlen; i++) {
-		sbi_store_u8((void *)(orig_trap->tval + i),
+		sbi_store_u8((void *)(addr + i),
 			     in_val.data_bytes[i], &uptrap);
 		if (uptrap.cause) {
 			uptrap.tinst = sbi_misaligned_tinst_fixup(
@@ -318,22 +334,26 @@ int sbi_misaligned_store_handler(struct sbi_trap_context *tcntx)
 	return sbi_trap_emulate_store(tcntx, sbi_misaligned_st_emulator);
 }
 
-static int sbi_ld_access_emulator(int rlen, union sbi_ldst_data *out_val,
+static int sbi_ld_access_emulator(ulong insn, int rlen, ulong addr,
+				  union sbi_ldst_data *out_val,
 				  struct sbi_trap_context *tcntx)
 {
 	const struct sbi_trap_info *orig_trap = &tcntx->trap;
 	struct sbi_trap_regs *regs = &tcntx->regs;
+	int rc;
 
 	/* If fault came from M mode, just fail */
 	if (sbi_mstatus_prev_mode(regs->mstatus) == PRV_M)
 		return SBI_EINVAL;
 
+	rc = sbi_platform_emulate_load(sbi_platform_thishart_ptr(),
+				       insn, rlen, addr, out_val, tcntx);
+
 	/* If platform emulator failed, we redirect instead of fail */
-	if (sbi_platform_emulate_load(sbi_platform_thishart_ptr(), rlen,
-				      orig_trap->tval, out_val))
+	if (rc < 0)
 		return sbi_trap_redirect(regs, orig_trap);
 
-	return rlen;
+	return rc;
 }
 
 int sbi_load_access_handler(struct sbi_trap_context *tcntx)
@@ -341,22 +361,26 @@ int sbi_load_access_handler(struct sbi_trap_context *tcntx)
 	return sbi_trap_emulate_load(tcntx, sbi_ld_access_emulator);
 }
 
-static int sbi_st_access_emulator(int wlen, union sbi_ldst_data in_val,
+static int sbi_st_access_emulator(ulong insn, int wlen, ulong addr,
+				  union sbi_ldst_data in_val,
 				  struct sbi_trap_context *tcntx)
 {
 	const struct sbi_trap_info *orig_trap = &tcntx->trap;
 	struct sbi_trap_regs *regs = &tcntx->regs;
+	int rc;
 
 	/* If fault came from M mode, just fail */
 	if (sbi_mstatus_prev_mode(regs->mstatus) == PRV_M)
 		return SBI_EINVAL;
 
+	rc = sbi_platform_emulate_store(sbi_platform_thishart_ptr(),
+					insn, wlen, addr, in_val, tcntx);
+
 	/* If platform emulator failed, we redirect instead of fail */
-	if (sbi_platform_emulate_store(sbi_platform_thishart_ptr(), wlen,
-				       orig_trap->tval, in_val))
+	if (rc < 0)
 		return sbi_trap_redirect(regs, orig_trap);
 
-	return wlen;
+	return rc;
 }
 
 int sbi_store_access_handler(struct sbi_trap_context *tcntx)

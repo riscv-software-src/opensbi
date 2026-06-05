@@ -135,12 +135,17 @@ struct sbi_platform_operations {
 				   struct sbi_trap_regs *regs,
 				   struct sbi_ecall_return *out);
 
-	/** platform specific handler to fixup load fault */
-	int (*emulate_load)(int rlen, unsigned long addr,
-			    union sbi_ldst_data *out_val);
-	/** platform specific handler to fixup store fault */
-	int (*emulate_store)(int wlen, unsigned long addr,
-			     union sbi_ldst_data in_val);
+	/** platform specific handler to fixup load fault
+	 *  Refer to comments below at sbi_platform_emulate_load */
+	int (*emulate_load)(ulong insn, int rlen, ulong addr,
+			    union sbi_ldst_data *out_val,
+			    struct sbi_trap_context *tcntx);
+
+	/** platform specific handler to fixup store fault
+	 *  Refer to comments below at sbi_platform_emulate_store */
+	int (*emulate_store)(ulong insn, int wlen, ulong addr,
+			     union sbi_ldst_data in_val,
+			     struct sbi_trap_context *tcntx);
 
 	/** platform specific pmp setup on current HART */
 	void (*pmp_set)(unsigned int n, unsigned long flags,
@@ -619,45 +624,76 @@ static inline int sbi_platform_vendor_ext_provider(
 }
 
 /**
- * Ask platform to emulate the trapped load
+ * Ask platform to emulate the trapped load:
  *
- * @param plat pointer to struct sbi_platform
- * @param rlen length of the load: 1/2/4/8...
- * @param addr virtual address of the load. Platform needs to page-walk and
- *        find the physical address if necessary
- * @param out_val value loaded
+ * @param insn the instruction that caused the load fault.
+ *             It could be a transformed instruction from tinst, thus do
+ *             not rely on the length of insn, and use appropriate return
+ *             code, so the caller can advance mepc properly.
+ * @param rlen read length in [0, 1, 2, 4, 8]. If 0, it's a special load.
+ *             In that case, it could be a vector load or customized insn,
+ *             which may read/gather a block of memory. The emulator should
+ *             further parse the @insn (fetch if 0), and act accordingly.
+ * @param raddr read address. If @rlen is not 0, it's the base address of
+ *              the load. It doesn't necessarily match tcntx->trap->tval,
+ *              in case of unaligned load triggering access fault.
+ *              If @rlen is 0, @raddr should be ignored.
+ * @param out_val the buffer to hold data loaded by the emulator.
+ *                If @rlen == 0, @out_val is ignored by caller.
+ * @param tcntx trap context saved on load fault entry.
  *
- * @return 0 on success and negative error code on failure
+ * @return >0 success: register will be updated by caller if @rlen != 0,
+ *            and mepc will be advanced by caller.
+ *         0  success: no register modification; no mepc advancement.
+ *         <0 failure
+ *
+ * It's expected that if @rlen != 0, and the emulator returns >0, the
+ * caller will set the corresponding registers with @out_val to simplify
+ * things. Otherwise, no register manipulation is done by the caller.
  */
 static inline int sbi_platform_emulate_load(const struct sbi_platform *plat,
-					    int rlen, unsigned long addr,
-					    union sbi_ldst_data *out_val)
+					    ulong insn, int rlen, ulong raddr,
+					    union sbi_ldst_data *out_val,
+					    struct sbi_trap_context *tcntx)
 {
 	if (plat && sbi_platform_ops(plat)->emulate_load) {
-		return sbi_platform_ops(plat)->emulate_load(rlen, addr,
-							    out_val);
+		return sbi_platform_ops(plat)->emulate_load(insn, rlen, raddr,
+							    out_val, tcntx);
 	}
 	return SBI_ENOTSUPP;
 }
 
 /**
- * Ask platform to emulate the trapped store
+ * Ask platform to emulate the trapped store:
  *
- * @param plat pointer to struct sbi_platform
- * @param wlen length of the store: 1/2/4/8...
- * @param addr virtual address of the store. Platform needs to page-walk and
- *        find the physical address if necessary
- * @param in_val value to store
+ * @param insn the instruction that caused the store fault.
+ *             It could be a transformed instruction from tinst, thus do
+ *             not rely on the length of insn, and use appropriate return
+ *             code, so the caller can advance mepc properly.
+ * @param wlen write length in [0, 1, 2, 4, 8]. If 0, it's a special store.
+ *             In that case, it could be a vector store or customized insn,
+ *             which may write/scatter a block of memory. The emulator should
+ *             further parse the @insn (fetch if 0), and act accordingly.
+ * @param waddr write address. If @wlen is not 0, it's the base address of
+ *              the store. It doesn't necessarily match tcntx->trap->tval,
+ *              in case of unaligned store triggering access fault.
+ *              If @wlen is 0, @waddr should be ignored.
+ * @param in_val the buffer to hold data about to be stored by the emulator.
+ *               If @wlen == 0, @in_val should be ignored.
+ * @param tcntx trap context saved on store fault entry.
  *
- * @return 0 on success and negative error code on failure
+ * @return >0 success: mepc will be advanced by caller.
+ *         0  success: no mepc advancement.
+ *         <0 failure
  */
 static inline int sbi_platform_emulate_store(const struct sbi_platform *plat,
-					     int wlen, unsigned long addr,
-					     union sbi_ldst_data in_val)
+					     ulong insn, int wlen, ulong waddr,
+					     union sbi_ldst_data in_val,
+					     struct sbi_trap_context *tcntx)
 {
 	if (plat && sbi_platform_ops(plat)->emulate_store) {
-		return sbi_platform_ops(plat)->emulate_store(wlen, addr,
-							     in_val);
+		return sbi_platform_ops(plat)->emulate_store(insn, wlen, waddr,
+							     in_val, tcntx);
 	}
 	return SBI_ENOTSUPP;
 }
