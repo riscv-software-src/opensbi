@@ -31,11 +31,16 @@ struct sbi_irqchip_device {
 	/** Internal data of all hardware interrupts of this irqchip (private) */
 	struct sbi_irqchip_hwirq_data *hwirqs;
 
-	/** List of interrupt handlers */
+	/** List of interrupt handlers (private) */
 	struct sbi_dlist handler_list;
 
 	/** Unique ID of this irqchip */
 	u32 id;
+
+	/** Capabilities of this irqchip */
+#define SBI_IRQCHIP_CAPS_WIRED		BIT(0)
+#define SBI_IRQCHIP_CAPS_MSI		BIT(1)
+	unsigned long caps;
 
 	/** Number of hardware IRQs of this irqchip */
 	u32 num_hwirq;
@@ -140,6 +145,10 @@ int sbi_irqchip_register_reserved(struct sbi_irqchip_device *chip,
 /** Unregister a hardware interrupt handler */
 int sbi_irqchip_unregister_handler(struct sbi_irqchip_device *chip,
 				   u32 first_hwirq, u32 num_hwirq);
+
+/** Find an irqchip device based on matching capabilities */
+struct sbi_irqchip_device *sbi_irqchip_find_device_by_caps(unsigned long caps,
+							   struct sbi_irqchip_device *first);
 
 /** Find an irqchip device based on unique ID */
 struct sbi_irqchip_device *sbi_irqchip_find_device(u32 id);

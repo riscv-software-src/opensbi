@@ -408,6 +408,26 @@ int sbi_irqchip_unregister_handler(struct sbi_irqchip_device *chip,
 	return 0;
 }
 
+struct sbi_irqchip_device *sbi_irqchip_find_device_by_caps(unsigned long caps,
+							   struct sbi_irqchip_device *first)
+{
+	struct sbi_irqchip_device *chip;
+	bool found = false;
+
+	sbi_list_for_each_entry(chip, &irqchip_list, node) {
+		if (!found) {
+			if (first == chip)
+				found = true;
+			else
+				continue;
+		}
+		if ((chip->caps & caps) == caps)
+			return chip;
+	}
+
+	return NULL;
+}
+
 struct sbi_irqchip_device *sbi_irqchip_find_device(u32 id)
 {
 	struct sbi_irqchip_device *chip;
