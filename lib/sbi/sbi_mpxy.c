@@ -13,6 +13,7 @@
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_hart_protection.h>
 #include <sbi/sbi_heap.h>
+#include <sbi/sbi_irqchip.h>
 #include <sbi/sbi_platform.h>
 #include <sbi/sbi_mpxy.h>
 #include <sbi/sbi_scratch.h>
@@ -255,11 +256,10 @@ static int domain_mpxy_state_data_setup(struct sbi_domain *dom,
 			return SBI_ENOMEM;
 
 		/*
-		 * TODO: Proper support for checking msi support from
-		 * platform. Currently disable msi and sse and use
-		 * polling
+		 * TODO: Proper support for checking sse support from
+		 * platform. Currently disable sse and use polling
 		 */
-		ms->msi_avail = false;
+		ms->msi_avail = !!sbi_irqchip_find_device_by_caps(SBI_IRQCHIP_CAPS_MSI, NULL);
 		ms->sse_avail = false;
 
 		sbi_mpxy_shmem_disable(ms);
