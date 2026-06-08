@@ -469,6 +469,15 @@ enum sbi_sse_state {
 #define SBI_EXT_MPXY_SEND_MSG_WITHOUT_RESP	0x6
 #define SBI_EXT_MPXY_GET_NOTIFICATION_EVENTS	0x7
 
+/** SBI MPXY notification header size */
+#define SBI_MPXY_NOTIF_HDR_SIZE			16
+
+/** SBI MPXY notification header offsets */
+#define SBI_MPXY_NOTIF_HDR_REMAINING_OFFSET	0x00
+#define SBI_MPXY_NOTIF_HDR_RETURNED_OFFSET	0x04
+#define SBI_MPXY_NOTIF_HDR_LOST_OFFSET		0x08
+#define SBI_MPXY_NOTIF_HDR_RESERVED_OFFSET	0x0C
+
 /* SBI base specification related macros */
 #define SBI_SPEC_VERSION_MAJOR_OFFSET		24
 #define SBI_SPEC_VERSION_MAJOR_MASK		0x7f
