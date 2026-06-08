@@ -87,6 +87,10 @@
 #define RPMI_DEF_TX_TIMEOUT			20
 #define RPMI_DEF_RX_TIMEOUT			20
 
+/** RPMI Notification event header constructor */
+#define RPMI_NOTIF_EVENT_HDR(eid, dlen)		((u32)(eid) << 16) | \
+						 ((u32)(dlen) & 0xFFFF)
+
 /**
  * Common macro to generate composite version from major
  * and minor version numbers.
@@ -232,14 +236,24 @@ enum rpmi_servicegroup_id {
 	RPMI_SRVGRP_VENDOR_END = 0xFFFF,
 };
 
+/** RPMI event notification state IDs */
+enum rpmi_event_notification_state {
+	RPMI_EVENT_NOTIF_DISABLE_STATE = 0,
+	RPMI_EVENT_NOTIF_ENABLE_STATE = 1,
+	RPMI_EVENT_NOTIF_RET_CURR_STATE = 2,
+	RPMI_EVENT_NOTIF_MAX_COUNT = 3,
+};
+
 /** RPMI enable notification request */
 struct rpmi_enable_notification_req {
 	u32 eventid;
+	u32 req_state;
 };
 
 /** RPMI enable notification response */
 struct rpmi_enable_notification_resp {
 	s32 status;
+	u32 current_state;
 };
 
 /** RPMI Base ServiceGroup Service IDs */
@@ -844,6 +858,33 @@ enum rpmi_performance_service_id {
 	RPMI_PERF_SRV_GET_FAST_CHANNEL_REGION = 0x09,
 	RPMI_PERF_SRV_GET_FAST_CHANNEL_ATTRIBUTES = 0x0A,
 	RPMI_PERF_SRV_MAX_COUNT,
+};
+
+/** RPMI Performance ServiceGroup Notification Event IDs */
+enum rpmi_performance_event_id {
+	RPMI_PERF_EVENT_POWER_CHANGE = 0x01,
+	RPMI_PERF_EVENT_LIMIT_CHANGE = 0x02,
+	RPMI_PERF_EVENT_LEVEL_CHANGE = 0x03,
+	RPMI_PERF_EVENT_MAX_COUNT,
+};
+
+/** RPMI Performance power change notification data */
+struct rpmi_perf_event_power_change {
+	u32 domain_id;
+	u32 power_uw;
+};
+
+/** RPMI Performance limit change notification data */
+struct rpmi_perf_event_limit_change {
+	u32 domain_id;
+	u32 max_level;
+	u32 min_level;
+};
+
+/** RPMI Performance level change notification data */
+struct rpmi_perf_event_level_change {
+	u32 domain_id;
+	u32 level;
 };
 
 struct rpmi_perf_get_num_domain_resp {
