@@ -471,7 +471,6 @@ static int sbi_misaligned_ld_emulator(ulong insn, int rlen, ulong addr,
 	const struct sbi_trap_info *orig_trap = &tcntx->trap;
 	struct sbi_trap_regs *regs = &tcntx->regs;
 	struct sbi_trap_info uptrap;
-	int i;
 
 	if (!rlen) {
 		if (IS_VECTOR_LOAD_STORE(insn))
@@ -484,13 +483,10 @@ static int sbi_misaligned_ld_emulator(ulong insn, int rlen, ulong addr,
 	if (addr != orig_trap->tval)
 		return SBI_EFAIL;
 
-	for (i = 0; i < rlen; i++) {
-		out_val->data_bytes[i] =
-			sbi_load_u8((void *)(addr + i), &uptrap);
-		if (uptrap.cause) {
-			sbi_misaligned_tinst_fixup(orig_trap, &uptrap);
-			return sbi_trap_redirect(regs, &uptrap);
-		}
+	sbi_load_loop(out_val->data_bytes, addr, rlen, &uptrap);
+	if (uptrap.cause) {
+		sbi_misaligned_tinst_fixup(orig_trap, &uptrap);
+		return sbi_trap_redirect(regs, &uptrap);
 	}
 	return rlen;
 }
@@ -507,7 +503,6 @@ static int sbi_misaligned_st_emulator(ulong insn, int wlen, ulong addr,
 	const struct sbi_trap_info *orig_trap = &tcntx->trap;
 	struct sbi_trap_regs *regs = &tcntx->regs;
 	struct sbi_trap_info uptrap;
-	int i;
 
 	if (!wlen) {
 		if (IS_VECTOR_LOAD_STORE(insn))
@@ -520,13 +515,10 @@ static int sbi_misaligned_st_emulator(ulong insn, int wlen, ulong addr,
 	if (addr != orig_trap->tval)
 		return SBI_EFAIL;
 
-	for (i = 0; i < wlen; i++) {
-		sbi_store_u8((void *)(addr + i),
-			     in_val.data_bytes[i], &uptrap);
-		if (uptrap.cause) {
-			sbi_misaligned_tinst_fixup(orig_trap, &uptrap);
-			return sbi_trap_redirect(regs, &uptrap);
-		}
+	sbi_store_loop(in_val.data_bytes, addr, wlen, &uptrap);
+	if (uptrap.cause) {
+		sbi_misaligned_tinst_fixup(orig_trap, &uptrap);
+		return sbi_trap_redirect(regs, &uptrap);
 	}
 	return wlen;
 }

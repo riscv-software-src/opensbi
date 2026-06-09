@@ -36,6 +36,12 @@ DECLARE_UNPRIVILEGED_LOAD_FUNCTION(u64)
 DECLARE_UNPRIVILEGED_STORE_FUNCTION(u64)
 DECLARE_UNPRIVILEGED_LOAD_FUNCTION(ulong)
 
+void sbi_load_loop(u8 *buffer, ulong addr, ulong len,
+		   struct sbi_trap_info *trap);
+
+void sbi_store_loop(u8 *buffer, ulong addr, ulong len,
+		    struct sbi_trap_info *trap);
+
 ulong sbi_get_insn(ulong mepc, struct sbi_trap_info *trap);
 
 #endif

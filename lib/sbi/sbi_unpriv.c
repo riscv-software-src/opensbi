@@ -11,8 +11,19 @@
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_scratch.h>
+#include <sbi/sbi_string.h>
 #include <sbi/sbi_trap.h>
 #include <sbi/sbi_unpriv.h>
+
+union sbi_unpriv_data {
+	u8 b;
+	u16 h;
+	u32 w;
+#if __riscv_xlen == 64
+	u64 d;
+#endif
+	u8 bytes[__riscv_xlen / 8];
+};
 
 /**
  * a3 must a pointer to the sbi_trap_info and a4 is used as a temporary
@@ -22,13 +33,12 @@
 	type sbi_load_##type(const type *addr,                                \
 			     struct sbi_trap_info *trap)                      \
 	{                                                                     \
-		register ulong tinfo asm("a3");                               \
+		register ulong tinfo asm("a3") = (ulong)trap;                 \
 		register ulong mstatus = 0;                                   \
 		register ulong mtvec = (ulong)sbi_hart_expected_trap;         \
 		type ret = 0;                                                 \
 		trap->cause = 0;                                              \
 		asm volatile(                                                 \
-			"add %[tinfo], %[taddr], zero\n"                      \
 			"csrrw %[mtvec], " STR(CSR_MTVEC) ", %[mtvec]\n"      \
 			"csrrs %[mstatus], " STR(CSR_MSTATUS) ", %[mprv]\n"   \
 			".option push\n"                                      \
@@ -39,8 +49,7 @@
 			"csrw " STR(CSR_MTVEC) ", %[mtvec]"                   \
 		    : [mstatus] "+&r"(mstatus), [mtvec] "+&r"(mtvec),         \
 		      [tinfo] "+&r"(tinfo), [ret] "=&r"(ret)                  \
-		    : [addr] "m"(*addr), [mprv] "r"(MSTATUS_MPRV),            \
-		      [taddr] "r"((ulong)trap)                                \
+		    : [addr] "m"(*addr), [mprv] "r"(MSTATUS_MPRV)             \
 		    : "a4", "memory");                                        \
 		return ret;                                                   \
 	}
@@ -54,7 +63,6 @@
 		register ulong mtvec = (ulong)sbi_hart_expected_trap;         \
 		trap->cause = 0;                                              \
 		asm volatile(                                                 \
-			"add %[tinfo], %[taddr], zero\n"                      \
 			"csrrw %[mtvec], " STR(CSR_MTVEC) ", %[mtvec]\n"      \
 			"csrrs %[mstatus], " STR(CSR_MSTATUS) ", %[mprv]\n"   \
 			".option push\n"                                      \
@@ -66,7 +74,7 @@
 		    : [mstatus] "+&r"(mstatus), [mtvec] "+&r"(mtvec),         \
 		      [tinfo] "+&r"(tinfo)                                    \
 		    : [addr] "m"(*addr), [mprv] "r"(MSTATUS_MPRV),            \
-		      [val] "r"(val), [taddr] "r"((ulong)trap)                \
+		      [val] "r"(val)                                          \
 		    : "a4", "memory");                                        \
 	}
 
@@ -115,6 +123,84 @@ void sbi_store_u64(u64 *addr, u64 val,
 #else
 # error "Unexpected __riscv_xlen"
 #endif
+
+void sbi_load_loop(u8 *buffer, ulong addr, ulong len,
+		   struct sbi_trap_info *trap)
+{
+	union sbi_unpriv_data data;
+
+	trap->cause = 0;
+	while (len) {
+		unsigned int width = __riscv_xlen / 8;
+		void *ptr = (void*)addr;
+
+		while (len < width || (addr & (width - 1)))
+			width /= 2;
+
+		switch (width) {
+		case 1:
+			data.b = sbi_load_u8(ptr, trap);
+			break;
+		case 2:
+			data.h = sbi_load_u16(ptr, trap);
+			break;
+		case 4:
+			data.w = sbi_load_u32(ptr, trap);
+			break;
+#if __riscv_xlen == 64
+		case 8:
+			data.d = sbi_load_u64(ptr, trap);
+			break;
+#endif
+		}
+		if (trap->cause)
+			return;
+
+		sbi_memcpy(buffer, data.bytes, width);
+		len -= width;
+		addr += width;
+		buffer += width;
+	}
+}
+
+void sbi_store_loop(u8 *buffer, ulong addr, ulong len,
+		    struct sbi_trap_info *trap)
+{
+	union sbi_unpriv_data data;
+
+	trap->cause = 0;
+	while (len) {
+		unsigned int width = __riscv_xlen / 8;
+		void *ptr = (void*)addr;
+
+		while (len < width || (addr & (width - 1)))
+			width /= 2;
+
+		sbi_memcpy(data.bytes, buffer, width);
+		switch (width) {
+		case 1:
+			sbi_store_u8(ptr, data.b, trap);
+			break;
+		case 2:
+			sbi_store_u16(ptr, data.h, trap);
+			break;
+		case 4:
+			sbi_store_u32(ptr, data.w, trap);
+			break;
+#if __riscv_xlen == 64
+		case 8:
+			sbi_store_u64(ptr, data.d, trap);
+			break;
+#endif
+		}
+		if (trap->cause)
+			return;
+
+		len -= width;
+		addr += width;
+		buffer += width;
+	}
+}
 
 ulong sbi_get_insn(ulong mepc, struct sbi_trap_info *trap)
 {
