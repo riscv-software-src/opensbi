@@ -11,6 +11,7 @@
 
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_encoding.h>
+#include <sbi/sbi_bitops.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_trap_ldst.h>
 #include <sbi/sbi_trap.h>
@@ -189,44 +190,45 @@ int sbi_misaligned_v_ld_emulator(ulong insn, struct sbi_trap_context *tcntx)
 		get_vreg(vlenb, 0, 0, vlenb, mask);
 
 	do {
-		if (!masked || ((mask[vstart / 8] >> (vstart % 8)) & 1)) {
-			/* compute element address */
-			ulong addr = base + vstart * stride;
+		if (masked && (~mask[vstart / 8] & BIT(vstart % 8)))
+			continue;
 
-			if (IS_INDEXED_LOAD(insn)) {
-				ulong offset = 0;
+		/* compute element address */
+		ulong addr = base + vstart * stride;
 
-				get_vreg(vlenb, vs2, vstart << view, 1 << view, (uint8_t *)&offset);
-				addr = base + offset;
-			}
+		if (IS_INDEXED_LOAD(insn)) {
+			ulong offset = 0;
 
-			csr_write(CSR_VSTART, vstart);
+			get_vreg(vlenb, vs2, vstart << view, 1 << view, (uint8_t *)&offset);
+			addr = base + offset;
+		}
 
-			/* obtain load data from memory */
-			for (ulong seg = 0; seg < nf; seg++) {
-				for (ulong i = 0; i < len; i++) {
-					bytes[seg * len + i] =
-						sbi_load_u8((void *)(addr + seg * len + i),
-							    &uptrap);
+		csr_write(CSR_VSTART, vstart);
 
-					if (uptrap.cause) {
-						if (IS_FAULT_ONLY_FIRST_LOAD(insn) && vstart != 0) {
-							vl = vstart;
-							break;
-						}
-						vsetvl(vl, vtype);
-						uptrap.tinst = sbi_misaligned_tinst_fixup(
-							orig_trap->tinst, uptrap.tinst, i);
-						return sbi_trap_redirect(regs, &uptrap);
+		/* obtain load data from memory */
+		for (ulong seg = 0; seg < nf; seg++) {
+			for (ulong i = 0; i < len; i++) {
+				bytes[seg * len + i] =
+					sbi_load_u8((void *)(addr + seg * len + i),
+						    &uptrap);
+
+				if (uptrap.cause) {
+					if (IS_FAULT_ONLY_FIRST_LOAD(insn) && vstart != 0) {
+						vl = vstart;
+						break;
 					}
+					vsetvl(vl, vtype);
+					uptrap.tinst = sbi_misaligned_tinst_fixup(
+						orig_trap->tinst, uptrap.tinst, i);
+					return sbi_trap_redirect(regs, &uptrap);
 				}
 			}
-
-			/* write load data to regfile */
-			for (ulong seg = 0; seg < nf; seg++)
-				set_vreg(vlenb, vd + seg * emul, vstart * len,
-					 len, &bytes[seg * len]);
 		}
+
+		/* write load data to regfile */
+		for (ulong seg = 0; seg < nf; seg++)
+			set_vreg(vlenb, vd + seg * emul, vstart * len,
+				 len, &bytes[seg * len]);
 	} while (++vstart < vl);
 
 	/* restore clobbered vl/vtype */
@@ -288,35 +290,36 @@ int sbi_misaligned_v_st_emulator(ulong insn, struct sbi_trap_context *tcntx)
 		get_vreg(vlenb, 0, 0, vlenb, mask);
 
 	do {
-		if (!masked || ((mask[vstart / 8] >> (vstart % 8)) & 1)) {
-			/* compute element address */
-			ulong addr = base + vstart * stride;
+		if (masked && (~mask[vstart / 8] & BIT(vstart % 8)))
+			continue;
 
-			if (IS_INDEXED_STORE(insn)) {
-				ulong offset = 0;
+		/* compute element address */
+		ulong addr = base + vstart * stride;
 
-				get_vreg(vlenb, vs2, vstart << view, 1 << view, (uint8_t *)&offset);
-				addr = base + offset;
-			}
+		if (IS_INDEXED_STORE(insn)) {
+			ulong offset = 0;
 
-			/* obtain store data from regfile */
-			for (ulong seg = 0; seg < nf; seg++)
-				get_vreg(vlenb, vd + seg * emul, vstart * len,
-					 len, &bytes[seg * len]);
+			get_vreg(vlenb, vs2, vstart << view, 1 << view, (uint8_t *)&offset);
+			addr = base + offset;
+		}
 
-			csr_write(CSR_VSTART, vstart);
+		/* obtain store data from regfile */
+		for (ulong seg = 0; seg < nf; seg++)
+			get_vreg(vlenb, vd + seg * emul, vstart * len,
+				 len, &bytes[seg * len]);
 
-			/* write store data to memory */
-			for (ulong seg = 0; seg < nf; seg++) {
-				for (ulong i = 0; i < len; i++) {
-					sbi_store_u8((void *)(addr + seg * len + i),
-						     bytes[seg * len + i], &uptrap);
-					if (uptrap.cause) {
-						vsetvl(vl, vtype);
-						uptrap.tinst = sbi_misaligned_tinst_fixup(
-							orig_trap->tinst, uptrap.tinst, i);
-						return sbi_trap_redirect(regs, &uptrap);
-					}
+		csr_write(CSR_VSTART, vstart);
+
+		/* write store data to memory */
+		for (ulong seg = 0; seg < nf; seg++) {
+			for (ulong i = 0; i < len; i++) {
+				sbi_store_u8((void *)(addr + seg * len + i),
+					     bytes[seg * len + i], &uptrap);
+				if (uptrap.cause) {
+					vsetvl(vl, vtype);
+					uptrap.tinst = sbi_misaligned_tinst_fixup(
+						orig_trap->tinst, uptrap.tinst, i);
+					return sbi_trap_redirect(regs, &uptrap);
 				}
 			}
 		}
