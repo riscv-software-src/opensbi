@@ -20,6 +20,12 @@ struct sbi_vector_context {
 	uint8_t vregs[];
 };
 
+#define SET_VS_DIRTY(regs) do {				\
+	if (sbi_regs_from_virt(regs))			\
+		csr_set(CSR_VSSTATUS, MSTATUS_VS);	\
+	regs->mstatus |= MSTATUS_VS;			\
+} while(0)
+
 #ifdef OPENSBI_CC_SUPPORT_VECTOR
 void sbi_vector_save(struct sbi_vector_context *dst);
 void sbi_vector_restore(const struct sbi_vector_context *src);
