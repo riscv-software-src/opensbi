@@ -32,16 +32,40 @@ typedef int (*sbi_trap_st_emulator)(ulong insn, int wlen, ulong waddr,
 				    union sbi_ldst_data in_val,
 				    struct sbi_trap_context *tcntx);
 
-ulong sbi_misaligned_tinst_fixup(ulong orig_tinst, ulong new_tinst,
-					ulong addr_offset)
+/**
+ * Handling of misaligned fault is done by a collection of smaller, but
+ * aligned load/store(s). Another fault (load/store, page fault...) can
+ * arise from any of them, then the handling gets aborted. We must fixup
+ * the tinst to pretend the fault was rised from the original insn.
+ * Specifically, fixup the offset field using the tval diff between the
+ * new trap and the original one (if required).
+ */
+static inline void sbi_misaligned_tinst_fixup(
+			const struct sbi_trap_info *orig_trap,
+			      struct sbi_trap_info *uptrap)
 {
-	if (new_tinst == INSN_PSEUDO_VS_LOAD ||
-	    new_tinst == INSN_PSEUDO_VS_STORE)
-		return new_tinst;
-	else if (orig_tinst == 0)
-		return 0UL;
+	ulong offset = uptrap->tval - orig_trap->tval;
+
+	/*
+	 * The function is called in code path for handling a scalar
+	 * load/store misaligned fault, thus the new uptrap can't have
+	 * custom value of tinst
+	 */
+	if (uptrap->tinst == INSN_PSEUDO_VS_LOAD ||
+	    uptrap->tinst == INSN_PSEUDO_VS_STORE)
+		/* Use uptrap as-is for guest-page faults */
+		return;
+	/*
+	 * Only fixup if orig tinst is valid. Otherwise, discard the
+	 * new tinst to be on the safe side. Never use new tinst as-is!
+	 * It's load/store width surely mismatches the original width.
+	 * For vector, discard it regardless. It doesn't make sense to
+	 * have a transformed tinst
+	 */
+	else if (orig_trap->tinst == 0)
+		uptrap->tinst = 0;
 	else
-		return orig_tinst | (addr_offset << SH_RS1);
+		uptrap->tinst = orig_trap->tinst | (offset << SH_RS1);
 }
 
 static inline bool sbi_trap_tinst_valid(ulong tinst)
@@ -464,8 +488,7 @@ static int sbi_misaligned_ld_emulator(ulong insn, int rlen, ulong addr,
 		out_val->data_bytes[i] =
 			sbi_load_u8((void *)(addr + i), &uptrap);
 		if (uptrap.cause) {
-			uptrap.tinst = sbi_misaligned_tinst_fixup(
-				orig_trap->tinst, uptrap.tinst, i);
+			sbi_misaligned_tinst_fixup(orig_trap, &uptrap);
 			return sbi_trap_redirect(regs, &uptrap);
 		}
 	}
@@ -501,8 +524,7 @@ static int sbi_misaligned_st_emulator(ulong insn, int wlen, ulong addr,
 		sbi_store_u8((void *)(addr + i),
 			     in_val.data_bytes[i], &uptrap);
 		if (uptrap.cause) {
-			uptrap.tinst = sbi_misaligned_tinst_fixup(
-				orig_trap->tinst, uptrap.tinst, i);
+			sbi_misaligned_tinst_fixup(orig_trap, &uptrap);
 			return sbi_trap_redirect(regs, &uptrap);
 		}
 	}

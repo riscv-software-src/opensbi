@@ -138,9 +138,31 @@ static inline void vsetvl(ulong vl, ulong vtype)
 			:: "r" (vl), "r" (vtype));
 }
 
+/**
+ * Handling of misaligned fault is done by a collection of smaller, but
+ * aligned load/store(s). Another fault (load/store, page fault...) can
+ * arise from any of them, then the handling gets aborted. We must fixup
+ * the tinst to pretend the fault was rised from the original insn. For
+ * vector insn, simply null out tinst if it's not a guest-page fault, as
+ * there's no transformed insn for vector load/store
+ */
+static inline void sbi_misaligned_v_tinst_fixup(struct sbi_trap_info *uptrap)
+{
+	/*
+	 * The function is called in code path for handling a vector
+	 * load/store misaligned fault, thus the new uptrap can't have
+	 * custom value of tinst
+	 */
+	if (uptrap->tinst == INSN_PSEUDO_VS_LOAD ||
+	    uptrap->tinst == INSN_PSEUDO_VS_STORE)
+		/* Use uptrap as-is for guest-page faults */
+		return;
+
+	uptrap->tinst = 0;
+}
+
 int sbi_misaligned_v_ld_emulator(ulong insn, struct sbi_trap_context *tcntx)
 {
-	const struct sbi_trap_info *orig_trap = &tcntx->trap;
 	struct sbi_trap_regs *regs = &tcntx->regs;
 	struct sbi_trap_info uptrap;
 	ulong vl = csr_read(CSR_VL);
@@ -218,8 +240,7 @@ int sbi_misaligned_v_ld_emulator(ulong insn, struct sbi_trap_context *tcntx)
 						break;
 					}
 					vsetvl(vl, vtype);
-					uptrap.tinst = sbi_misaligned_tinst_fixup(
-						orig_trap->tinst, uptrap.tinst, i);
+					sbi_misaligned_v_tinst_fixup(&uptrap);
 					return sbi_trap_redirect(regs, &uptrap);
 				}
 			}
@@ -240,7 +261,6 @@ int sbi_misaligned_v_ld_emulator(ulong insn, struct sbi_trap_context *tcntx)
 
 int sbi_misaligned_v_st_emulator(ulong insn, struct sbi_trap_context *tcntx)
 {
-	const struct sbi_trap_info *orig_trap = &tcntx->trap;
 	struct sbi_trap_regs *regs = &tcntx->regs;
 	struct sbi_trap_info uptrap;
 	ulong vl = csr_read(CSR_VL);
@@ -317,8 +337,7 @@ int sbi_misaligned_v_st_emulator(ulong insn, struct sbi_trap_context *tcntx)
 					     bytes[seg * len + i], &uptrap);
 				if (uptrap.cause) {
 					vsetvl(vl, vtype);
-					uptrap.tinst = sbi_misaligned_tinst_fixup(
-						orig_trap->tinst, uptrap.tinst, i);
+					sbi_misaligned_v_tinst_fixup(&uptrap);
 					return sbi_trap_redirect(regs, &uptrap);
 				}
 			}
