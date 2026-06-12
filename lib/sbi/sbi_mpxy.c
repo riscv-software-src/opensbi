@@ -531,8 +531,8 @@ static int mpxy_check_write_std_attr(struct sbi_mpxy_channel *channel,
 		if (attr_val > 1)
 			ret = SBI_ERR_INVALID_PARAM;
 		if (attr_val == 1 &&
-		    (attrs->msi_info.msi_addr_lo == INVALID_ADDR) &&
-		    (attrs->msi_info.msi_addr_hi == INVALID_ADDR))
+		    (attrs->msi_info.msi_addr_lo == (u32)INVALID_ADDR) &&
+		    (attrs->msi_info.msi_addr_hi == (u32)INVALID_ADDR))
 			ret = SBI_ERR_DENIED;
 		break;
 	case SBI_MPXY_ATTR_MSI_ADDR_LO:
