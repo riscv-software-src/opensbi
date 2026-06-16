@@ -34,6 +34,25 @@ static unsigned long hart_state_ptr_offset;
 	sbi_scratch_write_type((__scratch), void *, hart_state_ptr_offset, \
 			       (__hart_state))
 
+#define tdata_read_safe(__csr)						\
+	({								\
+		struct sbi_trap_info __trap = {0};			\
+		csr_read_allowed((__csr), &__trap);			\
+	})
+
+#define tdata_write_safe(__csr, __value)				\
+	({								\
+		struct sbi_trap_info __trap = {0};			\
+		csr_write_allowed((__csr), &__trap, (__value));		\
+	})
+
+#define tdata_implemented(__csr)					\
+	({								\
+		struct sbi_trap_info __trap = {0};			\
+		csr_read_allowed((__csr), &__trap);			\
+		!__trap.cause;						\
+	})
+
 #define INDEX_TO_TRIGGER(_index)					\
 	({								\
 		struct sbi_dbtr_trigger *__trg = NULL;			\
@@ -418,7 +437,8 @@ static void dbtr_trigger_enable(struct sbi_dbtr_trigger *trig)
 	 */
 	csr_write(CSR_TSELECT, trig->index);
 	csr_write(CSR_TDATA1, 0x0);
-	csr_write(CSR_TDATA2, trig->tdata2);
+	tdata_write_safe(CSR_TDATA2, trig->tdata2);
+	tdata_write_safe(CSR_TDATA3, trig->tdata3);
 	csr_write(CSR_TDATA1, trig->tdata1);
 }
 
@@ -463,7 +483,8 @@ static void dbtr_trigger_clear(struct sbi_dbtr_trigger *trig)
 
 	csr_write(CSR_TSELECT, trig->index);
 	csr_write(CSR_TDATA1, 0x0);
-	csr_write(CSR_TDATA2, 0x0);
+	tdata_write_safe(CSR_TDATA2, 0x0);
+	tdata_write_safe(CSR_TDATA3, 0x0);
 }
 
 static int dbtr_trigger_supported(unsigned long type)
@@ -566,8 +587,8 @@ int sbi_dbtr_read_trig(unsigned long smode,
 		trig = INDEX_TO_TRIGGER((_idx + trig_idx_base));
 		csr_write(CSR_TSELECT, trig->index);
 		trig->tdata1 = csr_read(CSR_TDATA1);
-		trig->tdata2 = csr_read(CSR_TDATA2);
-		trig->tdata3 = csr_read(CSR_TDATA3);
+		trig->tdata2 = tdata_read_safe(CSR_TDATA2);
+		trig->tdata3 = tdata_read_safe(CSR_TDATA3);
 		xmit->tstate = cpu_to_lle(trig->state);
 		xmit->tdata1 = cpu_to_lle(trig->tdata1);
 		xmit->tdata2 = cpu_to_lle(trig->tdata2);
@@ -589,6 +610,7 @@ int sbi_dbtr_install_trig(unsigned long smode,
 	unsigned long ctrl;
 	struct sbi_dbtr_trigger *trig;
 	struct sbi_dbtr_hart_triggers_state *hs = NULL;
+	bool tdata2_impl, tdata3_impl;
 
 	hs = dbtr_thishart_state_ptr();
 	if (!hs)
@@ -600,6 +622,15 @@ int sbi_dbtr_install_trig(unsigned long smode,
 	shmem_base = hart_shmem_base(hs);
 	sbi_hart_protection_map_range((unsigned long)shmem_base,
 				      trig_count * sizeof(*entry));
+
+	/*
+	 * SBI v3.0 sec 19.4 requires SBI_ERR_NOT_SUPPORTED when a trigger
+	 * programs a non-zero value into an unimplemented optional CSR. Only
+	 * the "whole CSR unimplemented" case is caught; WARL bits tied off
+	 * inside an otherwise-implemented CSR are not.
+	 */
+	tdata2_impl = tdata_implemented(CSR_TDATA2);
+	tdata3_impl = tdata_implemented(CSR_TDATA3);
 
 	/* Check requested triggers configuration */
 	for_each_trig_entry(shmem_base, trig_count, typeof(*entry), entry) {
@@ -618,6 +649,14 @@ int sbi_dbtr_install_trig(unsigned long smode,
 			sbi_hart_protection_unmap_range((unsigned long)shmem_base,
 							trig_count * sizeof(*entry));
 			return SBI_ERR_FAILED;
+		}
+
+		if ((recv->tdata2 && !tdata2_impl) ||
+		    (recv->tdata3 && !tdata3_impl)) {
+			*out = _idx;
+			sbi_hart_protection_unmap_range((unsigned long)shmem_base,
+							trig_count * sizeof(*entry));
+			return SBI_ERR_NOT_SUPPORTED;
 		}
 	}
 
@@ -705,6 +744,7 @@ int sbi_dbtr_update_trig(unsigned long smode,
 	union sbi_dbtr_shmem_entry *entry;
 	void *shmem_base = NULL;
 	struct sbi_dbtr_hart_triggers_state *hs = NULL;
+	bool tdata2_impl, tdata3_impl;
 
 	hs = dbtr_thishart_state_ptr();
 	if (!hs)
@@ -717,6 +757,15 @@ int sbi_dbtr_update_trig(unsigned long smode,
 
 	if (trig_count >= hs->total_trigs)
 		return SBI_ERR_BAD_RANGE;
+
+	/*
+	 * SBI v3.0 sec 19.5 requires SBI_ERR_NOT_SUPPORTED when a trigger
+	 * programs a non-zero value into an unimplemented optional CSR. Only
+	 * the "whole CSR unimplemented" case is caught; WARL bits tied off
+	 * inside an otherwise-implemented CSR are not.
+	 */
+	tdata2_impl = tdata_implemented(CSR_TDATA2);
+	tdata3_impl = tdata_implemented(CSR_TDATA3);
 
 	for_each_trig_entry(shmem_base, trig_count, typeof(*entry), entry) {
 		sbi_hart_protection_map_range((unsigned long)entry, sizeof(*entry));
@@ -732,6 +781,12 @@ int sbi_dbtr_update_trig(unsigned long smode,
 		if (!(trig->state & RV_DBTR_BIT_MASK(TS, MAPPED))) {
 			sbi_hart_protection_unmap_range((unsigned long)entry, sizeof(*entry));
 			return SBI_ERR_FAILED;
+		}
+
+		if ((entry->data.tdata2 && !tdata2_impl) ||
+		    (entry->data.tdata3 && !tdata3_impl)) {
+			sbi_hart_protection_unmap_range((unsigned long)entry, sizeof(*entry));
+			return SBI_ERR_NOT_SUPPORTED;
 		}
 
 		dbtr_trigger_setup(trig, &entry->data);
