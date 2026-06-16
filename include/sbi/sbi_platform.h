@@ -164,7 +164,7 @@ struct sbi_platform_operations {
 };
 
 /** Platform default per-HART stack size for exception/interrupt handling */
-#define SBI_PLATFORM_DEFAULT_HART_STACK_SIZE	8192
+#define SBI_PLATFORM_DEFAULT_HART_STACK_SIZE	CONFIG_DEFAULT_HART_STACK_SIZE
 
 /** Platform default heap size */
 #define SBI_PLATFORM_DEFAULT_HEAP_SIZE(__num_hart)	\

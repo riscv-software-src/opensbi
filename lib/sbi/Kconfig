@@ -2,6 +2,11 @@
 
 menu "Generic SBI Support"
 
+config DEFAULT_HART_STACK_SIZE
+	int "Default per-HART stack size (bytes)"
+	range 8192 1048576
+	default 8192
+
 config CONSOLE_EARLY_BUFFER_SIZE
 	int "Early console buffer size (bytes)"
 	default 256
