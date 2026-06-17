@@ -54,6 +54,37 @@ do { \
 
 #define SBI_TLB_INFO_SIZE		sizeof(struct sbi_tlb_info)
 
+/** Collection of Local TLB operations */
+struct sbi_tlb_local_operations {
+	/** Local fence.i */
+	void (*local_fence_i)(struct sbi_tlb_info *tinfo);
+
+	/** Local supervisor-mode TLB flush */
+	void (*local_sfence_vma)(struct sbi_tlb_info *tinfo);
+
+	/** Local supervisor-mode TLB flush with ASID */
+	void (*local_sfence_vma_asid)(struct sbi_tlb_info *tinfo);
+
+	/** Local G-stage TLB flush for a specific VMID */
+	void (*local_hfence_gvma_vmid)(struct sbi_tlb_info *tinfo);
+
+	/** Local G-stage TLB flush */
+	void (*local_hfence_gvma)(struct sbi_tlb_info *tinfo);
+
+	/** Local VS-stage TLB flush with ASID */
+	void (*local_hfence_vvma_asid)(struct sbi_tlb_info *tinfo);
+
+	/** Local VS-stage TLB flush */
+	void (*local_hfence_vvma)(struct sbi_tlb_info *tinfo);
+};
+
+/** Get the local TLB operations */
+const struct sbi_tlb_local_operations *sbi_tlb_get_local_operations(void);
+
+/** Set the local TLB operations */
+void sbi_tlb_set_local_operations(
+		const struct sbi_tlb_local_operations *ops);
+
 void __sbi_sfence_vma_all();
 
 int sbi_tlb_request(ulong hmask, ulong hbase, struct sbi_tlb_info *tinfo);
