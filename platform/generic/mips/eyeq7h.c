@@ -73,7 +73,13 @@ static void eyeq7h_powerup_olb(u32 hartid)
 	/* Get the MIPS_CM_CTL0 address */
 	cmd = (volatile void *)(MIPS_OLB_ADDR[cl] + MIPS_CM_CTL0);
 
-	temp = readl(cmd);
+	/* set reset value. Value may be wrong after JTAG debug session */
+	temp = MIPS_CTL0_CACHE_HW_INIT_INHIBIT |
+	       INSERT_FIELD(0, MIPS_CTL0_DBU_COLD_PWR_UP, 2) |
+	       MIPS_CTL0_DBU_PWR_UP | MIPS_CTL0_CM_PWR_UP;
+	writel(temp, cmd);
+	wmb();
+	sbi_timer_udelay(10);
 	/* Enable HW cache init */
 	temp = temp & ~MIPS_CTL0_CACHE_HW_INIT_INHIBIT;
 	/* deassert reset */
