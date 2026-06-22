@@ -481,17 +481,26 @@ endif
 define dynamic_flags
 -I$(shell dirname $(2)) -D__OBJNAME__=$(subst -,_,$(shell basename $(1) .o))
 endef
+
+# If the user requested silent operation (make -s), hide the
+# pretty command output by turning the echo into ":" (nop).
+ifneq ($(findstring s,$(firstword $(MAKEFLAGS))),)
+pretty_echo := :
+else
+pretty_echo := echo
+endif
+
 merge_objs = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " MERGE     $(subst $(build_dir)/,,$(1))"; \
+	     $(pretty_echo) " MERGE     $(subst $(build_dir)/,,$(1))"; \
 	     $(LD) $(MERGEFLAGS) $(2) -o $(1)
 merge_deps = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " MERGE-DEP $(subst $(build_dir)/,,$(1))"; \
+	     $(pretty_echo) " MERGE-DEP $(subst $(build_dir)/,,$(1))"; \
 	     cat $(2) > $(1)
 copy_file =  $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " COPY      $(subst $(build_dir)/,,$(1))"; \
+	     $(pretty_echo) " COPY      $(subst $(build_dir)/,,$(1))"; \
 	     cp -L -f $(2) $(1)
 inst_file =  $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " INSTALL   $(subst $(install_root_dir)/,,$(1))"; \
+	     $(pretty_echo) " INSTALL   $(subst $(install_root_dir)/,,$(1))"; \
 	     cp -L -f $(2) $(1)
 inst_file_list = $(CMD_PREFIX)if [ ! -z "$(4)" ]; then \
 	     mkdir -p $(1)/$(3); \
@@ -499,62 +508,62 @@ inst_file_list = $(CMD_PREFIX)if [ ! -z "$(4)" ]; then \
 	     rel_file=`echo $$file | sed -e 's@$(2)/$(subst $(install_firmware_path),platform,$(3))@@'`; \
 	     dest_file=$(1)"/"$(3)"/"`echo $$rel_file`; \
 	     dest_dir=`dirname $$dest_file`; \
-	     echo " INSTALL   "$(3)"/"`echo $$rel_file`; \
+	     $(pretty_echo) " INSTALL   "$(3)"/"`echo $$rel_file`; \
 	     mkdir -p $$dest_dir; \
 	     cp -L -f $$file $$dest_file; \
 	     done \
 	     fi
 inst_header_dir =  $(CMD_PREFIX)mkdir -p $(1); \
-	     echo " INSTALL   $(subst $(install_root_dir)/,,$(1))"; \
+	     $(pretty_echo) " INSTALL   $(subst $(install_root_dir)/,,$(1))"; \
 	     cp -L -rf $(2) $(1)
 compile_cpp_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " CPP-DEP   $(subst $(build_dir)/,,$(1))"; \
+	     $(pretty_echo) " CPP-DEP   $(subst $(build_dir)/,,$(1))"; \
 	     printf %s `dirname $(1)`/  > $(1) && \
 	     $(CC) $(CPPFLAGS) -x c -MM $(3) \
 	       -MT `basename $(1:.dep=$(2))` >> $(1) || rm -f $(1)
 compile_cpp = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " CPP       $(subst $(build_dir)/,,$(1))"; \
+	     $(pretty_echo) " CPP       $(subst $(build_dir)/,,$(1))"; \
 	     $(CPP) $(CPPFLAGS) -x c $(2) | grep -v "\#" > $(1)
 compile_cc_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " CC-DEP    $(subst $(build_dir)/,,$(1))"; \
+	     $(pretty_echo) " CC-DEP    $(subst $(build_dir)/,,$(1))"; \
 	     printf %s `dirname $(1)`/  > $(1) && \
 	     $(CC) $(CFLAGS) $(call dynamic_flags,$(1),$(2))   \
 	       -MM $(2) >> $(1) || rm -f $(1)
 compile_cc = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " CC        $(subst $(build_dir)/,,$(1))"; \
+	     $(pretty_echo) " CC        $(subst $(build_dir)/,,$(1))"; \
 	     $(CC) $(CFLAGS) $(call dynamic_flags,$(1),$(2)) -c $(2) -o $(1)
 compile_as_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " AS-DEP    $(subst $(build_dir)/,,$(1))"; \
+	     $(pretty_echo) " AS-DEP    $(subst $(build_dir)/,,$(1))"; \
 	     printf %s `dirname $(1)`/ > $(1) && \
 	     $(AS) $(ASFLAGS) $(call dynamic_flags,$(1),$(2)) \
 	       -MM $(2) >> $(1) || rm -f $(1)
 compile_as = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " AS        $(subst $(build_dir)/,,$(1))"; \
+	     $(pretty_echo) " AS        $(subst $(build_dir)/,,$(1))"; \
 	     $(AS) $(ASFLAGS) $(call dynamic_flags,$(1),$(2)) -c $(2) -o $(1)
 compile_elf = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " ELF       $(subst $(build_dir)/,,$(1))"; \
+	     $(pretty_echo) " ELF       $(subst $(build_dir)/,,$(1))"; \
 	     $(CC) $(CFLAGS) $(3) $(ELFFLAGS) -Wl,-T$(2) -o $(1)
 compile_ar = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " AR        $(subst $(build_dir)/,,$(1))"; \
+	     $(pretty_echo) " AR        $(subst $(build_dir)/,,$(1))"; \
 	     $(AR) $(ARFLAGS) $(1) $(2)
 compile_objcopy = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " OBJCOPY   $(subst $(build_dir)/,,$(1))"; \
+	     $(pretty_echo) " OBJCOPY   $(subst $(build_dir)/,,$(1))"; \
 	     $(OBJCOPY) -S -O binary $(2) $(1)
 compile_dts = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " DTC       $(subst $(build_dir)/,,$(1))"; \
+	     $(pretty_echo) " DTC       $(subst $(build_dir)/,,$(1))"; \
 	     $(CPP) $(DTSCPPFLAGS) $(2) | $(DTC) -O dtb -i `dirname $(2)` -o $(1)
 compile_d2c = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " D2C       $(subst $(build_dir)/,,$(1))"; \
+	     $(pretty_echo) " D2C       $(subst $(build_dir)/,,$(1))"; \
 	     $(if $($(2)-varalign-$(3)),$(eval D2C_ALIGN_BYTES := $($(2)-varalign-$(3))),$(eval D2C_ALIGN_BYTES := $(4))) \
 	     $(if $($(2)-varprefix-$(3)),$(eval D2C_NAME_PREFIX := $($(2)-varprefix-$(3))),$(eval D2C_NAME_PREFIX := $(5))) \
 	     $(if $($(2)-padding-$(3)),$(eval D2C_PADDING_BYTES := $($(2)-padding-$(3))),$(eval D2C_PADDING_BYTES := 0)) \
 	     $(src_dir)/scripts/d2c.sh -i $(6) -a $(D2C_ALIGN_BYTES) -p $(D2C_NAME_PREFIX) -t $(D2C_PADDING_BYTES) > $(1)
 compile_carray = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " CARRAY    $(subst $(build_dir)/,,$(1))"; \
+	     $(pretty_echo) " CARRAY    $(subst $(build_dir)/,,$(1))"; \
 	     $(eval CARRAY_VAR_LIST := $(carray-$(subst .carray.c,,$(shell basename $(1)))-y)) \
 	     $(src_dir)/scripts/carray.sh -i $(2) -l "$(CARRAY_VAR_LIST)" > $(1) || rm $(1)
 compile_gen_dep = $(CMD_PREFIX)mkdir -p `dirname $(1)`; \
-	     echo " GEN-DEP   $(subst $(build_dir)/,,$(1))"; \
+	     $(pretty_echo) " GEN-DEP   $(subst $(build_dir)/,,$(1))"; \
 	     echo "$(1:.dep=$(2)): $(3)" >> $(1)
 
 targets-y  = $(build_dir)/lib/libsbi.a
