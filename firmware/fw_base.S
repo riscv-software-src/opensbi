@@ -93,7 +93,7 @@ _sc_fail:
 	addi	t0, t0, (__SIZEOF_LONG__ * 3)
 	blt	t0, t1, 2b
 _relocate_done:
-	/* At this point we are running from link address */
+	/* At this point we are running from load address */
 
 	/* Reset all registers except ra, a0, a1, a2, a3 and a4 for boot HART */
 	li	ra, 0
