@@ -223,8 +223,16 @@ static int pmu_ctr_validate(struct sbi_pmu_hart_state *phs,
 
 static bool pmu_ctr_idx_validate(unsigned long cbase, unsigned long cmask)
 {
-	/* Do a basic sanity check of counter base & mask */
-	return cmask && cbase + sbi_fls(cmask) < total_ctrs;
+	unsigned long last;
+
+	if (!cmask)
+		return false;
+
+	last = sbi_fls(cmask);
+	if (cbase > -1UL - last)
+		return false;
+
+	return (cbase + last) < total_ctrs;
 }
 
 int sbi_pmu_ctr_fw_read(unsigned long cidx, uint64_t *cval, bool high_bits)
@@ -914,6 +922,9 @@ int sbi_pmu_ctr_cfg_match(unsigned long cidx_base, unsigned long cidx_mask,
 		 * counter_idx_base and counter_idx_mask".
 		 */
 		unsigned long cidx_first = cidx_base + sbi_ffs(cidx_mask);
+
+		if (cidx_first >= total_ctrs)
+			return SBI_EINVAL;
 
 		if (phs->active_events[cidx_first] == SBI_PMU_EVENT_IDX_INVALID)
 			return SBI_EINVAL;
