@@ -75,6 +75,8 @@ static void hfp_send_bmc_msg(uint8_t type, uint8_t cmd,
 			EIC770X_UART_REG_WIDTH,
 			0, 0);
 
+	if (len > sizeof(xmit.msg.data))
+		return;
 	sbi_memcpy(&xmit.msg.data, data, len);
 	hfp_bmc_checksum_msg(&xmit.msg);
 
