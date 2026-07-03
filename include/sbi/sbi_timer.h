@@ -140,6 +140,9 @@ bool sbi_timer_waitms_until(bool (*predicate)(void *), void *arg,
 /** Get timer value for current HART */
 u64 sbi_timer_value(void);
 
+/** Get timer frequency for current HART */
+unsigned long sbi_timer_frequency(void);
+
 /** Compute timer value after specified milliseconds */
 static inline u64 sbi_timer_value_after_msecs(ulong msecs)
 {

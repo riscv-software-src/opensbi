@@ -104,6 +104,18 @@ bool sbi_timer_waitms_until(bool (*predicate)(void *), void *arg,
 	return true;
 }
 
+unsigned long sbi_timer_frequency(void)
+{
+	const struct sbi_timer_device *timer_dev = sbi_timer_get_device();
+
+	if (!timer_dev) {
+		sbi_printf("%s: called without timer device\n", __func__);
+		return 0;
+	}
+
+	return timer_dev->timer_freq;
+}
+
 u64 sbi_timer_value(void)
 {
 	if (get_time_val)
