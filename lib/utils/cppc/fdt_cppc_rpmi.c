@@ -12,6 +12,7 @@
 #include <sbi/sbi_cppc.h>
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_scratch.h>
+#include <sbi/sbi_timer.h>
 #include <sbi_utils/fdt/fdt_driver.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/mailbox/fdt_mailbox.h>
@@ -39,6 +40,8 @@ struct rpmi_cppc {
 	ulong fc_db_addr;
 	u64 fc_db_setmask;
 	u64 fc_db_preservemask;
+	u64 prev_time_csr;
+	u64 prev_delivered_counter;
 };
 
 static unsigned long rpmi_cppc_offset;
@@ -107,6 +110,7 @@ static void rpmi_cppc_fc_db_trigger(struct rpmi_cppc *cppc)
 
 static int rpmi_cppc_read(unsigned long reg, u64 *val)
 {
+	u64 curr_freq, curr_time_csr, time_csr_delta, freq;
 	int rc = SBI_SUCCESS;
 	struct rpmi_cppc_read_reg_req req;
 	struct rpmi_cppc_read_reg_resp resp;
@@ -116,12 +120,38 @@ static int rpmi_cppc_read(unsigned long reg, u64 *val)
 	req.reg_id = reg;
 	cppc = rpmi_cppc_get_pointer(req.hart_id);
 
-	rc = rpmi_normal_request_with_status(
-			cppc->chan, RPMI_CPPC_SRV_READ_REG,
-			&req, rpmi_u32_count(req), rpmi_u32_count(req),
-			&resp, rpmi_u32_count(resp), rpmi_u32_count(resp));
-	if (rc)
-		return rc;
+	if ((reg == SBI_CPPC_DELIVERED_CTR) && cppc->fc_supported) {
+#if __riscv_xlen != 32
+		curr_freq = readq((void *)cppc->fc_perf_feedback_addr);
+#else
+		curr_freq = readl((void *)cppc->fc_perf_feedback_addr + 4);
+		curr_freq <<= 32;
+		curr_freq |= readl((void *)cppc->fc_perf_feedback_addr);
+#endif
+		curr_time_csr = sbi_timer_value();
+		time_csr_delta = curr_time_csr - cppc->prev_time_csr;
+		cppc->prev_time_csr = curr_time_csr;
+
+		freq = sbi_timer_frequency();
+		if (freq)
+			cppc->prev_delivered_counter +=
+				curr_freq * (time_csr_delta / freq) +
+				(curr_freq * (time_csr_delta % freq)) / freq;
+
+		resp.data_lo = cpu_to_le32(cppc->prev_delivered_counter & UINT32_MAX);
+		resp.data_hi = cpu_to_le32(cppc->prev_delivered_counter >> 32);
+	} else if (reg == SBI_CPPC_REFERENCE_CTR) {
+		curr_time_csr = sbi_timer_value();
+		resp.data_lo = cpu_to_le32(curr_time_csr & UINT32_MAX);
+		resp.data_hi = cpu_to_le32(curr_time_csr >> 32);
+	} else {
+		rc = rpmi_normal_request_with_status(
+				cppc->chan, RPMI_CPPC_SRV_READ_REG,
+				&req, rpmi_u32_count(req), rpmi_u32_count(req),
+				&resp, rpmi_u32_count(resp), rpmi_u32_count(resp));
+		if (rc)
+			return rc;
+	}
 
 #if __riscv_xlen == 32
 	*val = resp.data_lo;
@@ -276,6 +306,8 @@ static int rpmi_cppc_update_hart_scratch(struct mbox_chan *chan)
 			if (!cppc)
 				return SBI_ENOSYS;
 
+			cppc->prev_time_csr = 0;
+			cppc->prev_delivered_counter = 0;
 			cppc->chan = chan;
 			cppc->mode = cppc_mode;
 			cppc->fc_supported = fc_supported;
