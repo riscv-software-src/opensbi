@@ -2,6 +2,15 @@
 
 menu "Generic SBI Support"
 
+config HARTMASK_MAX_BITS
+	int "Maximum number of hart mask bits (32-512)"
+	range 32 512
+	default 256
+	help
+	  The hartmask is indexed using physical hart IDs so this setting
+	  also represents the maximum number of hart IDs generic OpenSBI
+	  can handle.
+
 config DEFAULT_HART_STACK_SIZE
 	int "Default per-HART stack size (bytes)"
 	range 8192 1048576
