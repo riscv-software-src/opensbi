@@ -66,6 +66,8 @@ void sbi_ecall_get_extensions_str(char *exts_str, int exts_str_size, bool experi
 	sbi_list_for_each_entry(t, &ecall_exts_list, head) {
 		if (experimental != t->experimental)
 			continue;
+		if (offset + sbi_strlen(t->name) + 1 > exts_str_size)
+			break;
 		sbi_snprintf(exts_str + offset, exts_str_size - offset,
 			     "%s,", t->name);
 		offset = offset + sbi_strlen(t->name) + 1;
