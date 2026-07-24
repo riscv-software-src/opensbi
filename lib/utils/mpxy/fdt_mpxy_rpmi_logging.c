@@ -11,7 +11,7 @@
 
 static struct mpxy_rpmi_service_data logging_services[] = {
 	[0] = {
-		.id = RPMI_MM_SRV_ENABLE_NOTIFICATION,
+		.id = RPMI_LOGGING_SRV_ENABLE_NOTIFICATION,
 		.min_tx_len = sizeof(struct rpmi_enable_notification_req),
 		.max_tx_len = sizeof(struct rpmi_enable_notification_req),
 		.min_rx_len = sizeof(struct rpmi_enable_notification_resp),
