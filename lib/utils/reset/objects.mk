@@ -20,6 +20,9 @@ libsbiutils-objs-$(CONFIG_FDT_RESET_HTIF) += reset/fdt_reset_htif.o
 carray-fdt_early_drivers-$(CONFIG_FDT_RESET_LITEX) += fdt_reset_litex
 libsbiutils-objs-$(CONFIG_FDT_RESET_LITEX) += reset/fdt_reset_litex.o
 
+carray-fdt_early_drivers-$(CONFIG_FDT_RESET_METANOIA) += fdt_reset_metanoia
+libsbiutils-objs-$(CONFIG_FDT_RESET_METANOIA) += reset/fdt_reset_metanoia.o
+
 carray-fdt_early_drivers-$(CONFIG_FDT_RESET_SG2042_HWMON_MCU) += fdt_reset_sg2042_mcu
 libsbiutils-objs-$(CONFIG_FDT_RESET_SG2042_HWMON_MCU) += reset/fdt_reset_sg2042_hwmon_mcu.o
 

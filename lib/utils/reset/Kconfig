@@ -29,6 +29,10 @@ config FDT_RESET_LITEX
 	depends on FDT_GPIO
 	default n
 
+config FDT_RESET_METANOIA
+	bool "Metanoia FDT reset driver"
+	default n
+
 config FDT_RESET_RPMI
 	bool "RPMI FDT reset driver"
 	depends on FDT_MAILBOX && RPMI_MAILBOX
