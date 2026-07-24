@@ -51,6 +51,13 @@ config PLATFORM_ESWIN_EIC770X
 	bool "ESWIN EIC770X support"
 	default n
 
+config PLATFORM_METANOIA_MT2824
+	bool "Metanoia MT2824 support"
+	select ANDES_PMA
+	select ANDES_SBI
+	select ANDES_PMU
+	default n
+
 config PLATFORM_OPENHWGROUP_OPENPITON
 	bool "OpenHWGroup Openpiton support"
 	default n
