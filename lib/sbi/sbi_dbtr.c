@@ -648,7 +648,7 @@ int sbi_dbtr_install_trig(unsigned long smode,
 			*out = _idx;
 			sbi_hart_protection_unmap_range((unsigned long)shmem_base,
 							trig_count * sizeof(*entry));
-			return SBI_ERR_FAILED;
+			return SBI_ERR_INVALID_PARAM;
 		}
 
 		if ((recv->tdata2 && !tdata2_impl) ||
