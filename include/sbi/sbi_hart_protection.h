@@ -50,11 +50,14 @@ struct sbi_hart_protection {
 };
 
 /**
- * Get the best hart memory protection mechanism
+ * Get a string containing names of protection mechanisms
+ *
+ * @param out_str pointer to output string
+ * @param out_str_size maximum size of output string
  *
  * @return pointer to best hart memory protection mechanism
  */
-struct sbi_hart_protection *sbi_hart_memory_protection_best(void);
+void sbi_hart_protection_get_str(char *out_str, int out_str_size);
 
 /**
  * Register a hart protection mechanism

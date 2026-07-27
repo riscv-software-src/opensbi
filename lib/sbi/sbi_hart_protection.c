@@ -4,13 +4,15 @@
  * Copyright (c) 2025 Ventana Micro Systems Inc.
  */
 
+#include <sbi/sbi_console.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_hart_protection.h>
 #include <sbi/sbi_scratch.h>
+#include <sbi/sbi_string.h>
 
 static SBI_LIST_HEAD(hart_protection_list);
 
-struct sbi_hart_protection *sbi_hart_memory_protection_best(void)
+static struct sbi_hart_protection *__hart_memory_protection_best(void)
 {
 	struct sbi_hart_protection *pos;
 
@@ -20,6 +22,32 @@ struct sbi_hart_protection *sbi_hart_memory_protection_best(void)
 	}
 
 	return NULL;
+}
+
+void sbi_hart_protection_get_str(char *out_str, int out_str_size)
+{
+	bool memory_protect_done = false;
+	struct sbi_hart_protection *pos;
+	int offset = 0;
+
+	if (!out_str || out_str_size <= 0)
+		return;
+	sbi_memset(out_str, 0, out_str_size);
+
+	sbi_list_for_each_entry(pos, &hart_protection_list, head) {
+		if (pos->type == SBI_HART_PROTECTION_TYPE_MEMORY) {
+			if (memory_protect_done)
+				continue;
+			memory_protect_done = true;
+		}
+		sbi_snprintf(out_str + offset, out_str_size - offset, "%s,", pos->name);
+		offset = offset + sbi_strlen(pos->name) + 1;
+	}
+
+	if (offset)
+		out_str[offset - 1] = '\0';
+	else
+		sbi_strncpy(out_str, "none", out_str_size);
 }
 
 int sbi_hart_protection_register(struct sbi_hart_protection *hprot)
@@ -170,7 +198,7 @@ int sbi_hart_protection_reconfigure(struct sbi_scratch *scratch,
 
 int sbi_hart_protection_map_range(unsigned long base, unsigned long size)
 {
-	struct sbi_hart_protection *hprot = sbi_hart_memory_protection_best();
+	struct sbi_hart_protection *hprot = __hart_memory_protection_best();
 
 	if (!hprot || !hprot->map_range)
 		return 0;
@@ -180,7 +208,7 @@ int sbi_hart_protection_map_range(unsigned long base, unsigned long size)
 
 int sbi_hart_protection_unmap_range(unsigned long base, unsigned long size)
 {
-	struct sbi_hart_protection *hprot = sbi_hart_memory_protection_best();
+	struct sbi_hart_protection *hprot = __hart_memory_protection_best();
 
 	if (!hprot || !hprot->unmap_range)
 		return 0;
