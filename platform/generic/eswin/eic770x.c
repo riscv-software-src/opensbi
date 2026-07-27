@@ -470,6 +470,7 @@ static void eswin_eic7700_pmp_unconfigure(struct sbi_scratch *scratch,
 static struct sbi_hart_protection eswin_eic7700_pmp_protection = {
 	.name = "eic7700_pmp",
 	.rating = -1UL,
+	.type = SBI_HART_PROTECTION_TYPE_MEMORY,
 	.configure = eswin_eic7700_pmp_configure,
 	.unconfigure = eswin_eic7700_pmp_unconfigure,
 };

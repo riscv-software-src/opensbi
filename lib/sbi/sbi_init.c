@@ -93,7 +93,7 @@ static void sbi_boot_print_general(struct sbi_scratch *scratch)
 	sbi_printf("Platform Features           : %s\n", str);
 	sbi_printf("Platform HART Count         : %u\n",
 		   sbi_platform_hart_count(plat));
-	hprot = sbi_hart_protection_best();
+	hprot = sbi_hart_memory_protection_best();
 	sbi_printf("Platform HART Protection    : %s\n",
 		   (hprot) ? hprot->name : "---");
 	idev = sbi_ipi_get_device();

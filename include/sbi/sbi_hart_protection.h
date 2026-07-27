@@ -13,6 +13,13 @@
 struct sbi_scratch;
 struct sbi_domain;
 
+/** Different types of hart protection mechanisms */
+enum sbi_hart_protection_type {
+	SBI_HART_PROTECTION_TYPE_MEMORY = 0,
+	SBI_HART_PROTECTION_TYPE_ID,
+	SBI_HART_PROTECTION_TYPE_MAX
+};
+
 /** Representation of hart protection mechanism */
 struct sbi_hart_protection {
 	/** List head */
@@ -20,6 +27,9 @@ struct sbi_hart_protection {
 
 	/** Name of the hart protection mechanism */
 	char name[32];
+
+	/** Type of the hart protection mechanism */
+	enum sbi_hart_protection_type type;
 
 	/** Ratings of the hart protection mechanism (higher is better) */
 	unsigned long rating;
@@ -40,11 +50,11 @@ struct sbi_hart_protection {
 };
 
 /**
- * Get the best hart protection mechanism
+ * Get the best hart memory protection mechanism
  *
- * @return pointer to best hart protection mechanism
+ * @return pointer to best hart memory protection mechanism
  */
-struct sbi_hart_protection *sbi_hart_protection_best(void);
+struct sbi_hart_protection *sbi_hart_memory_protection_best(void);
 
 /**
  * Register a hart protection mechanism
