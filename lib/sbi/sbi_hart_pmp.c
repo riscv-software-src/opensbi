@@ -228,10 +228,10 @@ static bool is_valid_pmp_idx(unsigned int pmp_count, unsigned int pmp_idx)
 	return false;
 }
 
-static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch)
+static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch,
+				     struct sbi_domain *dom)
 {
 	struct sbi_domain_memregion *reg;
-	struct sbi_domain *dom = sbi_domain_thishart_ptr();
 	unsigned int pmp_log2gran, pmp_bits;
 	unsigned int pmp_idx, pmp_count;
 	unsigned long pmp_addr_max;
@@ -366,10 +366,10 @@ static int sbi_hart_smepmp_unmap_range(struct sbi_scratch *scratch,
 	return sbi_hart_pmp_disable(SBI_SMEPMP_RESV_ENTRY);
 }
 
-static int sbi_hart_oldpmp_configure(struct sbi_scratch *scratch)
+static int sbi_hart_oldpmp_configure(struct sbi_scratch *scratch,
+				     struct sbi_domain *dom)
 {
 	struct sbi_domain_memregion *reg;
-	struct sbi_domain *dom = sbi_domain_thishart_ptr();
 	unsigned long pmp_addr, pmp_addr_max;
 	unsigned int pmp_log2gran, pmp_bits;
 	unsigned int pmp_idx, pmp_count;
@@ -407,7 +407,8 @@ static int sbi_hart_oldpmp_configure(struct sbi_scratch *scratch)
 	return 0;
 }
 
-static void sbi_hart_pmp_unconfigure(struct sbi_scratch *scratch)
+static void sbi_hart_pmp_unconfigure(struct sbi_scratch *scratch,
+				     struct sbi_domain *dom)
 {
 	int i, pmp_count = sbi_hart_pmp_count(scratch);
 

@@ -380,9 +380,9 @@ static int eswin_eic7700_final_init(bool cold_boot)
 	return 0;
 }
 
-static int eswin_eic7700_pmp_configure(struct sbi_scratch *scratch)
+static int eswin_eic7700_pmp_configure(struct sbi_scratch *scratch,
+				       struct sbi_domain *dom)
 {
-	struct sbi_domain *dom = sbi_domain_thishart_ptr();
 	struct sbi_domain_memregion *reg, *prev = NULL;
 	unsigned int pmp_idx, pmp_max;
 	unsigned int i, j;
@@ -453,7 +453,8 @@ no_more_pmp:
 	return SBI_EFAIL;
 }
 
-static void eswin_eic7700_pmp_unconfigure(struct sbi_scratch *scratch)
+static void eswin_eic7700_pmp_unconfigure(struct sbi_scratch *scratch,
+					  struct sbi_domain *dom)
 {
 	/* Enable P550 internal + System Port */
 	sbi_hart_pmp_set(PMP_FREE_A_START + PMP_FREE_A_COUNT - 1, 0, 0,
