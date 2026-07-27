@@ -77,6 +77,16 @@ struct sbi_dbtr_hart_triggers_state {
 	u32 probed;
 };
 
+/** Platform specific debug trigger operations */
+struct sbi_dbtr_device {
+	char name[32];
+	bool (*trigger_supported)(unsigned long idx, unsigned long tdata1,
+				  unsigned long tdata2, unsigned long tdata3);
+};
+
+const struct sbi_dbtr_device *sbi_dbtr_get_device(void);
+void sbi_dbtr_set_device(const struct sbi_dbtr_device *dev);
+
 #define TDATA1_GET_TYPE(_t1)					\
 	EXTRACT_FIELD(_t1, RV_DBTR_BIT_MASK(TDATA1, TYPE))
 
