@@ -171,8 +171,7 @@ static int switch_to_next_domain_context(struct hart_context *ctx,
 	 * is also required for some of the above CSR updates (such
 	 * as satp CSR).
 	 */
-	sbi_hart_protection_unconfigure(scratch);
-	sbi_hart_protection_configure(scratch);
+	sbi_hart_protection_reconfigure(scratch);
 
 	/* Mark current context structure initialized because context saved */
 	ctx->initialized = true;

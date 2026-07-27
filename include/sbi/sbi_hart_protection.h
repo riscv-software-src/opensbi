@@ -78,6 +78,13 @@ int sbi_hart_protection_configure(struct sbi_scratch *scratch);
 void sbi_hart_protection_unconfigure(struct sbi_scratch *scratch);
 
 /**
+ * Re-configure protection for current HART
+ *
+ * @param scratch pointer to scratch space of current HART
+ */
+int sbi_hart_protection_reconfigure(struct sbi_scratch *scratch);
+
+/**
  * Create temporary mapping to access address range on current HART
  *
  * @param base base address of the temporary mapping

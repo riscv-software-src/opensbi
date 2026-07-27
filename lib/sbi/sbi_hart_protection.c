@@ -49,10 +49,9 @@ void sbi_hart_protection_unregister(struct sbi_hart_protection *hprot)
 	sbi_list_del(&hprot->head);
 }
 
-int sbi_hart_protection_configure(struct sbi_scratch *scratch)
+static int __hart_protection_configure(struct sbi_scratch *scratch,
+				       struct sbi_hart_protection *hprot)
 {
-	struct sbi_hart_protection *hprot = sbi_hart_protection_best();
-
 	if (!hprot)
 		return 0;
 	if (!hprot->configure)
@@ -61,14 +60,31 @@ int sbi_hart_protection_configure(struct sbi_scratch *scratch)
 	return hprot->configure(scratch);
 }
 
-void sbi_hart_protection_unconfigure(struct sbi_scratch *scratch)
+static void __hart_protection_unconfigure(struct sbi_scratch *scratch,
+					  struct sbi_hart_protection *hprot)
 {
-	struct sbi_hart_protection *hprot = sbi_hart_protection_best();
-
 	if (!hprot || !hprot->unconfigure)
 		return;
 
 	hprot->unconfigure(scratch);
+}
+
+int sbi_hart_protection_configure(struct sbi_scratch *scratch)
+{
+	return __hart_protection_configure(scratch, sbi_hart_protection_best());
+}
+
+void sbi_hart_protection_unconfigure(struct sbi_scratch *scratch)
+{
+	__hart_protection_unconfigure(scratch, sbi_hart_protection_best());
+}
+
+int sbi_hart_protection_reconfigure(struct sbi_scratch *scratch)
+{
+	struct sbi_hart_protection *hprot = sbi_hart_protection_best();
+
+	__hart_protection_unconfigure(scratch, hprot);
+	return __hart_protection_configure(scratch, hprot);
 }
 
 int sbi_hart_protection_map_range(unsigned long base, unsigned long size)
