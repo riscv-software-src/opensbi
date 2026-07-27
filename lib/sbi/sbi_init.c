@@ -432,12 +432,12 @@ static void __noreturn init_coldboot(struct sbi_scratch *scratch, u32 hartid)
 	}
 
 	/*
-	 * Configure hart isolation at last because if SMEPMP is,
+	 * Configure hart protection at last because if SMEPMP is
 	 * detected, M-mode access to the S/U space will be rescinded.
 	 */
 	rc = sbi_hart_protection_configure(scratch);
 	if (rc) {
-		sbi_printf("%s: hart isolation configure failed (error %d)\n",
+		sbi_printf("%s: hart protection configure failed (error %d)\n",
 			   __func__, rc);
 		sbi_hart_hang();
 	}
@@ -515,7 +515,7 @@ static void __noreturn init_warm_startup(struct sbi_scratch *scratch,
 		sbi_hart_hang();
 
 	/*
-	 * Configure hart isolation at last because if SMEPMP is,
+	 * Configure hart protection at last because if SMEPMP is
 	 * detected, M-mode access to the S/U space will be rescinded.
 	 */
 	rc = sbi_hart_protection_configure(scratch);
