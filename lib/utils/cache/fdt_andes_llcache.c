@@ -102,7 +102,10 @@ static int andes_llcache_enable(struct cache_device *dev, bool enable)
 	}
 
 	llcache_ctrl = readl(ctrl_addr);
-	return enable == EXTRACT_FIELD(llcache_ctrl, LLCACHE_REG_CTRL_EN_MASK);
+	if (enable != EXTRACT_FIELD(llcache_ctrl, LLCACHE_REG_CTRL_EN_MASK))
+		return SBI_EFAIL;
+
+	return SBI_OK;
 }
 
 static struct cache_ops andes_llcache_ops = {
