@@ -56,7 +56,7 @@ bool atcsmu_support_sleep_mode(u32 sleep_type, u32 hartid)
 
 void atcsmu_set_command(u32 pcs_ctl, u32 hartid)
 {
-	writel_relaxed(pcs_ctl, (char *)atcsmu_base + PCSm_CTL_OFFSET(hartid));
+	writel(pcs_ctl, (char *)atcsmu_base + PCSm_CTL_OFFSET(hartid));
 }
 
 int atcsmu_set_reset_vector(u64 wakeup_addr, u32 hartid)
@@ -141,12 +141,12 @@ static int ae350_hart_stop(void)
 		atcsmu_set_command(LIGHT_SLEEP_CMD, hartid);
 	} else if (sleep_type == SBI_SUSP_SLEEP_TYPE_SUSPEND) {
 		/* Power-gated: SMU wakes it via cold reset, interrupts not needed */
-		atcsmu_set_command(DEEP_SLEEP_CMD, hartid);
 		rc = atcsmu_set_reset_vector((ulong)ae350_enable_coherency_warmboot, hartid);
 		if (rc)
 			return SBI_EFAIL;
 
 		ae350_non_ret_save(sbi_scratch_thishart_ptr());
+		atcsmu_set_command(DEEP_SLEEP_CMD, hartid);
 	}
 
 	ae350_disable_coherency();

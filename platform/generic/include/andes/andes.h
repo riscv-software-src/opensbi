@@ -102,6 +102,7 @@ struct andes_hart_data {
 };
 
 void ae350_non_ret_save(struct sbi_scratch *scratch);
+void ae350_non_ret_discard(struct sbi_scratch *scratch);
 void ae350_non_ret_restore(struct sbi_scratch *scratch);
 void ae350_enable_coherency_warmboot(void);
 

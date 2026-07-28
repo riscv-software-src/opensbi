@@ -38,6 +38,14 @@ void ae350_non_ret_save(struct sbi_scratch *scratch)
 	andes_hdata->saved = true;
 }
 
+void ae350_non_ret_discard(struct sbi_scratch *scratch)
+{
+	struct andes_hart_data *andes_hdata = sbi_scratch_offset_ptr(scratch,
+								     andes_hart_data_offset);
+
+	andes_hdata->saved = false;
+}
+
 void ae350_non_ret_restore(struct sbi_scratch *scratch)
 {
 	struct andes_hart_data *andes_hdata = sbi_scratch_offset_ptr(scratch,

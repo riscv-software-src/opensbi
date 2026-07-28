@@ -57,9 +57,11 @@ static int ae350_system_suspend_check(u32 sleep_type)
 static int ae350_system_suspend(u32 sleep_type, unsigned long addr)
 {
 	u32 hartid = current_hartid();
+	unsigned long saved_mie;
 	int rc;
 
 	/* Prevent the core leaving the WFI mode unexpectedly */
+	saved_mie = csr_read(CSR_MIE);
 	csr_write(CSR_MIE, 0);
 
 	/* SMU wakes the primary hart on RTC alarm / UART2 */
@@ -68,7 +70,7 @@ static int ae350_system_suspend(u32 sleep_type, unsigned long addr)
 	if (sleep_type == SBI_SUSP_AE350_LIGHT_SLEEP) {
 		rc = wait_secondary_harts_sleep(hartid, false);
 		if (rc)
-			return rc;
+			goto err_restore_mie;
 
 		/* Clock-gated only: enable SEI to resume past the WFI */
 		csr_set(CSR_MIE, MIP_SEIP);
@@ -76,18 +78,24 @@ static int ae350_system_suspend(u32 sleep_type, unsigned long addr)
 	} else if (sleep_type == SBI_SUSP_SLEEP_TYPE_SUSPEND) {
 		rc = wait_secondary_harts_sleep(hartid, true);
 		if (rc)
-			return rc;
+			goto err_restore_mie;
 
-		atcsmu_set_command(DEEP_SLEEP_CMD, hartid);
 		rc = atcsmu_set_reset_vector((ulong)ae350_enable_coherency_warmboot, hartid);
 		if (rc)
-			return rc;
+			goto err_restore_mie;
 
 		ae350_non_ret_save(sbi_scratch_thishart_ptr());
-		fdt_cmo_llc_enable(false);
+
+		/* No LLC is fine; only fail on real errors */
+		rc = fdt_cmo_llc_enable(false);
+		if (rc && rc != SBI_ENODEV)
+			goto err_discard_save;
+
 		rc = fdt_cmo_llc_flush_all();
-		if (rc)
-			return rc;
+		if (rc && rc != SBI_ENODEV)
+			goto err_enable_llc;
+
+		atcsmu_set_command(DEEP_SLEEP_CMD, hartid);
 	}
 
 	ae350_disable_coherency();
@@ -97,6 +105,15 @@ static int ae350_system_suspend(u32 sleep_type, unsigned long addr)
 	ae350_enable_coherency();
 
 	return SBI_OK;
+
+err_enable_llc:
+	fdt_cmo_llc_enable(true);
+err_discard_save:
+	ae350_non_ret_discard(sbi_scratch_thishart_ptr());
+err_restore_mie:
+	csr_write(CSR_MIE, saved_mie);
+
+	return rc;
 }
 
 static void ae350_system_resume(void)
