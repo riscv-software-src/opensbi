@@ -34,12 +34,17 @@ void ae350_non_ret_save(struct sbi_scratch *scratch)
 	andes_hdata->pmacfg2 = csr_read_num(CSR_PMACFG0 + 2);
 	for (int i = 0; i < 16; i++)
 		andes_hdata->pmaaddrX[i] = csr_read_num(CSR_PMAADDR0 + i);
+
+	andes_hdata->saved = true;
 }
 
 void ae350_non_ret_restore(struct sbi_scratch *scratch)
 {
 	struct andes_hart_data *andes_hdata = sbi_scratch_offset_ptr(scratch,
 								     andes_hart_data_offset);
+
+	if (!andes_hdata->saved)
+		return;
 
 	csr_write(CSR_MCACHE_CTL, andes_hdata->mcache_ctl);
 	csr_write(CSR_MMISC_CTL, andes_hdata->mmisc_ctl);
@@ -52,6 +57,8 @@ void ae350_non_ret_restore(struct sbi_scratch *scratch)
 	csr_write_num(CSR_PMACFG0 + 2, andes_hdata->pmacfg2);
 	for (int i = 0; i < 16; i++)
 		csr_write_num(CSR_PMAADDR0 + i, andes_hdata->pmaaddrX[i]);
+
+	andes_hdata->saved = false;
 }
 
 void ae350_enable_coherency_warmboot(void)
@@ -62,18 +69,17 @@ void ae350_enable_coherency_warmboot(void)
 
 static int ae350_early_init(bool cold_boot)
 {
-	u32 hartid = current_hartid();
-	u32 sleep_type = atcsmu_get_sleep_type(hartid);
-
 	if (cold_boot) {
 		andes_hart_data_offset = sbi_scratch_alloc_offset(sizeof(struct andes_hart_data));
 		if (!andes_hart_data_offset)
 			return SBI_ENOMEM;
 	}
 
-	/* Don't restore Andes CSRs during boot or wake up from light sleep */
-	if (sbi_init_count(current_hartindex()) && sleep_type == SBI_SUSP_SLEEP_TYPE_SUSPEND)
-		ae350_non_ret_restore(sbi_scratch_thishart_ptr());
+	/*
+	 * This is a no-op unless this hart actually saved them, so it is safe
+	 * to call on every path.
+	 */
+	ae350_non_ret_restore(sbi_scratch_thishart_ptr());
 
 	return generic_early_init(cold_boot);
 }

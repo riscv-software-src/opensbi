@@ -96,6 +96,9 @@ struct andes_hart_data {
 	unsigned long pmacfg0;
 	unsigned long pmacfg2;
 	unsigned long pmaaddrX[16];
+
+	/* Set when the CSRs above hold a saved copy awaiting restore */
+	bool saved;
 };
 
 void ae350_non_ret_save(struct sbi_scratch *scratch);
