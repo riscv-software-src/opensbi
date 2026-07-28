@@ -91,8 +91,10 @@ static void ae350_system_resume(void)
 	u32 hartid = current_hartid();
 	u32 sleep_type = atcsmu_get_sleep_type(hartid);
 
-	if (sleep_type == SBI_SUSP_SLEEP_TYPE_SUSPEND)
+	if (sleep_type == SBI_SUSP_SLEEP_TYPE_SUSPEND) {
 		fdt_cmo_llc_enable(true);
+		ae350_non_ret_restore(sbi_scratch_thishart_ptr());
+	}
 }
 
 static struct sbi_system_suspend_device suspend_andes_atcsmu = {
