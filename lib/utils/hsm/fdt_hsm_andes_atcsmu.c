@@ -116,20 +116,8 @@ bool atcsmu_pcs_is_sleep(u32 hartid, bool deep_sleep)
 static int ae350_hart_start(u32 hartid, ulong saddr)
 {
 	u32 hartindex = sbi_hartid_to_hartindex(hartid);
-	u32 sleep_type = atcsmu_get_sleep_type(hartid);
 
-	/*
-	 * Don't send wakeup command when:
-	 * 1) boot time
-	 * 2) the target hart is non-sleepable 25-series hart0
-	 * 3) light sleep
-	 */
-	if (!sbi_init_count(hartindex) || (is_andes(25) && hartid == 0) ||
-	    sleep_type == SBI_SUSP_AE350_LIGHT_SLEEP)
-		return sbi_ipi_raw_send(hartindex, false);
-
-	atcsmu_set_command(WAKEUP_CMD, hartid);
-	return 0;
+	return sbi_ipi_raw_send(hartindex, false);
 }
 
 static int ae350_hart_stop(void)
@@ -152,12 +140,13 @@ static int ae350_hart_stop(void)
 	/* Prevent the core leaving the WFI mode unexpectedly */
 	csr_write(CSR_MIE, 0);
 
+	atcsmu_set_wakeup_events(PCS_WAKEUP_MSIP_MASK | PCS_WAKEUP_MEIP_MASK, hartid);
 	if (sleep_type == SBI_SUSP_AE350_LIGHT_SLEEP) {
-		csr_write(CSR_MIE, MIP_MSIP);
-		atcsmu_set_wakeup_events(PCS_WAKEUP_MSIP_MASK, hartid);
+		/* Clock-gated only: needs MSI or MEI set to resume past the WFI */
+		csr_set(CSR_MIE, MIP_MSIP | MIP_MEIP);
 		atcsmu_set_command(LIGHT_SLEEP_CMD, hartid);
 	} else if (sleep_type == SBI_SUSP_SLEEP_TYPE_SUSPEND) {
-		atcsmu_set_wakeup_events(0x0, hartid);
+		/* Power-gated: SMU wakes it via cold reset, interrupts not needed */
 		atcsmu_set_command(DEEP_SLEEP_CMD, hartid);
 		rc = atcsmu_set_reset_vector((ulong)ae350_enable_coherency_warmboot, hartid);
 		if (rc)

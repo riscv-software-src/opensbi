@@ -47,11 +47,7 @@ static int ae350_system_suspend(u32 sleep_type, unsigned long addr)
 	/* Prevent the core leaving the WFI mode unexpectedly */
 	csr_write(CSR_MIE, 0);
 
-	/*
-	 * Only allow the S-mode external interrupts (UART2 and RTC alarm) to
-	 * wake up the primary hart
-	 */
-	csr_set(CSR_SIE, MIP_SEIP);
+	/* SMU wakes the primary hart on RTC alarm / UART2 */
 	atcsmu_set_wakeup_events(PCS_WAKEUP_RTC_ALARM_MASK | PCS_WAKEUP_UART2_MASK, hartid);
 
 	if (sleep_type == SBI_SUSP_AE350_LIGHT_SLEEP) {
@@ -59,6 +55,8 @@ static int ae350_system_suspend(u32 sleep_type, unsigned long addr)
 		if (rc)
 			return rc;
 
+		/* Clock-gated only: enable SEI to resume past the WFI */
+		csr_set(CSR_MIE, MIP_SEIP);
 		atcsmu_set_command(LIGHT_SLEEP_CMD, hartid);
 	} else if (sleep_type == SBI_SUSP_SLEEP_TYPE_SUSPEND) {
 		rc = check_secondary_harts_sleep(hartid, true);
