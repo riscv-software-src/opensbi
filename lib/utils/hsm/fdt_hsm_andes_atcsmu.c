@@ -184,18 +184,27 @@ static const struct sbi_hsm_device hsm_andes_atcsmu = {
 static int hsm_andes_atcsmu_probe(const void *fdt, int nodeoff, const struct fdt_match *match)
 {
 	int poff, rc;
-	u64 addr;
+	u64 addr, size;
 
 	/* Need to find the parent for the address property  */
 	poff = fdt_parent_offset(fdt, nodeoff);
 	if (poff < 0)
 		return SBI_EINVAL;
 
-	rc = fdt_get_node_addr_size(fdt, poff, 0, &addr, NULL);
-	if (rc < 0 || !addr)
+	rc = fdt_get_node_addr_size(fdt, poff, 0, &addr, &size);
+	if (rc < 0 || !addr || !size)
 		return SBI_ENODEV;
-	atcsmu_base = addr;
 
+	if (sbi_hart_has_extension(sbi_scratch_thishart_ptr(), SBI_HART_EXT_SMEPMP)) {
+		rc = sbi_domain_root_add_memrange(
+			(unsigned long)addr, (unsigned long)size, PAGE_SIZE,
+			SBI_DOMAIN_MEMREGION_MMIO |
+			SBI_DOMAIN_MEMREGION_SHARED_SURW_MRW);
+		if (rc)
+			return rc;
+	}
+
+	atcsmu_base = addr;
 	sbi_hsm_set_device(&hsm_andes_atcsmu);
 	return 0;
 }

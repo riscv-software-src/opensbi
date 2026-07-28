@@ -5,8 +5,11 @@
  */
 
 #include <sbi/riscv_io.h>
+#include <sbi/sbi_domain.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_hart.h>
 #include <sbi/sbi_heap.h>
+#include <sbi/sbi_scratch.h>
 #include <sbi_utils/cache/fdt_cache.h>
 #include <sbi_utils/fdt/fdt_driver.h>
 #include <sbi_utils/hsm/fdt_hsm_andes_atcsmu.h>
@@ -116,13 +119,13 @@ static struct cache_ops andes_llcache_ops = {
 static int andes_llcache_probe(const void *fdt, int nodeoff, const struct fdt_match *match)
 {
 	int rc;
-	u64 llcache_base = 0;
+	u64 llcache_base = 0, size;
 	struct andes_llcache *llcache;
 	struct cache_device *dev;
 	uint32_t llcache_cfg;
 
-	rc = fdt_get_node_addr_size(fdt, nodeoff, 0, &llcache_base, NULL);
-	if (rc < 0 || !llcache_base)
+	rc = fdt_get_node_addr_size(fdt, nodeoff, 0, &llcache_base, &size);
+	if (rc < 0 || !llcache_base || !size)
 		return SBI_ENODEV;
 
 	llcache = sbi_zalloc(sizeof(*llcache));
@@ -149,6 +152,15 @@ static int andes_llcache_probe(const void *fdt, int nodeoff, const struct fdt_ma
 		llcache->cmd_stride = 0x10;
 		llcache->status_stride = 0x0;
 		llcache->status_core_stride = 4;
+	}
+
+	if (sbi_hart_has_extension(sbi_scratch_thishart_ptr(), SBI_HART_EXT_SMEPMP)) {
+		rc = sbi_domain_root_add_memrange(
+			(unsigned long)llcache->base, (unsigned long)size, PAGE_SIZE,
+			SBI_DOMAIN_MEMREGION_MMIO |
+			SBI_DOMAIN_MEMREGION_SHARED_SURW_MRW);
+		if (rc)
+			return rc;
 	}
 
 	/* Wait for the hardware initialization done */
