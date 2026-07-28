@@ -94,23 +94,17 @@ u32 atcsmu_read_scratch(void)
 	return readl_relaxed((char *)atcsmu_base + SCRATCH_PAD_OFFSET);
 }
 
-bool atcsmu_pcs_is_sleep(u32 hartid, bool deep_sleep)
+bool atcsmu_hart_is_sleep(void *opaque)
 {
-	u32 pcs_status = readl_relaxed((char *)atcsmu_base + PCSm_STATUS_OFFSET(hartid));
-	u32 pd_status = deep_sleep ? PD_STATUS_DEEP_SLEEP : PD_STATUS_LIGHT_SLEEP;
+	struct atcsmu_sleep_arg *arg = opaque;
 
-	if (EXTRACT_FIELD(pcs_status, PD_TYPE_MASK) != PD_TYPE_SLEEP) {
-		sbi_printf("ATCSMU: hart%d (PCS%d): failed to sleep\n", hartid, hartid + 3);
-		return false;
-	}
+	u32 pcs_status = readl_relaxed((char *)atcsmu_base +
+				       PCSm_STATUS_OFFSET(arg->hartid));
+	u32 pd_status = arg->deep_sleep ? PD_STATUS_DEEP_SLEEP :
+					  PD_STATUS_LIGHT_SLEEP;
 
-	if (EXTRACT_FIELD(pcs_status, PD_STATUS_MASK) != pd_status) {
-		sbi_printf("ATCSMU: hart%d (PCS%d): failed to enter %s sleep\n",
-			   hartid, hartid + 3, deep_sleep ? "deep" : "light");
-		return false;
-	}
-
-	return true;
+	return EXTRACT_FIELD(pcs_status, PD_TYPE_MASK) == PD_TYPE_SLEEP &&
+	       EXTRACT_FIELD(pcs_status, PD_STATUS_MASK) == pd_status;
 }
 
 static int ae350_hart_start(u32 hartid, ulong saddr)

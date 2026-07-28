@@ -12,22 +12,37 @@
 #include <sbi/sbi_ecall_interface.h>
 #include <sbi/sbi_hart.h>
 #include <sbi/sbi_system.h>
+#include <sbi/sbi_timer.h>
 #include <sbi_utils/cache/fdt_cmo_helper.h>
 #include <sbi_utils/fdt/fdt_driver.h>
 #include <sbi_utils/fdt/fdt_helper.h>
 #include <sbi_utils/hsm/fdt_hsm_andes_atcsmu.h>
 
-static int check_secondary_harts_sleep(u32 hartid, bool deep_sleep)
+#define HART_SLEEP_TIMEOUT_MS 1000
+
+static int wait_secondary_harts_sleep(u32 hartid, bool deep_sleep)
 {
 	const struct sbi_domain *dom = &root;
 	unsigned long i;
 	u32 target;
+	struct atcsmu_sleep_arg arg;
 
-	/* Ensure the secondary harts entering the corresponding sleep state */
+	arg.deep_sleep = deep_sleep;
+
+	/* Wait for the secondary harts entering the corresponding sleep state */
 	sbi_hartmask_for_each_hartindex(i, dom->possible_harts) {
 		target = sbi_hartindex_to_hartid(i);
-		if (target != hartid && !atcsmu_pcs_is_sleep(target, deep_sleep))
-			return SBI_EFAIL;
+		if (target == hartid)
+			continue;
+
+		arg.hartid = target;
+		if (!sbi_timer_waitms_until(atcsmu_hart_is_sleep, &arg,
+					    HART_SLEEP_TIMEOUT_MS)) {
+			sbi_printf("ATCSMU: hart%u (PCS%u): timed out waiting for %s sleep\n",
+				   target, target + 3,
+				   deep_sleep ? "deep" : "light");
+			return SBI_ETIMEOUT;
+		}
 	}
 
 	return SBI_OK;
@@ -51,7 +66,7 @@ static int ae350_system_suspend(u32 sleep_type, unsigned long addr)
 	atcsmu_set_wakeup_events(PCS_WAKEUP_RTC_ALARM_MASK | PCS_WAKEUP_UART2_MASK, hartid);
 
 	if (sleep_type == SBI_SUSP_AE350_LIGHT_SLEEP) {
-		rc = check_secondary_harts_sleep(hartid, false);
+		rc = wait_secondary_harts_sleep(hartid, false);
 		if (rc)
 			return rc;
 
@@ -59,7 +74,7 @@ static int ae350_system_suspend(u32 sleep_type, unsigned long addr)
 		csr_set(CSR_MIE, MIP_SEIP);
 		atcsmu_set_command(LIGHT_SLEEP_CMD, hartid);
 	} else if (sleep_type == SBI_SUSP_SLEEP_TYPE_SUSPEND) {
-		rc = check_secondary_harts_sleep(hartid, true);
+		rc = wait_secondary_harts_sleep(hartid, true);
 		if (rc)
 			return rc;
 
