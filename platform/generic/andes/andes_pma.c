@@ -82,8 +82,8 @@ static void decode_pmaaddrx(int entry_id, unsigned long *start,
 	 */
 	pmaaddr = csr_read_num(CSR_PMAADDR0 + entry_id);
 	k = sbi_ffz(pmaaddr);
-	*size = 1 << (k + 3);
-	*start = (pmaaddr - (1 << k) + 1) << 2;
+	*size = 1UL << (k + 3);
+	*start = (pmaaddr - (1UL << k) + 1) << 2;
 }
 
 static bool has_pma_region_overlap(unsigned long start, unsigned long size)
