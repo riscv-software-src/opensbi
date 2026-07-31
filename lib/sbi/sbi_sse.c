@@ -563,19 +563,14 @@ static void sse_event_inject(struct sbi_sse_event *e,
 
 	if (misa_extension('H')) {
 		unsigned long hstatus = csr_read(CSR_HSTATUS);
-
-#if __riscv_xlen == 64
-		if (regs->mstatus & MSTATUS_MPV)
-#elif __riscv_xlen == 32
-		if (regs->mstatusH & MSTATUSH_MPV)
-#else
-#error "Unexpected __riscv_xlen"
-#endif
+		if (sbi_regs_from_virt(regs))
 			hstatus |= HSTATUS_SPV;
+		else
+			hstatus &= ~HSTATUS_SPV;
 
 		hstatus &= ~HSTATUS_SPVP;
 		if (hstatus & HSTATUS_SPV && regs->mstatus & SSTATUS_SPP)
-				hstatus |= HSTATUS_SPVP;
+			hstatus |= HSTATUS_SPVP;
 
 		csr_write(CSR_HSTATUS, hstatus);
 	}
