@@ -663,7 +663,10 @@ static int rpmi_shmem_transport_init(struct rpmi_shmem_mbox_controller *mctl,
 		if (!name || (name && len < 0))
 			return len;
 
+		if (len >= RPMI_NAME_CHARS_MAX)
+			len = RPMI_NAME_CHARS_MAX - 1;
 		sbi_memcpy(qctx->name, name, len);
+		qctx->name[len] = '\0';
 
 		/* store the index as queue_id */
 		qctx->queue_id = qid;
