@@ -306,10 +306,22 @@ struct sbi_pmu_event_info {
 /* Flags defined for counter start function */
 #define SBI_PMU_START_FLAG_SET_INIT_VALUE (1 << 0)
 #define SBI_PMU_START_FLAG_INIT_FROM_SNAPSHOT (1 << 1)
+/* Start flags valid mask */
+#define SBI_PMU_START_FLAGS_MASK	\
+	( \
+		SBI_PMU_START_FLAG_SET_INIT_VALUE | \
+		SBI_PMU_START_FLAG_INIT_FROM_SNAPSHOT \
+	)
 
 /* Flags defined for counter stop function */
 #define SBI_PMU_STOP_FLAG_RESET (1 << 0)
 #define SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT (1 << 1)
+/* Stop flags valid mask */
+#define SBI_PMU_STOP_FLAGS_MASK	\
+	( \
+		SBI_PMU_STOP_FLAG_RESET | \
+		SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT \
+	)
 
 /* SBI function IDs for DBCN extension */
 #define SBI_EXT_DBCN_CONSOLE_WRITE		0x0

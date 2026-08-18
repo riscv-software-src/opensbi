@@ -574,6 +574,9 @@ int sbi_pmu_ctr_start(unsigned long cbase, unsigned long cmask,
 	if (!pmu_ctr_idx_validate(cbase, cmask))
 		return ret;
 
+	if (flags & ~SBI_PMU_START_FLAGS_MASK)
+		return SBI_ERR_INVALID_PARAM;
+
 	if (flags & SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT)
 		return SBI_ENO_SHMEM;
 
@@ -592,6 +595,8 @@ int sbi_pmu_ctr_start(unsigned long cbase, unsigned long cmask,
 				 : 0x0;
 			ret = pmu_ctr_start_fw(phs, cidx, event_code, edata,
 					       ival, bUpdate);
+			if (ret)
+				return ret;
 		} else {
 			if (cidx >= 3) {
 				struct sbi_pmu_hw_event_config *ev_cfg =
@@ -605,6 +610,8 @@ int sbi_pmu_ctr_start(unsigned long cbase, unsigned long cmask,
 					return ret;
 			}
 			ret = pmu_ctr_start_hw(cidx, ival, bUpdate);
+			if (ret)
+				return ret;
 		}
 	}
 
@@ -693,6 +700,9 @@ int sbi_pmu_ctr_stop(unsigned long cbase, unsigned long cmask,
 	if (!pmu_ctr_idx_validate(cbase, cmask))
 		return ret;
 
+	if (flag & ~SBI_PMU_STOP_FLAGS_MASK)
+		return SBI_ERR_INVALID_PARAM;
+
 	if (flag & SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT)
 		return SBI_ENO_SHMEM;
 
@@ -707,6 +717,9 @@ int sbi_pmu_ctr_stop(unsigned long cbase, unsigned long cmask,
 			ret = pmu_ctr_stop_fw(phs, cidx, event_code);
 		else
 			ret = pmu_ctr_stop_hw(cidx);
+
+		if(ret)
+			return ret;
 
 		if (cidx > (CSR_INSTRET - CSR_CYCLE) && flag & SBI_PMU_STOP_FLAG_RESET) {
 			phs->active_events[cidx] = SBI_PMU_EVENT_IDX_INVALID;
@@ -1104,6 +1117,8 @@ int sbi_pmu_event_get_info(unsigned long shmem_phys_lo, unsigned long shmem_phys
 		event_type = pmu_event_validate(phs, event_idx, einfo[i].event_data);
 		if (event_type < 0) {
 			einfo[i].output = 0;
+		} else if (event_type == SBI_PMU_EVENT_TYPE_FW) {
+			einfo[i].output = 1;
 		} else {
 			for (j = 0; j < num_hw_events; j++) {
 				temp = &hw_event_map[j];
