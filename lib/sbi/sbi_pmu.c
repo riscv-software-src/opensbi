@@ -1110,6 +1110,15 @@ int sbi_pmu_event_get_info(unsigned long shmem_phys_lo, unsigned long shmem_phys
 				/* For raw events, event data is used as the select value */
 				if (event_idx == SBI_PMU_EVENT_RAW_IDX ||
 					event_idx == SBI_PMU_EVENT_RAW_V2_IDX) {
+					/*
+					 * Only a raw event map entry carries a
+					 * meaningful select/select_mask pair, so
+					 * skip any entry which does not cover the
+					 * raw event index.
+					 */
+					if (temp->start_idx > event_idx ||
+					    event_idx > temp->end_idx)
+						continue;
 					/* just match the selector */
 					if (temp->select == (einfo[i].event_data &
 									temp->select_mask)) {
