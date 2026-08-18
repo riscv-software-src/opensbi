@@ -1098,6 +1098,9 @@ int sbi_pmu_event_get_info(unsigned long shmem_phys_lo, unsigned long shmem_phys
 	einfo = (struct sbi_pmu_event_info *)(shmem_phys_lo);
 	for (i = 0; i < num_events; i++) {
 		event_idx = einfo[i].event_idx;
+		/* Any must-be-zero event_idx bits set should return INVALID_PARAM per-spec */
+		if (event_idx & SBI_PMU_EVENT_IDX_MBZ_MASK)
+			return SBI_ERR_INVALID_PARAM;
 		event_type = pmu_event_validate(phs, event_idx, einfo[i].event_data);
 		if (event_type < 0) {
 			einfo[i].output = 0;
