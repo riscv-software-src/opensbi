@@ -267,11 +267,11 @@ int sbi_mpxy_register_channel(struct sbi_mpxy_channel *channel)
 }
 
 /** Setup per domain MPXY state data */
-static int domain_mpxy_state_data_setup(struct sbi_domain *dom,
-					struct sbi_domain_data *data,
-					void *data_ptr)
+static int domain_mpxy_state_setup(struct sbi_domain *dom,
+					struct sbi_domain_state *state,
+					void *state_ptr)
 {
-	struct mpxy_state **dom_hartindex_to_mpxy_state_table = data_ptr;
+	struct mpxy_state **dom_hartindex_to_mpxy_state_table = state_ptr;
 	struct mpxy_state *ms;
 	u32 i;
 
@@ -296,20 +296,20 @@ static int domain_mpxy_state_data_setup(struct sbi_domain *dom,
 }
 
 /** Cleanup per domain MPXY state data */
-static void domain_mpxy_state_data_cleanup(struct sbi_domain *dom,
-					   struct sbi_domain_data *data,
-					   void *data_ptr)
+static void domain_mpxy_state_cleanup(struct sbi_domain *dom,
+					   struct sbi_domain_state *state,
+					   void *state_ptr)
 {
-	struct mpxy_state **dom_hartindex_to_mpxy_state_table = data_ptr;
+	struct mpxy_state **dom_hartindex_to_mpxy_state_table = state_ptr;
 	u32 i;
 
 	sbi_hartmask_for_each_hartindex(i, dom->possible_harts)
 		sbi_free(dom_hartindex_to_mpxy_state_table[i]);
 }
 
-static struct sbi_domain_data dmspriv = {
-	.data_setup = domain_mpxy_state_data_setup,
-	.data_cleanup = domain_mpxy_state_data_cleanup,
+static struct sbi_domain_state dmstate = {
+	.state_setup = domain_mpxy_state_setup,
+	.state_cleanup = domain_mpxy_state_cleanup,
 };
 
 /**
@@ -324,7 +324,7 @@ static struct mpxy_state *sbi_domain_get_mpxy_state(struct sbi_domain *dom,
 {
 	struct mpxy_state **dom_hartindex_to_mpxy_state_table;
 
-	dom_hartindex_to_mpxy_state_table = sbi_domain_data_ptr(dom, &dmspriv);
+	dom_hartindex_to_mpxy_state_table = sbi_domain_state_ptr(dom, &dmstate);
 	if (!dom_hartindex_to_mpxy_state_table ||
 	    !sbi_hartindex_valid(hartindex))
 		return NULL;
@@ -339,12 +339,12 @@ int sbi_mpxy_init(struct sbi_scratch *scratch)
 	/**
 	 * Allocate per-domain and per-hart MPXY state data.
 	 * The data type is "struct mpxy_state **" whose memory space will be
-	 * dynamically allocated by domain_setup_data_one() and
-	 * domain_mpxy_state_data_setup(). Calculate needed size of memory space
+	 * dynamically allocated by domain_setup_state_one() and
+	 * domain_mpxy_state_setup(). Calculate needed size of memory space
 	 * here.
 	 */
-	dmspriv.data_size = sizeof(struct mpxy_state *) * sbi_hart_count();
-	ret = sbi_domain_register_data(&dmspriv);
+	dmstate.state_size = sizeof(struct mpxy_state *) * sbi_hart_count();
+	ret = sbi_domain_register_state(&dmstate);
 	if (ret)
 		return ret;
 

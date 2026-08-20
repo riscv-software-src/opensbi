@@ -687,10 +687,10 @@ int sbi_domain_register(struct sbi_domain *dom,
 		}
 	}
 
-	/* Setup data for the discovered domain */
-	rc = sbi_domain_setup_data(dom);
+	/* Setup state for the discovered domain */
+	rc = sbi_domain_setup_state(dom);
 	if (rc) {
-		sbi_printf("%s: domain data setup failed for %s (error %d)\n",
+		sbi_printf("%s: domain state setup failed for %s (error %d)\n",
 			   __func__, dom->name, rc);
 		sbi_list_del(&dom->node);
 		return rc;

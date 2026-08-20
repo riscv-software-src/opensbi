@@ -64,14 +64,14 @@ struct hart_context {
 	bool initialized;
 };
 
-static struct sbi_domain_data dcpriv;
+static struct sbi_domain_state dcstate;
 
 static inline struct hart_context *hart_context_get(struct sbi_domain *dom,
 						    u32 hartindex)
 {
 	struct hart_context **dom_hartindex_to_context_table;
 
-	dom_hartindex_to_context_table = sbi_domain_data_ptr(dom, &dcpriv);
+	dom_hartindex_to_context_table = sbi_domain_state_ptr(dom, &dcstate);
 	if (!dom_hartindex_to_context_table || !sbi_hartindex_valid(hartindex))
 		return NULL;
 
@@ -83,7 +83,7 @@ static void hart_context_set(struct sbi_domain *dom, u32 hartindex,
 {
 	struct hart_context **dom_hartindex_to_context_table;
 
-	dom_hartindex_to_context_table = sbi_domain_data_ptr(dom, &dcpriv);
+	dom_hartindex_to_context_table = sbi_domain_state_ptr(dom, &dcstate);
 	if (!dom_hartindex_to_context_table || !sbi_hartindex_valid(hartindex))
 		return;
 
@@ -314,15 +314,15 @@ int sbi_domain_context_init(void)
 	/**
 	 * Allocate per-domain and per-hart context data.
 	 * The data type is "struct hart_context **" whose memory space will be
-	 * dynamically allocated by domain_setup_data_one(). Calculate needed
+	 * dynamically allocated by domain_setup_state_one(). Calculate needed
 	 * size of memory space here.
 	 */
-	dcpriv.data_size = sizeof(struct hart_context *) * sbi_hart_count();
+	dcstate.state_size = sizeof(struct hart_context *) * sbi_hart_count();
 
-	return sbi_domain_register_data(&dcpriv);
+	return sbi_domain_register_state(&dcstate);
 }
 
 void sbi_domain_context_deinit(void)
 {
-	sbi_domain_unregister_data(&dcpriv);
+	sbi_domain_unregister_state(&dcstate);
 }

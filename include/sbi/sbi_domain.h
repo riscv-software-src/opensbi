@@ -15,7 +15,7 @@
 #include <sbi/sbi_types.h>
 #include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_domain_context.h>
-#include <sbi/sbi_domain_data.h>
+#include <sbi/sbi_domain_state.h>
 
 struct sbi_scratch;
 
@@ -189,8 +189,8 @@ static inline bool sbi_domain_memregion_is_subset(
 struct sbi_domain {
 	/** Node in linked list of domains */
 	struct sbi_dlist node;
-	/** Internal state of per-domain data */
-	struct sbi_domain_data_priv data_priv;
+	/** Internal per-domain state areas */
+	struct sbi_domain_state_priv state_priv;
 	/** Logical index of this domain */
 	u32 index;
 	/** HARTs assigned to this domain */
