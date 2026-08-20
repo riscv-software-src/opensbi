@@ -185,6 +185,9 @@ int sbi_irqchip_raw_handler_default(struct sbi_irqchip_device *chip, u32 hwirq)
 		return SBI_EINVAL;
 
 	h = sbi_irqchip_find_handler(chip, hwirq);
+	if (!h)
+		return SBI_EINVAL;
+
 	if (h->callback)
 		rc = h->callback(hwirq, h->priv);
 
