@@ -40,13 +40,17 @@ struct sbi_hart_protection {
 	/** Unconfigure protection for current HART (Optional) */
 	void (*unconfigure)(struct sbi_scratch *scratch, struct sbi_domain *dom);
 
-	/** Create temporary mapping to access address range on current HART (Optional) */
-	int (*map_range)(struct sbi_scratch *scratch,
-			 unsigned long base, unsigned long size);
+	/**
+	 * Give temporary M-mode access to an S/U-mode address range on current
+	 * HART (Optional). Only applicable for the TYPE_MEMORY and the TYPE_ID
+	 * mechanisms are not invoked.
+	 */
+	int (*temp_map_range)(struct sbi_scratch *scratch,
+			      unsigned long base, unsigned long size);
 
-	/** Destroy temporary mapping on current HART (Optional) */
-	int (*unmap_range)(struct sbi_scratch *scratch,
-			   unsigned long base, unsigned long size);
+	/** Remove the temporary M-mode access on the current HART (Optional) */
+	int (*temp_unmap_range)(struct sbi_scratch *scratch,
+				unsigned long base, unsigned long size);
 };
 
 /**
@@ -111,23 +115,24 @@ int sbi_hart_protection_reconfigure(struct sbi_scratch *scratch,
 				    struct sbi_domain *next_dom);
 
 /**
- * Create temporary mapping to access address range on current HART
+ * Give temporary M-mode access to an S/U-mode address range on the
+ * current HART. Only valid for TYPE_MEMORY.
  *
  * @param base base address of the temporary mapping
  * @param size size of the temporary mapping
  *
  * @return 0 on success and negative error code on failure
  */
-int sbi_hart_protection_map_range(unsigned long base, unsigned long size);
+int sbi_hart_protection_temp_map_range(unsigned long base, unsigned long size);
 
 /**
- * Destroy temporary mapping to access address range on current HART
+ * Remove the temporary M-mode access on the current HART
  *
  * @param base base address of the temporary mapping
  * @param size size of the temporary mapping
  *
  * @return 0 on success and negative error code on failure
  */
-int sbi_hart_protection_unmap_range(unsigned long base, unsigned long size);
+int sbi_hart_protection_temp_unmap_range(unsigned long base, unsigned long size);
 
 #endif /* __SBI_HART_PROTECTION_H__ */

@@ -1032,7 +1032,7 @@ int sbi_sse_read_attrs(uint32_t event_id, uint32_t base_attr_id,
 	if (ret)
 		return ret;
 
-	sbi_hart_protection_map_range(output_phys_lo, sizeof(unsigned long) * attr_count);
+	sbi_hart_protection_temp_map_range(output_phys_lo, sizeof(unsigned long) * attr_count);
 
 	/*
 	 * Copy all attributes at once since struct sse_event_attrs is matching
@@ -1045,7 +1045,7 @@ int sbi_sse_read_attrs(uint32_t event_id, uint32_t base_attr_id,
 	attrs = (unsigned long *)output_phys_lo;
 	copy_attrs(attrs, &e_attrs[base_attr_id], attr_count);
 
-	sbi_hart_protection_unmap_range(output_phys_lo, sizeof(unsigned long) * attr_count);
+	sbi_hart_protection_temp_unmap_range(output_phys_lo, sizeof(unsigned long) * attr_count);
 
 	sse_event_put(e);
 
@@ -1060,7 +1060,7 @@ static int sse_write_attrs(struct sbi_sse_event *e, uint32_t base_attr_id,
 	uint32_t id, end_id = base_attr_id + attr_count;
 	unsigned long *attrs = (unsigned long *)input_phys;
 
-	sbi_hart_protection_map_range(input_phys, sizeof(unsigned long) * attr_count);
+	sbi_hart_protection_temp_map_range(input_phys, sizeof(unsigned long) * attr_count);
 
 	for (id = base_attr_id; id < end_id; id++) {
 		val = attrs[attr++];
@@ -1076,7 +1076,7 @@ static int sse_write_attrs(struct sbi_sse_event *e, uint32_t base_attr_id,
 	}
 
 out:
-	sbi_hart_protection_unmap_range(input_phys, sizeof(unsigned long) * attr_count);
+	sbi_hart_protection_temp_unmap_range(input_phys, sizeof(unsigned long) * attr_count);
 
 	return ret;
 }

@@ -196,22 +196,22 @@ int sbi_hart_protection_reconfigure(struct sbi_scratch *scratch,
 	return 0;
 }
 
-int sbi_hart_protection_map_range(unsigned long base, unsigned long size)
+int sbi_hart_protection_temp_map_range(unsigned long base, unsigned long size)
 {
 	struct sbi_hart_protection *hprot = __hart_memory_protection_best();
 
-	if (!hprot || !hprot->map_range)
+	if (!hprot || !hprot->temp_map_range)
 		return 0;
 
-	return hprot->map_range(sbi_scratch_thishart_ptr(), base, size);
+	return hprot->temp_map_range(sbi_scratch_thishart_ptr(), base, size);
 }
 
-int sbi_hart_protection_unmap_range(unsigned long base, unsigned long size)
+int sbi_hart_protection_temp_unmap_range(unsigned long base, unsigned long size)
 {
 	struct sbi_hart_protection *hprot = __hart_memory_protection_best();
 
-	if (!hprot || !hprot->unmap_range)
+	if (!hprot || !hprot->temp_unmap_range)
 		return 0;
 
-	return hprot->unmap_range(sbi_scratch_thishart_ptr(), base, size);
+	return hprot->temp_unmap_range(sbi_scratch_thishart_ptr(), base, size);
 }

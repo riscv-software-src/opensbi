@@ -1106,7 +1106,7 @@ int sbi_pmu_event_get_info(unsigned long shmem_phys_lo, unsigned long shmem_phys
 					 SBI_DOMAIN_READ | SBI_DOMAIN_WRITE))
 		return SBI_ERR_INVALID_ADDRESS;
 
-	sbi_hart_protection_map_range(shmem_phys_lo, shmem_size);
+	sbi_hart_protection_temp_map_range(shmem_phys_lo, shmem_size);
 
 	einfo = (struct sbi_pmu_event_info *)(shmem_phys_lo);
 	for (i = 0; i < num_events; i++) {
@@ -1154,7 +1154,7 @@ int sbi_pmu_event_get_info(unsigned long shmem_phys_lo, unsigned long shmem_phys
 		}
 	}
 
-	sbi_hart_protection_unmap_range(shmem_phys_lo, shmem_size);
+	sbi_hart_protection_temp_unmap_range(shmem_phys_lo, shmem_size);
 
 	return 0;
 }

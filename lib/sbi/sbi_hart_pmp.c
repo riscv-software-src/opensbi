@@ -135,7 +135,7 @@ int sbi_hart_pmp_get(unsigned int n, unsigned long *prot_out, unsigned long *add
  * When shared memory access is required, the physical address
  * should be programmed into the first PMP entry with R/W
  * permissions to the M-mode. Once the work is done, it should be
- * unmapped. sbi_hart_protection_map_range/sbi_hart_protection_unmap_range
+ * unmapped. sbi_hart_protection_temp_map_range/sbi_hart_protection_temp_unmap_range
  * function pair should be used to map/unmap the shared memory.
  */
 #define SBI_SMEPMP_RESV_ENTRY		0
@@ -327,7 +327,7 @@ static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch,
 	return 0;
 }
 
-static int sbi_hart_smepmp_map_range(struct sbi_scratch *scratch,
+static int sbi_hart_smepmp_temp_map_range(struct sbi_scratch *scratch,
 				     unsigned long addr, unsigned long size)
 {
 	/* shared R/W access for M and S/U mode */
@@ -359,7 +359,7 @@ static int sbi_hart_smepmp_map_range(struct sbi_scratch *scratch,
 	return SBI_OK;
 }
 
-static int sbi_hart_smepmp_unmap_range(struct sbi_scratch *scratch,
+static int sbi_hart_smepmp_temp_unmap_range(struct sbi_scratch *scratch,
 				       unsigned long addr, unsigned long size)
 {
 	sbi_platform_pmp_disable(sbi_platform_ptr(scratch), SBI_SMEPMP_RESV_ENTRY);
@@ -436,8 +436,8 @@ static struct sbi_hart_protection epmp_protection = {
 	.type = SBI_HART_PROTECTION_TYPE_MEMORY,
 	.configure = sbi_hart_smepmp_configure,
 	.unconfigure = sbi_hart_pmp_unconfigure,
-	.map_range = sbi_hart_smepmp_map_range,
-	.unmap_range = sbi_hart_smepmp_unmap_range,
+	.temp_map_range = sbi_hart_smepmp_temp_map_range,
+	.temp_unmap_range = sbi_hart_smepmp_temp_unmap_range,
 };
 
 int sbi_hart_pmp_init(struct sbi_scratch *scratch)
