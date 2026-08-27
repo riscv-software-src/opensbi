@@ -939,6 +939,12 @@ int sbi_pmu_ctr_cfg_match(unsigned long cidx_base, unsigned long cidx_mask,
 		if (cidx_first >= total_ctrs)
 			return SBI_EINVAL;
 
+		if ((event_type == SBI_PMU_EVENT_TYPE_FW &&
+		     cidx_first < num_hw_ctrs) ||
+		    (event_type != SBI_PMU_EVENT_TYPE_FW &&
+		     cidx_first >= num_hw_ctrs))
+			return SBI_ENOTSUPP;
+
 		if (phs->active_events[cidx_first] == SBI_PMU_EVENT_IDX_INVALID)
 			return SBI_EINVAL;
 		ctr_idx = cidx_first;
