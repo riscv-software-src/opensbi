@@ -592,7 +592,7 @@ static int rpmi_shmem_transport_init(struct rpmi_shmem_mbox_controller *mctl,
 	const char *name;
 	const fdt32_t *prop;
 	int count, len, ret, qid;
-	uint64_t reg_addr, reg_size;
+	uint64_t reg_addr, reg_size, total_slots;
 	struct smq_queue_ctx *qctx;
 
 	ret = fdt_node_check_compatible(fdt, nodeoff,
@@ -642,16 +642,19 @@ static int rpmi_shmem_transport_init(struct rpmi_shmem_mbox_controller *mctl,
 		if (ret < 0 || !reg_addr || !reg_size)
 			return SBI_ENOENT;
 
+		/* calculate number of slots in each queue */
+		total_slots = reg_size / mctl->slot_size;
+		if (total_slots < RPMI_QUEUE_HEADER_SLOTS + 2 ||
+		    total_slots - RPMI_QUEUE_HEADER_SLOTS > (u32)-1)
+			return SBI_EINVAL;
+		qctx->num_slots = total_slots - RPMI_QUEUE_HEADER_SLOTS;
+
 		ret = sbi_domain_root_add_memrange(reg_addr, reg_size, reg_size,
 						   (SBI_DOMAIN_MEMREGION_MMIO |
 						    SBI_DOMAIN_MEMREGION_M_READABLE |
 						    SBI_DOMAIN_MEMREGION_M_WRITABLE));
 		if (ret)
 			return ret;
-
-		/* calculate number of slots in each queue */
-		qctx->num_slots =
-			(reg_size - (mctl->slot_size * RPMI_QUEUE_HEADER_SLOTS)) / mctl->slot_size;
 
 		/* setup queue pointers */
 		qctx->headptr = ((void *)(unsigned long)reg_addr) +
