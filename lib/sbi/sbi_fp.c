@@ -20,7 +20,7 @@ void sbi_fp_save(struct sbi_fp_context *dst)
 	if (!dst)
 		return;
 
-	mstatus_orig = csr_read_set(CSR_MSTATUS, MSTATUS_VS);
+	mstatus_orig = csr_read_set(CSR_MSTATUS, MSTATUS_FS);
 
 	asm volatile(
 #if defined(__riscv_d)
