@@ -512,7 +512,7 @@ static int hart_detect_features(struct sbi_scratch *scratch, bool cold_boot)
 	if (!trap.cause) {						  \
 		csr_write_allowed(__csr, &trap, 1UL);			  \
 		if (!trap.cause && csr_swap(__csr, oldval) == 1UL) {	  \
-			(hfeatures->__mask) |= 1 << (__csr - CSR_MCYCLE); \
+			(hfeatures->__mask) |= BIT(__csr - CSR_MCYCLE);	  \
 		}							  \
 	}
 

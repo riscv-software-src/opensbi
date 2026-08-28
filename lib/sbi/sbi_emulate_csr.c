@@ -104,7 +104,7 @@ int sbi_emulate_csr_read(int csr_num, struct sbi_trap_regs *regs,
 
 #define switchcase_hpm(__uref, __mref, __csr)				\
 	case __csr:							\
-		if (sbi_hart_mhpm_mask(scratch) & (1 << (__csr - __uref)))\
+		if (sbi_hart_mhpm_mask(scratch) & BIT(__csr - __uref))	\
 			return SBI_ENOTSUPP;				\
 		if (!hpm_allowed(__csr - __uref, prev_mode, virt))	\
 			return SBI_ENOTSUPP;				\
