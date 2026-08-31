@@ -326,7 +326,7 @@ void sbi_timer_process(void)
 	}
 
 	while (!sbi_list_empty(&restart_list)) {
-		ev = sbi_list_first_entry(&tstate->event_list, struct sbi_timer_event, head);
+		ev = sbi_list_first_entry(&restart_list, struct sbi_timer_event, head);
 		sbi_list_del(&ev->head);
 		__sbi_timer_event_start(tstate, ev, ev->time_stamp);
 	}
