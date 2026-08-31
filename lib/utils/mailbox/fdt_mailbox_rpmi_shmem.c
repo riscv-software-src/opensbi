@@ -316,7 +316,7 @@ static int smq_rx(struct rpmi_shmem_mbox_controller *mctl,
 	int ret, rxretry = 0;
 	struct smq_queue_ctx *qctx;
 
-	if (mctl->queue_count < queue_id) {
+	if (queue_id >= mctl->queue_count) {
 		sbi_printf("%s: invalid queue_id or service_group_id\n",
 			   __func__);
 		return SBI_EINVAL;
@@ -351,7 +351,7 @@ static int smq_tx(struct rpmi_shmem_mbox_controller *mctl,
 	int ret, txretry = 0;
 	struct smq_queue_ctx *qctx;
 
-	if (mctl->queue_count < queue_id) {
+	if (queue_id >= mctl->queue_count) {
 		sbi_printf("%s: invalid queue_id or service_group_id\n",
 			   __func__);
 		return SBI_EINVAL;
