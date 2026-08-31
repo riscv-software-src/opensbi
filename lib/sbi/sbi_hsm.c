@@ -332,6 +332,16 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 	if (!hsm_start_ticket_acquire(hdata))
 		return SBI_EINVAL;
 
+	/*
+	 * Ensure target hart is in correct state before updating
+	 * next_arg1, next_addr, and next_mode in target hart scratch.
+	 */
+	hstate = atomic_read(&hdata->state);
+	if (hstate != SBI_HSM_STATE_STOPPED) {
+		rc = hstate == SBI_HSM_STATE_STARTED ? SBI_EALREADY : SBI_EINVAL;
+		goto err;
+	}
+
 	init_count = sbi_init_count(hartindex);
 	entry_count = sbi_entry_count(hartindex);
 
@@ -346,17 +356,8 @@ int sbi_hsm_hart_start(struct sbi_scratch *scratch,
 	 */
 	hstate = atomic_cmpxchg(&hdata->state, SBI_HSM_STATE_STOPPED,
 				SBI_HSM_STATE_START_PENDING);
-	if (hstate == SBI_HSM_STATE_STARTED) {
-		rc = SBI_EALREADY;
-		goto err;
-	}
-
-	/**
-	 * if a hart is already transition to start or stop, another start call
-	 * is considered as invalid request.
-	 */
 	if (hstate != SBI_HSM_STATE_STOPPED) {
-		rc = SBI_EINVAL;
+		rc = hstate == SBI_HSM_STATE_STARTED ? SBI_EALREADY : SBI_EINVAL;
 		goto err;
 	}
 
