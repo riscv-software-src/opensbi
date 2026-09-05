@@ -625,16 +625,14 @@ void sbi_domain_dump_all(const char *suffix)
 	}
 }
 
-int sbi_domain_register(struct sbi_domain *dom,
-			const struct sbi_hartmask *assign_mask)
+int sbi_domain_register(struct sbi_domain *dom)
 {
-	u32 i;
-	int rc;
+	u32 i, cold_hartid = current_hartid();
 	struct sbi_domain *tdom;
-	u32 cold_hartid = current_hartid();
+	int rc;
 
 	/* Sanity checks */
-	if (!dom || !assign_mask || domain_finalized)
+	if (!dom || domain_finalized)
 		return SBI_EINVAL;
 
 	/* Check if domain already discovered */
@@ -663,15 +661,21 @@ int sbi_domain_register(struct sbi_domain *dom,
 	/* Clear assigned HARTs of domain */
 	sbi_hartmask_clear_all(&dom->assigned_harts);
 
-	/* Assign domain to HART if HART is a possible HART */
-	sbi_hartmask_for_each_hartindex(i, assign_mask) {
-		if (!sbi_hartmask_test_hartindex(i, dom->possible_harts))
-			continue;
-
+	/*
+	 * Assign a non-ROOT domain to a HART on first come first serve
+	 * basis if the HART is listed as a possible HART of the non-ROOT
+	 * domain. If no non-ROOT domain list a HART as possible HART then
+	 * the HART is assigned to the ROOT domain.
+	 */
+	sbi_hartmask_for_each_hartindex(i, dom->possible_harts) {
 		tdom = sbi_hartindex_to_domain(i);
-		if (tdom)
-			sbi_hartmask_clear_hartindex(i,
-					&tdom->assigned_harts);
+		if (tdom) {
+			if (tdom == &root)
+				sbi_hartmask_clear_hartindex(i, &tdom->assigned_harts);
+			else
+				continue;
+		}
+
 		sbi_update_hartindex_to_domain(i, dom);
 		sbi_hartmask_set_hartindex(i, &dom->assigned_harts);
 
@@ -975,7 +979,7 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 		sbi_hartmask_set_hartindex(i, root_hmask);
 
 	/* Finally register the root domain */
-	rc = sbi_domain_register(&root, root_hmask);
+	rc = sbi_domain_register(&root);
 	if (rc)
 		goto fail_free_root_hmask;
 

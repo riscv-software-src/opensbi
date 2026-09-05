@@ -50,8 +50,7 @@ int fdt_iterate_each_memregion(void *fdt, int domain_offset, void *opaque,
  *
  * This routine:
  * 1. Disables MMIO devices not accessible to the coldboot HART domain
- * 2. Removes "opensbi-domain" DT property from CPU DT nodes
- * 3. Removes domain configuration DT node under /chosen DT node
+ * 2. Removes domain configuration DT node under /chosen DT node
  *
  * It is recommended that platform support call this function in
  * their final_init() platform operation.

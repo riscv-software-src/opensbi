@@ -328,12 +328,10 @@ void sbi_domain_dump_all(const char *suffix);
 /**
  * Register a new domain
  * @param dom pointer to domain
- * @param assign_mask pointer to HART mask of HARTs assigned to the domain
  *
  * @return 0 on success and negative error code on failure
  */
-int sbi_domain_register(struct sbi_domain *dom,
-			const struct sbi_hartmask *assign_mask);
+int sbi_domain_register(struct sbi_domain *dom);
 
 /**
  * Add a memory range with its flags to the root domain
