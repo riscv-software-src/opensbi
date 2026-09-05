@@ -291,28 +291,29 @@ int sbi_domain_context_exit(void)
 	}
 
 	dom_ctx = ctx->prev_ctx;
+	ctx->prev_ctx = NULL;
 
 	/* If no previous caller context */
 	if (!dom_ctx) {
-		/* Try to find next uninitialized user-defined domain's context */
+		/* Try to find next uninitialized domain with least initialization order */
+		dom_ctx = NULL;
 		sbi_domain_for_each(dom) {
-			if (dom == &root || dom == sbi_domain_thishart_ptr())
+			if (dom == sbi_domain_thishart_ptr())
 				continue;
 
 			if (!sbi_hartmask_test_hartindex(hartindex, dom->possible_harts))
 				continue;
 
 			tmp = hart_context_get(dom, hartindex);
-			if (tmp && !tmp->initialized) {
+			if (tmp && tmp->initialized)
+				continue;
+
+			if (!dom_ctx || tmp->dom->init_order < dom_ctx->dom->init_order)
 				dom_ctx = tmp;
-				break;
-			}
 		}
 	}
-
-	/* Take the root domain context if fail to find */
 	if (!dom_ctx)
-		dom_ctx = hart_context_get(&root, hartindex);
+		return SBI_ENOENT;
 
 	return switch_to_next_domain_context(ctx, dom_ctx);
 }

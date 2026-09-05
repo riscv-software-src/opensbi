@@ -39,6 +39,9 @@ has following details:
 
 * **index** - Logical index of this domain
 * **name** - Name of this domain
+* **init_order** - Initialization order of this domain. Domain with a
+  lower initialization order will be booted first and two domains must
+  not have same initialization order.
 * **assigned_harts** - HARTs assigned to this domain
 * **possible_harts** - HARTs possible in this domain
 * **regions** - Array of memory regions terminated by a memory region
@@ -75,6 +78,8 @@ following manner:
 
 * **index** - Logical index of the ROOT domain is always zero
 * **name** - Name of the ROOT domain is "root"
+* **init_order** - Initialization order of the ROOT domain is always
+  0xffffffff (aka maximum possible 32-bit value)
 * **assigned_harts** - At boot-time all valid HARTs of a RISC-V platform
   are assigned the ROOT domain which changes later based on OpenSBI
   platform support
@@ -156,6 +161,9 @@ The DT properties of a domain instance DT node are as follows:
 
 * **compatible** (Mandatory) - The compatible string of the domain instance.
   This DT property should have value *"opensbi,domain,instance"*
+* **init-order** (Optional) - The 32-bit initialization order for the domain
+  instance. If this DT property is not available then domain instance DT node
+  offset is used as default value.
 * **possible-harts** (Optional) - The list of CPU DT node phandles for the
   the domain instance. This list represents the possible HARTs of the
   domain instance.

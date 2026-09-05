@@ -330,6 +330,14 @@ static int __fdt_parse_domain(const void *fdt, int domain_offset, void *opaque)
 		    sizeof(dom->name));
 	dom->name[sizeof(dom->name) - 1] = '\0';
 
+	/* Read initalization order */
+	val = fdt_getprop(fdt, domain_offset, "init-order", &len);
+	len = len / sizeof(u32);
+	if (val && len)
+		dom->init_order = fdt32_to_cpu(val[0]);
+	else
+		dom->init_order = (u32)domain_offset;
+
 	/* Setup possible HARTs mask */
 	SBI_HARTMASK_INIT(mask);
 	dom->possible_harts = mask;

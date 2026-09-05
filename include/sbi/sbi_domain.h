@@ -199,6 +199,8 @@ struct sbi_domain {
 	spinlock_t assigned_harts_lock;
 	/** Name of this domain */
 	char name[64];
+	/** Initialization order of this domain */
+	u32 init_order;
 	/** Possible HARTs in this domain */
 	const struct sbi_hartmask *possible_harts;
 	/** Array of memory regions terminated by a region with order zero */

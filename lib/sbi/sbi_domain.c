@@ -28,6 +28,7 @@ static bool domain_finalized = false;
 
 struct sbi_domain root = {
 	.name = "root",
+	.init_order = -1U,
 	.possible_harts = NULL,
 	.regions = NULL,
 	.system_reset_allowed = true,
@@ -537,6 +538,9 @@ void sbi_domain_dump(const struct sbi_domain *dom, const char *suffix)
 	sbi_printf("Domain%d Name        %s: %s\n",
 		   dom->index, suffix, dom->name);
 
+	sbi_printf("Domain%d Init Order  %s: 0x%x\n",
+		   dom->index, suffix, dom->init_order);
+
 	sbi_printf("Domain%d Boot HART   %s: %d\n",
 		   dom->index, suffix, dom->boot_hartid);
 
@@ -635,9 +639,14 @@ int sbi_domain_register(struct sbi_domain *dom)
 	if (!dom || domain_finalized)
 		return SBI_EINVAL;
 
-	/* Check if domain already discovered */
+	/*
+	 * Ensure that:
+	 *  1) Domain not already registered
+	 *  2) Initialization order is unique
+	 */
 	sbi_domain_for_each(tdom) {
-		if (tdom == dom)
+		if (tdom == dom ||
+		    tdom->init_order == dom->init_order)
 			return SBI_EALREADY;
 	}
 
@@ -662,15 +671,13 @@ int sbi_domain_register(struct sbi_domain *dom)
 	sbi_hartmask_clear_all(&dom->assigned_harts);
 
 	/*
-	 * Assign a non-ROOT domain to a HART on first come first serve
-	 * basis if the HART is listed as a possible HART of the non-ROOT
-	 * domain. If no non-ROOT domain list a HART as possible HART then
-	 * the HART is assigned to the ROOT domain.
+	 * Assign HART to a domain with the least initialization order
+	 * where the HART is listed as a possible HART of the domain.
 	 */
 	sbi_hartmask_for_each_hartindex(i, dom->possible_harts) {
 		tdom = sbi_hartindex_to_domain(i);
 		if (tdom) {
-			if (tdom == &root)
+			if (tdom->init_order > dom->init_order)
 				sbi_hartmask_clear_hartindex(i, &tdom->assigned_harts);
 			else
 				continue;
