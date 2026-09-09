@@ -328,9 +328,9 @@ static void sse_event_remove_from_list(struct sbi_sse_event *e)
 /**
  * Must be called under owner hart lock
  */
-static void sse_event_add_to_list(struct sbi_sse_event *e)
+static void sse_event_add_to_list(struct sse_hart_state *state,
+				   struct sbi_sse_event *e)
 {
-	struct sse_hart_state *state = sse_get_hart_state(e);
 	struct sbi_sse_event *tmp;
 
 	sbi_list_for_each_entry(tmp, &state->enabled_event_list, node) {
@@ -346,7 +346,8 @@ static void sse_event_add_to_list(struct sbi_sse_event *e)
 /**
  * Must be called under owner hart lock
  */
-static int sse_event_disable(struct sbi_sse_event *e)
+static int sse_event_disable(struct sse_hart_state *shs,
+			      struct sbi_sse_event *e)
 {
 	if (sse_event_state(e) != SBI_SSE_STATE_ENABLED)
 		return SBI_EINVALID_STATE;
@@ -778,13 +779,14 @@ static int sse_inject_event(uint32_t event_id, unsigned long hartid)
 /**
  * Must be called under owner hart lock
  */
-static int sse_event_enable(struct sbi_sse_event *e)
+static int sse_event_enable(struct sse_hart_state *shs,
+			     struct sbi_sse_event *e)
 {
 	if (sse_event_state(e) != SBI_SSE_STATE_REGISTERED)
 		return SBI_EINVALID_STATE;
 
 	sse_event_set_state(e, SBI_SSE_STATE_ENABLED);
-	sse_event_add_to_list(e);
+	sse_event_add_to_list(shs, e);
 
 	sse_event_invoke_cb(e, enable_cb);
 
@@ -795,7 +797,8 @@ static int sse_event_enable(struct sbi_sse_event *e)
 	return SBI_OK;
 }
 
-static int sse_event_complete(struct sbi_sse_event *e,
+static int sse_event_complete(struct sse_hart_state *shs,
+			      struct sbi_sse_event *e,
 			      struct sbi_trap_regs *regs,
 			      struct sbi_ecall_return *out)
 {
@@ -807,7 +810,7 @@ static int sse_event_complete(struct sbi_sse_event *e,
 
 	sse_event_set_state(e, SBI_SSE_STATE_ENABLED);
 	if (e->attrs.config & SBI_SSE_ATTR_CONFIG_ONESHOT)
-		sse_event_disable(e);
+		sse_event_disable(shs, e);
 
 	sse_event_invoke_cb(e, complete_cb);
 
@@ -830,7 +833,7 @@ int sbi_sse_complete(struct sbi_trap_regs *regs, struct sbi_ecall_return *out)
 		 * the one that needs to be completed
 		 */
 		if (sse_event_state(tmp) == SBI_SSE_STATE_RUNNING) {
-			ret = sse_event_complete(tmp, regs, out);
+			ret = sse_event_complete(state, tmp, regs, out);
 			break;
 		}
 	}
@@ -851,7 +854,7 @@ int sbi_sse_enable(uint32_t event_id)
 
 	shs = sse_get_hart_state(e);
 	spin_lock(&shs->enabled_event_lock);
-	ret = sse_event_enable(e);
+	ret = sse_event_enable(shs, e);
 	spin_unlock(&shs->enabled_event_lock);
 	sse_event_put(e);
 
@@ -870,7 +873,7 @@ int sbi_sse_disable(uint32_t event_id)
 
 	shs = sse_get_hart_state(e);
 	spin_lock(&shs->enabled_event_lock);
-	ret = sse_event_disable(e);
+	ret = sse_event_disable(shs, e);
 	spin_unlock(&shs->enabled_event_lock);
 
 	sse_event_put(e);
