@@ -113,9 +113,9 @@ struct smq_queue_ctx {
 	/* Type of queue - REQ or ACK */
 	enum rpmi_queue_type queue_type;
 	/* Pointers to the queue shared memory */
-	volatile le32_t *headptr;
-	volatile le32_t *tailptr;
-	volatile uint8_t *buffer;
+	volatile le32_t *headptr PT_GUARDED_BY(&queue_lock);
+	volatile le32_t *tailptr PT_GUARDED_BY(&queue_lock);
+	volatile uint8_t *buffer PT_GUARDED_BY(&queue_lock);
 	/* Name of the queue */
 	char name[RPMI_NAME_CHARS_MAX];
 };
@@ -154,12 +154,14 @@ struct rpmi_shmem_mbox_controller {
 /**************** Shared Memory Queues Helpers **************/
 
 static bool __smq_queue_full(struct smq_queue_ctx *qctx)
+	MUST_HOLD(&qctx->queue_lock)
 {
 	return ((le32_to_cpu(*qctx->tailptr) + 1) % qctx->num_slots ==
 			le32_to_cpu(*qctx->headptr)) ? true : false;
 }
 
 static bool __smq_queue_empty(struct smq_queue_ctx *qctx)
+	MUST_HOLD(&qctx->queue_lock)
 {
 	return (le32_to_cpu(*qctx->headptr) ==
 		le32_to_cpu(*qctx->tailptr)) ? true : false;
@@ -167,6 +169,7 @@ static bool __smq_queue_empty(struct smq_queue_ctx *qctx)
 
 static int __smq_rx(struct smq_queue_ctx *qctx, u32 slot_size,
 		    u32 service_group_id, struct mbox_xfer *xfer)
+	MUST_HOLD(&qctx->queue_lock)
 {
 	void *dst, *src;
 	struct rpmi_message *msg;
@@ -250,7 +253,7 @@ static int __smq_rx(struct smq_queue_ctx *qctx, u32 slot_size,
 
 static int __smq_tx(struct smq_queue_ctx *qctx, struct rpmi_mb_regs *mb_regs,
 		    u32 a2p_doorbell_value, u32 slot_size, u32 service_group_id,
-		    struct mbox_xfer *xfer)
+		    struct mbox_xfer *xfer) MUST_HOLD(&qctx->queue_lock)
 {
 	u32 i, tailidx;
 	void *dst, *src;
@@ -583,7 +586,8 @@ static void rpmi_shmem_mbox_free_chan(struct mbox_controller *mbox,
 extern struct fdt_mailbox fdt_mailbox_rpmi_shmem;
 
 static int rpmi_shmem_transport_init(struct rpmi_shmem_mbox_controller *mctl,
-				     const void *fdt, int nodeoff)
+				     const void *fdt,
+				     int nodeoff) NO_THREAD_SAFETY_ANALYSIS
 {
 	const char *name;
 	const fdt32_t *prop;
