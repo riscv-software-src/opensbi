@@ -45,7 +45,7 @@ bool spin_trylock(spinlock_t *lock)
 	return l0 == 0;
 }
 
-void spin_lock(spinlock_t *lock)
+void spin_lock(spinlock_t *lock) NO_THREAD_SAFETY_ANALYSIS
 {
 	unsigned long inc = 1u << TICKET_SHIFT;
 	unsigned long mask = 0xffffu;
@@ -84,7 +84,7 @@ void spin_lock(spinlock_t *lock)
 		: "memory");
 }
 
-void spin_unlock(spinlock_t *lock)
+void spin_unlock(spinlock_t *lock) NO_THREAD_SAFETY_ANALYSIS
 {
 	__smp_store_release(&lock->owner, lock->owner + 1);
 }
