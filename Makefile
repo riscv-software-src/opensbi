@@ -209,6 +209,9 @@ CC_SUPPORT_ZICSR_ZIFENCEI := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) -nostdl
 # Check whether the assembler and the compiler support the Vector extension
 CC_SUPPORT_VECTOR := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) -nostdlib -march=rv$(OPENSBI_CC_XLEN)gv -dM -E -x c /dev/null 2>&1 | grep -q riscv.*vector && echo y || echo n)
 
+# Check whether the compiler supports -Wthread-safety-pointer (clang >= 22)
+CC_SUPPORT_WTHREAD_SAFETY_POINTER := $(shell $(CC) $(CLANG_TARGET) $(RELAX_FLAG) -nostdlib -Wthread-safety-pointer -x c /dev/null -o /dev/null 2>&1 | grep -q "unknown warning" && echo n || echo y)
+
 ifneq ($(OPENSBI_LD_PIE),y)
 $(error Your linker does not support creating PIEs, opensbi requires this.)
 endif
@@ -359,6 +362,10 @@ endif
 ifeq ($(CC_IS_CLANG),y)
 GENFLAGS	+=	$(CLANG_TARGET)
 GENFLAGS	+=	-Wno-unused-command-line-argument
+GENFLAGS	+=	-Wthread-safety
+ifeq ($(CC_SUPPORT_WTHREAD_SAFETY_POINTER),y)
+GENFLAGS	+=	-Wthread-safety-pointer
+endif
 endif
 GENFLAGS	+=	-I$(platform_src_dir)/include
 GENFLAGS	+=	-I$(include_dir)
