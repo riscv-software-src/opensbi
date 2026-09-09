@@ -23,7 +23,7 @@
 struct timer_state {
 	u64 time_delta;
 	spinlock_t event_list_lock;
-	struct sbi_dlist event_list;
+	struct sbi_dlist event_list GUARDED_BY(&event_list_lock);
 	struct sbi_timer_event smode_ev;
 };
 
@@ -160,6 +160,7 @@ void sbi_timer_set_delta_upper(ulong delta_upper)
 #endif
 
 static void __sbi_timer_update_device(struct timer_state *tstate)
+	MUST_HOLD(&tstate->event_list_lock)
 {
 	struct sbi_timer_event *ev;
 
@@ -188,6 +189,7 @@ static void __sbi_timer_event_stop(struct sbi_timer_event *ev)
 
 static void __sbi_timer_event_start(struct timer_state *tstate,
 				    struct sbi_timer_event *ev, u64 next_event)
+	MUST_HOLD(&tstate->event_list_lock)
 {
 	struct sbi_timer_event *tev, *next_ev = NULL;
 
@@ -350,6 +352,7 @@ void sbi_timer_set_device(const struct sbi_timer_device *dev)
 }
 
 int sbi_timer_init(struct sbi_scratch *scratch, bool cold_boot)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	struct timer_state *tstate;
