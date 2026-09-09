@@ -15,12 +15,12 @@
 #include <sbi/sbi_types.h>
 
 struct sbi_fifo {
-	void *queue;
 	spinlock_t qlock;
+	void *queue PT_GUARDED_BY(&qlock);
 	u16 entry_size;
 	u16 num_entries;
-	u16 avail;
-	u16 tail;
+	u16 avail GUARDED_BY(&qlock);
+	u16 tail GUARDED_BY(&qlock);
 };
 
 #define SBI_FIFO_INITIALIZER(__queue_mem, __entries, __entry_size)	\

@@ -13,7 +13,7 @@
 #include <sbi/sbi_string.h>
 
 void sbi_fifo_init(struct sbi_fifo *fifo, void *queue_mem, u16 entries,
-		   u16 entry_size)
+		   u16 entry_size) NO_THREAD_SAFETY_ANALYSIS
 {
 	fifo->queue	  = queue_mem;
 	fifo->num_entries = entries;
@@ -25,6 +25,7 @@ void sbi_fifo_init(struct sbi_fifo *fifo, void *queue_mem, u16 entries,
 
 /* Note: must be called with fifo->qlock held */
 static inline bool __sbi_fifo_is_full(struct sbi_fifo *fifo)
+	MUST_HOLD(&fifo->qlock)
 {
 	return (fifo->avail == fifo->num_entries) ? true : false;
 }
@@ -58,7 +59,8 @@ int sbi_fifo_is_full(struct sbi_fifo *fifo)
 }
 
 /* Note: must be called with fifo->qlock held */
-static inline void  __sbi_fifo_enqueue(struct sbi_fifo *fifo, void *data)
+static inline void __sbi_fifo_enqueue(struct sbi_fifo *fifo, void *data)
+	MUST_HOLD(&fifo->qlock)
 {
 	u32 head;
 
@@ -91,7 +93,8 @@ static inline void  __sbi_fifo_enqueue(struct sbi_fifo *fifo, void *data)
 }
 
 /* Note: must be called with fifo->qlock held */
-static inline void  __sbi_fifo_dequeue(struct sbi_fifo *fifo, void *data)
+static inline void __sbi_fifo_dequeue(struct sbi_fifo *fifo, void *data)
+	MUST_HOLD(&fifo->qlock)
 {
 	if (!data)
 		goto skip_data_copy;
@@ -126,6 +129,7 @@ skip_data_copy:
 
 /* Note: must be called with fifo->qlock held */
 static inline bool __sbi_fifo_is_empty(struct sbi_fifo *fifo)
+	MUST_HOLD(&fifo->qlock)
 {
 	return (fifo->avail == 0) ? true : false;
 }
@@ -146,6 +150,7 @@ int sbi_fifo_is_empty(struct sbi_fifo *fifo)
 
 /* Note: must be called with fifo->qlock held */
 static inline void __sbi_fifo_reset(struct sbi_fifo *fifo)
+	MUST_HOLD(&fifo->qlock)
 {
 	size_t size = (size_t)fifo->num_entries * fifo->entry_size;
 
