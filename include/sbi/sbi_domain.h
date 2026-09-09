@@ -193,10 +193,10 @@ struct sbi_domain {
 	struct sbi_domain_state_priv state_priv;
 	/** Logical index of this domain */
 	u32 index;
-	/** HARTs assigned to this domain */
-	struct sbi_hartmask assigned_harts;
 	/** Spinlock for accessing assigned_harts */
 	spinlock_t assigned_harts_lock;
+	/** HARTs assigned to this domain */
+	struct sbi_hartmask assigned_harts GUARDED_BY(&assigned_harts_lock);
 	/** Name of this domain */
 	char name[64];
 	/** Initialization order of this domain */
@@ -254,7 +254,8 @@ extern struct sbi_dlist domain_list;
  * @param hartindex the HART index
  * @return true if HART is assigned to domain otherwise false
  */
-bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartindex);
+bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartindex)
+	MUST_NOT_HOLD(&dom->assigned_harts_lock);
 
 /**
  * Get the assigned HART mask for given domain
@@ -263,7 +264,8 @@ bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartindex);
  * @return 0 on success and SBI_Exxx (< 0) on failure
  */
 int sbi_domain_get_assigned_hartmask(const struct sbi_domain *dom,
-				     struct sbi_hartmask *mask);
+				     struct sbi_hartmask *mask)
+	MUST_NOT_HOLD(&dom->assigned_harts_lock);
 
 /**
  * Initialize a domain memory region based on it's physical

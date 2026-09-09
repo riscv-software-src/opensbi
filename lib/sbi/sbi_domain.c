@@ -61,6 +61,7 @@ void sbi_update_hartindex_to_domain(u32 hartindex, struct sbi_domain *dom)
 }
 
 bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartindex)
+	MUST_NOT_HOLD(&dom->assigned_harts_lock)
 {
 	bool ret;
 	struct sbi_domain *tdom = (struct sbi_domain *)dom;
@@ -77,6 +78,7 @@ bool sbi_domain_is_assigned_hart(const struct sbi_domain *dom, u32 hartindex)
 
 int sbi_domain_get_assigned_hartmask(const struct sbi_domain *dom,
 				     struct sbi_hartmask *mask)
+	MUST_NOT_HOLD(&dom->assigned_harts_lock)
 {
 	ulong ret = 0;
 	struct sbi_domain *tdom = (struct sbi_domain *)dom;
@@ -630,6 +632,7 @@ void sbi_domain_dump_all(const char *suffix)
 }
 
 int sbi_domain_register(struct sbi_domain *dom)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	u32 i, cold_hartid = current_hartid();
 	struct sbi_domain *tdom;

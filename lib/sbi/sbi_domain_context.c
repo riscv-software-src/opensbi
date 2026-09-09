@@ -107,6 +107,8 @@ static void hart_context_set(struct sbi_domain *dom, u32 hartindex,
  */
 static int switch_to_next_domain_context(struct hart_context *ctx,
 					  struct hart_context *dom_ctx)
+	MUST_NOT_HOLD(&ctx->dom->assigned_harts_lock)
+	MUST_NOT_HOLD(&dom_ctx->dom->assigned_harts_lock)
 {
 	u32 hartindex = current_hartindex();
 	struct sbi_trap_context *trap_ctx;
