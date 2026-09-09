@@ -28,18 +28,18 @@ struct heap_node {
 
 struct sbi_heap_control {
 	spinlock_t lock;
-	unsigned long base;
-	unsigned long size;
-	unsigned long resv;
-	struct sbi_dlist free_node_list;
-	struct sbi_dlist free_space_list;
-	struct sbi_dlist used_space_list;
-	struct heap_node init_free_space_node;
+	unsigned long base GUARDED_BY(&lock);
+	unsigned long size GUARDED_BY(&lock);
+	unsigned long resv GUARDED_BY(&lock);
+	struct sbi_dlist free_node_list GUARDED_BY(&lock);
+	struct sbi_dlist free_space_list GUARDED_BY(&lock);
+	struct sbi_dlist used_space_list GUARDED_BY(&lock);
+	struct heap_node init_free_space_node GUARDED_BY(&lock);
 };
 
 struct sbi_heap_control global_hpctrl;
 
-static bool alloc_nodes(struct sbi_heap_control *hpctrl)
+static bool alloc_nodes(struct sbi_heap_control *hpctrl) MUST_HOLD(&hpctrl->lock)
 {
 	size_t size = HEAP_NODE_BATCH_SIZE * sizeof(struct heap_node);
 	struct heap_node *n, *new = NULL;
@@ -69,8 +69,9 @@ static bool alloc_nodes(struct sbi_heap_control *hpctrl)
 	return true;
 }
 
-static void *alloc_with_align(struct sbi_heap_control *hpctrl,
-			      size_t align, size_t size)
+static void *alloc_with_align(struct sbi_heap_control *hpctrl, size_t align,
+			      size_t size)
+	MUST_NOT_HOLD(&hpctrl->lock)
 {
 	void *ret = NULL;
 	struct heap_node *n, *np;
@@ -230,17 +231,19 @@ unsigned long sbi_heap_free_space_from(struct sbi_heap_control *hpctrl)
 }
 
 unsigned long sbi_heap_used_space_from(struct sbi_heap_control *hpctrl)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	return hpctrl->size - hpctrl->resv - sbi_heap_free_space();
 }
 
 unsigned long sbi_heap_reserved_space_from(struct sbi_heap_control *hpctrl)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	return hpctrl->resv;
 }
 
 int sbi_heap_init_new(struct sbi_heap_control *hpctrl, unsigned long base,
-		       unsigned long size)
+		      unsigned long size) NO_THREAD_SAFETY_ANALYSIS
 {
 	struct heap_node *n;
 
