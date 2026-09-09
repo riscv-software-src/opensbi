@@ -108,6 +108,11 @@ struct sbi_sse_event {
 
 /** Per-hart state */
 struct sse_hart_state {
+	/**
+	 * Lock that protects enabled_event_list
+	 */
+	spinlock_t enabled_event_lock;
+
 	/* Priority sorted list of enabled events (global and local in >=
 	 * ENABLED state). This list is protected by the enabled_event_lock.
 	 *
@@ -124,12 +129,7 @@ struct sse_hart_state {
 	 * this enabled_event_list and thus can only be removed from this
 	 * list upon disable ecall or on complete with ONESHOT flag.
 	 */
-	struct sbi_dlist enabled_event_list;
-
-	/**
-	 * Lock that protects enabled_event_list
-	 */
-	spinlock_t enabled_event_lock;
+	struct sbi_dlist enabled_event_list GUARDED_BY(&enabled_event_lock);
 
 	/**
 	 * List of local events allocated at boot time.
@@ -148,15 +148,15 @@ struct sse_hart_state {
  */
 struct sse_global_event {
 	/**
-	 * global event struct
-	 */
-	struct sbi_sse_event event;
-
-	/**
 	 * Global event lock protecting access from multiple harts from ecall to
 	 * the event.
 	 */
 	spinlock_t lock;
+
+	/**
+	 * global event struct
+	 */
+	struct sbi_sse_event event GUARDED_BY(&lock);
 };
 
 struct sse_event_info {
@@ -272,7 +272,8 @@ static void sse_event_set_state(struct sbi_sse_event *e,
 	e->attrs.status |= new_state;
 }
 
-static int sse_event_get(uint32_t event_id, struct sbi_sse_event **eret)
+static int sse_event_get(uint32_t event_id,
+			 struct sbi_sse_event **eret) NO_THREAD_SAFETY_ANALYSIS
 {
 	unsigned int i;
 	struct sbi_sse_event *e;
@@ -309,7 +310,7 @@ static int sse_event_get(uint32_t event_id, struct sbi_sse_event **eret)
 	return SBI_EINVAL;
 }
 
-static void sse_event_put(struct sbi_sse_event *e)
+static void sse_event_put(struct sbi_sse_event *e) NO_THREAD_SAFETY_ANALYSIS
 {
 	struct sse_global_event *ge;
 
@@ -330,6 +331,7 @@ static void sse_event_remove_from_list(struct sbi_sse_event *e)
  */
 static void sse_event_add_to_list(struct sse_hart_state *state,
 				   struct sbi_sse_event *e)
+	MUST_HOLD(&state->enabled_event_lock)
 {
 	struct sbi_sse_event *tmp;
 
@@ -348,6 +350,7 @@ static void sse_event_add_to_list(struct sse_hart_state *state,
  */
 static int sse_event_disable(struct sse_hart_state *shs,
 			      struct sbi_sse_event *e)
+	MUST_HOLD(&shs->enabled_event_lock)
 {
 	if (sse_event_state(e) != SBI_SSE_STATE_ENABLED)
 		return SBI_EINVALID_STATE;
@@ -781,6 +784,7 @@ static int sse_inject_event(uint32_t event_id, unsigned long hartid)
  */
 static int sse_event_enable(struct sse_hart_state *shs,
 			     struct sbi_sse_event *e)
+	MUST_HOLD(&shs->enabled_event_lock)
 {
 	if (sse_event_state(e) != SBI_SSE_STATE_REGISTERED)
 		return SBI_EINVALID_STATE;
@@ -801,6 +805,7 @@ static int sse_event_complete(struct sse_hart_state *shs,
 			      struct sbi_sse_event *e,
 			      struct sbi_trap_regs *regs,
 			      struct sbi_ecall_return *out)
+	MUST_HOLD(&shs->enabled_event_lock)
 {
 	if (sse_event_state(e) != SBI_SSE_STATE_RUNNING)
 		return SBI_EINVALID_STATE;
@@ -1175,6 +1180,7 @@ static int sse_global_init()
 }
 
 static void sse_local_init(struct sse_hart_state *shs)
+	NO_THREAD_SAFETY_ANALYSIS
 {
 	unsigned int ev = 0;
 	struct sse_event_info *info;
