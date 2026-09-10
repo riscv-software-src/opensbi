@@ -1080,7 +1080,7 @@ int sbi_pmu_ctr_get_info(uint32_t cidx, unsigned long *ctr_info)
 int sbi_pmu_event_get_info(unsigned long shmem_phys_lo, unsigned long shmem_phys_hi,
 			   unsigned long num_events, unsigned long flags)
 {
-	unsigned long shmem_size = num_events * sizeof(struct sbi_pmu_event_info);
+	unsigned long shmem_size;
 	int i, j, event_type, ret = 0;
 	struct sbi_pmu_event_info *einfo;
 	struct sbi_pmu_hart_state *phs = pmu_thishart_state_ptr();
@@ -1094,6 +1094,11 @@ int sbi_pmu_event_get_info(unsigned long shmem_phys_lo, unsigned long shmem_phys
 	/** Check shared memory size and address aligned to 16 byte */
 	if (!num_events || (shmem_phys_lo & 0xF))
 		return SBI_ERR_INVALID_PARAM;
+
+	if (num_events > (-1UL / sizeof(struct sbi_pmu_event_info)))
+		return SBI_ERR_INVALID_PARAM;
+
+	shmem_size = num_events * sizeof(struct sbi_pmu_event_info);
 
 	/*
 	 * On RV32, the M-mode can only access the first 4GB of
