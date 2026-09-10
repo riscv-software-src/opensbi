@@ -649,7 +649,7 @@ int sbi_dbtr_read_trig(unsigned long smode,
 		return SBI_ERR_FAILED;
 
 	if (trig_idx_base >= hs->total_trigs ||
-	    trig_idx_base + trig_count >= hs->total_trigs)
+	    trig_count >= hs->total_trigs - trig_idx_base)
 		return SBI_ERR_BAD_RANGE;
 
 	if (sbi_dbtr_shmem_disabled(hs))
