@@ -448,6 +448,7 @@ static int hart_mhpm_get_allowed_bits(void)
 	csr_write_allowed(CSR_MHPMCOUNTER3, &trap, val);
 	if (!trap.cause) {
 		val = csr_read_allowed(CSR_MHPMCOUNTER3, &trap);
+		csr_write(CSR_MHPMCOUNTER3, 0);
 		if (trap.cause)
 			return 0;
 	}
@@ -456,6 +457,7 @@ static int hart_mhpm_get_allowed_bits(void)
 	csr_write_allowed(CSR_MHPMCOUNTER3H, &trap, val);
 	if (!trap.cause) {
 		val = csr_read_allowed(CSR_MHPMCOUNTER3H, &trap);
+		csr_write(CSR_MHPMCOUNTER3H, 0);
 		if (trap.cause)
 			return num_bits;
 	}
