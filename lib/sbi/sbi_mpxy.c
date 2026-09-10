@@ -474,10 +474,11 @@ int sbi_mpxy_get_channel_ids(u32 start_index)
 int sbi_mpxy_read_attrs(u32 channel_id, u32 base_attr_id, u32 attr_count)
 {
 	struct mpxy_state *ms = sbi_domain_mpxy_state_thishart_ptr();
-	int ret = SBI_SUCCESS;
-	u32 *attr_ptr, end_id;
-	void *shmem_base;
 	struct sbi_domain *dom = sbi_domain_thishart_ptr();
+	int ret = SBI_SUCCESS;
+	void *shmem_base;
+	u32 *attr_ptr;
+	u64 end_id;
 
 	if (!mpxy_shmem_enabled(ms))
 		return SBI_ERR_NO_SHMEM;
@@ -496,7 +497,7 @@ int sbi_mpxy_read_attrs(u32 channel_id, u32 base_attr_id, u32 attr_count)
 		return SBI_ERR_INVALID_PARAM;
 
 	shmem_base = hart_shmem_base(ms);
-	end_id = base_attr_id + attr_count - 1;
+	end_id = (u64)base_attr_id + attr_count - 1;
 
 	sbi_hart_protection_temp_map_range((unsigned long)hart_shmem_base(ms), mpxy_shmem_size);
 
@@ -625,11 +626,12 @@ static void mpxy_write_std_attr(struct sbi_mpxy_channel *channel, u32 attr_id,
 int sbi_mpxy_write_attrs(u32 channel_id, u32 base_attr_id, u32 attr_count)
 {
 	struct mpxy_state *ms = sbi_domain_mpxy_state_thishart_ptr();
-	u32 *mem_ptr, attr_id, end_id, attr_val;
+	struct sbi_domain *dom = sbi_domain_thishart_ptr();
+	u32 *mem_ptr, attr_id, attr_val;
 	struct sbi_mpxy_channel *channel;
 	int ret, mem_idx;
 	void *shmem_base;
-	struct sbi_domain *dom = sbi_domain_thishart_ptr();
+	u64 end_id;
 
 	if (!mpxy_shmem_enabled(ms))
 		return SBI_ERR_NO_SHMEM;
@@ -648,7 +650,7 @@ int sbi_mpxy_write_attrs(u32 channel_id, u32 base_attr_id, u32 attr_count)
 		return SBI_ERR_INVALID_PARAM;
 
 	shmem_base = hart_shmem_base(ms);
-	end_id = base_attr_id + attr_count - 1;
+	end_id = (u64)base_attr_id + attr_count - 1;
 
 	sbi_hart_protection_temp_map_range((unsigned long)shmem_base, mpxy_shmem_size);
 
