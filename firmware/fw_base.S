@@ -458,6 +458,9 @@ _start_warm:
 	/* update the mscratch */
 	csrw	CSR_MSCRATCH, tp
 
+	/* Clear trap_context in scratch space */
+	REG_S	zero, SBI_SCRATCH_TRAP_CONTEXT_OFFSET(tp)
+
 	/* Setup stack */
 	add	sp, tp, zero
 
