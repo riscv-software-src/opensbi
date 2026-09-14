@@ -394,8 +394,13 @@ trap_done:
 struct sbi_trap_context *sbi_trap_rnmi_handler(struct sbi_trap_context *tcntx)
 {
 	int rc;
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
 	const struct sbi_platform *plat = sbi_platform_thishart_ptr();
 	const struct sbi_platform_operations *ops = sbi_platform_ops(plat);
+
+	/* Update trap context pointer so nested traps chain correctly */
+	tcntx->prev_context = sbi_trap_get_context(scratch);
+	sbi_trap_set_context(scratch, tcntx);
 
 	/* Call platform-specific NMI handler if registered */
 	if (ops && ops->rnmi_handler) {
@@ -404,14 +409,15 @@ struct sbi_trap_context *sbi_trap_rnmi_handler(struct sbi_trap_context *tcntx)
 			/* Platform handler failed to handle NMI */
 			sbi_trap_error("platform NMI handler failed", rc, tcntx);
 		}
-		return tcntx;
+		goto done;
 	}
 
 	/* No platform handler - treat as unhandled NMI */
 	sbi_trap_error("unhandled NMI (no platform rnmi_handler)",
 		       SBI_ENOTSUPP, tcntx);
 
-	/* Never returns */
+done:
+	sbi_trap_set_context(scratch, tcntx->prev_context);
 	return tcntx;
 }
 
