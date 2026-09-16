@@ -464,6 +464,33 @@ static int hart_mhpm_get_allowed_bits(void)
 	return num_bits;
 }
 
+static void smrnmi_hart_init(struct sbi_scratch *scratch)
+{
+	const struct sbi_platform *plat;
+	const struct sbi_platform_operations *ops;
+	extern void _trap_rnmi_handler(void);
+	extern void _trap_handler(void);
+
+	if (!sbi_hart_has_extension(scratch, SBI_HART_EXT_SMRNMI))
+		return;
+
+	plat = sbi_platform_thishart_ptr();
+	ops  = sbi_platform_ops(plat);
+
+	if (!ops || !ops->smrnmi_handlers_init)
+		sbi_panic("Smrnmi detected, but platform lacks smrnmi_handlers_init callback\n");
+
+	/* Reuse _trap_handler for the RNME slot since RNME is taken
+	 * as a regular M-mode trap with NMIE=0. */
+	ops->smrnmi_handlers_init(_trap_rnmi_handler, _trap_handler);
+
+	/* Initialize MNSCRATCH for the RNMI handler */
+	csr_write(CSR_MNSCRATCH, scratch);
+
+	/* Enable NMIs */
+	csr_set(CSR_MNSTATUS, MNSTATUS_NMIE);
+}
+
 static int hart_detect_features(struct sbi_scratch *scratch, bool cold_boot)
 {
 	struct sbi_trap_info trap = {0};
@@ -489,25 +516,7 @@ static int hart_detect_features(struct sbi_scratch *scratch, bool cold_boot)
 	if (rc)
 		return rc;
 
-	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SMRNMI)) {
-		const struct sbi_platform *plat = sbi_platform_thishart_ptr();
-		const struct sbi_platform_operations *ops = sbi_platform_ops(plat);
-		extern void _trap_rnmi_handler(void);
-		extern void _trap_handler(void);
-
-		if (!ops || !ops->smrnmi_handlers_init)
-			sbi_panic("Smrnmi detected, but platform lacks smrnmi_handlers_init callback\n");
-
-		/* Reuse _trap_handler for the RNME slot since RNME is taken
-		 * as a regular M-mode trap with NMIE=0. */
-		ops->smrnmi_handlers_init(_trap_rnmi_handler, _trap_handler);
-
-		/* Initialize MNSCRATCH for the RNMI handler */
-		csr_write(CSR_MNSCRATCH, scratch);
-
-		/* Enable NMIs */
-		csr_set(CSR_MNSTATUS, MNSTATUS_NMIE);
-	}
+	smrnmi_hart_init(scratch);
 
 #define __check_hpm_csr(__csr, __mask) 					  \
 	oldval = csr_read_allowed(__csr, &trap);			  \
@@ -692,15 +701,11 @@ __pmp_skip:
 
 int sbi_hart_reinit(struct sbi_scratch *scratch)
 {
-	int rc;
+	smrnmi_hart_init(scratch);
 
 	mstatus_init(scratch);
 
-	rc = fp_init(scratch);
-	if (rc)
-		return rc;
-
-	return 0;
+	return fp_init(scratch);
 }
 
 int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot)

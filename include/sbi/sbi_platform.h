@@ -154,7 +154,10 @@ struct sbi_platform_operations {
 	/** platform specific pmp disable on current HART */
 	void (*pmp_disable)(unsigned int n);
 
-	/** platform specific Smrnmi handlers init on current HART */
+	/** platform specific Smrnmi handlers init on current HART.
+	 *  May be called more than once on the same HART (e.g. once
+	 *  during boot feature detection and again during hart
+	 *  re-init), so it must be safe to call repeatedly. */
 	void (*smrnmi_handlers_init)(void (*rnmi_handler)(void),
 			void (*rnme_handler)(void));
 
