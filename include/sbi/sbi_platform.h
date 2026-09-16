@@ -62,8 +62,11 @@ enum sbi_platform_features {
 	/** Platform has fault delegation support */
 	SBI_PLATFORM_HAS_MFAULTS_DELEGATION = (1 << 1),
 
+	/** Platform uses a fixed or mtvec-based RNMI vector */
+	SBI_PLATFORM_HAS_FIXED_SMRNMI_VECTOR = (1 << 2),
+
 	/** Last index of Platform features*/
-	SBI_PLATFORM_HAS_LAST_FEATURE = SBI_PLATFORM_HAS_MFAULTS_DELEGATION,
+	SBI_PLATFORM_HAS_LAST_FEATURE = SBI_PLATFORM_HAS_FIXED_SMRNMI_VECTOR,
 };
 
 /** Default feature set for a platform */
@@ -249,6 +252,10 @@ assert_member_offset(struct sbi_platform, cbom_block_size, SBI_PLATFORM_CBOM_BLO
 /** Check whether the platform supports fault delegation */
 #define sbi_platform_has_mfaults_delegation(__p) \
 	((__p)->features & SBI_PLATFORM_HAS_MFAULTS_DELEGATION)
+
+/** Check whether the platform uses a fixed/mtvec-based RNMI vector */
+#define sbi_platform_has_fixed_smrnmi_vector(__p) \
+	((__p)->features & SBI_PLATFORM_HAS_FIXED_SMRNMI_VECTOR)
 
 /**
  * Get the platform features in string format

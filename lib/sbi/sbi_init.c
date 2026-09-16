@@ -199,6 +199,15 @@ static void sbi_boot_print_hart(struct sbi_scratch *scratch, u32 hartid)
 	sbi_printf("Boot HART Debug Triggers    : %d triggers\n",
 		   sbi_dbtr_get_total_triggers());
 	sbi_hart_delegation_dump(scratch, "Boot HART ", "           ");
+
+	if (sbi_hart_has_extension(scratch, SBI_HART_EXT_SMRNMI)) {
+		const struct sbi_platform *plat = sbi_platform_thishart_ptr();
+		const struct sbi_platform_operations *ops = sbi_platform_ops(plat);
+
+		sbi_printf("Boot HART Smrnmi Init       : %s\n",
+			   (ops && ops->smrnmi_handlers_init) ?
+			   "Platform" : "Default");
+	}
 }
 
 static unsigned long coldboot_done;

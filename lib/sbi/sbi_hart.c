@@ -478,14 +478,20 @@ static int smrnmi_hart_init(struct sbi_scratch *scratch)
 	plat = sbi_platform_thishart_ptr();
 	ops  = sbi_platform_ops(plat);
 
-	if (!ops || !ops->smrnmi_handlers_init)
-		sbi_panic("Smrnmi detected, but platform lacks smrnmi_handlers_init callback\n");
-
-	/* Reuse _trap_handler for the RNME slot since RNME is taken
-	 * as a regular M-mode trap with NMIE=0. */
-	ret = ops->smrnmi_handlers_init(_trap_rnmi_handler, _trap_handler);
-	if (ret)
-		return ret;
+	if (ops && ops->smrnmi_handlers_init) {
+		/* Reuse _trap_handler for the RNME slot since RNME is taken
+		 * as a regular M-mode trap with NMIE=0. */
+		ret = ops->smrnmi_handlers_init(_trap_rnmi_handler,
+						_trap_handler);
+		if (ret)
+			return ret;
+	} else if (!sbi_platform_has_fixed_smrnmi_vector(plat)) {
+		/*
+		 * No callback: platforms using a fixed/mtvec vector must set
+		 * SBI_PLATFORM_HAS_FIXED_SMRNMI_VECTOR.
+		 */
+		return SBI_ENOTSUPP;
+	}
 
 	/* Initialize MNSCRATCH for the RNMI handler */
 	csr_write(CSR_MNSCRATCH, scratch);
