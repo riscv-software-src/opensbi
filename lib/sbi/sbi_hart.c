@@ -464,15 +464,16 @@ static int hart_mhpm_get_allowed_bits(void)
 	return num_bits;
 }
 
-static void smrnmi_hart_init(struct sbi_scratch *scratch)
+static int smrnmi_hart_init(struct sbi_scratch *scratch)
 {
 	const struct sbi_platform *plat;
 	const struct sbi_platform_operations *ops;
 	extern void _trap_rnmi_handler(void);
 	extern void _trap_handler(void);
+	int ret;
 
 	if (!sbi_hart_has_extension(scratch, SBI_HART_EXT_SMRNMI))
-		return;
+		return 0;
 
 	plat = sbi_platform_thishart_ptr();
 	ops  = sbi_platform_ops(plat);
@@ -482,13 +483,17 @@ static void smrnmi_hart_init(struct sbi_scratch *scratch)
 
 	/* Reuse _trap_handler for the RNME slot since RNME is taken
 	 * as a regular M-mode trap with NMIE=0. */
-	ops->smrnmi_handlers_init(_trap_rnmi_handler, _trap_handler);
+	ret = ops->smrnmi_handlers_init(_trap_rnmi_handler, _trap_handler);
+	if (ret)
+		return ret;
 
 	/* Initialize MNSCRATCH for the RNMI handler */
 	csr_write(CSR_MNSCRATCH, scratch);
 
 	/* Enable NMIs */
 	csr_set(CSR_MNSTATUS, MNSTATUS_NMIE);
+
+	return 0;
 }
 
 static int hart_detect_features(struct sbi_scratch *scratch, bool cold_boot)
@@ -516,7 +521,9 @@ static int hart_detect_features(struct sbi_scratch *scratch, bool cold_boot)
 	if (rc)
 		return rc;
 
-	smrnmi_hart_init(scratch);
+	rc = smrnmi_hart_init(scratch);
+	if (rc)
+		return rc;
 
 #define __check_hpm_csr(__csr, __mask) 					  \
 	oldval = csr_read_allowed(__csr, &trap);			  \
@@ -701,7 +708,11 @@ __pmp_skip:
 
 int sbi_hart_reinit(struct sbi_scratch *scratch)
 {
-	smrnmi_hart_init(scratch);
+	int rc;
+
+	rc = smrnmi_hart_init(scratch);
+	if (rc)
+		return rc;
 
 	mstatus_init(scratch);
 

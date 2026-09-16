@@ -157,12 +157,13 @@ struct sbi_platform_operations {
 	/** platform specific Smrnmi handlers init on current HART.
 	 *  May be called more than once on the same HART (e.g. once
 	 *  during boot feature detection and again during hart
-	 *  re-init), so it must be safe to call repeatedly. */
-	void (*smrnmi_handlers_init)(void (*rnmi_handler)(void),
+	 *  re-init), so it must be safe to call repeatedly.
+	 *  Returns SBI_OK on success, error code otherwise. */
+	int (*smrnmi_handlers_init)(void (*rnmi_handler)(void),
 			void (*rnme_handler)(void));
 
 	/** platform specific Smrnmi NMI handler.
-	 *  Returns SBI_SUCCESS on success, error code if NMI cannot be handled. */
+	 *  Returns SBI_OK on success, error code if NMI cannot be handled. */
 	int (*rnmi_handler)(struct sbi_trap_context *tcntx);
 };
 
