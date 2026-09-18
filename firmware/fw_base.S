@@ -109,6 +109,37 @@ _fw_header_override_a2:
 	/* Reserved, pads the header up to FW_HEADER_SIZE bytes */
 	.fill	(FW_HEADER_SIZE - FW_HEADER_RESERVED_OFFSET), 1, 0
 _start_real:
+	/*
+	 * Override a0, a1 and a2 with the values from the firmware header.
+	 *
+	 * This is for a previous booting stage which cannot pass the boot
+	 * arguments in registers, but can patch the firmware image before
+	 * jumping to it. Nothing is overridden when the previous booting
+	 * stage left the flags word alone, so the registers passed by all
+	 * existing booting stages are used as-is.
+	 *
+	 * This runs before relocation, so only PC-relative addressing is
+	 * used. t0, t1 and t2 are free to use here: the boot arguments live
+	 * in a0-a4 and every other register is reset further down the cold
+	 * boot path.
+	 */
+	lla	t0, _fw_header_flags
+	lw	t0, (t0)
+	andi	t1, t0, FW_HEADER_FLAGS_OVERRIDE_A0
+	beqz	t1, _skip_override_a0
+	csrr	a0, CSR_MHARTID
+_skip_override_a0:
+	andi	t1, t0, FW_HEADER_FLAGS_OVERRIDE_A1
+	beqz	t1, _skip_override_a1
+	lla	t2, _fw_header_override_a1
+	REG_L	a1, (t2)
+_skip_override_a1:
+	andi	t1, t0, FW_HEADER_FLAGS_OVERRIDE_A2
+	beqz	t1, _skip_override_a2
+	lla	t2, _fw_header_override_a2
+	REG_L	a2, (t2)
+_skip_override_a2:
+
 	/* Find preferred boot HART id */
 	MOV_3R	s0, a0, s1, a1, s2, a2
 	call	fw_boot_hart
