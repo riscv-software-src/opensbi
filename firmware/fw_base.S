@@ -17,6 +17,15 @@
 #define BOOT_LOTTERY_ACQUIRED		1
 #define BOOT_STATUS_BOOT_HART_DONE	1
 
+/* OpenSBI firmware header */
+#define FW_HEADER_MAGIC_VALUE		0x4942534f /* ASCII string "OSBI" */
+#define FW_HEADER_VERSION		0x1
+#define FW_HEADER_SIZE			128
+#define FW_HEADER_RESERVED_OFFSET	0x38
+#define FW_HEADER_FLAGS_OVERRIDE_A0	(1 << 0) /* override a0 with mhartid */
+#define FW_HEADER_FLAGS_OVERRIDE_A1	(1 << 1)
+#define FW_HEADER_FLAGS_OVERRIDE_A2	(1 << 2)
+
 .macro	MOV_3R __d0, __s0, __d1, __s1, __d2, __s2
 	add	\__d0, \__s0, zero
 	add	\__d1, \__s1, zero
@@ -44,8 +53,62 @@
 	.section .entry, "ax", %progbits
 	.align 3
 	.globl _start
+	.globl _start_real
 	.globl _start_warm
 _start:
+	/*
+	 * OpenSBI firmware header
+	 *
+	 * Every OpenSBI firmware image starts with this fixed 128-byte
+	 * header. The layout is identical for RV32 and RV64 (and can be
+	 * extended for RV128 by using the reserved half of each override
+	 * field), so the previous booting stage can parse the header without
+	 * knowing the XLEN of the firmware upfront.
+	 *
+	 * Offset  Size  Field
+	 *   0x00     4  jump to _start_real
+	 *   0x04     4  magic ('OSBI')
+	 *   0x08     4  header version
+	 *   0x0c     4  firmware XLEN
+	 *   0x10     4  firmware size (_fw_end - _fw_start)
+	 *   0x14     4  flags (FW_HEADER_FLAGS_*)
+	 *   0x18     8  override value for a1
+	 *   0x20     8  reserved (upper half of the a1 value on RV128)
+	 *   0x28     8  override value for a2
+	 *   0x30     8  reserved (upper half of the a2 value on RV128)
+	 *   0x38    72  reserved
+	 */
+_fw_header_jump:
+	/*
+	 * Must stay a 4-byte instruction so that the fields below are always
+	 * at a fixed offset. 'norvc' keeps the assembler from picking c.j and
+	 * 'norelax' keeps the linker from compressing it later on, which it
+	 * would otherwise happily do for a jump this short.
+	 */
+	.option push
+	.option norvc
+	.option norelax
+	j	_start_real
+	.option pop
+_fw_header_magic:
+	.word	FW_HEADER_MAGIC_VALUE
+_fw_header_version:
+	.word	FW_HEADER_VERSION
+_fw_header_xlen:
+	.word	__riscv_xlen
+_fw_header_size:
+	.word	(_fw_end - _fw_start)
+_fw_header_flags:
+	.word	0
+_fw_header_override_a1:
+	.dword	0
+	.dword	0			/* reserved */
+_fw_header_override_a2:
+	.dword	0
+	.dword	0			/* reserved */
+	/* Reserved, pads the header up to FW_HEADER_SIZE bytes */
+	.fill	(FW_HEADER_SIZE - FW_HEADER_RESERVED_OFFSET), 1, 0
+_start_real:
 	/* Find preferred boot HART id */
 	MOV_3R	s0, a0, s1, a1, s2, a2
 	call	fw_boot_hart
