@@ -16,6 +16,11 @@ of RISC-V CPU:
 * device tree blob address in memory via *a1* register. The address must
   be aligned to 8 bytes.
 
+A previous booting stage which cannot set up these registers can instead pass
+the same information by patching the OpenSBI firmware header, which is present
+at the beginning of every OpenSBI firmware image. See *[FW_HEADER]* for
+details.
+
 OpenSBI currently supports three different types of firmwares.
 
 Firmware with Dynamic Information (*FW_DYNAMIC*)
@@ -82,9 +87,13 @@ following documents.
 * *[FW_PAYLOAD]*: The *Firmware with Payload (FW_PAYLOAD)* is described in more
   details in the file *fw_payload.md*.
 
+The *OpenSBI firmware header*, which is common to all firmware types, is
+described in *[FW_HEADER]*.
+
 [FW_DYNAMIC]: fw_dynamic.md
 [FW_JUMP]: fw_jump.md
 [FW_PAYLOAD]: fw_payload.md
+[FW_HEADER]: fw_header.md
 
 Providing different payloads to OpenSBI Firmware
 ------------------------------------------------
