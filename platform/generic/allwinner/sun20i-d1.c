@@ -229,6 +229,7 @@ static int sun20i_d1_platform_init(const void *fdt, int nodeoff,
 
 static const struct fdt_match sun20i_d1_match[] = {
 	{ .compatible = "allwinner,sun20i-d1" },
+	{ .compatible = "allwinner,sun20i-d1s" },
 	{ },
 };
 
