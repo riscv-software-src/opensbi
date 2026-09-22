@@ -213,8 +213,9 @@ int sbi_misaligned_v_ld_emulator(ulong insn, struct sbi_trap_context *tcntx)
 		if (masked) {
 			if (vstart == orig_vstart || vstart % mask_len == 0)
 				/* Fetch a mask_len chunk of mask */
-				get_vreg(vlenb, 0, vstart / mask_len * mask_len,
-					 mask_len, mask);
+				get_vreg(vlenb, 0,
+					 vstart / mask_len * mask_len / 8,
+					 mask_len / 8, mask);
 
 			if (~mask[vstart % mask_len / 8] & BIT(vstart % 8))
 				continue;
@@ -326,8 +327,9 @@ int sbi_misaligned_v_st_emulator(ulong insn, struct sbi_trap_context *tcntx)
 		if (masked) {
 			if (vstart == orig_vstart || vstart % mask_len == 0)
 				/* Fetch a mask_len chunk of mask */
-				get_vreg(vlenb, 0, vstart / mask_len * mask_len,
-					 mask_len, mask);
+				get_vreg(vlenb, 0,
+					 vstart / mask_len * mask_len / 8,
+					 mask_len / 8, mask);
 
 			if (~mask[vstart % mask_len / 8] & BIT(vstart % 8))
 				continue;
