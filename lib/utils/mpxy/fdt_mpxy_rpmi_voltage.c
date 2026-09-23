@@ -1,4 +1,4 @@
-#include <sbi_utils/mpxy/fdt_mpxy_rpmi_mbox.h>
+#include <sbi_utils/mpxy/fdt_mpxy_rpmi.h>
 
 static struct mpxy_rpmi_service_data voltage_services[] = {
 {
@@ -59,7 +59,7 @@ static struct mpxy_rpmi_service_data voltage_services[] = {
 },
 };
 
-static const struct mpxy_rpmi_mbox_data voltage_data = {
+static const struct mpxy_rpmi_data voltage_data = {
 	.servicegrp_id = RPMI_SRVGRP_VOLTAGE,
 	.num_services = RPMI_VOLTAGE_SRV_MAX_COUNT,
 	.service_data = voltage_services,
@@ -73,5 +73,5 @@ static const struct fdt_match voltage_match[] = {
 const struct fdt_driver fdt_mpxy_rpmi_voltage = {
 	.experimental = true,
 	.match_table = voltage_match,
-	.init = mpxy_rpmi_mbox_init,
+	.init = fdt_mpxy_rpmi_init,
 };

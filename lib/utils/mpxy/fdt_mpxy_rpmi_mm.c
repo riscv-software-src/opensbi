@@ -8,7 +8,7 @@
  *   Sunil V L <sunilvl@oss.qualcomm.com>
  */
 
-#include <sbi_utils/mpxy/fdt_mpxy_rpmi_mbox.h>
+#include <sbi_utils/mpxy/fdt_mpxy_rpmi.h>
 #include <sbi_utils/mailbox/rpmi_mailbox.h>
 
 static struct rpmi_mm_get_attributes_rsp rsp;
@@ -38,7 +38,7 @@ static struct mpxy_rpmi_service_data mm_srvcdata[] = {
 };
 
 static int mpxy_rpmi_mm_setup(void **context, struct mbox_chan *chan,
-			      const struct mpxy_rpmi_mbox_data *data)
+			      const struct mpxy_rpmi_data *data)
 {
 	unsigned long mm_region_addr = 0;
 	unsigned long mm_region_size = 0;
@@ -99,7 +99,7 @@ static int mpxy_rpmi_mm_xfer(void *context, struct mbox_chan *chan,
 	return rc;
 }
 
-static const struct mpxy_rpmi_mbox_data mm_data = {
+static const struct mpxy_rpmi_data mm_data = {
 	.servicegrp_id = RPMI_SRVGRP_MANAGEMENT_MODE,
 	.num_services = RPMI_MM_SRV_MAX_COUNT,
 	.service_data = mm_srvcdata,
@@ -119,5 +119,5 @@ static const struct fdt_match mm_match[] = {
 const struct fdt_driver fdt_mpxy_rpmi_mm = {
 	.experimental = true,
 	.match_table = mm_match,
-	.init = mpxy_rpmi_mbox_init,
+	.init = fdt_mpxy_rpmi_init,
 };

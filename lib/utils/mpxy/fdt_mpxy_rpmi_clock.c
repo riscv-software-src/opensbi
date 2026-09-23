@@ -8,7 +8,7 @@
  *   Anup Patel <apatel@ventanamicro.com>
  */
 
-#include <sbi_utils/mpxy/fdt_mpxy_rpmi_mbox.h>
+#include <sbi_utils/mpxy/fdt_mpxy_rpmi.h>
 
 static struct mpxy_rpmi_service_data clock_services[] = {
 {
@@ -69,7 +69,7 @@ static struct mpxy_rpmi_service_data clock_services[] = {
 },
 };
 
-static const struct mpxy_rpmi_mbox_data clock_data = {
+static const struct mpxy_rpmi_data clock_data = {
 	.servicegrp_id = RPMI_SRVGRP_CLOCK,
 	.num_services = RPMI_CLOCK_SRV_MAX_COUNT,
 	.service_data = clock_services,
@@ -82,5 +82,5 @@ static const struct fdt_match clock_match[] = {
 
 const struct fdt_driver fdt_mpxy_rpmi_clock = {
 	.match_table = clock_match,
-	.init = mpxy_rpmi_mbox_init,
+	.init = fdt_mpxy_rpmi_init,
 };

@@ -1,4 +1,4 @@
-#include <sbi_utils/mpxy/fdt_mpxy_rpmi_mbox.h>
+#include <sbi_utils/mpxy/fdt_mpxy_rpmi.h>
 
 static struct mpxy_rpmi_service_data dpwr_services[] = {
 {
@@ -38,7 +38,7 @@ static struct mpxy_rpmi_service_data dpwr_services[] = {
 },
 };
 
-static const struct mpxy_rpmi_mbox_data dpwr_data = {
+static const struct mpxy_rpmi_data dpwr_data = {
 	.servicegrp_id = RPMI_SRVGRP_DEVICE_POWER,
 	.num_services = RPMI_DPWR_SRV_MAX_COUNT,
 	.service_data = dpwr_services,
@@ -52,5 +52,5 @@ static const struct fdt_match dpwr_match[] = {
 const struct fdt_driver fdt_mpxy_rpmi_device_power = {
 	.experimental = true,
 	.match_table = dpwr_match,
-	.init = mpxy_rpmi_mbox_init,
+	.init = fdt_mpxy_rpmi_init,
 };

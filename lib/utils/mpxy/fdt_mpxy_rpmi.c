@@ -12,16 +12,16 @@
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_heap.h>
 #include <sbi_utils/fdt/fdt_helper.h>
-#include <sbi_utils/mpxy/fdt_mpxy_rpmi_mbox.h>
+#include <sbi_utils/mpxy/fdt_mpxy_rpmi.h>
 #include <sbi/sbi_console.h>
 
 /**
- * MPXY mbox instance per MPXY channel. This ties
+ * MPXY RPMI instance per MPXY channel. This ties
  * an MPXY channel with an RPMI Service group.
  */
-struct mpxy_rpmi_mbox {
+struct mpxy_rpmi {
 	struct mbox_chan *chan;
-	const struct mpxy_rpmi_mbox_data *mbox_data;
+	const struct mpxy_rpmi_data *data;
 	struct mpxy_rpmi_channel_attrs msgprot_attrs;
 	struct sbi_mpxy_channel channel;
 	void *group_context;
@@ -32,12 +32,12 @@ struct mpxy_rpmi_mbox {
  * MPXY message_id == RPMI service_id
  */
 static const struct mpxy_rpmi_service_data *mpxy_find_rpmi_srvid(u32 message_id,
-					const struct mpxy_rpmi_mbox_data *mbox_data)
+								 const struct mpxy_rpmi_data *data)
 {
-	const struct mpxy_rpmi_service_data *srv = mbox_data->service_data;
+	const struct mpxy_rpmi_service_data *srv = data->service_data;
 	int mid = 0;
 
-	for (mid = 0; srv[mid].id < mbox_data->num_services; mid++) {
+	for (mid = 0; srv[mid].id < data->num_services; mid++) {
 		if (srv[mid].id == (u8)message_id)
 			return &srv[mid];
 	}
@@ -53,12 +53,10 @@ static void mpxy_copy_attrs(u32 *outmem, u32 *inmem, u32 count)
 		outmem[idx] = cpu_to_le32(inmem[idx]);
 }
 
-static int mpxy_mbox_read_attributes(struct sbi_mpxy_channel *channel,
-				     u32 *outmem, u32 base_attr_id,
-				     u32 attr_count)
+static int mpxy_read_attributes(struct sbi_mpxy_channel *channel,
+				u32 *outmem, u32 base_attr_id, u32 attr_count)
 {
-	struct mpxy_rpmi_mbox *rmb =
-		container_of(channel, struct mpxy_rpmi_mbox, channel);
+	struct mpxy_rpmi *rmb = container_of(channel, struct mpxy_rpmi, channel);
 	u32 *attr_array = (u32 *)&rmb->msgprot_attrs;
 	u32 end_id = base_attr_id + attr_count - 1;
 
@@ -96,18 +94,16 @@ static int mpxy_check_write_attr(u32 attr_id, u32 attr_val)
 }
 
 static void mpxy_write_attr(struct mpxy_rpmi_channel_attrs *attrs,
-			   u32 attr_id,
-			   u32 attr_val)
+			    u32 attr_id, u32 attr_val)
 {
 	/* No writable attributes in RPMI */
 }
 
-static int mpxy_mbox_write_attributes(struct sbi_mpxy_channel *channel,
-				     u32 *outmem, u32 base_attr_id,
-				     u32 attr_count)
+static int mpxy_write_attributes(struct sbi_mpxy_channel *channel,
+				 u32 *outmem, u32 base_attr_id,
+				 u32 attr_count)
 {
-	struct mpxy_rpmi_mbox *rmb =
-		container_of(channel, struct mpxy_rpmi_mbox, channel);
+	struct mpxy_rpmi *rmb = container_of(channel, struct mpxy_rpmi, channel);
 	u32 end_id = base_attr_id + attr_count - 1;
 	u32 attr_val, idx;
 	int ret, mem_idx;
@@ -132,14 +128,12 @@ static int mpxy_mbox_write_attributes(struct sbi_mpxy_channel *channel,
 	return SBI_OK;
 }
 
-static int __mpxy_mbox_send_message(struct sbi_mpxy_channel *channel,
-				  u32 message_id, void *tx, u32 tx_len,
-				  void *rx, u32 rx_max_len,
-				  unsigned long *ack_len)
+static int __mpxy_send_message(struct sbi_mpxy_channel *channel,
+			       u32 message_id, void *tx, u32 tx_len,
+			       void *rx, u32 rx_max_len, unsigned long *ack_len)
 {
-	struct mpxy_rpmi_mbox *rmb =
-		container_of(channel, struct mpxy_rpmi_mbox, channel);
-	const struct mpxy_rpmi_mbox_data *data = rmb->mbox_data;
+	struct mpxy_rpmi *rmb = container_of(channel, struct mpxy_rpmi, channel);
+	const struct mpxy_rpmi_data *data = rmb->data;
 	const struct mpxy_rpmi_service_data *srv =
 		mpxy_find_rpmi_srvid(message_id, data);
 	struct rpmi_message_args args = {0};
@@ -194,33 +188,33 @@ static int __mpxy_mbox_send_message(struct sbi_mpxy_channel *channel,
 	return SBI_OK;
 }
 
-static int mpxy_mbox_send_message_withresp(struct sbi_mpxy_channel *channel,
-				  u32 message_id, void *tx, u32 tx_len,
-				  void *rx, u32 rx_max_len,
-				  unsigned long *ack_len)
+static int mpxy_send_message_withresp(struct sbi_mpxy_channel *channel,
+				      u32 message_id, void *tx, u32 tx_len,
+				      void *rx, u32 rx_max_len,
+				      unsigned long *ack_len)
 {
-	return __mpxy_mbox_send_message(channel, message_id, tx, tx_len,
-				 rx, rx_max_len, ack_len);
+	return __mpxy_send_message(channel, message_id, tx, tx_len,
+				   rx, rx_max_len, ack_len);
 }
 
-static int mpxy_mbox_send_message_withoutresp(struct sbi_mpxy_channel *channel,
-				  u32 message_id, void *tx, u32 tx_len)
+static int mpxy_send_message_withoutresp(struct sbi_mpxy_channel *channel,
+					 u32 message_id, void *tx, u32 tx_len)
 {
-	return __mpxy_mbox_send_message(channel, message_id, tx, tx_len,
-				 NULL, 0, NULL);
+	return __mpxy_send_message(channel, message_id, tx, tx_len,
+				   NULL, 0, NULL);
 }
 
-int mpxy_rpmi_mbox_init(const void *fdt, int nodeoff, const struct fdt_match *match)
+int fdt_mpxy_rpmi_init(const void *fdt, int nodeoff, const struct fdt_match *match)
 {
 	u32 channel_id, servicegrp_ver, pro_ver, max_data_len, tx_tout, rx_tout;
 	u32 impl_id, impl_ver;
-	const struct mpxy_rpmi_mbox_data *data = match->data;
-	struct mpxy_rpmi_mbox *rmb;
+	const struct mpxy_rpmi_data *data = match->data;
+	struct mpxy_rpmi *rmb;
 	struct mbox_chan *chan;
 	const fdt32_t *val;
 	int rc, len;
 
-	/* Allocate context for MPXY mbox client */
+	/* Allocate context for MPXY RPMI instance */
 	rmb = sbi_zalloc(sizeof(*rmb));
 	if (!rmb)
 		return SBI_ENOMEM;
@@ -285,8 +279,8 @@ int mpxy_rpmi_mbox_init(const void *fdt, int nodeoff, const struct fdt_match *ma
 
 	/*
 	 * The "riscv,sbi-mpxy-channel-id" DT property is mandatory
-	 * for MPXY RPMI mailbox client driver so if this is not
-	 * present then try other drivers.
+	 * for MPXY RPMI drivers so if this is not present then try
+	 * other drivers.
 	 */
 	val = fdt_getprop(fdt, nodeoff, "riscv,sbi-mpxy-channel-id", &len);
 	if (len > 0 && val) {
@@ -296,20 +290,18 @@ int mpxy_rpmi_mbox_init(const void *fdt, int nodeoff, const struct fdt_match *ma
 		goto fail_free_chan;
 	}
 
-	/* Setup MPXY mbox client */
+	/* Setup MPXY RPMI channel */
 	/* Channel ID*/
 	rmb->channel.channel_id = channel_id;
 	/* Set the owner domain */
 	rmb->channel.owner_domain = &root;
 	/* Callback for read RPMI attributes */
-	rmb->channel.read_attributes = mpxy_mbox_read_attributes;
+	rmb->channel.read_attributes = mpxy_read_attributes;
 	/* Callback for write RPMI attributes */
-	rmb->channel.write_attributes = mpxy_mbox_write_attributes;
+	rmb->channel.write_attributes = mpxy_write_attributes;
 	/* Callback for sending RPMI message */
-	rmb->channel.send_message_with_response =
-					mpxy_mbox_send_message_withresp;
-	rmb->channel.send_message_without_response =
-					mpxy_mbox_send_message_withoutresp;
+	rmb->channel.send_message_with_response = mpxy_send_message_withresp;
+	rmb->channel.send_message_without_response = mpxy_send_message_withoutresp;
 
 	/* RPMI Message Protocol ID */
 	rmb->channel.attrs.msg_proto_id = SBI_MPXY_MSGPROTO_RPMI_ID;
@@ -334,7 +326,7 @@ int mpxy_rpmi_mbox_init(const void *fdt, int nodeoff, const struct fdt_match *ma
 	rmb->msgprot_attrs.impl_id = impl_id;
 	rmb->msgprot_attrs.impl_ver = impl_ver;
 
-	rmb->mbox_data = data;
+	rmb->data = data;
 	rmb->chan = chan;
 
 	/* Setup RPMI service group context */

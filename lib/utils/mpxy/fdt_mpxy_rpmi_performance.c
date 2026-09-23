@@ -1,4 +1,4 @@
-#include <sbi_utils/mpxy/fdt_mpxy_rpmi_mbox.h>
+#include <sbi_utils/mpxy/fdt_mpxy_rpmi.h>
 
 static struct mpxy_rpmi_service_data performance_services[] = {
 {
@@ -73,7 +73,7 @@ static struct mpxy_rpmi_service_data performance_services[] = {
 },
 };
 
-static const struct mpxy_rpmi_mbox_data performance_data = {
+static const struct mpxy_rpmi_data performance_data = {
 	.servicegrp_id = RPMI_SRVGRP_PERFORMANCE ,
 	.num_services = RPMI_PERF_SRV_MAX_COUNT,
 	.service_data = performance_services,
@@ -87,5 +87,5 @@ static const struct fdt_match performance_match[] = {
 const struct fdt_driver fdt_mpxy_rpmi_performance = {
 	.experimental = true,
 	.match_table = performance_match,
-	.init = mpxy_rpmi_mbox_init,
+	.init = fdt_mpxy_rpmi_init,
 };

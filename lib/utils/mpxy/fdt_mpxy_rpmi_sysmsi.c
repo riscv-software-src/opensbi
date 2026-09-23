@@ -9,7 +9,7 @@
 #include <sbi/sbi_byteorder.h>
 #include <sbi/sbi_heap.h>
 #include <sbi_utils/mailbox/rpmi_mailbox.h>
-#include <sbi_utils/mpxy/fdt_mpxy_rpmi_mbox.h>
+#include <sbi_utils/mpxy/fdt_mpxy_rpmi.h>
 
 struct mpxy_rpmi_sysmsi {
 	u32 sys_num_msi;
@@ -84,7 +84,7 @@ static void mpxy_rpmi_sysmsi_cleanup(void *context)
 }
 
 static int mpxy_rpmi_sysmsi_setup(void **context, struct mbox_chan *chan,
-				  const struct mpxy_rpmi_mbox_data *data)
+				  const struct mpxy_rpmi_data *data)
 {
 	struct rpmi_sysmsi_get_msi_attributes_resp gmaresp;
 	struct rpmi_sysmsi_get_msi_attributes_req gmareq;
@@ -189,7 +189,7 @@ static struct mpxy_rpmi_service_data sysmsi_services[] = {
 },
 };
 
-static const struct mpxy_rpmi_mbox_data sysmsi_data = {
+static const struct mpxy_rpmi_data sysmsi_data = {
 	.servicegrp_id = RPMI_SRVGRP_SYSTEM_MSI,
 	.num_services = RPMI_SYSMSI_SRV_ID_MAX_COUNT,
 	.service_data = sysmsi_services,
@@ -205,5 +205,5 @@ static const struct fdt_match sysmsi_match[] = {
 
 const struct fdt_driver fdt_mpxy_rpmi_sysmsi = {
 	.match_table = sysmsi_match,
-	.init = mpxy_rpmi_mbox_init,
+	.init = fdt_mpxy_rpmi_init,
 };

@@ -7,7 +7,7 @@
  *   Subrahmanya Lingappa <subrahmanya.lingappa@oss.qualcomm.com>
  */
 
-#include <sbi_utils/mpxy/fdt_mpxy_rpmi_mbox.h>
+#include <sbi_utils/mpxy/fdt_mpxy_rpmi.h>
 
 static struct mpxy_rpmi_service_data logging_services[] = {
 	[0] = {
@@ -33,7 +33,7 @@ static struct mpxy_rpmi_service_data logging_services[] = {
 	},
 };
 
-static const struct mpxy_rpmi_mbox_data logging_data = {
+static const struct mpxy_rpmi_data logging_data = {
 	.servicegrp_id = RPMI_SRVGRP_LOGGING,
 	.num_services = RPMI_LOGGING_SRV_MAX_COUNT,
 	.service_data = logging_services,
@@ -46,6 +46,6 @@ static const struct fdt_match logging_match[] = {
 
 const struct fdt_driver fdt_mpxy_rpmi_logging = {
 	.match_table = logging_match,
-	.init = mpxy_rpmi_mbox_init,
+	.init = fdt_mpxy_rpmi_init,
 	.experimental = true,
 };
