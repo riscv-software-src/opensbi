@@ -41,6 +41,7 @@ struct mpxy_rpmi_data {
 
 	/** Setup RPMI service group context for MPXY */
 	int (*setup_group)(void **context, struct mbox_chan *chan,
+			   struct sbi_domain *dom,
 			   const struct mpxy_rpmi_data *data);
 
 	/** Cleanup RPMI service group context for MPXY */

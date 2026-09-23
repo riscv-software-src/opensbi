@@ -286,7 +286,7 @@ static int __mpxy_rpmi_init(const struct mpxy_rpmi_data *data,
 
 	/* Setup RPMI service group context */
 	if (data->setup_group) {
-		rc = data->setup_group(&rmb->group_context, chan, data);
+		rc = data->setup_group(&rmb->group_context, chan, dom, data);
 		if (rc)
 			goto fail_free_client;
 	}

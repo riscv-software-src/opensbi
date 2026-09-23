@@ -39,6 +39,7 @@ static struct mpxy_rpmi_service_data mm_srvcdata[] = {
 };
 
 static int mpxy_rpmi_mm_setup(void **context, struct mbox_chan *chan,
+			      struct sbi_domain *dom,
 			      const struct mpxy_rpmi_data *data)
 {
 	unsigned long mm_region_addr = 0;
@@ -63,9 +64,8 @@ static int mpxy_rpmi_mm_setup(void **context, struct mbox_chan *chan,
 	mm_region_size = rsp.mma.shmem_size;
 	mm_region_flags = SBI_DOMAIN_MEMREGION_SHARED_SURW_MRW;
 
-	rc = sbi_domain_root_add_memrange(mm_region_addr, mm_region_size,
-					  PAGE_SIZE, mm_region_flags);
-	return rc;
+	return sbi_domain_add_memrange(dom, mm_region_addr, mm_region_size,
+				       PAGE_SIZE, mm_region_flags);
 }
 
 static int mpxy_rpmi_mm_xfer(void *context, struct mbox_chan *chan,

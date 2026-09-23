@@ -85,6 +85,7 @@ static void mpxy_rpmi_sysmsi_cleanup(void *context)
 }
 
 static int mpxy_rpmi_sysmsi_setup(void **context, struct mbox_chan *chan,
+				  struct sbi_domain *dom,
 				  const struct mpxy_rpmi_data *data)
 {
 	struct rpmi_sysmsi_get_msi_attributes_resp gmaresp;
