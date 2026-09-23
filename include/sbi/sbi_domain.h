@@ -346,6 +346,22 @@ void sbi_domain_dump_all(const char *suffix);
 int sbi_domain_register(struct sbi_domain *dom);
 
 /**
+ * Add a memory range with its flags to a domain
+ * @param dom pointer to domain
+ * @param addr start physical address of memory range
+ * @param size physical size of memory range
+ * @param align alignment of memory region
+ * @param region_flags memory range flags
+ *
+ * @return 0 on success
+ * @return SBI_EALREADY if memory region conflicts with the existing one
+ * @return SBI_EINVAL otherwise
+ */
+int sbi_domain_add_memrange(struct sbi_domain *dom,
+			    unsigned long addr, unsigned long size,
+			    unsigned long align, unsigned long region_flags);
+
+/**
  * Add a memory range with its flags to the root domain
  * @param addr start physical address of memory range
  * @param size physical size of memory range
@@ -356,8 +372,11 @@ int sbi_domain_register(struct sbi_domain *dom);
  * @return SBI_EALREADY if memory region conflicts with the existing one
  * @return SBI_EINVAL otherwise
  */
-int sbi_domain_root_add_memrange(unsigned long addr, unsigned long size,
-			   unsigned long align, unsigned long region_flags);
+static inline int sbi_domain_root_add_memrange(unsigned long addr, unsigned long size,
+					  unsigned long align, unsigned long region_flags)
+{
+	return sbi_domain_add_memrange(&root, addr, size, align, region_flags);
+}
 
 /** Startup non-root domains */
 int sbi_domain_startup(struct sbi_scratch *scratch, u32 cold_hartid);

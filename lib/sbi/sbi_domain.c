@@ -722,16 +722,16 @@ int sbi_domain_register(struct sbi_domain *dom)
 	return 0;
 }
 
-static int root_add_memregion(const struct sbi_domain_memregion *reg)
+static int add_memregion(struct sbi_domain *dom, const struct sbi_domain_memregion *reg)
 {
 	int rc;
 	bool reg_merged;
 	struct sbi_domain_memregion *nreg, *nreg1;
-	int root_memregs_count = sbi_domain_used_memregions(&root);
+	int memregs_count = sbi_domain_used_memregions(dom);
 
 	/* Sanity checks */
 	if (!reg || domain_finalized ||
-	    (SBI_DOMAIN_MEMREGION_MAX <= root_memregs_count))
+	    (SBI_DOMAIN_MEMREGION_MAX <= memregs_count))
 		return SBI_EINVAL;
 
 	/* Check whether compatible region exists for the new one */
@@ -741,25 +741,25 @@ static int root_add_memregion(const struct sbi_domain_memregion *reg)
 	}
 
 	/* Append the memregion to root memregions */
-	nreg = &root.regions[root_memregs_count];
+	nreg = &dom->regions[memregs_count];
 	sbi_memcpy(nreg, reg, sizeof(*reg));
-	root_memregs_count++;
-	root.regions[root_memregs_count].order = 0;
+	memregs_count++;
+	dom->regions[memregs_count].order = 0;
 
-	/* Sort and optimize root regions */
+	/* Sort and optimize regions */
 	do {
-		/* Sanitize the root domain so that memregions are sorted */
-		rc = sanitize_domain(&root);
+		/* Sanitize the domain so that memregions are sorted */
+		rc = sanitize_domain(dom);
 		if (rc) {
 			sbi_printf("%s: sanity checks failed for"
 				   " %s (error %d)\n", __func__,
-				   root.name, rc);
+				   dom->name, rc);
 			return rc;
 		}
 
 		/* Merge consecutive memregions with same order and flags */
 		reg_merged = false;
-		sbi_domain_for_each_memregion(&root, nreg) {
+		sbi_domain_for_each_memregion(dom, nreg) {
 			nreg1 = nreg + 1;
 			if (!nreg1->order)
 				continue;
@@ -768,12 +768,12 @@ static int root_add_memregion(const struct sbi_domain_memregion *reg)
 			    (nreg->base + BIT(nreg->order)) == nreg1->base &&
 			    nreg->order == nreg1->order &&
 			    nreg->flags == nreg1->flags) {
-				int i1 = nreg1 - root.regions;
+				int i1 = nreg1 - dom->regions;
 				nreg->order++;
 				sbi_memmove(nreg1, nreg1 + 1,
-					    sizeof(*nreg1) * (root_memregs_count - i1));
+					    sizeof(*nreg1) * (memregs_count - i1));
 				reg_merged = true;
-				root_memregs_count--;
+				memregs_count--;
 			}
 		}
 	} while (reg_merged);
@@ -781,8 +781,9 @@ static int root_add_memregion(const struct sbi_domain_memregion *reg)
 	return 0;
 }
 
-int sbi_domain_root_add_memrange(unsigned long addr, unsigned long size,
-			   unsigned long align, unsigned long region_flags)
+int sbi_domain_add_memrange(struct sbi_domain *dom,
+			    unsigned long addr, unsigned long size,
+			    unsigned long align, unsigned long region_flags)
 {
 	int rc;
 	unsigned long pos, end, rsize;
@@ -799,7 +800,7 @@ int sbi_domain_root_add_memrange(unsigned long addr, unsigned long size,
 				(end - pos) : align;
 
 		sbi_domain_memregion_init(pos, rsize, region_flags, &reg);
-		rc = root_add_memregion(&reg);
+		rc = add_memregion(dom, &reg);
 		if (rc)
 			return rc;
 		pos += rsize;
