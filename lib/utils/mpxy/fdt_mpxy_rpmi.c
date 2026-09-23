@@ -219,44 +219,37 @@ static int mpxy_rpmi_get_attribute(struct mpxy_rpmi *rmb,
 	return rc;
 }
 
-int fdt_mpxy_rpmi_init(const void *fdt, int nodeoff, const struct fdt_match *match)
+static int __mpxy_rpmi_init(const struct mpxy_rpmi_data *data,
+			    struct mbox_chan *chan, u32 mpxy_channel_id,
+			    struct sbi_domain *dom)
 {
-	u32 channel_id, servicegrp_ver, pro_ver, max_data_len, tx_tout, rx_tout;
-	u32 impl_id, impl_ver;
-	const struct mpxy_rpmi_data *data = match->data;
+	u32 servicegrp_ver, pro_ver, max_data_len, tx_tout, rx_tout;
 	struct mpxy_rpmi *rmb;
-	struct mbox_chan *chan;
-	const fdt32_t *val;
-	int rc, len;
+	u32 impl_id, impl_ver;
+	int rc;
+
+	if (!data || !dom)
+		return SBI_EINVAL;
+
+	/*
+	 * When mailbox channel is not available, both get_attribute_group() and
+	 * xfer_group() callbacks must be available.
+	 */
+	if (!chan && (!data->get_attribute_group || !data->xfer_group))
+		return SBI_EINVAL;
 
 	/* Allocate context for MPXY RPMI instance */
 	rmb = sbi_zalloc(sizeof(*rmb));
 	if (!rmb)
 		return SBI_ENOMEM;
 	rmb->data = data;
-
-	/*
-	 * If channel request failed then other end does not support
-	 * service group so do nothing.
-	 */
-	rc = fdt_mailbox_request_chan(fdt, nodeoff, 0, &chan);
-	if (rc) {
-		rc = SBI_ENODEV;
-		goto fail_free_client;
-	}
 	rmb->chan = chan;
-
-	/* Match channel service group id */
-	if (data->servicegrp_id != chan->chan_args[0]) {
-		rc = SBI_EINVAL;
-		goto fail_free_chan;
-	}
 
 	/* Setup RPMI service group context */
 	if (data->setup_group) {
 		rc = data->setup_group(&rmb->group_context, chan, data);
 		if (rc)
-			goto fail_free_chan;
+			goto fail_free_client;
 	}
 
 	/* Get channel protocol version */
@@ -301,24 +294,11 @@ int fdt_mpxy_rpmi_init(const void *fdt, int nodeoff, const struct fdt_match *mat
 	if (rc)
 		goto fail_cleanup_group;
 
-	/*
-	 * The "riscv,sbi-mpxy-channel-id" DT property is mandatory
-	 * for MPXY RPMI drivers so if this is not present then try
-	 * other drivers.
-	 */
-	val = fdt_getprop(fdt, nodeoff, "riscv,sbi-mpxy-channel-id", &len);
-	if (len > 0 && val) {
-		channel_id = fdt32_to_cpu(*val);
-	} else {
-		rc = SBI_ENODEV;
-		goto fail_cleanup_group;
-	}
-
 	/* Setup MPXY RPMI channel */
 	/* Channel ID*/
-	rmb->channel.channel_id = channel_id;
+	rmb->channel.channel_id = mpxy_channel_id;
 	/* Set the owner domain */
-	rmb->channel.owner_domain = &root;
+	rmb->channel.owner_domain = dom;
 	/* Callback for read RPMI attributes */
 	rmb->channel.read_attributes = mpxy_read_attributes;
 	/* Callback for write RPMI attributes */
@@ -360,9 +340,66 @@ int fdt_mpxy_rpmi_init(const void *fdt, int nodeoff, const struct fdt_match *mat
 fail_cleanup_group:
 	if (data->cleanup_group)
 		data->cleanup_group(rmb->group_context);
-fail_free_chan:
-	mbox_controller_free_chan(chan);
 fail_free_client:
 	sbi_free(rmb);
+	return rc;
+}
+
+int mpxy_rpmi_no_mbox_init(const struct mpxy_rpmi_data *data, u32 mpxy_channel_id,
+			   const char *dom_name)
+{
+	/* Create MPXY RPMI instance without mailbox channel */
+	return __mpxy_rpmi_init(data, NULL, mpxy_channel_id, sbi_domain_find_by_name(dom_name));
+}
+
+int fdt_mpxy_rpmi_init(const void *fdt, int nodeoff, const struct fdt_match *match)
+{
+	const struct mpxy_rpmi_data *data = match->data;
+	struct mbox_chan *chan = NULL;
+	const fdt32_t *val;
+	u32 channel_id;
+	int rc, len;
+
+	/* Request mailbox channel when available */
+	val = fdt_getprop(fdt, nodeoff, "mboxes", &len);
+	if (val) {
+		/*
+		 * If channel request failed then other end does not support
+		 * service group so do nothing.
+		 */
+		rc = fdt_mailbox_request_chan(fdt, nodeoff, 0, &chan);
+		if (rc)
+			return SBI_ENODEV;
+
+		/* Match channel service group id */
+		if (data->servicegrp_id != chan->chan_args[0]) {
+			rc = SBI_EINVAL;
+			goto fail_free_chan;
+		}
+	}
+
+	/*
+	 * The "riscv,sbi-mpxy-channel-id" DT property is mandatory
+	 * for MPXY RPMI drivers so if this is not present then try
+	 * other drivers.
+	 */
+	val = fdt_getprop(fdt, nodeoff, "riscv,sbi-mpxy-channel-id", &len);
+	if (len > 0 && val) {
+		channel_id = fdt32_to_cpu(*val);
+	} else {
+		rc = SBI_ENODEV;
+		goto fail_free_chan;
+	}
+
+	/* Create MPXY RPMI instance with mailbox channel discovered from DT */
+	rc = __mpxy_rpmi_init(data, chan, channel_id, &root);
+	if (rc)
+		goto fail_free_chan;
+
+	return SBI_OK;
+
+fail_free_chan:
+	if (chan)
+		mbox_controller_free_chan(chan);
 	return rc;
 }

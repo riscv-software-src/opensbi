@@ -84,7 +84,11 @@ struct mpxy_rpmi_data {
 	void (*cleanup_group)(void *context);
 };
 
-/** Common probe function for MPXY RPMI drivers */
+/** Function to instantiate MPXY RPMI channel */
+int mpxy_rpmi_no_mbox_init(const struct mpxy_rpmi_data *data, u32 mpxy_channel_id,
+			   const char *dom_name);
+
+/** FDT probe function to instantiate MPXY RPMI channel */
 int fdt_mpxy_rpmi_init(const void *fdt, int nodeoff, const struct fdt_match *match);
 
 #endif
