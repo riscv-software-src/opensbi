@@ -384,20 +384,91 @@ fail_free_client:
 	return rc;
 }
 
+struct __mpxy_rpmi_defer_init_priv {
+	const struct mpxy_rpmi_data *data;
+	struct mbox_chan *chan;
+	u32 mpxy_channel_id;
+	const char *dom_name;
+};
+
+static int __mpxy_rpmi_defer_notif(struct sbi_domain *dom,
+				   enum sbi_domain_notify_event event,
+				   void *priv)
+{
+	struct __mpxy_rpmi_defer_init_priv *ipriv = priv;
+	int rc = 0;
+
+	/* Do nothing if domain name does not match */
+	if (sbi_strcmp(dom->name, ipriv->dom_name))
+		return 0;
+
+	/* Unregister notifier */
+	rc = sbi_domain_unregister_notifier(__mpxy_rpmi_defer_notif,
+					    SBI_DOMAIN_NOTIFY_EVENT_REGISTER, ipriv);
+	if (rc)
+		goto done;
+
+	/* Create MPXY RPMI instance */
+	rc = __mpxy_rpmi_init(ipriv->data, ipriv->chan, ipriv->mpxy_channel_id, dom);
+
+done:
+	sbi_free(ipriv);
+	return rc;
+}
+
+static int __mpxy_rpmi_defer_init(const struct mpxy_rpmi_data *data,
+				  struct mbox_chan *chan, u32 mpxy_channel_id,
+				  const char *dom_name)
+{
+	struct __mpxy_rpmi_defer_init_priv *ipriv;
+	int rc;
+
+	if (!data || !dom_name)
+		return SBI_EINVAL;
+
+	/* Allocate defer init private data */
+	ipriv = sbi_zalloc(sizeof(*ipriv));
+	if (!ipriv)
+		return SBI_ENOMEM;
+	ipriv->data = data;
+	ipriv->chan = chan;
+	ipriv->mpxy_channel_id = mpxy_channel_id;
+	ipriv->dom_name = dom_name;
+
+	/* Register notifier */
+	rc = sbi_domain_register_notifier(__mpxy_rpmi_defer_notif,
+					  SBI_DOMAIN_NOTIFY_EVENT_REGISTER, ipriv);
+	if (rc) {
+		sbi_free(ipriv);
+		return rc;
+	}
+
+	return 0;
+}
+
 int mpxy_rpmi_no_mbox_init(const struct mpxy_rpmi_data *data, u32 mpxy_channel_id,
 			   const char *dom_name)
 {
-	/* Create MPXY RPMI instance without mailbox channel */
-	return __mpxy_rpmi_init(data, NULL, mpxy_channel_id, sbi_domain_find_by_name(dom_name));
+
+	struct sbi_domain *dom;
+
+	/* Direct/Deferred creation of MPXY RPMI instance with no mailbox channel */
+	dom = sbi_domain_find_by_name(dom_name);
+	if (dom)
+		return __mpxy_rpmi_init(data, NULL, mpxy_channel_id, dom);
+	else
+		return __mpxy_rpmi_defer_init(data, NULL, mpxy_channel_id, dom_name);
 }
 
 int fdt_mpxy_rpmi_init(const void *fdt, int nodeoff, const struct fdt_match *match)
 {
 	const struct mpxy_rpmi_data *data = match->data;
 	struct mbox_chan *chan = NULL;
+	struct sbi_domain *dom;
+	const char *dom_name;
 	const fdt32_t *val;
+	int rc, noff, len;
 	u32 channel_id;
-	int rc, len;
 
 	/* Request mailbox channel when available */
 	val = fdt_getprop(fdt, nodeoff, "mboxes", &len);
@@ -430,8 +501,32 @@ int fdt_mpxy_rpmi_init(const void *fdt, int nodeoff, const struct fdt_match *mat
 		goto fail_free_chan;
 	}
 
-	/* Create MPXY RPMI instance with mailbox channel discovered from DT */
-	rc = __mpxy_rpmi_init(data, chan, channel_id, &root);
+	/*
+	 * The "riscv,domain" DT property is optional for MPXY RPMI
+	 * for MPXY RPMI drivers so if this is not present then assume
+	 * root domain.
+	 */
+	val = fdt_getprop(fdt, nodeoff, "riscv,domain", &len);
+	if (len > 0 && val) {
+		noff = fdt_node_offset_by_phandle(fdt, fdt32_to_cpu(*val));
+		if (noff < 0) {
+			rc = noff;
+			goto fail_free_chan;
+		}
+		dom_name = fdt_get_name(fdt, noff, NULL);
+	} else {
+		dom_name = "root";
+	}
+
+	/*
+	 * Direct/Deferred creation of MPXY RPMI instance with optional
+	 * mailbox channel discovered from DT
+	 */
+	dom = sbi_domain_find_by_name(dom_name);
+	if (dom)
+		rc = __mpxy_rpmi_init(data, chan, channel_id, dom);
+	else
+		rc = __mpxy_rpmi_defer_init(data, chan, channel_id, dom_name);
 	if (rc)
 		goto fail_free_chan;
 
