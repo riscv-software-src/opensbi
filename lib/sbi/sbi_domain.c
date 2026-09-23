@@ -35,6 +35,74 @@ struct sbi_domain root = {
 
 static unsigned long domain_hart_ptr_offset;
 
+struct sbi_domain_notify_entry {
+	struct sbi_dlist		node;
+	sbi_domain_notify_fn		fn;
+	enum sbi_domain_notify_event	event;
+	void				*priv;
+};
+
+static SBI_LIST_HEAD(domain_notifier_list);
+
+int sbi_domain_register_notifier(sbi_domain_notify_fn fn,
+				 enum sbi_domain_notify_event event, void *priv)
+{
+	struct sbi_domain_notify_entry *entry;
+
+	if (!fn || SBI_DOMAIN_NOTIFY_EVENT_MAX <= event)
+		return SBI_EINVAL;
+
+	sbi_list_for_each_entry(entry, &domain_notifier_list, node) {
+		if (entry->fn == fn && entry->event == event && entry->priv == priv)
+			return SBI_OK;
+	}
+
+	entry = sbi_zalloc(sizeof(*entry));
+	if (!entry)
+		return SBI_ENOMEM;
+
+	entry->fn    = fn;
+	entry->event = event;
+	entry->priv  = priv;
+	sbi_list_add_tail(&entry->node, &domain_notifier_list);
+	return SBI_OK;
+}
+
+int sbi_domain_unregister_notifier(sbi_domain_notify_fn fn,
+				   enum sbi_domain_notify_event event, void *priv)
+{
+	struct sbi_domain_notify_entry *entry, *tmp;
+
+	if (!fn || SBI_DOMAIN_NOTIFY_EVENT_MAX <= event)
+		return SBI_EINVAL;
+
+	sbi_list_for_each_entry_safe(entry, tmp, &domain_notifier_list, node) {
+		if (entry->fn == fn && entry->event == event && entry->priv == priv) {
+			sbi_list_del(&entry->node);
+			sbi_free(entry);
+			return SBI_OK;
+		}
+	}
+
+	return SBI_ENODEV;
+}
+
+static int sbi_domain_notify_all(struct sbi_domain *dom, enum sbi_domain_notify_event event)
+{
+	struct sbi_domain_notify_entry *entry, *tmp;
+	int rc;
+
+	sbi_list_for_each_entry_safe(entry, tmp, &domain_notifier_list, node) {
+		if (entry->event == event) {
+			rc = entry->fn(dom, event, entry->priv);
+			if (rc)
+				return rc;
+		}
+	}
+
+	return 0;
+}
+
 struct sbi_domain *sbi_hartindex_to_domain(u32 hartindex)
 {
 	struct sbi_scratch *scratch;
@@ -715,6 +783,16 @@ int sbi_domain_register(struct sbi_domain *dom)
 	if (rc) {
 		sbi_printf("%s: domain state setup failed for %s (error %d)\n",
 			   __func__, dom->name, rc);
+		sbi_list_del(&dom->node);
+		return rc;
+	}
+
+	/* Notify everyone */
+	rc = sbi_domain_notify_all(dom, SBI_DOMAIN_NOTIFY_EVENT_REGISTER);
+	if (rc) {
+		sbi_printf("%s: domain notification failed for %s (error %d)\n",
+			   __func__, dom->name, rc);
+		sbi_domain_cleanup_state(dom);
 		sbi_list_del(&dom->node);
 		return rc;
 	}

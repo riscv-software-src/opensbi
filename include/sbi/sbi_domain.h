@@ -387,4 +387,44 @@ int sbi_domain_finalize(struct sbi_scratch *scratch);
 /** Initialize domains */
 int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid);
 
+/** Possible domain notify events */
+enum sbi_domain_notify_event {
+	SBI_DOMAIN_NOTIFY_EVENT_REGISTER = 0,
+	SBI_DOMAIN_NOTIFY_EVENT_MAX,
+};
+
+/**
+ * Domain notify callback.
+ * @param dom pointer to domain
+ * @param event domain notify event
+ * @param priv private data of the callback
+ * @return 0 on success (informs framework to continue notifications)
+ * @return negative error code on failure (informs framework to not continue notifications)
+ */
+typedef int (*sbi_domain_notify_fn)(struct sbi_domain *dom,
+				     enum sbi_domain_notify_event event,
+				     void *priv);
+
+/**
+ * Register domain notifier
+ * @param fn domain notify callback
+ * @param event domain notify event
+ * @param priv private data of the callback
+ * @return 0 on success
+ * @return negative error code on failure
+ */
+int sbi_domain_register_notifier(sbi_domain_notify_fn fn,
+				 enum sbi_domain_notify_event event, void *priv);
+
+/**
+ * Unregister domain notifier
+ * @param fn domain notify callback
+ * @param event domain notify event
+ * @param priv private data of the callback
+ * @return 0 on success
+ * @return negative error code on failure
+ */
+int sbi_domain_unregister_notifier(sbi_domain_notify_fn fn,
+				   enum sbi_domain_notify_event event, void *priv);
+
 #endif
