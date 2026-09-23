@@ -323,6 +323,13 @@ bool sbi_domain_check_addr_range(const struct sbi_domain *dom,
 				 unsigned long mode,
 				 unsigned long access_flags);
 
+/**
+ * Find a domain by name
+ * @param name Name of the domain
+ * @return pointer to the domain or NULL upon failure
+ */
+struct sbi_domain *sbi_domain_find_by_name(const char *name);
+
 /** Dump domain details on the console */
 void sbi_domain_dump(const struct sbi_domain *dom, const char *suffix);
 

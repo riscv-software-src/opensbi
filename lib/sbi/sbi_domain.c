@@ -531,6 +531,21 @@ bool sbi_domain_check_addr_range(const struct sbi_domain *dom,
 	return true;
 }
 
+struct sbi_domain *sbi_domain_find_by_name(const char *name)
+{
+	struct sbi_domain *dom;
+
+	if (!name)
+		return NULL;
+
+	sbi_domain_for_each(dom) {
+		if (!sbi_strcmp(dom->name, name))
+			return dom;
+	}
+
+	return NULL;
+}
+
 void sbi_domain_dump(const struct sbi_domain *dom, const char *suffix)
 {
 	u32 i, j, k;
@@ -645,11 +660,13 @@ int sbi_domain_register(struct sbi_domain *dom)
 	/*
 	 * Ensure that:
 	 *  1) Domain not already registered
+	 *  2) Domain name is unique
 	 *  2) Initialization order is unique
 	 */
 	sbi_domain_for_each(tdom) {
 		if (tdom == dom ||
-		    tdom->init_order == dom->init_order)
+		    tdom->init_order == dom->init_order ||
+		    !sbi_strcmp(tdom->name, dom->name))
 			return SBI_EALREADY;
 	}
 
