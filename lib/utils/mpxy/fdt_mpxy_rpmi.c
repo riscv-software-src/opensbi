@@ -235,47 +235,54 @@ int fdt_mpxy_rpmi_init(const void *fdt, int nodeoff, const struct fdt_match *mat
 		goto fail_free_chan;
 	}
 
+	/* Setup RPMI service group context */
+	if (data->setup_group) {
+		rc = data->setup_group(&rmb->group_context, chan, data);
+		if (rc)
+			goto fail_free_chan;
+	}
+
 	/* Get channel protocol version */
 	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_PROTOCOL_VERSION,
 				     &pro_ver);
 	if (rc)
-		goto fail_free_chan;
+		goto fail_cleanup_group;
 
 	/* Get channel maximum data length */
 	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_MAX_DATA_LEN,
 				     &max_data_len);
 	if (rc)
-		goto fail_free_chan;
+		goto fail_cleanup_group;
 
 	/* Get channel Tx timeout */
 	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_TX_TIMEOUT,
 				     &tx_tout);
 	if (rc)
-		goto fail_free_chan;
+		goto fail_cleanup_group;
 
 	/* Get channel Rx timeout */
 	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_RX_TIMEOUT,
 				     &rx_tout);
 	if (rc)
-		goto fail_free_chan;
+		goto fail_cleanup_group;
 
 	/* Get channel service group version */
 	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_SERVICEGROUP_VERSION,
 				     &servicegrp_ver);
 	if (rc)
-		goto fail_free_chan;
+		goto fail_cleanup_group;
 
 	/* Get channel implementation id */
 	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_IMPL_ID,
 				     &impl_id);
 	if (rc)
-		goto fail_free_chan;
+		goto fail_cleanup_group;
 
 	/* Get channel implementation version */
 	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_IMPL_VERSION,
 				     &impl_ver);
 	if (rc)
-		goto fail_free_chan;
+		goto fail_cleanup_group;
 
 	/*
 	 * The "riscv,sbi-mpxy-channel-id" DT property is mandatory
@@ -287,7 +294,7 @@ int fdt_mpxy_rpmi_init(const void *fdt, int nodeoff, const struct fdt_match *mat
 		channel_id = fdt32_to_cpu(*val);
 	} else {
 		rc = SBI_ENODEV;
-		goto fail_free_chan;
+		goto fail_cleanup_group;
 	}
 
 	/* Setup MPXY RPMI channel */
@@ -329,23 +336,16 @@ int fdt_mpxy_rpmi_init(const void *fdt, int nodeoff, const struct fdt_match *mat
 	rmb->data = data;
 	rmb->chan = chan;
 
-	/* Setup RPMI service group context */
-	if (data->setup_group) {
-		rc = data->setup_group(&rmb->group_context, chan, data);
-		if (rc)
-			goto fail_free_chan;
-	}
-
 	/* Register RPMI service group */
 	rc = sbi_mpxy_register_channel(&rmb->channel);
-	if (rc) {
-		if (data->cleanup_group)
-			data->cleanup_group(rmb->group_context);
-		goto fail_free_chan;
-	}
+	if (rc)
+		goto fail_cleanup_group;
 
 	return SBI_OK;
 
+fail_cleanup_group:
+	if (data->cleanup_group)
+		data->cleanup_group(rmb->group_context);
 fail_free_chan:
 	mbox_controller_free_chan(chan);
 fail_free_client:
