@@ -204,6 +204,21 @@ static int mpxy_send_message_withoutresp(struct sbi_mpxy_channel *channel,
 				   NULL, 0, NULL);
 }
 
+static int mpxy_rpmi_get_attribute(struct mpxy_rpmi *rmb,
+				   enum rpmi_channel_attribute_id attr_id,
+				   u32 *out_value)
+{
+	const struct mpxy_rpmi_data *data = rmb->data;
+	struct mbox_chan *chan = rmb->chan;
+	int rc;
+
+	if (data->get_attribute_group)
+		rc = data->get_attribute_group(rmb->group_context, chan, attr_id, out_value);
+	else
+		rc = mbox_chan_get_attribute(chan, attr_id, out_value);
+	return rc;
+}
+
 int fdt_mpxy_rpmi_init(const void *fdt, int nodeoff, const struct fdt_match *match)
 {
 	u32 channel_id, servicegrp_ver, pro_ver, max_data_len, tx_tout, rx_tout;
@@ -218,6 +233,7 @@ int fdt_mpxy_rpmi_init(const void *fdt, int nodeoff, const struct fdt_match *mat
 	rmb = sbi_zalloc(sizeof(*rmb));
 	if (!rmb)
 		return SBI_ENOMEM;
+	rmb->data = data;
 
 	/*
 	 * If channel request failed then other end does not support
@@ -228,6 +244,7 @@ int fdt_mpxy_rpmi_init(const void *fdt, int nodeoff, const struct fdt_match *mat
 		rc = SBI_ENODEV;
 		goto fail_free_client;
 	}
+	rmb->chan = chan;
 
 	/* Match channel service group id */
 	if (data->servicegrp_id != chan->chan_args[0]) {
@@ -243,43 +260,43 @@ int fdt_mpxy_rpmi_init(const void *fdt, int nodeoff, const struct fdt_match *mat
 	}
 
 	/* Get channel protocol version */
-	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_PROTOCOL_VERSION,
+	rc = mpxy_rpmi_get_attribute(rmb, RPMI_CHANNEL_ATTR_PROTOCOL_VERSION,
 				     &pro_ver);
 	if (rc)
 		goto fail_cleanup_group;
 
 	/* Get channel maximum data length */
-	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_MAX_DATA_LEN,
+	rc = mpxy_rpmi_get_attribute(rmb, RPMI_CHANNEL_ATTR_MAX_DATA_LEN,
 				     &max_data_len);
 	if (rc)
 		goto fail_cleanup_group;
 
 	/* Get channel Tx timeout */
-	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_TX_TIMEOUT,
+	rc = mpxy_rpmi_get_attribute(rmb, RPMI_CHANNEL_ATTR_TX_TIMEOUT,
 				     &tx_tout);
 	if (rc)
 		goto fail_cleanup_group;
 
 	/* Get channel Rx timeout */
-	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_RX_TIMEOUT,
+	rc = mpxy_rpmi_get_attribute(rmb, RPMI_CHANNEL_ATTR_RX_TIMEOUT,
 				     &rx_tout);
 	if (rc)
 		goto fail_cleanup_group;
 
 	/* Get channel service group version */
-	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_SERVICEGROUP_VERSION,
+	rc = mpxy_rpmi_get_attribute(rmb, RPMI_CHANNEL_ATTR_SERVICEGROUP_VERSION,
 				     &servicegrp_ver);
 	if (rc)
 		goto fail_cleanup_group;
 
 	/* Get channel implementation id */
-	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_IMPL_ID,
+	rc = mpxy_rpmi_get_attribute(rmb, RPMI_CHANNEL_ATTR_IMPL_ID,
 				     &impl_id);
 	if (rc)
 		goto fail_cleanup_group;
 
 	/* Get channel implementation version */
-	rc = mbox_chan_get_attribute(chan, RPMI_CHANNEL_ATTR_IMPL_VERSION,
+	rc = mpxy_rpmi_get_attribute(rmb, RPMI_CHANNEL_ATTR_IMPL_VERSION,
 				     &impl_ver);
 	if (rc)
 		goto fail_cleanup_group;
@@ -332,9 +349,6 @@ int fdt_mpxy_rpmi_init(const void *fdt, int nodeoff, const struct fdt_match *mat
 	rmb->msgprot_attrs.servicegrp_ver = servicegrp_ver;
 	rmb->msgprot_attrs.impl_id = impl_id;
 	rmb->msgprot_attrs.impl_ver = impl_ver;
-
-	rmb->data = data;
-	rmb->chan = chan;
 
 	/* Register RPMI service group */
 	rc = sbi_mpxy_register_channel(&rmb->channel);

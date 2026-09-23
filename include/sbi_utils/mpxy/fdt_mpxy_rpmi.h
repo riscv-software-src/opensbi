@@ -67,6 +67,11 @@ struct mpxy_rpmi_data {
 	u32 num_services;
 	struct mpxy_rpmi_service_data *service_data;
 
+	/** Get RPMI service group attribute */
+	int (*get_attribute_group)(void *context, struct mbox_chan *chan,
+				   enum rpmi_channel_attribute_id attr_id,
+				   u32 *out_value);
+
 	/** Transfer RPMI service group message */
 	int (*xfer_group)(void *context, struct mbox_chan *chan,
 			  struct mbox_xfer *xfer);
