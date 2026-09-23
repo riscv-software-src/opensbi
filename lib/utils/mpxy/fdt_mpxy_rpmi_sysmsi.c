@@ -9,6 +9,7 @@
 #include <sbi/sbi_byteorder.h>
 #include <sbi/sbi_heap.h>
 #include <sbi_utils/mailbox/rpmi_mailbox.h>
+#include <sbi_utils/mpxy/fdt_mpxy.h>
 #include <sbi_utils/mpxy/fdt_mpxy_rpmi.h>
 
 struct mpxy_rpmi_sysmsi {

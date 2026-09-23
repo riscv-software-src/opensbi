@@ -8,6 +8,7 @@
  *   Sunil V L <sunilvl@oss.qualcomm.com>
  */
 
+#include <sbi_utils/mpxy/fdt_mpxy.h>
 #include <sbi_utils/mpxy/fdt_mpxy_rpmi.h>
 #include <sbi_utils/mailbox/rpmi_mailbox.h>
 

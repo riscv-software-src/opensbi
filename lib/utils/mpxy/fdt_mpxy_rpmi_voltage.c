@@ -1,3 +1,4 @@
+#include <sbi_utils/mpxy/fdt_mpxy.h>
 #include <sbi_utils/mpxy/fdt_mpxy_rpmi.h>
 
 static struct mpxy_rpmi_service_data voltage_services[] = {
