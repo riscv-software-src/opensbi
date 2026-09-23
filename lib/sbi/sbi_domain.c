@@ -24,13 +24,10 @@ SBI_LIST_HEAD(domain_list);
 static u32 domain_count = 0;
 static bool domain_finalized = false;
 
-#define ROOT_REGION_MAX	32
-
 struct sbi_domain root = {
 	.name = "root",
 	.init_order = -1U,
 	.possible_harts = NULL,
-	.regions = NULL,
 	.system_reset_allowed = true,
 	.system_suspend_allowed = true,
 	.fw_region_inited = false,
@@ -225,7 +222,7 @@ bool sbi_domain_check_addr(const struct sbi_domain *dom,
 			   unsigned long access_flags)
 {
 	bool rmmio, mmio = false;
-	struct sbi_domain_memregion *reg;
+	const struct sbi_domain_memregion *reg;
 	unsigned long rstart, rend, rflags, rwx = 0, rrwx = 0;
 
 	if (!dom)
@@ -331,7 +328,7 @@ static const struct sbi_domain_memregion *find_region(
 						unsigned long addr)
 {
 	unsigned long rstart, rend;
-	struct sbi_domain_memregion *reg;
+	const struct sbi_domain_memregion *reg;
 
 	sbi_domain_for_each_memregion(dom, reg) {
 		rstart = reg->base;
@@ -349,7 +346,7 @@ static const struct sbi_domain_memregion *find_next_subset_region(
 				const struct sbi_domain_memregion *reg,
 				unsigned long addr)
 {
-	struct sbi_domain_memregion *sreg, *ret = NULL;
+	const struct sbi_domain_memregion *sreg, *ret = NULL;
 
 	sbi_domain_for_each_memregion(dom, sreg) {
 		if (sreg == reg || (sreg->base <= addr) ||
@@ -377,7 +374,7 @@ static void swap_region(struct sbi_domain_memregion* reg1,
 static int sbi_domain_used_memregions(const struct sbi_domain *dom)
 {
 	int count = 0;
-	struct sbi_domain_memregion *reg;
+	const struct sbi_domain_memregion *reg;
 
 	sbi_domain_for_each_memregion(dom, reg)
 		count++;
@@ -407,11 +404,6 @@ static int sanitize_domain(struct sbi_domain *dom)
 	}
 
 	/* Check memory regions */
-	if (!dom->regions) {
-		sbi_printf("%s: %s regions is NULL\n",
-			   __func__, dom->name);
-		return SBI_EINVAL;
-	}
 	sbi_domain_for_each_memregion(dom, reg) {
 		if (!is_region_valid(reg)) {
 			sbi_printf("%s: %s has invalid region base=0x%lx "
@@ -550,7 +542,7 @@ void sbi_domain_dump(const struct sbi_domain *dom, const char *suffix)
 {
 	u32 i, j, k;
 	unsigned long rstart, rend;
-	struct sbi_domain_memregion *reg;
+	const struct sbi_domain_memregion *reg;
 
 	sbi_printf("Domain%d Name        %s: %s\n",
 		   dom->index, suffix, dom->name);
@@ -738,8 +730,8 @@ static int root_add_memregion(const struct sbi_domain_memregion *reg)
 	int root_memregs_count = sbi_domain_used_memregions(&root);
 
 	/* Sanity checks */
-	if (!reg || domain_finalized || !root.regions ||
-	    (ROOT_REGION_MAX <= root_memregs_count))
+	if (!reg || domain_finalized ||
+	    (SBI_DOMAIN_MEMREGION_MAX <= root_memregs_count))
 		return SBI_EINVAL;
 
 	/* Check whether compatible region exists for the new one */
@@ -901,12 +893,12 @@ int sbi_domain_finalize(struct sbi_scratch *scratch)
 
 int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 {
-	int rc;
-	struct sbi_hartmask *root_hmask;
-	struct sbi_domain_memregion *root_memregs;
-	int root_memregs_count = 0;
 	const struct sbi_platform *plat = sbi_platform_ptr(scratch);
 	bool fw_single_region = sbi_platform_single_fw_region(plat);
+	struct sbi_domain_memregion *root_memregs = root.regions;
+	struct sbi_hartmask *root_hmask;
+	int root_memregs_count = 0;
+	int rc;
 
 	SBI_INIT_LIST_HEAD(&domain_list);
 
@@ -933,19 +925,11 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 	if (rc)
 		goto fail_free_domain_hart_ptr_offset;
 
-	root_memregs = sbi_calloc(sizeof(*root_memregs), ROOT_REGION_MAX + 1);
-	if (!root_memregs) {
-		sbi_printf("%s: no memory for root regions\n", __func__);
-		rc = SBI_ENOMEM;
-		goto fail_deinit_context;
-	}
-	root.regions = root_memregs;
-
 	root_hmask = sbi_zalloc(sizeof(*root_hmask));
 	if (!root_hmask) {
 		sbi_printf("%s: no memory for root hartmask\n", __func__);
 		rc = SBI_ENOMEM;
-		goto fail_free_root_memregs;
+		goto fail_deinit_context;
 	}
 	root.possible_harts = root_hmask;
 
@@ -1014,8 +998,6 @@ int sbi_domain_init(struct sbi_scratch *scratch, u32 cold_hartid)
 
 fail_free_root_hmask:
 	sbi_free(root_hmask);
-fail_free_root_memregs:
-	sbi_free(root_memregs);
 fail_deinit_context:
 	sbi_domain_context_deinit();
 fail_free_domain_hart_ptr_offset:

@@ -223,14 +223,12 @@ skip_device_disable:
 	fdt_nop_node(fdt, poffset);
 }
 
-#define FDT_DOMAIN_REGION_MAX_COUNT		16
 #define FDT_ROOT_REGION_INHERIT_M_ONLY		0
 #define FDT_ROOT_REGION_INHERIT_ALL		1
 
 struct parse_region_data {
 	struct sbi_domain *dom;
 	u32 region_count;
-	u32 max_regions;
 };
 
 static int __fdt_parse_region(const void *fdt, int domain_offset,
@@ -257,7 +255,7 @@ static int __fdt_parse_region(const void *fdt, int domain_offset,
 		return SBI_EINVAL;
 
 	/* Find next region of the domain */
-	if (preg->max_regions <= preg->region_count)
+	if (SBI_DOMAIN_MEMREGION_MAX <= preg->region_count)
 		return SBI_ENOSPC;
 
 	/* Read "base" DT property */
@@ -309,20 +307,13 @@ static int __fdt_parse_domain(const void *fdt, int domain_offset, void *opaque)
 	if (!dom)
 		return SBI_ENOMEM;
 
-	dom->regions = sbi_calloc(sizeof(*dom->regions),
-				  FDT_DOMAIN_REGION_MAX_COUNT + 1);
-	if (!dom->regions) {
-		err = SBI_ENOMEM;
-		goto fail_free_domain;
-	}
 	preg.dom = dom;
 	preg.region_count = 0;
-	preg.max_regions = FDT_DOMAIN_REGION_MAX_COUNT;
 
 	mask = sbi_zalloc(sizeof(*mask));
 	if (!mask) {
 		err = SBI_ENOMEM;
-		goto fail_free_regions;
+		goto fail_free_domain;
 	}
 
 	/* Read DT node name */
@@ -405,7 +396,7 @@ static int __fdt_parse_domain(const void *fdt, int domain_offset, void *opaque)
 		if (!copy)
 			continue;
 
-		if (preg.max_regions <= preg.region_count) {
+		if (SBI_DOMAIN_MEMREGION_MAX <= preg.region_count) {
 			err = SBI_EINVAL;
 			goto fail_free_all;
 		}
@@ -481,8 +472,6 @@ static int __fdt_parse_domain(const void *fdt, int domain_offset, void *opaque)
 
 fail_free_all:
 	sbi_free(mask);
-fail_free_regions:
-	sbi_free(dom->regions);
 fail_free_domain:
 	sbi_free(dom);
 	return err;

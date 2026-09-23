@@ -120,7 +120,7 @@ static const struct sbi_hsm_device eyeq7h_hsm = {
 	.hart_stop	= mips_p8700_hart_stop,
 };
 
-static struct sbi_domain_memregion *find_last_memregion(const struct sbi_domain *dom)
+static struct sbi_domain_memregion *find_last_memregion(struct sbi_domain *dom)
 {
 	struct sbi_domain_memregion *reg;
 
@@ -128,7 +128,7 @@ static struct sbi_domain_memregion *find_last_memregion(const struct sbi_domain 
 	return --reg;
 }
 
-static int fixup_dram_region(const struct sbi_domain *dom,
+static int fixup_dram_region(struct sbi_domain *dom,
 			     struct sbi_domain_memregion *reg)
 {
 	const void *fdt = fdt_get_address();
@@ -297,7 +297,7 @@ static void eyeq7h_init_clusters(void)
 
 static int eyeq7h_early_init(bool cold_boot)
 {
-	const struct sbi_domain *dom;
+	struct sbi_domain *dom;
 	struct sbi_domain_memregion *reg;
 	int rc;
 	unsigned long cm_base;

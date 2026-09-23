@@ -204,7 +204,8 @@ struct sbi_domain {
 	/** Possible HARTs in this domain */
 	const struct sbi_hartmask *possible_harts;
 	/** Array of memory regions terminated by a region with order zero */
-	struct sbi_domain_memregion *regions;
+#define SBI_DOMAIN_MEMREGION_MAX	32
+	struct sbi_domain_memregion regions[SBI_DOMAIN_MEMREGION_MAX + 1];
 	/** HART id of the HART booting this domain */
 	u32 boot_hartid;
 	/** Arg1 (or 'a1' register) of next booting stage for this domain */
