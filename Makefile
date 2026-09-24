@@ -22,18 +22,18 @@ endif
 # Find out source, build, and install directories
 src_dir=$(CURDIR)
 ifdef O
- build_dir=$(shell $(READLINK) -f $(O))
+ build_dir:=$(shell $(READLINK) -f $(O))
 else
- build_dir=$(CURDIR)/build
+ build_dir:=$(CURDIR)/build
 endif
 ifeq ($(build_dir),$(CURDIR))
 $(error Build directory is same as source directory.)
 endif
 install_root_dir_default=$(CURDIR)/install
 ifdef I
- install_root_dir=$(shell $(READLINK) -f $(I))
+ install_root_dir:=$(shell $(READLINK) -f $(I))
 else
- install_root_dir=$(install_root_dir_default)/usr
+ install_root_dir:=$(install_root_dir_default)/usr
 endif
 ifeq ($(install_root_dir),$(CURDIR))
 $(error Install root directory is same as source directory.)
@@ -42,12 +42,12 @@ ifeq ($(install_root_dir),$(build_dir))
 $(error Install root directory is same as build directory.)
 endif
 ifdef PLATFORM_DIR
-  platform_dir_path=$(shell $(READLINK) -f $(PLATFORM_DIR))
+  platform_dir_path:=$(shell $(READLINK) -f $(PLATFORM_DIR))
   ifdef PLATFORM
     platform_parent_dir=$(platform_dir_path)
   else
-    PLATFORM=$(shell basename $(platform_dir_path))
-    platform_parent_dir=$(shell realpath ${platform_dir_path}/..)
+    PLATFORM:=$(shell basename $(platform_dir_path))
+    platform_parent_dir:=$(shell realpath ${platform_dir_path}/..)
   endif
 else
  platform_parent_dir=$(src_dir)/platform
