@@ -1132,6 +1132,9 @@ int sbi_pmu_event_get_info(unsigned long shmem_phys_lo, unsigned long shmem_phys
 			einfo[i].output = 0;
 		} else if (event_type == SBI_PMU_EVENT_TYPE_FW) {
 			einfo[i].output = 1;
+		} else if (event_type == SBI_PMU_EVENT_TYPE_HW &&
+			   pmu_ctr_find_fixed_hw(event_idx) >= 0) {
+			einfo[i].output = 1;
 		} else {
 			for (j = 0; j < num_hw_events; j++) {
 				temp = &hw_event_map[j];
