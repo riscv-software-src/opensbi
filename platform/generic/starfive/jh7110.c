@@ -10,9 +10,12 @@
 
 #include <libfdt.h>
 #include <platform_override.h>
+#include <sbi/sbi_domain.h>
 #include <sbi/sbi_error.h>
 #include <sbi/sbi_bitops.h>
 #include <sbi/sbi_hart.h>
+#include <sbi/sbi_math.h>
+#include <sbi/sbi_scratch.h>
 #include <sbi/sbi_system.h>
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_timer.h>
@@ -68,6 +71,13 @@ static u32 selected_hartid = -1;
 #define AXP15060_RESET_BIT		BIT(6)
 
 #define I2C_APB_CLK_ENABLE_BIT		BIT(31)
+
+/*
+ * Physical addresses beyond the 8GB DDR window fold back into DRAM on
+ * the JH7110 DDR controller: PA (X + JH7110_DRAM_ALIAS_OFFSET) resolves
+ * to the same cells as PA X (for X in the DDR window).
+ */
+#define JH7110_DRAM_ALIAS_OFFSET	0x200000000UL
 
 static int pm_system_reset_check(u32 type, u32 reason)
 {
@@ -283,6 +293,33 @@ err:
 	return rc;
 }
 
+/*
+ * Deny S/U-mode access to the alias of this firmware image.
+ *
+ * PMP entries match the presented address, so without extra protection
+ * an S/U-mode access through the alias window bypasses the entry
+ * protecting the firmware and matches the allow-everything root region.
+ * Add a root domain region covering firmware_alias_base .. fw_end so
+ * that it sorts before the allow-everything region and denies S/U-mode
+ * access to the firmware alias, while leaving the rest of the alias
+ * window untouched.
+ */
+static int starfive_jh7110_early_init(bool cold_boot)
+{
+	struct sbi_scratch *scratch = sbi_scratch_thishart_ptr();
+	int rc;
+
+	rc = generic_early_init(cold_boot);
+	if (rc || !cold_boot)
+		return rc;
+
+	return sbi_domain_root_add_memrange(
+			scratch->fw_start + JH7110_DRAM_ALIAS_OFFSET,
+			scratch->fw_size,
+			1UL << log2roundup(scratch->fw_size),
+			SBI_DOMAIN_MEMREGION_M_RWX);
+}
+
 static int starfive_jh7110_final_init(bool cold_boot)
 {
 	if (cold_boot) {
@@ -316,6 +353,7 @@ static int starfive_jh7110_platform_init(const void *fdt, int nodeoff,
 	}
 
 	generic_platform_ops.cold_boot_allowed = starfive_jh7110_cold_boot_allowed;
+	generic_platform_ops.early_init = starfive_jh7110_early_init;
 	generic_platform_ops.final_init = starfive_jh7110_final_init;
 
 	return 0;
