@@ -120,11 +120,45 @@ static void bitmap_empty_test(struct sbiunit_test_case *test)
 	SBIUNIT_EXPECT_EQ(test, bitmap_empty(data_a, 0), true);
 }
 
+static void bitmap_set_clear_test(struct sbiunit_test_case *test)
+{
+	unsigned long res[DATA_SIZE];
+	int start = BITS_PER_LONG - 2;
+
+	/* Set across a word boundary */
+	bitmap_zero(res, DATA_BIT_SIZE);
+	bitmap_set(res, start, 4);
+
+	SBIUNIT_EXPECT_EQ(test, bitmap_test(res, start), true);
+	SBIUNIT_EXPECT_EQ(test, bitmap_test(res, start + 1), true);
+	SBIUNIT_EXPECT_EQ(test, bitmap_test(res, start + 2), true);
+	SBIUNIT_EXPECT_EQ(test, bitmap_test(res, start + 3), true);
+
+	/* Adjacent bits untouched */
+	SBIUNIT_EXPECT_EQ(test, bitmap_test(res, start - 1), false);
+	SBIUNIT_EXPECT_EQ(test, bitmap_test(res, start + 4), false);
+
+	/* Clear across the same boundary */
+	bitmap_clear(res, start + 1, 2);
+
+	SBIUNIT_EXPECT_EQ(test, bitmap_test(res, start), true);
+	SBIUNIT_EXPECT_EQ(test, bitmap_test(res, start + 1), false);
+	SBIUNIT_EXPECT_EQ(test, bitmap_test(res, start + 2), false);
+	SBIUNIT_EXPECT_EQ(test, bitmap_test(res, start + 3), true);
+
+	/* Clearing 0 bits is a no-op */
+	bitmap_clear(res, start, 0);
+
+	SBIUNIT_EXPECT_EQ(test, bitmap_test(res, start), true);
+	SBIUNIT_EXPECT_EQ(test, bitmap_test(res, start + 3), true);
+}
+
 static struct sbiunit_test_case bitmap_test_cases[] = {
 	SBIUNIT_TEST_CASE(bitmap_and_test),
 	SBIUNIT_TEST_CASE(bitmap_or_test),
 	SBIUNIT_TEST_CASE(bitmap_xor_test),
 	SBIUNIT_TEST_CASE(bitmap_empty_test),
+	SBIUNIT_TEST_CASE(bitmap_set_clear_test),
 	SBIUNIT_END_CASE,
 };
 
