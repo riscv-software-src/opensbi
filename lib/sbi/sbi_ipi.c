@@ -314,6 +314,14 @@ void sbi_ipi_raw_clear(bool all_devices)
 
 	if (all_devices) {
 		sbi_list_for_each_entry(entry, &ipi_dev_node_list, head) {
+			/*
+			 * Pair with the smp_wmb() in sbi_ipi_add_device():
+			 * a warm hart may reach here while the cold hart is
+			 * still adding devices.  Order the load of the node
+			 * pointer before the loads of the node's contents
+			 * and of the per-hart data that ipi_clear() reads.
+			 */
+			smp_rmb();
 			if (entry->dev->ipi_clear)
 				entry->dev->ipi_clear();
 		}
@@ -349,9 +357,22 @@ void sbi_ipi_add_device(const struct sbi_ipi_device *dev)
 	entry = sbi_zalloc(sizeof(*entry));
 	if (!entry)
 		return;
-	SBI_INIT_LIST_HEAD(&entry->head);
 	entry->dev = dev;
-	sbi_list_add_tail(&entry->head, &ipi_dev_node_list);
+	entry->head.prev = ipi_dev_node_list.prev;
+	entry->head.next = &ipi_dev_node_list;
+
+	/*
+	 * Warm harts walk ipi_dev_node_list in sbi_ipi_raw_clear(true)
+	 * from wait_for_coldboot() onwards, concurrently with the cold
+	 * hart's cold-boot initialization.  Make the node's contents
+	 * (and the device's per-hart data set up by its cold_init)
+	 * visible before the node becomes reachable from the list head.
+	 * The reader pairs with this through the smp_rmb() in
+	 * sbi_ipi_raw_clear().
+	 */
+	smp_wmb();
+	ipi_dev_node_list.prev->next = &entry->head;
+	ipi_dev_node_list.prev = &entry->head;
 
 	if (!ipi_dev || ipi_dev->rating < dev->rating)
 		ipi_dev = dev;
