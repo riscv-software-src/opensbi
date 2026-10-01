@@ -598,7 +598,7 @@ int imsic_cold_irqchip_init(struct imsic_data *imsic)
 
 	imsic->irqchip          = imsic_device;
 	imsic->irqchip.id       = imsic->unique_id;
-	imsic_device.caps = SBI_IRQCHIP_CAPS_MSI;
+	imsic->irqchip.caps	= SBI_IRQCHIP_CAPS_MSI;
 	imsic->irqchip.num_hwirq = imsic->num_ids + 1;
 
 	sbi_hartmask_set_all(&imsic->irqchip.target_harts);
