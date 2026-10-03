@@ -694,14 +694,14 @@ int sbi_pmu_ctr_stop(unsigned long cbase, unsigned long cmask,
 		     unsigned long flag)
 {
 	struct sbi_pmu_hart_state *phs = pmu_thishart_state_ptr();
-
-	if (unlikely(!phs))
-		return SBI_EINVAL;
-
+	bool any_already_stopped = false;
 	int ret = SBI_EINVAL;
 	int event_idx_type;
 	uint32_t event_code;
 	int i, cidx;
+
+	if (unlikely(!phs))
+		return SBI_EINVAL;
 
 	if (!pmu_ctr_idx_validate(cbase, cmask))
 		return ret;
@@ -724,8 +724,11 @@ int sbi_pmu_ctr_stop(unsigned long cbase, unsigned long cmask,
 		else
 			ret = pmu_ctr_stop_hw(cidx);
 
-		if(ret)
+		if (ret == SBI_EALREADY_STOPPED) {
+			any_already_stopped = true;
+		} else if (ret) {
 			return ret;
+		}
 
 		if (cidx > (CSR_INSTRET - CSR_CYCLE) && flag & SBI_PMU_STOP_FLAG_RESET) {
 			phs->active_events[cidx] = SBI_PMU_EVENT_IDX_INVALID;
@@ -736,6 +739,10 @@ int sbi_pmu_ctr_stop(unsigned long cbase, unsigned long cmask,
 	/* Clear PMU overflow interrupt to avoid spurious ones */
 	if (phs->sse_enabled)
 		csr_clear(CSR_MIP, sbi_pmu_irq_mask());
+
+	if (!ret && any_already_stopped) {
+		ret = SBI_EALREADY_STOPPED;
+	}
 
 	return ret;
 }
