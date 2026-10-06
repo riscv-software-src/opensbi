@@ -748,6 +748,12 @@ static int root_add_memregion(const struct sbi_domain_memregion *reg)
 			return rc;
 		}
 
+		/*
+		 * sanitize_domain() may have dropped regions covered by
+		 * another region, so the count is stale at this point.
+		 */
+		root_memregs_count = sbi_domain_used_memregions(&root);
+
 		/* Merge consecutive memregions with same order and flags */
 		reg_merged = false;
 		sbi_domain_for_each_memregion(&root, nreg) {
