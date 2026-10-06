@@ -407,6 +407,17 @@ _wait_for_boot_hart:
 	div	t2, t2, zero
 	div	t2, t2, zero
 	bne	t0, t1, _wait_for_boot_hart
+	/*
+	 * Acquire: order the _boot_status load above before every later
+	 * load (platform.hart_count, platform.hart_index2id, the scratch
+	 * space, ...).  The boot hart publishes with "fence rw, rw" before
+	 * its store to _boot_status, but without a matching acquire here
+	 * RVWMO lets a waiting hart that saw BOOT_STATUS_BOOT_HART_DONE
+	 * still read pre-relocation values, e.g. the unrelocated
+	 * platform.hart_index2id pointer, and fault through it before
+	 * mtvec is set.
+	 */
+	fence	r, rw
 
 _start_warm:
 	/* Reset all registers except ra, a0, a1, a2, a3 and a4 for non-boot HART */
