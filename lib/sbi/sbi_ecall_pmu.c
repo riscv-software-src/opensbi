@@ -22,7 +22,7 @@ static int sbi_ecall_pmu_handler(unsigned long extid, unsigned long funcid,
 				 struct sbi_ecall_return *out)
 {
 	int ret = 0;
-	uint64_t temp;
+	uint64_t temp = 0;
 
 	switch (funcid) {
 	case SBI_EXT_PMU_NUM_COUNTERS:
@@ -62,7 +62,6 @@ static int sbi_ecall_pmu_handler(unsigned long extid, unsigned long funcid,
 #endif
 		break;
 	case SBI_EXT_PMU_COUNTER_START:
-
 #if __riscv_xlen == 32
 		temp = ((uint64_t)regs->a4 << 32) | regs->a3;
 #else
