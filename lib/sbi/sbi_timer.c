@@ -205,7 +205,7 @@ static void __sbi_timer_event_start(struct timer_state *tstate,
 	ev->hart_index = current_hartindex();
 	ev->time_stamp = next_event;
 	if (next_ev)
-		sbi_list_add(&ev->head, &next_ev->head);
+		sbi_list_add_tail(&ev->head, &next_ev->head);
 	else
 		sbi_list_add_tail(&ev->head, &tstate->event_list);
 }
