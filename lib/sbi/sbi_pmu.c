@@ -1081,7 +1081,7 @@ int sbi_pmu_event_get_info(unsigned long shmem_phys_lo, unsigned long shmem_phys
 			   unsigned long num_events, unsigned long flags)
 {
 	unsigned long shmem_size = num_events * sizeof(struct sbi_pmu_event_info);
-	int i, j, event_type;
+	int i, j, event_type, ret = 0;
 	struct sbi_pmu_event_info *einfo;
 	struct sbi_pmu_hart_state *phs = pmu_thishart_state_ptr();
 	uint32_t event_idx;
@@ -1118,8 +1118,10 @@ int sbi_pmu_event_get_info(unsigned long shmem_phys_lo, unsigned long shmem_phys
 	for (i = 0; i < num_events; i++) {
 		event_idx = einfo[i].event_idx;
 		/* Any must-be-zero event_idx bits set should return INVALID_PARAM per-spec */
-		if (event_idx & SBI_PMU_EVENT_IDX_MBZ_MASK)
-			return SBI_ERR_INVALID_PARAM;
+		if (event_idx & SBI_PMU_EVENT_IDX_MBZ_MASK) {
+			ret = SBI_ERR_INVALID_PARAM;
+			goto out_unmap;
+		}
 		event_type = pmu_event_validate(phs, event_idx, einfo[i].event_data);
 		if (event_type < 0) {
 			einfo[i].output = 0;
@@ -1160,9 +1162,10 @@ int sbi_pmu_event_get_info(unsigned long shmem_phys_lo, unsigned long shmem_phys
 		}
 	}
 
+out_unmap:
 	sbi_hart_protection_temp_unmap_range(shmem_phys_lo, shmem_size);
 
-	return 0;
+	return ret;
 }
 
 static void pmu_reset_event_map(struct sbi_pmu_hart_state *phs)
