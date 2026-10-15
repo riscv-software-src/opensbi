@@ -39,8 +39,6 @@
 /* clang-format on */
 
 static volatile void *uart_base;
-static u32 uart_in_freq;
-static u32 uart_baudrate;
 
 /*
  * Find minimum divisor divides in_freq to max_target_hz;
@@ -95,8 +93,6 @@ static struct sbi_console_device cadence_console = {
 int cadence_uart_init(unsigned long base, u32 in_freq, u32 baudrate)
 {
 	uart_base     = (volatile void *)base;
-	uart_in_freq  = in_freq;
-	uart_baudrate = baudrate;
 
 	/* Disable interrupts */
 	set_reg(UART_REG_IDR, 0xFFFFFFFF);
