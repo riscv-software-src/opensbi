@@ -539,8 +539,8 @@ enum rpmi_cppc_service_id {
 };
 
 struct rpmi_cppc_probe_req {
-	u32 hart_id;
 	u32 reg_id;
+	u32 hart_id;
 };
 
 struct rpmi_cppc_probe_resp {
@@ -549,8 +549,8 @@ struct rpmi_cppc_probe_resp {
 };
 
 struct rpmi_cppc_read_reg_req {
-	u32 hart_id;
 	u32 reg_id;
+	u32 hart_id;
 };
 
 struct rpmi_cppc_read_reg_resp {
@@ -560,8 +560,8 @@ struct rpmi_cppc_read_reg_resp {
 };
 
 struct rpmi_cppc_write_reg_req {
-	u32 hart_id;
 	u32 reg_id;
+	u32 hart_id;
 	u32 data_lo;
 	u32 data_hi;
 };
