@@ -116,8 +116,8 @@ static int rpmi_cppc_read(unsigned long reg, u64 *val)
 	struct rpmi_cppc_read_reg_resp resp;
 	struct rpmi_cppc *cppc;
 
-	req.hart_id = current_hartid();
 	req.reg_id = reg;
+	req.hart_id = current_hartid();
 	cppc = rpmi_cppc_get_pointer(req.hart_id);
 
 	if ((reg == SBI_CPPC_DELIVERED_CTR) && cppc->fc_supported) {
@@ -170,8 +170,8 @@ static int rpmi_cppc_write(unsigned long reg, u64 val)
 	struct rpmi_cppc *cppc = rpmi_cppc_get_pointer(hart_id);
 
 	if (reg != SBI_CPPC_DESIRED_PERF || !cppc->fc_supported) {
-		req.hart_id = hart_id;
 		req.reg_id = reg;
+		req.hart_id = hart_id;
 		req.data_lo = val & 0xFFFFFFFF;
 		req.data_hi = val >> 32;
 
@@ -197,8 +197,8 @@ static int rpmi_cppc_probe(unsigned long reg)
 	struct rpmi_cppc_probe_resp resp;
 	struct rpmi_cppc_probe_req req;
 
-	req.hart_id = current_hartid();
 	req.reg_id = reg;
+	req.hart_id = current_hartid();
 
 	cppc = rpmi_cppc_get_pointer(req.hart_id);
 	if (!cppc)
