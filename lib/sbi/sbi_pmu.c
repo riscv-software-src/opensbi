@@ -389,8 +389,12 @@ static int pmu_ctr_enable_irq_hw(int ctr_idx)
 	return 0;
 }
 
-static void pmu_ctr_write_hw(uint32_t cidx, uint64_t ival)
+static int pmu_ctr_write_hw(uint32_t cidx, uint64_t ival)
 {
+	/* Make sure the counter index lies within the range and is not TM bit */
+	if (cidx >= num_hw_ctrs || cidx == 1)
+		return SBI_EINVAL;
+
 #if __riscv_xlen == 32
 	csr_write_num(CSR_MCYCLE + cidx, 0);
 	csr_write_num(CSR_MCYCLEH + cidx, ival >> BITS_PER_LONG);
@@ -398,6 +402,8 @@ static void pmu_ctr_write_hw(uint32_t cidx, uint64_t ival)
 #else
 	csr_write_num(CSR_MCYCLE + cidx, ival);
 #endif
+
+	return 0;
 }
 
 static int pmu_ctr_start_hw(uint32_t cidx, uint64_t ival, bool ival_update)
@@ -980,8 +986,11 @@ skip_match:
 	    event_type == SBI_PMU_EVENT_TYPE_HW_CACHE ||
 	    event_type == SBI_PMU_EVENT_TYPE_HW_RAW ||
 	    event_type == SBI_PMU_EVENT_TYPE_HW_RAW_V2) {
-		if (flags & SBI_PMU_CFG_FLAG_CLEAR_VALUE)
-			pmu_ctr_write_hw(ctr_idx, 0);
+		if (flags & SBI_PMU_CFG_FLAG_CLEAR_VALUE) {
+			ret = pmu_ctr_write_hw(ctr_idx, 0);
+			if (ret)
+				return ret;
+		}
 		if (flags & SBI_PMU_CFG_FLAG_AUTO_START) {
 			ret = pmu_ctr_start_hw(ctr_idx, 0, false);
 			if (ret)
