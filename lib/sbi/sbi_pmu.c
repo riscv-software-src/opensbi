@@ -982,8 +982,11 @@ skip_match:
 	    event_type == SBI_PMU_EVENT_TYPE_HW_RAW_V2) {
 		if (flags & SBI_PMU_CFG_FLAG_CLEAR_VALUE)
 			pmu_ctr_write_hw(ctr_idx, 0);
-		if (flags & SBI_PMU_CFG_FLAG_AUTO_START)
-			pmu_ctr_start_hw(ctr_idx, 0, false);
+		if (flags & SBI_PMU_CFG_FLAG_AUTO_START) {
+			ret = pmu_ctr_start_hw(ctr_idx, 0, false);
+			if (ret)
+				return ret;
+		}
 	} else if (event_type == SBI_PMU_EVENT_TYPE_FW) {
 		if (flags & SBI_PMU_CFG_FLAG_CLEAR_VALUE)
 			phs->fw_counters_data[ctr_idx - num_hw_ctrs] = 0;
