@@ -451,8 +451,9 @@ static int hart_mhpm_get_allowed_bits(void)
 		csr_write(CSR_MHPMCOUNTER3, 0);
 		if (trap.cause)
 			return 0;
+
+		num_bits = sbi_fls(val) + 1;
 	}
-	num_bits = sbi_fls(val) + 1;
 #if __riscv_xlen == 32
 	csr_write_allowed(CSR_MHPMCOUNTER3H, &trap, val);
 	if (!trap.cause) {
@@ -460,9 +461,9 @@ static int hart_mhpm_get_allowed_bits(void)
 		csr_write(CSR_MHPMCOUNTER3H, 0);
 		if (trap.cause)
 			return num_bits;
-	}
-	num_bits += sbi_fls(val) + 1;
 
+		num_bits += sbi_fls(val) + 1;
+	}
 #endif
 
 	return num_bits;
