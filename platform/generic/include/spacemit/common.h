@@ -9,23 +9,27 @@
 #ifndef __RISCV_SPACEMIT_COMMON_H__
 #define __RISCV_SPACEMIT_COMMON_H__
 
+#include <sbi/sbi_const.h>
+
+#ifndef __ASSEMBLY__
 #include <sbi/sbi_bitops.h>
+#endif
 
 #define CSR_MSETUP				0x7c0
 #define CSR_ML2SETUP				0x7f0
 
 /* dcache enable */
-#define MSETUP_DE				BIT(0)
+#define MSETUP_DE				_BITUL(0)
 /* icache enable */
-#define MSETUP_IE				BIT(1)
+#define MSETUP_IE				_BITUL(1)
 /* branch prediction enable */
-#define MSETUP_BPE				BIT(4)
+#define MSETUP_BPE				_BITUL(4)
 /* prefetch functionality enable */
-#define MSETUP_PFE				BIT(5)
+#define MSETUP_PFE				_BITUL(5)
 /* misaligned memory access enable */
-#define MSETUP_MME				BIT(6)
+#define MSETUP_MME				_BITUL(6)
 /* ECC enable */
-#define MSETUP_ECCE				BIT(16)
+#define MSETUP_ECCE				_BITUL(16)
 
 #define PMU_AP_BASE				0xd4282800
 
@@ -74,7 +78,7 @@
 #define PMU_AP_IDLE_CORE_IDLE			BIT(0)
 /* bit 1: CORE_PWRDWN - power off core on WFI (requires CORE_IDLE set) */
 #define PMU_AP_IDLE_CORE_PWRDWN			BIT(1)
-/* bit 2: Core L1 SRAM Power Down - reserved/not used in K1 and K3 */
+/* bit 2: Core L1 SRAM Power Down - reserved in K1, used in K3 */
 #define PMU_AP_IDLE_CORE_L1_SRAM_PWRDWN		BIT(2)
 /* bit 3: MASK_GIC_NIRQ_TO_CORE - mask nIRQ from GIC, auto-cleared by HW on power-down entry */
 #define PMU_AP_IDLE_MASK_GIC_NIRQ		BIT(3)
