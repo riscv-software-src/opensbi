@@ -102,11 +102,17 @@ static int spacemit_k3_early_init(bool cold_boot)
 	return generic_early_init(cold_boot);
 }
 
+static bool spacemit_k3_cold_boot_allowed(u32 hartid)
+{
+	return !hartid;
+}
+
 static int spacemit_k3_platform_init(const void *fdt, int nodeoff,
 				     const struct fdt_match *match)
 {
 	spacemit_k3_hart_init(current_hartid());
 	generic_platform_ops.early_init = spacemit_k3_early_init;
+	generic_platform_ops.cold_boot_allowed = spacemit_k3_cold_boot_allowed;
 
 	return 0;
 }
