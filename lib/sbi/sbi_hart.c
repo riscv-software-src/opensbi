@@ -22,11 +22,6 @@
 #include <sbi/sbi_string.h>
 #include <sbi/sbi_trap.h>
 
-extern void __sbi_expected_trap(void);
-extern void __sbi_expected_trap_hext(void);
-
-void (*sbi_hart_expected_trap)(void) = &__sbi_expected_trap;
-
 unsigned long hart_features_offset;
 
 static void mstatus_init(struct sbi_scratch *scratch)
@@ -481,6 +476,10 @@ static int hart_detect_features(struct sbi_scratch *scratch, bool cold_boot)
 	if (hfeatures->detected)
 		return 0;
 
+	/* Set the expected trap handler based on H-extension availability */
+	hfeatures->expected_trap = misa_extension('H') ?
+		(ulong)&__sbi_expected_trap_hext : (ulong)&__sbi_expected_trap;
+
 	/*
 	 * Parse device tree extensions early, before any trap-based checks.
 	 * Needed to detect Smrnmi and install NMI handlers before CSR probes
@@ -706,6 +705,7 @@ int sbi_hart_reinit(struct sbi_scratch *scratch)
 
 int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot)
 {
+	unsigned long offset;
 	int rc;
 
 	/*
@@ -715,13 +715,11 @@ int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot)
 	csr_write(CSR_MIP, 0);
 
 	if (cold_boot) {
-		if (misa_extension('H'))
-			sbi_hart_expected_trap = &__sbi_expected_trap_hext;
-
-		hart_features_offset = sbi_scratch_alloc_offset(
-					sizeof(struct sbi_hart_features));
-		if (!hart_features_offset)
+		offset = sbi_scratch_alloc_offset(sizeof(struct sbi_hart_features));
+		if (!offset)
 			return SBI_ENOMEM;
+		/* Publish only after every hart's feature storage is zeroed. */
+		__smp_store_release(&hart_features_offset, offset);
 	}
 
 	rc = hart_detect_features(scratch, cold_boot);

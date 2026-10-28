@@ -10,8 +10,10 @@
 #ifndef __SBI_HART_H__
 #define __SBI_HART_H__
 
+#include <sbi/riscv_barrier.h>
 #include <sbi/sbi_types.h>
 #include <sbi/sbi_bitops.h>
+#include <sbi/sbi_scratch.h>
 
 /** Possible privileged specification versions of a hart */
 enum sbi_hart_priv_versions {
@@ -125,6 +127,7 @@ struct sbi_hart_features {
 	unsigned int pmp_log2gran;
 	unsigned int mhpm_mask;
 	unsigned int mhpm_bits;
+	unsigned long expected_trap;
 };
 
 extern unsigned long hart_features_offset;
@@ -135,7 +138,25 @@ struct sbi_scratch;
 int sbi_hart_reinit(struct sbi_scratch *scratch);
 int sbi_hart_init(struct sbi_scratch *scratch, bool cold_boot);
 
-extern void (*sbi_hart_expected_trap)(void);
+extern void __sbi_expected_trap(void);
+extern void __sbi_expected_trap_hext(void);
+
+/*
+ * Keep the load free of function calls, including stack-protector code.
+ * Early CSR probes can use the non-H handler before hart features are ready.
+ */
+#define sbi_hart_expected_trap_addr()					\
+({									\
+	unsigned long __offset = __smp_load_acquire(&hart_features_offset); \
+	unsigned long __addr = (unsigned long)&__sbi_expected_trap;		\
+	if (__offset) {							\
+		struct sbi_hart_features *__features =			\
+			sbi_scratch_thishart_offset_ptr(__offset);	\
+		if (__features->expected_trap)				\
+			__addr = __features->expected_trap;		\
+	}								\
+	__addr;								\
+})
 
 unsigned int sbi_hart_mhpm_mask(struct sbi_scratch *scratch);
 void sbi_hart_delegation_dump(struct sbi_scratch *scratch,
