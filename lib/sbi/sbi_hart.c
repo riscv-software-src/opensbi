@@ -752,6 +752,7 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 #else
 	unsigned long val;
 #endif
+	unsigned long tvec;
 
 	switch (next_mode) {
 	case PRV_M:
@@ -784,21 +785,32 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 	csr_write(CSR_MSTATUS, val);
 	csr_write(CSR_MEPC, next_addr);
 
+	/*
+	 * The xtvec registers encode the trap mode in bits [1:0]: 0 is
+	 * direct, 1 is vectored, 2 and 3 are reserved.  next_addr is an
+	 * instruction address and may be only 2-byte aligned when the C
+	 * extension is in use, in which case writing it unmasked asks
+	 * for a reserved mode and the result is implementation-defined
+	 * (the write is ignored, or the old mode is kept).  Install the
+	 * entry as a direct-mode vector instead.
+	 */
+	tvec = next_addr & ~0x3UL;
+
 	if (next_mode == PRV_S) {
 		if (next_virt) {
-			csr_write(CSR_VSTVEC, next_addr);
+			csr_write(CSR_VSTVEC, tvec);
 			csr_write(CSR_VSSCRATCH, 0);
 			csr_write(CSR_VSIE, 0);
 			csr_write(CSR_VSATP, 0);
 		} else {
-			csr_write(CSR_STVEC, next_addr);
+			csr_write(CSR_STVEC, tvec);
 			csr_write(CSR_SSCRATCH, 0);
 			csr_write(CSR_SIE, 0);
 			csr_write(CSR_SATP, 0);
 		}
 	} else if (next_mode == PRV_U) {
 		if (misa_extension('N')) {
-			csr_write(CSR_UTVEC, next_addr);
+			csr_write(CSR_UTVEC, tvec);
 			csr_write(CSR_USCRATCH, 0);
 			csr_write(CSR_UIE, 0);
 		}
