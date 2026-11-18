@@ -57,9 +57,10 @@ struct sbi_ecall_extension ecall_mpxy;
 
 static int sbi_ecall_mpxy_register_extensions(void)
 {
-	if (!sbi_mpxy_channel_available())
-		return 0;
-
+	/*
+	 * Register the MPXY ecall extension unconditionally, as this is too early
+	 * in the init order and any channel might not have been registered yet.
+	 */
 	return sbi_ecall_register_extension(&ecall_mpxy);
 }
 
