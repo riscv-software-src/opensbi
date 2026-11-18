@@ -46,6 +46,13 @@ config FDT_MPXY_RPMI_BRIDGE
 	bool "MPXY bridge driver for interdomain communication"
 	default n
 
+if FDT_MPXY_RPMI_BRIDGE
+
+config FDT_MPXY_RPMI_BRIDGE_MM
+	bool "MPXY rpmi bridge mm driver for interdomain communication"
+	default n
+
+endif
 
 endif
 
