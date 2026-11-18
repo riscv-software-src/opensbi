@@ -217,6 +217,13 @@ At runtime, the assignment of a HART can change from one domain to
 another domain as long as the HART is listed in possible HARTs of
 both domains.
 
+### Interdomain Communication
+
+* *[DOMAIN_BRIDGE]*: The OpenSBI domain bridge and its device tree bindings
+  are described in more detail in the file *domain_bridge.md*.
+
+[DOMAIN_BRIDGE]: domain_bridge.md
+
 ### Domain Configuration Only Accessible to OpenSBI
 
 The software running inside a domain instance should only be aware of
