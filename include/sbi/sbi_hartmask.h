@@ -206,4 +206,25 @@ static inline int sbi_hartmask_weight(const struct sbi_hartmask *srcp)
 		(__i) < SBI_HARTMASK_MAX_BITS; \
 		(__i) = find_next_bit((__m)->bits, SBI_HARTMASK_MAX_BITS, (__i) + 1))
 
+
+/**
+ * Check whether two hartmasks are equal
+ * @param a the first hartmask to compare
+ * @param b the second hartmask to compare
+ *
+ * Return: true if both hartmasks contain the same harts, false otherwise
+ */
+static inline bool sbi_hartmask_equal(const struct sbi_hartmask *a,
+				      const struct sbi_hartmask *b)
+{
+	u32 i;
+
+	for (i = 0; i < BITS_TO_LONGS(SBI_HARTMASK_MAX_BITS); i++) {
+		if (a->bits[i] != b->bits[i])
+			return false;
+	}
+
+	return true;
+}
+
 #endif
