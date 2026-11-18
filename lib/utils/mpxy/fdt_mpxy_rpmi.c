@@ -76,7 +76,7 @@ static const struct mpxy_rpmi_service_data *mpxy_find_rpmi_srvid(u32 message_id,
 	const struct mpxy_rpmi_service_data *srv = data->service_data;
 	int mid = 0;
 
-	for (mid = 0; srv[mid].id < data->num_services; mid++) {
+	for (mid = 0; mid < data->num_services; mid++) {
 		if (srv[mid].id == (u8)message_id)
 			return &srv[mid];
 	}
