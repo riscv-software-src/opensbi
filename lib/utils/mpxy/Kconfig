@@ -42,6 +42,11 @@ config FDT_MPXY_RPMI_MM
 	bool "MPXY driver for RPMI MM service group"
 	default n
 
+config FDT_MPXY_RPMI_BRIDGE
+	bool "MPXY bridge driver for interdomain communication"
+	default n
+
+
 endif
 
 endmenu
