@@ -1,8 +1,8 @@
 /*
  * SPDX-License-Identifier: BSD-2-Clause
  *
- * S-mode test payload: print a greeting, wake up the other harts and power
- * off.
+ * Self test of the S-mode test payload: print a greeting, test the traps,
+ * the heap and the hart list, wake up the other harts and power off.
  */
 
 #include <sbi/riscv_encoding.h>
@@ -130,6 +130,9 @@ __attribute__((noreturn)) void main(unsigned long hartid, unsigned long fdt)
 	 * started, then wakes the hart up with an IPI. All of them run the
 	 * heap test, and so does this hart, at the same time.
 	 */
+	/* Set before the first wake-up, the harts read it right away */
+	__atomic_store_n(&secondary_task, test_heap_stress, __ATOMIC_RELEASE);
+
 	woken = 0;
 	for (hart = hart_first(); hart; hart = hart->next) {
 		if (!hart->started)

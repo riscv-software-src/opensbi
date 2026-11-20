@@ -46,6 +46,12 @@ static inline struct sbiret sbi_get_spec_version(void)
 			 0, 0, 0);
 }
 
+static inline struct sbiret sbi_probe_extension(unsigned long ext)
+{
+	return sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, ext, 0, 0, 0, 0,
+			 0);
+}
+
 /* Hart state management extension */
 static inline struct sbiret sbi_hart_start(unsigned long hartid,
 					   unsigned long start_addr,
@@ -77,6 +83,64 @@ static inline struct sbiret sbi_system_reset(unsigned long type,
 {
 	return sbi_ecall(SBI_EXT_SRST, SBI_EXT_SRST_RESET, type, reason, 0, 0,
 			 0, 0);
+}
+
+/* Debug triggers extension */
+static inline struct sbiret sbi_debug_num_triggers(unsigned long trig_tdata1)
+{
+	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_NUM_TRIGGERS, trig_tdata1, 0,
+			 0, 0, 0, 0);
+}
+
+static inline struct sbiret sbi_debug_set_shmem(unsigned long shmem_phys_lo,
+						unsigned long shmem_phys_hi,
+						unsigned long flags)
+{
+	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_SETUP_SHMEM, shmem_phys_lo,
+			 shmem_phys_hi, flags, 0, 0, 0);
+}
+
+static inline struct sbiret sbi_debug_read_triggers(unsigned long trig_idx_base,
+						    unsigned long trig_count)
+{
+	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_READ, trig_idx_base,
+			 trig_count, 0, 0, 0, 0);
+}
+
+static inline struct sbiret sbi_debug_install_triggers(unsigned long trig_count)
+{
+	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_INSTALL, trig_count,
+			 0, 0, 0, 0, 0);
+}
+
+static inline struct sbiret sbi_debug_update_triggers(unsigned long trig_count)
+{
+	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_UPDATE, trig_count, 0,
+			 0, 0, 0, 0);
+}
+
+static inline struct sbiret
+sbi_debug_uninstall_triggers(unsigned long trig_idx_base,
+			     unsigned long trig_idx_mask)
+{
+	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_UNINSTALL,
+			 trig_idx_base, trig_idx_mask, 0, 0, 0, 0);
+}
+
+static inline struct sbiret
+sbi_debug_enable_triggers(unsigned long trig_idx_base,
+			  unsigned long trig_idx_mask)
+{
+	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_ENABLE, trig_idx_base,
+			 trig_idx_mask, 0, 0, 0, 0);
+}
+
+static inline struct sbiret
+sbi_debug_disable_triggers(unsigned long trig_idx_base,
+			   unsigned long trig_idx_mask)
+{
+	return sbi_ecall(SBI_EXT_DBTR, SBI_EXT_DBTR_TRIGGER_DISABLE,
+			 trig_idx_base, trig_idx_mask, 0, 0, 0, 0);
 }
 
 #endif /* __SBITEST_ECALL_H__ */

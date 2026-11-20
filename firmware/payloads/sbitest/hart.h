@@ -51,6 +51,15 @@ struct hart {
  */
 extern struct hart *hart_list;
 
+/*
+ * Work of the secondary harts. The module with main() sets it before it wakes
+ * the harts up. A secondary hart calls it with its own hart ID on its own
+ * stack and counts the failed checks it returns. Without a task the hart only
+ * reports that it is awake. It is optional to have secondary harts at all:
+ * the boot hart can be the only one.
+ */
+extern unsigned int (*secondary_task)(unsigned long hartid);
+
 /* Counters of the secondary harts that were woken up, see hart.c */
 extern volatile unsigned int secondary_awake;
 extern volatile unsigned int secondary_on_stack;
@@ -92,6 +101,28 @@ int hart_can_run(const struct hart *hart);
  * time. If the hart has a stack already, that one is returned.
  */
 unsigned long assign_stack(unsigned long hartid);
+
+/*
+ * Start all harts of the list except the boot hart that can run this payload
+ * and wait until they have arrived in _start. Returns the number of harts
+ * that were started. skipped is set to the number of harts that cannot run
+ * the payload. Without other harts the result is 0, this is not an error.
+ */
+unsigned int harts_start_secondary(unsigned long boot_hartid,
+				   unsigned int *skipped);
+
+/*
+ * Give every started hart a stack and wake it up to run task(hartid). The
+ * result is the number of harts that were woken up. Call it on the boot hart.
+ */
+unsigned int harts_wake_secondary(unsigned int (*task)(unsigned long hartid));
+
+/*
+ * Wait until the woken harts have finished their task. Returns the number of
+ * failed checks of all of them, plus one for every hart that did not come up
+ * as expected.
+ */
+unsigned int harts_wait_secondary(unsigned int woken);
 
 /* C entry of a secondary hart that was woken up, runs on the new stack */
 __attribute__((noreturn)) void secondary_main(struct hart *hart);

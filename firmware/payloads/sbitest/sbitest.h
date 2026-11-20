@@ -23,7 +23,7 @@
 
 #ifndef __ASSEMBLER__
 
-/* Link-time symbols and the entry point, see sbitest.elf.ldS and start.S */
+/* Link-time symbols and the entry point, see sbitest.ld.inc and start.S */
 extern char _payload_start[];
 extern char _start[];
 
@@ -35,6 +35,13 @@ void console_init(void);
 
 /* Print the error, power off and do not return */
 __attribute__((noreturn)) void test_abort(const char *what);
+
+/*
+ * Print the result line, power off and do not return. If skipped is not NULL
+ * and no check failed, the line is "SBITEST: <skipped>" instead of OK.
+ */
+__attribute__((noreturn)) void test_finish(unsigned int errors,
+					   const char *skipped);
 
 /* Tests, they return the number of failed checks */
 unsigned int test_heap_basic(void);
