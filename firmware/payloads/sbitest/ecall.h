@@ -55,6 +55,14 @@ static inline struct sbiret sbi_hart_start(unsigned long hartid,
 			 start_addr, opaque, 0, 0, 0);
 }
 
+/* IPI extension */
+static inline struct sbiret sbi_send_ipi(unsigned long hart_mask,
+					 unsigned long hart_mask_base)
+{
+	return sbi_ecall(SBI_EXT_IPI, SBI_EXT_IPI_SEND_IPI, hart_mask,
+			 hart_mask_base, 0, 0, 0, 0);
+}
+
 /* Debug console extension: write bytes of a buffer in physical memory */
 static inline struct sbiret sbi_debug_console_write(unsigned long num_bytes,
 						    const char *base)

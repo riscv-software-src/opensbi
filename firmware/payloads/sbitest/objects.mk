@@ -16,6 +16,12 @@ firmware-bins-y += payloads/sbitest/sbitest.bin
 sbitest-y += start.o
 sbitest-y += main.o
 sbitest-y += console.o
+sbitest-y += util.o
+sbitest-y += heap.o
+sbitest-y += hart.o
+sbitest-y += test_heap.o
+sbitest-y += trap.o
+sbitest-y += trap_entry.o
 
 %/sbitest.o: $(foreach obj,$(sbitest-y),%/$(obj))
 	$(call merge_objs,$@,$^)

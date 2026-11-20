@@ -12,6 +12,11 @@
  * loop. Before it waits, a secondary hart prints a single '*' and counts
  * itself in secondary_count. This is only a marker for testing.
  *
+ * A parked hart has no stack. It waits for the boot hart to write the top of
+ * a stack into its slot of secondary_stack[] and to send it an IPI. The hart
+ * then switches to that stack and calls secondary_main(). Only the boot hart
+ * writes the slots, so assigning the initial stacks needs no locking.
+ *
  * The payload is linked at address 0 and can be loaded anywhere. The boot hart
  * applies the relative relocations to the address it was loaded at. The
  * lottery and the code of the secondary harts use only pc-relative addresses
@@ -19,6 +24,8 @@
  */
 
 #include <sbi/riscv_elf.h>
+#include <sbi/riscv_encoding.h>
+#include "sbitest.h"
 
 /*
  * sbi_ecall_interface.h cannot be included here, it has C type definitions.
@@ -30,9 +37,11 @@
 #if __riscv_xlen == 64
 #define REG_L		ld
 #define REG_S		sd
+#define LOG_REGBYTES	3
 #elif __riscv_xlen == 32
 #define REG_L		lw
 #define REG_S		sw
+#define LOG_REGBYTES	2
 #else
 #error "Unexpected __riscv_xlen"
 #endif
@@ -105,10 +114,12 @@ _relocate_done:
 	j	5b
 
 	/*
-	 * A secondary hart: print '*' (42), count it, and wait. The wait loop
-	 * is the place to wake the hart up from later.
+	 * A secondary hart: print '*' (42), count it, and wait for a stack.
+	 * a0 is the hart ID. s1 keeps it over the SBI call, which only changes
+	 * a0 and a1. There is no stack, only registers are used.
 	 */
 _secondary:
+	mv	s1, a0
 	li	a7, SBI_EXT_DBCN
 	li	a6, SBI_EXT_DBCN_CONSOLE_WRITE_BYTE
 	li	a0, 42
@@ -117,9 +128,41 @@ _secondary:
 	lla	a3, secondary_count
 	li	a2, 1
 	amoadd_w a4, a2, a3, a5
+
+	/*
+	 * Let a supervisor software interrupt wake up wfi. sstatus.SIE stays
+	 * clear, so the hart does not take a trap: there is no vector yet.
+	 */
+	li	t0, MIP_SSIP
+	csrw	sie, t0
+
+	/* A hart ID without a slot never gets a stack */
+	li	t0, MAX_HARTS
+	bgeu	s1, t0, _secondary_hang
+
+	lla	s2, secondary_stack
+	slli	t0, s1, LOG_REGBYTES
+	add	s2, s2, t0
 _secondary_wait:
+	REG_L	t1, 0(s2)
+	bnez	t1, _secondary_go
+	/*
+	 * wfi returns when an interrupt is pending, also if it was pending
+	 * before. The slot is checked again before and after every wait.
+	 */
 	wfi
 	j	_secondary_wait
+
+_secondary_go:
+	/* Acquire: the stack memory is valid, the boot hart released it */
+	fence	r, rw
+	mv	sp, t1
+	mv	a0, s1
+	call	secondary_main
+
+_secondary_hang:
+	wfi
+	j	_secondary_hang
 
 	.section .data
 	.align 3
