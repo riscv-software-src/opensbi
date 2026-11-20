@@ -4,6 +4,8 @@
 # S-mode test payloads. They are built together with OpenSBI as position
 # independent flat binaries below the platform build directory, in
 # firmware/payloads/sbitest/. They are not linked into any firmware image.
+# They are built if CONFIG_SBITEST is set, which is the default, see
+# firmware/Kconfig.
 #
 # All payloads share the objects in sbitest-common-y. Each tested item has
 # one module that contains main() and is linked into its own binary:
@@ -21,8 +23,8 @@
 # sbitest_<item>.elf.ldS that includes sbitest.ld.inc.
 #
 
-firmware-bins-y += payloads/sbitest/sbitest_self.bin
-firmware-bins-y += payloads/sbitest/sbitest_dbtr.bin
+firmware-bins-$(CONFIG_SBITEST) += payloads/sbitest/sbitest_self.bin
+firmware-bins-$(CONFIG_SBITEST) += payloads/sbitest/sbitest_dbtr.bin
 
 sbitest-common-y += start.o
 sbitest-common-y += console.o
