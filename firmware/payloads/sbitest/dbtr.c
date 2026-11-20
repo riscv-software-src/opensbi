@@ -16,7 +16,6 @@
 #include <libfdt.h>
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_console.h>
-#include <sbi/sbi_string.h>
 #include "dbtr.h"
 #include "ecall.h"
 #include "hart.h"
@@ -24,56 +23,7 @@
 #include "sbitest.h"
 #include "trap.h"
 
-unsigned long dbtr_mmode_base;
-unsigned long dbtr_mmode_size;
 unsigned long dbtr_boot_hartid;
-
-/* Read a base or size of 1 or 2 cells */
-static unsigned long long read_cells(const fdt32_t *p, int cells)
-{
-	unsigned long long val = 0;
-	int i;
-
-	for (i = 0; i < cells; i++)
-		val = (val << 32) | fdt32_to_cpu(p[i]);
-
-	return val;
-}
-
-/*
- * OpenSBI adds the memory it protects to /reserved-memory as nodes named
- * mmode_resv<N>@<address>. S-mode must not be able to use it as shared
- * memory. Remember the first one.
- */
-static void find_mmode_region(const void *fdt)
-{
-	int resv, node, ac, sc, len;
-	const char *name;
-	const fdt32_t *reg;
-
-	resv = fdt_path_offset(fdt, "/reserved-memory");
-	if (resv < 0)
-		return;
-
-	ac = fdt_address_cells(fdt, resv);
-	sc = fdt_size_cells(fdt, resv);
-	if (ac < 1 || ac > 2 || sc < 1 || sc > 2)
-		return;
-
-	for (node = fdt_first_subnode(fdt, resv); node >= 0;
-	     node = fdt_next_subnode(fdt, node)) {
-		name = fdt_get_name(fdt, node, NULL);
-		if (!name || sbi_strncmp(name, "mmode_resv", 10))
-			continue;
-		reg = fdt_getprop(fdt, node, "reg", &len);
-		if (!reg || len < (ac + sc) * (int)sizeof(fdt32_t))
-			continue;
-
-		dbtr_mmode_base = read_cells(reg, ac);
-		dbtr_mmode_size = read_cells(reg + ac, sc);
-		return;
-	}
-}
 
 __attribute__((noreturn)) void main(unsigned long hartid, unsigned long fdt)
 {
@@ -93,18 +43,12 @@ __attribute__((noreturn)) void main(unsigned long hartid, unsigned long fdt)
 	if (fdt_check_header((const void *)fdt))
 		test_abort("no valid device tree");
 	harts_init((const void *)fdt);
-	find_mmode_region((const void *)fdt);
 
 	sbi_printf("Harts:         %u in the device tree\n", hart_count());
 	for (hart = hart_first(); hart; hart = hart->next)
 		sbi_printf("  hart %2lu: %u bit%s\n", hart->hartid,
 			   hart->bitness,
 			   hart->hartid == hartid ? " (boot hart)" : "");
-	if (dbtr_mmode_size)
-		sbi_printf("M-mode region: 0x%lx, size 0x%lx\n", dbtr_mmode_base,
-			   dbtr_mmode_size);
-	else
-		sbi_printf("M-mode region: none in the device tree\n");
 
 	/* Debug triggers are optional, the device tree tells which hart has them */
 	hart = hart_find(hartid);

@@ -11,10 +11,6 @@
 
 #include "trap.h"
 
-/* Start and size of the first M-mode reserved region in the FDT, 0 if none */
-extern unsigned long dbtr_mmode_base;
-extern unsigned long dbtr_mmode_size;
-
 /* Only this hart executes the triggers and takes the breakpoints */
 extern unsigned long dbtr_boot_hartid;
 
