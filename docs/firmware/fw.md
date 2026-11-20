@@ -126,3 +126,10 @@ stands for disabling boot prints from the OpenSBI library.
 
 For all supported options, please check "enum sbi_scratch_options" in the
 *include/sbi/sbi_scratch.h* header file.
+
+Test payloads for SBI extensions
+--------------------------------
+The directory *firmware/payloads/sbitest* contains payloads that run in S-mode
+and test SBI extensions, for example the debug triggers extension. They are
+built by default and can be run on QEMU or built into a *FW_PAYLOAD* firmware.
+For details see *[S-mode SBI Test Payloads](sbitest.md)*.
