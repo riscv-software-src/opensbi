@@ -564,6 +564,72 @@ static void test_update(struct ctx *c)
 	EXPECT_ERR(c, "update after uninstall is FAILED", ret, SBI_ERR_FAILED);
 }
 
+/*
+ * A batch of updates: the value is the array index of the failing entry. With
+ * the failing entry at index 0 the value is 0 anyway, so use index 1.
+ */
+static void test_update_batch(struct ctx *c)
+{
+	unsigned long td1 = good_td1(c->type);
+	unsigned long addr = (unsigned long)dbtr_target;
+	unsigned long addr2 = (unsigned long)dbtr_target2;
+	unsigned long idx0, idx1;
+	struct sbiret ret;
+
+	if (c->matching < 2 || c->trig_max < 2)
+		return;
+
+	set_entry(c, 0, ~0UL, td1, addr, 0);
+	set_entry(c, 1, ~0UL, td1, addr, 0);
+	ret = sbi_debug_install_triggers(2);
+	EXPECT_OK0(c, "install of two triggers for the update batch", ret);
+	idx0 = entry(c, 0)[0];
+	idx1 = entry(c, 1)[0];
+	if (ret.error || idx0 >= c->trig_max || idx1 >= c->trig_max) {
+		cleanup(c);
+		return;
+	}
+
+	/* A good batch of two */
+	set_entry(c, 0, idx0, td1, addr2, 0);
+	set_entry(c, 1, idx1, td1, addr2, 0);
+	ret = sbi_debug_update_triggers(2);
+	EXPECT_OK0(c, "update of two triggers succeeds", ret);
+
+	/* Entry 1 has an index that is out of range */
+	set_entry(c, 0, idx0, td1, addr, 0);
+	set_entry(c, 1, c->trig_max, td1, addr, 0);
+	ret = sbi_debug_update_triggers(2);
+	EXPECT_ERR(c, "update with idx = trig_max in entry 1", ret,
+		   SBI_ERR_INVALID_PARAM);
+	EXPECT(c, "... reports array index 1", ret.value == 1);
+
+	/* Entry 1 has the M bit */
+	set_entry(c, 1, idx1, td1 | MC_M, addr, 0);
+	ret = sbi_debug_update_triggers(2);
+	EXPECT_ERR(c, "update with M bit in entry 1", ret,
+		   SBI_ERR_INVALID_PARAM);
+	EXPECT(c, "... reports array index 1 for the M bit", ret.value == 1);
+
+	/* Entry 1 is not installed, entry 0 is the other one that is */
+	ret = sbi_debug_uninstall_triggers(idx1, 1);
+	EXPECT_OK0(c, "uninstall of the second trigger", ret);
+	set_entry(c, 0, idx0, td1, addr, 0);
+	set_entry(c, 1, idx1, td1, addr, 0);
+	ret = sbi_debug_update_triggers(2);
+	EXPECT_ERR(c, "update of an unmapped trigger in entry 1", ret,
+		   SBI_ERR_FAILED);
+	EXPECT(c, "... reports array index 1 for the unmapped one",
+	       ret.value == 1);
+
+	/* The unmapped trigger is free, the other one is mapped */
+	set_entry(c, 0, idx1, td1, addr, 0);
+	ret = sbi_debug_update_triggers(1);
+	EXPECT_ERR(c, "update of an unmapped trigger when another one is mapped",
+		   ret, SBI_ERR_FAILED);
+	cleanup(c);
+}
+
 /* Uninstall, enable and disable: index checks, same rules for all three */
 static void test_index_sets(struct ctx *c)
 {
@@ -779,6 +845,7 @@ unsigned int test_dbtr_hart(unsigned long hartid)
 	test_read(&c);
 	test_install(&c);
 	test_update(&c);
+	test_update_batch(&c);
 	test_index_sets(&c);
 	if (c.boot)
 		test_fire(&c);
