@@ -323,13 +323,24 @@ static void test_shmem_setup(struct ctx *c)
 	bad_shmem(c, "set_shmem at the top of memory is not accepted",
 		  ~0UL & ~(align - 1), 0, 0, SBI_ERR_INVALID_ADDRESS,
 		  SBI_ERR_FAILED);
+	/*
+	 * Ranges that touch M-mode memory. All addresses are aligned, so the
+	 * alignment check does not hide the range check. The shared memory
+	 * is size bytes long, word is the smallest step that keeps alignment.
+	 */
 	if (dbtr_mmode_size) {
-		bad_shmem(c, "set_shmem in M-mode memory is not accepted",
+		unsigned long size = c->trig_max * ENTRY_BYTES;
+		unsigned long end = dbtr_mmode_base + dbtr_mmode_size;
+
+		bad_shmem(c, "set_shmem starting in M-mode memory fails",
 			  dbtr_mmode_base, 0, 0, SBI_ERR_INVALID_ADDRESS,
 			  SBI_ERR_FAILED);
-		/* Starts in S-mode memory, ends in M-mode memory */
-		bad_shmem(c, "set_shmem that ends in M-mode memory fails",
-			  dbtr_mmode_base - ENTRY_BYTES, 0, 0,
+		bad_shmem(c, "set_shmem starting in its last word fails",
+			  end - align, 0, 0, SBI_ERR_INVALID_ADDRESS,
+			  SBI_ERR_FAILED);
+		/* Starts outside, the last word of the range is inside */
+		bad_shmem(c, "set_shmem ending in M-mode memory fails",
+			  dbtr_mmode_base - size + align, 0, 0,
 			  SBI_ERR_INVALID_ADDRESS, SBI_ERR_FAILED);
 	}
 
