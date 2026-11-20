@@ -4,8 +4,8 @@
 # S-mode test payloads. They are built together with OpenSBI as position
 # independent flat binaries below the platform build directory, in
 # firmware/payloads/sbitest/. They are not linked into any firmware image.
-# They are built if CONFIG_SBITEST is set, which is the default, see
-# firmware/Kconfig.
+# The menu CONFIG_SBITEST and one option for each binary select what is built,
+# see firmware/Kconfig. All of them are enabled by default.
 #
 # All payloads share the objects in sbitest-common-y. Each tested item has
 # one module that contains main() and is linked into its own binary:
@@ -19,12 +19,13 @@
 #       -bios <build>/platform/generic/firmware/fw_dynamic.bin \
 #       -kernel <build>/platform/generic/firmware/payloads/sbitest/sbitest_dbtr.bin
 #
-# To test another item, add <item>.c with main(), a binary below and a
-# sbitest_<item>.elf.ldS that includes sbitest.ld.inc.
+# To test another item, add <item>.c with main(), a binary below with its own
+# option SBITEST_<ITEM> in firmware/Kconfig, and a sbitest_<item>.elf.ldS that
+# includes sbitest.ld.inc.
 #
 
-firmware-bins-$(CONFIG_SBITEST) += payloads/sbitest/sbitest_self.bin
-firmware-bins-$(CONFIG_SBITEST) += payloads/sbitest/sbitest_dbtr.bin
+firmware-bins-$(CONFIG_SBITEST_SELF) += payloads/sbitest/sbitest_self.bin
+firmware-bins-$(CONFIG_SBITEST_DBTR) += payloads/sbitest/sbitest_dbtr.bin
 
 sbitest-common-y += start.o
 sbitest-common-y += console.o
