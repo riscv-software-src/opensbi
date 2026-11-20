@@ -10,6 +10,7 @@
  */
 
 #include <libfdt.h>
+#include <sbi/sbi_string.h>
 #include <sbi/sbi_types.h>
 #include "hart.h"
 #include "heap.h"
@@ -35,6 +36,39 @@ static unsigned int parse_isa_base(const void *fdt, int node)
 		return 32;
 	if (base[2] == '6' && base[3] == '4')
 		return 64;
+
+	return 0;
+}
+
+/*
+ * Sdtrig is listed in riscv,isa-extensions, a list of strings, or in the
+ * legacy riscv,isa, one string with the extensions separated by underscores.
+ */
+static unsigned int parse_sdtrig(const void *fdt, int node)
+{
+	const char *p, *end;
+	int len;
+
+	p = fdt_getprop(fdt, node, "riscv,isa-extensions", &len);
+	if (p)
+		return fdt_stringlist_contains(p, len, "sdtrig");
+
+	p = fdt_getprop(fdt, node, "riscv,isa", &len);
+	if (!p)
+		return 0;
+	end = p + len;
+
+	/* Skip the base, e.g. rv64imafdc, extensions follow after '_' */
+	while (p < end && *p && *p != '_')
+		p++;
+	while (p < end && *p == '_') {
+		p++;
+		if (end - p >= 6 && !sbi_memcmp(p, "sdtrig", 6) &&
+		    (p + 6 == end || p[6] == '_' || !p[6]))
+			return 1;
+		while (p < end && *p && *p != '_')
+			p++;
+	}
 
 	return 0;
 }
@@ -85,6 +119,7 @@ struct hart *harts_parse(const void *fdt, unsigned int *count)
 		hart->stack_top = 0;
 		hart->bitness	= parse_isa_base(fdt, cpu);
 		hart->started	= 0;
+		hart->sdtrig	= parse_sdtrig(fdt, cpu);
 
 		*tail = hart;
 		tail  = &hart->next;

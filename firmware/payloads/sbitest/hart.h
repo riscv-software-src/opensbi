@@ -43,6 +43,8 @@ struct hart {
 	unsigned int bitness;
 	/* The boot hart started this hart successfully */
 	unsigned int started;
+	/* The device tree lists the Sdtrig extension for the hart */
+	unsigned int sdtrig;
 };
 
 /*

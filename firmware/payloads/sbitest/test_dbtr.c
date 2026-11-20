@@ -23,6 +23,7 @@
 #include <sbi/sbi_string.h>
 #include "dbtr.h"
 #include "ecall.h"
+#include "hart.h"
 #include "heap.h"
 #include "sbitest.h"
 #include "trap.h"
@@ -739,7 +740,15 @@ static void test_shmem_off(struct ctx *c)
 unsigned int test_dbtr_hart(unsigned long hartid)
 {
 	struct ctx c = { .hartid = hartid, .boot = hartid == dbtr_boot_hartid };
+	const struct hart *hart = hart_find(hartid);
 	unsigned int errors;
+
+	/* A hart without Sdtrig in the device tree has no triggers to test */
+	if (!hart || !hart->sdtrig) {
+		sbi_printf("Hart %lu: no Sdtrig in the device tree, skipped\n",
+			   hartid);
+		return 0;
+	}
 
 	test_num_triggers(&c);
 	if (!c.trig_max || !c.type) {

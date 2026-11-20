@@ -106,6 +106,15 @@ __attribute__((noreturn)) void main(unsigned long hartid, unsigned long fdt)
 	else
 		sbi_printf("M-mode region: none in the device tree\n");
 
+	/* Debug triggers are optional, the device tree tells which hart has them */
+	hart = hart_find(hartid);
+	sbi_printf("Sdtrig:        %s in the device tree for the boot hart\n",
+		   hart && hart->sdtrig ? "listed" : "not listed");
+	if (!hart || !hart->sdtrig) {
+		sbi_printf("\nThe boot hart has no Sdtrig\n");
+		test_finish(0, "SKIPPED no Sdtrig in the device tree");
+	}
+
 	ret = sbi_probe_extension(SBI_EXT_DBTR);
 	if (ret.error || !ret.value) {
 		sbi_printf("\nDBTR is not available\n");
