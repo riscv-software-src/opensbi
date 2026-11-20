@@ -12,10 +12,12 @@
  * loop. Before it waits, a secondary hart prints a single '*' and counts
  * itself in secondary_count. This is only a marker for testing.
  *
- * A parked hart has no stack. It waits for the boot hart to write the top of
- * a stack into its slot of secondary_stack[] and to send it an IPI. The hart
- * then switches to that stack and calls secondary_main(). Only the boot hart
- * writes the slots, so assigning the initial stacks needs no locking.
+ * A parked hart has no stack. It finds its own node in the list of harts that
+ * hart_list points to. The nodes come from the device tree, see hart.h. The
+ * hart waits for the boot hart to write the top of a stack into its node and
+ * to send it an IPI. It then switches to that stack and calls
+ * secondary_main(). Only the boot hart writes the stacks, so assigning the
+ * initial stacks needs no locking.
  *
  * The payload is linked at address 0 and can be loaded anywhere. The boot hart
  * applies the relative relocations to the address it was loaded at. The
@@ -25,6 +27,7 @@
 
 #include <sbi/riscv_elf.h>
 #include <sbi/riscv_encoding.h>
+#include "hart.h"
 #include "sbitest.h"
 
 /*
@@ -37,11 +40,9 @@
 #if __riscv_xlen == 64
 #define REG_L		ld
 #define REG_S		sd
-#define LOG_REGBYTES	3
 #elif __riscv_xlen == 32
 #define REG_L		lw
 #define REG_S		sw
-#define LOG_REGBYTES	2
 #else
 #error "Unexpected __riscv_xlen"
 #endif
@@ -136,19 +137,34 @@ _secondary:
 	li	t0, MIP_SSIP
 	csrw	sie, t0
 
-	/* A hart ID without a slot never gets a stack */
-	li	t0, MAX_HARTS
-	bgeu	s1, t0, _secondary_hang
+	/*
+	 * Find the node of this hart in the list. s2 is the node. The list is
+	 * published with release order, the loads below depend on the address
+	 * that is loaded, so they see the nodes.
+	 */
+_secondary_find:
+	lla	t0, hart_list
+	REG_L	s2, 0(t0)
+	beqz	s2, _secondary_idle
+1:
+	REG_L	t1, (HART_ID * __SIZEOF_LONG__)(s2)
+	beq	t1, s1, _secondary_wait
+	REG_L	s2, (HART_NEXT * __SIZEOF_LONG__)(s2)
+	bnez	s2, 1b
+	/* The hart is not in the list, it never gets a stack */
+	j	_secondary_hang
 
-	lla	s2, secondary_stack
-	slli	t0, s1, LOG_REGBYTES
-	add	s2, s2, t0
+_secondary_idle:
+	/* There is no list yet, wait and look again */
+	wfi
+	j	_secondary_find
+
 _secondary_wait:
-	REG_L	t1, 0(s2)
+	REG_L	t1, (HART_STACK * __SIZEOF_LONG__)(s2)
 	bnez	t1, _secondary_go
 	/*
 	 * wfi returns when an interrupt is pending, also if it was pending
-	 * before. The slot is checked again before and after every wait.
+	 * before. The stack is checked again before and after every wait.
 	 */
 	wfi
 	j	_secondary_wait
@@ -157,7 +173,7 @@ _secondary_go:
 	/* Acquire: the stack memory is valid, the boot hart released it */
 	fence	r, rw
 	mv	sp, t1
-	mv	a0, s1
+	mv	a0, s2
 	call	secondary_main
 
 _secondary_hang:

@@ -7,7 +7,9 @@
 
 #include <sbi/riscv_encoding.h>
 #include <sbi/sbi_console.h>
+#include <libfdt.h>
 #include "ecall.h"
+#include "hart.h"
 #include "heap.h"
 #include "sbitest.h"
 #include "trap.h"
@@ -29,12 +31,11 @@ static int breakpoint_hook(struct trap_regs *regs)
 __attribute__((noreturn)) void main(unsigned long hartid, unsigned long fdt)
 {
 	struct sbiret ret;
-	long start_ret[MAX_HARTS];
-	unsigned int started = 0;
+	struct hart *hart;
+	unsigned int started = 0, skipped = 0, woken;
 	unsigned int failed;
 	unsigned int errors = 0;
 	unsigned long long spin;
-	unsigned long i;
 
 	console_init();
 
@@ -77,64 +78,94 @@ __attribute__((noreturn)) void main(unsigned long hartid, unsigned long fdt)
 	errors += failed;
 
 	/*
-	 * Start the harts 0 to 15. Failures are not handled for now: the boot
-	 * hart is already running and harts that do not exist are rejected.
-	 * Every hart that starts enters _start, loses the lottery, prints '*'
-	 * and waits for a stack.
+	 * The harts come from the device tree: children of /cpus with the
+	 * compatible string "riscv". Their reg property is the hart ID, the
+	 * property riscv,isa-base is the bitness. This payload is built for
+	 * one bitness and cannot run on harts of the other one.
+	 */
+	if (fdt_check_header((const void *)fdt))
+		test_abort("no valid device tree");
+	harts_init((const void *)fdt);
+
+	sbi_printf("Own bitness:   %u\n", OWN_BITNESS);
+	sbi_printf("Harts:         %u in the device tree\n", hart_count());
+	for (hart = hart_first(); hart; hart = hart->next)
+		sbi_printf("  hart %2lu: %u bit%s\n", hart->hartid,
+			   hart->bitness,
+			   hart->hartid == hartid ? " (boot hart)" : "");
+
+	failed = test_fdt_harts((const void *)fdt, hartid);
+	sbi_printf("Hart list:     %u of the checks failed\n", failed);
+	errors += failed;
+
+	/*
+	 * Start all other harts that can run this payload. Failures are not
+	 * handled for now. Every hart that starts enters _start, loses the
+	 * lottery, prints '*' and waits for a stack.
 	 */
 	sbi_printf("Start harts:   ");
-	for (i = 0; i < MAX_HARTS; i++) {
-		ret	     = sbi_hart_start(i, (unsigned long)_start, 0);
-		start_ret[i] = ret.error;
-		if (!ret.error)
+	for (hart = hart_first(); hart; hart = hart->next) {
+		if (hart->hartid == hartid)
+			continue;
+		if (!hart_can_run(hart)) {
+			skipped++;
+			continue;
+		}
+		ret = sbi_hart_start(hart->hartid, (unsigned long)_start, 0);
+		if (!ret.error) {
+			hart->started = 1;
 			started++;
+		}
 	}
 
 	/* Give the harts that were started time to arrive. */
 	for (spin = 0; spin < WAIT_SPINS && secondary_count < started; spin++)
 		asm volatile("" ::: "memory");
 
-	sbi_printf("\nHarts started: %u, arrived: %u\n", started,
-		   secondary_count);
+	sbi_printf("\nHarts started: %u, arrived: %u, skipped: %u\n", started,
+		   secondary_count, skipped);
 
 	/*
 	 * Only the boot hart assigns stacks, one for each hart that was
 	 * started, then wakes the hart up with an IPI. All of them run the
 	 * heap test, and so does this hart, at the same time.
 	 */
-	for (i = 0; i < MAX_HARTS; i++) {
-		if (start_ret[i])
+	woken = 0;
+	for (hart = hart_first(); hart; hart = hart->next) {
+		if (!hart->started)
 			continue;
-		if (!assign_stack(i)) {
-			sbi_printf("  hart %2lu: no stack\n", i);
+		if (!assign_stack(hart->hartid)) {
+			sbi_printf("  hart %2lu: no stack\n", hart->hartid);
 			errors++;
-			started--;
 			continue;
 		}
-		sbi_send_ipi(1UL, i);
+		sbi_send_ipi(1UL, hart->hartid);
+		woken++;
 	}
 
 	failed = test_heap_stress(hartid);
 	sbi_printf("Heap stress:   boot hart %u failed checks\n", failed);
 	errors += failed;
 
-	for (spin = 0; spin < WAIT_SPINS && secondary_done < started; spin++)
+	for (spin = 0; spin < WAIT_SPINS && secondary_done < woken; spin++)
 		asm volatile("" ::: "memory");
 
 	sbi_printf("Woken up:      %u of %u, on own stack %u, done %u\n",
-		   secondary_awake, started, secondary_on_stack,
-		   secondary_done);
+		   secondary_awake, woken, secondary_on_stack, secondary_done);
 	sbi_printf("Heap stress:   other harts %u failed checks\n",
 		   secondary_errors);
 	errors += secondary_errors;
-	if (secondary_awake != started || secondary_on_stack != started ||
-	    secondary_done != started)
+	if (woken != started || secondary_awake != woken ||
+	    secondary_on_stack != woken || secondary_done != woken)
 		errors++;
 
-	/* All stacks are in use, all other memory has to be given back */
-	sbi_printf("Allocations:   %lu (one stack per woken hart)\n",
-		   heap_count());
-	if (heap_count() != started)
+	/*
+	 * The stacks are in use and the list of harts is still allocated.
+	 * Everything else has to be given back.
+	 */
+	sbi_printf("Allocations:   %lu (%u harts, %u stacks)\n", heap_count(),
+		   hart_count(), woken);
+	if (heap_count() != hart_count() + woken)
 		errors++;
 
 	sbi_printf("\nPowering off\n");

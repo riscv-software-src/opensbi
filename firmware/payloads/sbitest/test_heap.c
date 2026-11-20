@@ -6,17 +6,9 @@
 
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_string.h>
+#include "check.h"
 #include "heap.h"
 #include "sbitest.h"
-
-#define CHECK(cond)                                                          \
-	do {                                                                 \
-		if (!(cond)) {                                               \
-			sbi_printf("FAILED %s:%d: %s\n", __func__, __LINE__, \
-				   #cond);                                   \
-			failed++;                                            \
-		}                                                            \
-	} while (0)
 
 static int is_aligned(const void *p)
 {

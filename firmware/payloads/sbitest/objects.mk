@@ -19,7 +19,9 @@ sbitest-y += console.o
 sbitest-y += util.o
 sbitest-y += heap.o
 sbitest-y += hart.o
+sbitest-y += fdt.o
 sbitest-y += test_heap.o
+sbitest-y += test_fdt.o
 sbitest-y += trap.o
 sbitest-y += trap_entry.o
 
