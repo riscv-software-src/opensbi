@@ -30,6 +30,8 @@ struct sbi_domain root = {
 	.possible_harts = NULL,
 	.system_reset_allowed = true,
 	.system_suspend_allowed = true,
+	.wid = INVALID_WID,
+	.widdeleg = 0,
 	.fw_region_inited = false,
 };
 

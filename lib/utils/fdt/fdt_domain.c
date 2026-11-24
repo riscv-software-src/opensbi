@@ -13,6 +13,7 @@
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_domain.h>
 #include <sbi/sbi_error.h>
+#include <sbi/sbi_hart.h>
 #include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_heap.h>
 #include <sbi/sbi_scratch.h>
@@ -37,6 +38,9 @@ int fdt_iterate_each_domain(void *fdt, void *opaque,
 		return 0;
 
 	fdt_for_each_subnode(doffset, fdt, poffset) {
+		if (!strcmp(fdt_get_name(fdt, doffset, NULL), "root"))
+			continue;
+
 		if (fdt_node_check_compatible(fdt, doffset,
 					      "opensbi,domain,instance"))
 			continue;
@@ -290,6 +294,57 @@ static int __fdt_parse_region(const void *fdt, int domain_offset,
 	return 0;
 }
 
+static void fdt_parse_domain_wid_props(const void *fdt, int offset,
+				       struct sbi_domain *dom)
+{
+	const fdt32_t *val;
+	int len;
+	u64 val64;
+
+	val = fdt_getprop(fdt, offset, "wid", &len);
+	if (val && len == sizeof(fdt32_t))
+		dom->wid = fdt32_to_cpu(val[0]);
+
+	val = fdt_getprop(fdt, offset, "widdeleg", &len);
+	if (val && (len == (2 * sizeof(fdt32_t)))) {
+		val64 = fdt32_to_cpu(val[0]);
+		val64 = (val64 << 32) | fdt32_to_cpu(val[1]);
+		dom->widdeleg = val64;
+	}
+}
+
+static int validate_domain_wid(const struct sbi_domain *dom)
+{
+	/* Worlds supports at most XLEN WIDs, and mwiddeleg is MXLEN bits */
+	if (dom->wid != INVALID_WID && dom->wid >= __riscv_xlen) {
+		sbi_printf("%s: domain \"%s\": \"wid\" %u exceeds max WID %u\n",
+			   __func__, dom->name, dom->wid, __riscv_xlen - 1);
+		return SBI_EINVAL;
+	}
+
+#if __riscv_xlen == 32
+	if (dom->widdeleg >> 32) {
+		sbi_printf("%s: domain \"%s\": \"widdeleg\" 0x%llx exceeds MXLEN\n",
+			   __func__, dom->name,
+			   (unsigned long long)dom->widdeleg);
+		return SBI_EINVAL;
+	}
+#endif
+
+	if (dom->wid != INVALID_WID)
+		return 0;
+
+	if (sbi_hart_has_extension(sbi_scratch_thishart_ptr(),
+				   SBI_HART_EXT_SMLWID)) {
+		sbi_printf("%s: domain \"%s\": missing \"wid\""
+			   " property (required by Smlwid)\n",
+			   __func__, dom->name);
+		return SBI_EINVAL;
+	}
+
+	return 0;
+}
+
 static int __fdt_parse_domain(const void *fdt, int domain_offset, void *opaque)
 {
 	u32 val32;
@@ -306,6 +361,7 @@ static int __fdt_parse_domain(const void *fdt, int domain_offset, void *opaque)
 	dom = sbi_zalloc(sizeof(*dom));
 	if (!dom)
 		return SBI_ENOMEM;
+	dom->wid = INVALID_WID;
 
 	preg.dom = dom;
 	preg.region_count = 0;
@@ -449,6 +505,12 @@ static int __fdt_parse_domain(const void *fdt, int domain_offset, void *opaque)
 	}
 	dom->next_mode = val32;
 
+	/* Read "wid" and "widdeleg" DT properties */
+	fdt_parse_domain_wid_props(fdt, domain_offset, dom);
+	err = validate_domain_wid(dom);
+	if (err)
+		goto fail_free_all;
+
 	/* Read "system-reset-allowed" DT property */
 	if (fdt_get_property(fdt, domain_offset,
 			     "system-reset-allowed", NULL))
@@ -477,11 +539,51 @@ fail_free_domain:
 	return err;
 }
 
+static int fdt_root_domain_offset(const void *fdt)
+{
+	int offset;
+
+	offset = fdt_path_offset(fdt, "/chosen");
+	if (offset < 0)
+		return offset;
+
+	offset = fdt_node_offset_by_compatible(fdt, offset,
+					       "opensbi,domain,config");
+	if (offset < 0)
+		return offset;
+
+	return fdt_subnode_offset(fdt, offset, "root");
+}
+
+static int fdt_parse_root_domain(const void *fdt)
+{
+	int offset;
+
+	if (fdt) {
+		offset = fdt_root_domain_offset(fdt);
+		if (offset >= 0)
+			fdt_parse_domain_wid_props(fdt, offset, &root);
+	}
+
+	/*
+	 * Ensure root domain has a valid WID
+	 * even if FDT or root subnode is absent
+	 */
+	return validate_domain_wid(&root);
+}
+
 int fdt_domains_populate(const void *fdt)
 {
+	int err;
+
 	/* Sanity checks */
 	if (!fdt)
 		return SBI_EINVAL;
+
+	/* Parse root domain config from "root" subnode */
+	err = fdt_parse_root_domain(fdt);
+	if (err)
+		return err;
 
 	/* Iterate over each domain in FDT and populate details */
 	return fdt_iterate_each_domain_ro(fdt, NULL, __fdt_parse_domain);
