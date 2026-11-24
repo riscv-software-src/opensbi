@@ -56,6 +56,8 @@ has following details:
   domain. This can be either S-mode or U-mode.
 * **system_reset_allowed** - Is domain allowed to reset the system?
 * **system_suspend_allowed** - Is domain allowed to suspend the system?
+* **wid** - World ID for the domain
+* **widdeleg** - World ID delegation bitmask for the domain
 
 The memory regions represented by **regions** in **struct sbi_domain** have
 following additional constraints to align with RISC-V PMP requirements:
@@ -98,6 +100,8 @@ following manner:
   is the next mode for the ROOT domain
 * **system_reset_allowed** - The ROOT domain is allowed to reset the system
 * **system_suspend_allowed** - The ROOT domain is allowed to suspend the system
+* **wid** - Configurable World ID for the ROOT domain
+* **widdeleg** - Configurable World ID delegation bitmask for the ROOT domain
 
 Domain Effects
 --------------
@@ -130,6 +134,23 @@ The DT properties of a domain configuration DT node are as follows:
 
 * **compatible** (Mandatory) - The compatible string of the domain
   configuration. This DT property should have value *"opensbi,domain,config"*
+
+### Root Domain Node
+
+The root domain WID configuration is described in a **root** subnode under
+the domain configuration DT node.
+
+The DT properties of the root domain node are as follows:
+
+* **compatible** (Mandatory) - The compatible string of the root domain node.
+  This DT property should have value *"opensbi,domain,instance"*.
+* **wid** (Mandatory if Smlwid is present) - The World ID (must be less than XLEN) for
+  lower-privilege modes (S/U-mode) for the ROOT domain. If the hart
+  supports the Smlwid extension, this property must be provided.
+* **widdeleg** (Optional) - The World ID delegation bitmask (at most XLEN bits) for
+  the ROOT domain. If present, OpenSBI writes this value to **mwiddeleg**
+  when entering the ROOT domain (requires Smwiddeleg extension). If absent,
+  clears **mwiddeleg** to disable S-mode WID delegation.
 
 ### Domain Memory Region Node
 
@@ -205,6 +226,13 @@ The DT properties of a domain instance DT node are as follows:
   whether the domain instance is allowed to do system reset.
 * **system-suspend-allowed** (Optional) - A boolean flag representing
   whether the domain instance is allowed to do system suspend.
+* **wid** (Mandatory if Smlwid is present) - The World ID (must be less than XLEN) for
+  lower-privilege modes (S/U-mode) for the domain instance. If the hart
+  supports the Smlwid extension, this property must be provided.
+* **widdeleg** (Optional) - The World ID delegation bitmask (at most XLEN bits) for
+  the domain instance. If present, OpenSBI writes this value to **mwiddeleg**
+  on context switch into this domain (requires Smwiddeleg extension). If absent,
+  clears **mwiddeleg** to disable S-mode WID delegation.
 
 ### Assigning HART To Domain Instance
 
@@ -267,6 +295,12 @@ be done:
                 order = <64>;
             };
 
+            root {
+                compatible = "opensbi,domain,instance";
+                wid = <3>;
+                widdeleg = <0x0 0x0>;
+            };
+
             tdomain: trusted-domain {
                 compatible = "opensbi,domain,instance";
                 possible-harts = <&cpu0>;
@@ -275,6 +309,8 @@ be done:
                 next-arg1 = <0x0 0x0>;
                 next-addr = <0x0 0x80100000>;
                 next-mode = <0x0>;
+                wid = <1>;
+                widdeleg = <0x0 0x6>;
                 system-reset-allowed;
                 system-suspend-allowed;
             };
@@ -283,6 +319,8 @@ be done:
                 compatible = "opensbi,domain,instance";
                 possible-harts = <&cpu1 &cpu2 &cpu3 &cpu4>;
                 regions = <&tmem 0x0>, <&tuart 0x0>, <&allmem 0x3f>;
+                wid = <0>;
+                widdeleg = <0x0 0x1>;
             };
         };
     };
