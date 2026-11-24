@@ -26,3 +26,33 @@ config STACK_PROTECTOR_ALL
 	  Like -fstack-protector except that all functions are protected.
 
 endmenu
+
+menuconfig SBITEST
+	bool "S-mode SBI test payloads"
+	default y
+	help
+	  Build test payloads from firmware/payloads/sbitest. They run in
+	  S-mode behind OpenSBI and call SBI extensions to check the results.
+	  Each payload is a flat binary in firmware/payloads/sbitest/ below
+	  the platform build directory. They are not linked into any firmware
+	  image.
+
+	  If this option is disabled, no test payload is built.
+
+if SBITEST
+
+config SBITEST_SELF
+	bool "Self test of the test payload framework (sbitest_self.bin)"
+	default y
+	help
+	  Build sbitest_self.bin. It tests the support code of the payloads:
+	  traps, heap, device tree parsing and the start of other harts.
+
+config SBITEST_DBTR
+	bool "Debug triggers extension test (sbitest_dbtr.bin)"
+	default y
+	help
+	  Build sbitest_dbtr.bin. It tests the SBI debug triggers extension
+	  (DBTR) on all harts that have the Sdtrig extension.
+
+endif
