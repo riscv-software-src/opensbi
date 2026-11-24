@@ -469,6 +469,31 @@ static int hart_mhpm_get_allowed_bits(void)
 	return num_bits;
 }
 
+static void smwid_hart_init(struct sbi_scratch *scratch)
+{
+	struct sbi_hart_features *hfeatures = sbi_hart_features_ptr(scratch);
+	unsigned long mwid;
+
+	if (!sbi_hart_has_extension(scratch, SBI_HART_EXT_SMWID))
+		return;
+
+	/*
+	 * MWID is expected to have been set/restored by the RoT's
+	 * M-mode implementation during an earlier boot/resume stage.
+	 * Lock it to preserve the RoT-defined WID as immutable.
+	 *
+	 * MWID may differ from pmwid if the RoT has demoted M-mode.
+	 */
+	mwid = csr_read(CSR_MWID) & ~MWID_LOCK;
+	if (hfeatures->has_pmwid && mwid != hfeatures->pmwid) {
+		sbi_printf("WARNING: %s: hart%u mwid (%lu) differs from"
+			   " pmwid (%u)\n", __func__, current_hartid(),
+			   mwid, hfeatures->pmwid);
+	}
+
+	csr_set(CSR_MWID, MWID_LOCK);
+}
+
 static int smrnmi_hart_init(struct sbi_scratch *scratch)
 {
 	const struct sbi_platform *plat;
@@ -720,6 +745,8 @@ __pmp_skip:
 int sbi_hart_reinit(struct sbi_scratch *scratch)
 {
 	int rc;
+
+	smwid_hart_init(scratch);
 
 	rc = smrnmi_hart_init(scratch);
 	if (rc)
