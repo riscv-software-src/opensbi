@@ -110,6 +110,7 @@ static int switch_to_next_domain_context(struct hart_context *ctx,
 	MUST_NOT_HOLD(&ctx->dom->assigned_harts_lock)
 	MUST_NOT_HOLD(&dom_ctx->dom->assigned_harts_lock)
 {
+	int rc;
 	u32 hartindex = current_hartindex();
 	struct sbi_trap_context *trap_ctx;
 	struct sbi_domain *current_dom, *target_dom;
@@ -173,7 +174,9 @@ static int switch_to_next_domain_context(struct hart_context *ctx,
 	 * is also required for some of the above CSR updates (such
 	 * as satp CSR).
 	 */
-	sbi_hart_protection_reconfigure(scratch, current_dom, target_dom);
+	rc = sbi_hart_protection_reconfigure(scratch, current_dom, target_dom);
+	if (rc)
+		return rc;
 
 	/* Mark current context structure initialized because context saved */
 	ctx->initialized = true;
